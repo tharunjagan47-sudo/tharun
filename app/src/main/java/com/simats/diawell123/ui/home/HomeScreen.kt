@@ -46,8 +46,8 @@ fun HomeScreen(
     onLogGlucoseClick: () -> Unit = {},
     onTrackFoodClick: () -> Unit = {},
     onDietChatbotClick: () -> Unit = {},
-    onMealsTabClick: () -> Unit = {},
-    onGlucoseTabClick: () -> Unit = {},
+    onDietTabClick: () -> Unit = {},
+    onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
     onSettingsTabClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
@@ -133,7 +133,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color(0xFFFDEEF7))
-                        .clickable { onGlucoseTabClick() }
+                        .clickable { onLogGlucoseClick() }
                         .padding(16.dp),
                 ) {
                     Column {
@@ -204,19 +204,19 @@ fun HomeScreen(
                     HomeStatCard(
                         value = "4 of 4",
                         label = "Meals logged",
-                        onClick = onMealsTabClick,
+                        onClick = onDietTabClick,
                         modifier = Modifier.weight(1f),
                     )
                     HomeStatCard(
                         value = "1,410",
                         label = "Approx kcal",
-                        onClick = onMealsTabClick,
+                        onClick = onDietTabClick,
                         modifier = Modifier.weight(1f),
                     )
                     HomeStatCard(
                         value = "2 of 3",
                         label = "Meds taken",
-                        onClick = onSettingsTabClick,
+                        onClick = onMedsTabClick,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -230,6 +230,7 @@ fun HomeScreen(
                         .clip(RoundedCornerShape(14.dp))
                         .background(Color.White)
                         .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                        .clickable { onMedsTabClick() }
                         .padding(14.dp),
                 ) {
                     Column {
@@ -295,7 +296,7 @@ fun HomeScreen(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFFB81D85),
-                        modifier = Modifier.clickable { onMealsTabClick() },
+                        modifier = Modifier.clickable { onDietTabClick() },
                     )
                 }
 
@@ -308,7 +309,7 @@ fun HomeScreen(
                         .clip(RoundedCornerShape(14.dp))
                         .background(Color.White)
                         .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
-                        .clickable { onMealsTabClick() }
+                        .clickable { onDietTabClick() }
                         .padding(12.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -359,7 +360,7 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                     )
                     QuickActionButton(
-                        title = "AI Diet Chatbot",
+                        title = "Wale AI Chatbot",
                         icon = "💬",
                         onClick = onDietChatbotClick,
                         modifier = Modifier.weight(1f),
@@ -388,8 +389,8 @@ fun HomeScreen(
             ) {
                 listOf(
                     "Home" to "🏠",
-                    "Meals" to "🥗",
-                    "Glucose" to "🩸",
+                    "Diet" to "🥗",
+                    "Meds" to "💊",
                     "Reports" to "📊",
                     "Settings" to "⚙️",
                 ).forEach { (name, icon) ->
@@ -399,9 +400,9 @@ fun HomeScreen(
                         modifier = Modifier.clickable {
                             selectedTab = name
                             when (name) {
-                                "Home" -> { /* Stay on home */ }
-                                "Meals" -> onMealsTabClick()
-                                "Glucose" -> onGlucoseTabClick()
+                                "Home" -> { /* Current */ }
+                                "Diet" -> onDietTabClick()
+                                "Meds" -> onMedsTabClick()
                                 "Reports" -> onReportsTabClick()
                                 "Settings" -> onSettingsTabClick()
                             }

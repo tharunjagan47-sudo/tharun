@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -19,6 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +41,15 @@ fun MedicationsScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onAddMedicationClick: () -> Unit = {},
+    onReminderClick: () -> Unit = {},
+    onHomeTabClick: () -> Unit = {},
+    onDietTabClick: () -> Unit = {},
+    onMedsTabClick: () -> Unit = {},
+    onReportsTabClick: () -> Unit = {},
+    onSettingsTabClick: () -> Unit = {},
 ) {
+    var selectedTab by remember { mutableStateOf("Meds") }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -78,7 +91,7 @@ fun MedicationsScreen(
                             color = Color(0xFF1E1E22),
                         )
                         Text(
-                            text = "A routine for your daily medication schedule.",
+                            text = "A routine you can keep track of.",
                             fontSize = 12.sp,
                             color = Color(0xFF6E6877),
                         )
@@ -88,7 +101,7 @@ fun MedicationsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Demo profile • Prescription schedule sample",
+                    text = "Demo schedule • prescription examples only",
                     fontSize = 11.sp,
                     color = Color(0xFF811978),
                     fontWeight = FontWeight.Medium,
@@ -127,8 +140,9 @@ fun MedicationsScreen(
                 MedicationCard(
                     name = "Metformin",
                     dosage = "1 tablet (500 mg) as prescribed",
-                    frequency = "Daily • 2 times a day",
+                    frequency = "Daily • twice a day",
                     timings = listOf("8:00 AM" to true, "8:00 PM" to false),
+                    onTimingClick = onReminderClick,
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -139,6 +153,7 @@ fun MedicationsScreen(
                     dosage = "1 capsule (1,000 IU) as prescribed",
                     frequency = "Daily • once a day",
                     timings = listOf("9:00 AM" to true),
+                    onTimingClick = onReminderClick,
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -172,7 +187,7 @@ fun MedicationsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Enter only the dosage prescribed by your physician. DiaWell assists you with your schedule, it does not recommend or change medication doses.",
+                    text = "Enter only the dosage prescribed by your clinician. DiaWell reminds you of your schedule; it does not recommend or change medication doses.",
                     fontSize = 11.sp,
                     color = Color(0xFF8A8595),
                     textAlign = TextAlign.Center,
@@ -181,6 +196,56 @@ fun MedicationsScreen(
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
                 )
+            }
+        }
+
+        // Bottom Navigation Bar
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color.White)
+                .border(width = 1.dp, color = Color(0xFFEFECEF)),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                listOf(
+                    "Home" to "🏠",
+                    "Diet" to "🥗",
+                    "Meds" to "💊",
+                    "Reports" to "📊",
+                    "Settings" to "⚙️",
+                ).forEach { (name, icon) ->
+                    val isSelected = selectedTab == name
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable {
+                            selectedTab = name
+                            when (name) {
+                                "Home" -> onHomeTabClick()
+                                "Diet" -> onDietTabClick()
+                                "Meds" -> onMedsTabClick()
+                                "Reports" -> onReportsTabClick()
+                                "Settings" -> onSettingsTabClick()
+                            }
+                        },
+                    ) {
+                        Text(text = icon, fontSize = 18.sp)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = name,
+                            fontSize = 10.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF8A8595),
+                        )
+                    }
+                }
             }
         }
     }
@@ -192,6 +257,7 @@ fun MedicationCard(
     dosage: String,
     frequency: String,
     timings: List<Pair<String, Boolean>>,
+    onTimingClick: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -241,6 +307,7 @@ fun MedicationCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable { onTimingClick() }
                         .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -266,6 +333,12 @@ fun MedicationCard(
                         )
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "🔔  Reminders on", fontSize = 11.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Medium)
             }
         }
     }

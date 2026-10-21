@@ -48,7 +48,7 @@ fun AiChatbotScreen(
     var messageText by remember { mutableStateOf("") }
     val messages = remember {
         mutableStateListOf(
-            ChatMessage("ai", "Hi Maya! I can help with balanced meal ideas and everyday food questions. What's on your mind?"),
+            ChatMessage("ai", "Hi Maya! I'm Wale. I can help with balanced meal ideas and everyday food questions. What's on your mind?"),
             ChatMessage("user", "What can I eat for breakfast?"),
             ChatMessage("ai", "Try unsweetened oats with plain yogurt, berries and a few almonds. This combines whole grains, protein and fiber. Choose a portion that fits your care plan."),
         )
@@ -91,7 +91,7 @@ fun AiChatbotScreen(
 
                         Column {
                             Text(
-                                text = "DiaWell AI",
+                                text = "Wale AI",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1E1E22),

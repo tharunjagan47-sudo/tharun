@@ -46,8 +46,9 @@ fun WeeklyReportScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
-    onMealsTabClick: () -> Unit = {},
-    onGlucoseTabClick: () -> Unit = {},
+    onDietTabClick: () -> Unit = {},
+    onMedsTabClick: () -> Unit = {},
+    onReportsTabClick: () -> Unit = {},
     onSettingsTabClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Reports") }
@@ -382,8 +383,8 @@ fun WeeklyReportScreen(
             ) {
                 listOf(
                     "Home" to "🏠",
-                    "Meals" to "🥗",
-                    "Glucose" to "🩸",
+                    "Diet" to "🥗",
+                    "Meds" to "💊",
                     "Reports" to "📊",
                     "Settings" to "⚙️",
                 ).forEach { (name, icon) ->
@@ -394,9 +395,9 @@ fun WeeklyReportScreen(
                             selectedTab = name
                             when (name) {
                                 "Home" -> onHomeTabClick()
-                                "Meals" -> onMealsTabClick()
-                                "Glucose" -> onGlucoseTabClick()
-                                "Reports" -> { /* Current */ }
+                                "Diet" -> onDietTabClick()
+                                "Meds" -> onMedsTabClick()
+                                "Reports" -> onReportsTabClick()
                                 "Settings" -> onSettingsTabClick()
                             }
                         },

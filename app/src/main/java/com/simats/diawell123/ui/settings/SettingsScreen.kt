@@ -44,11 +44,13 @@ fun SettingsScreen(
     onPersonalProfileClick: () -> Unit = {},
     onNotificationPrefsClick: () -> Unit = {},
     onFoodPrefsClick: () -> Unit = {},
+    onPrivacySecurityClick: () -> Unit = {},
+    onHelpSupportClick: () -> Unit = {},
     onAiChatbotClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
-    onMealsTabClick: () -> Unit = {},
-    onGlucoseTabClick: () -> Unit = {},
+    onDietTabClick: () -> Unit = {},
+    onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Settings") }
@@ -110,6 +112,7 @@ fun SettingsScreen(
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color.White)
                         .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                        .clickable { onPersonalProfileClick() }
                         .padding(16.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -155,11 +158,11 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 SettingsRow(icon = "🥗", title = "Food Preferences", onClick = onFoodPrefsClick)
                 Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "🔒", title = "Privacy and Security") {}
+                SettingsRow(icon = "🔒", title = "Privacy and Security", onClick = onPrivacySecurityClick)
                 Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "❓", title = "Help") {}
+                SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
                 Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "✨", title = "AI Chatbot", onClick = onAiChatbotClick)
+                SettingsRow(icon = "✨", title = "Wale AI Chatbot", onClick = onAiChatbotClick)
 
                 Spacer(modifier = Modifier.height(28.dp))
 
@@ -215,8 +218,8 @@ fun SettingsScreen(
             ) {
                 listOf(
                     "Home" to "🏠",
-                    "Meals" to "🥗",
-                    "Glucose" to "🩸",
+                    "Diet" to "🥗",
+                    "Meds" to "💊",
                     "Reports" to "📊",
                     "Settings" to "⚙️",
                 ).forEach { (name, icon) ->
@@ -227,8 +230,8 @@ fun SettingsScreen(
                             selectedTab = name
                             when (name) {
                                 "Home" -> onHomeTabClick()
-                                "Meals" -> onMealsTabClick()
-                                "Glucose" -> onGlucoseTabClick()
+                                "Diet" -> onDietTabClick()
+                                "Meds" -> onMedsTabClick()
                                 "Reports" -> onReportsTabClick()
                                 "Settings" -> { /* Current */ }
                             }

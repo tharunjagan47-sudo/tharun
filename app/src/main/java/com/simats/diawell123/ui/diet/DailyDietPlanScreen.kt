@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -19,6 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,7 +40,14 @@ fun DailyDietPlanScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onMealDetailsClick: () -> Unit = {},
+    onHomeTabClick: () -> Unit = {},
+    onDietTabClick: () -> Unit = {},
+    onMedsTabClick: () -> Unit = {},
+    onReportsTabClick: () -> Unit = {},
+    onSettingsTabClick: () -> Unit = {},
 ) {
+    var selectedTab by remember { mutableStateOf("Diet") }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -167,6 +179,56 @@ fun DailyDietPlanScreen(
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
                 )
+            }
+        }
+
+        // Bottom Navigation Bar
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color.White)
+                .border(width = 1.dp, color = Color(0xFFEFECEF)),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                listOf(
+                    "Home" to "🏠",
+                    "Diet" to "🥗",
+                    "Meds" to "💊",
+                    "Reports" to "📊",
+                    "Settings" to "⚙️",
+                ).forEach { (name, icon) ->
+                    val isSelected = selectedTab == name
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable {
+                            selectedTab = name
+                            when (name) {
+                                "Home" -> onHomeTabClick()
+                                "Diet" -> onDietTabClick()
+                                "Meds" -> onMedsTabClick()
+                                "Reports" -> onReportsTabClick()
+                                "Settings" -> onSettingsTabClick()
+                            }
+                        },
+                    ) {
+                        Text(text = icon, fontSize = 18.sp)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = name,
+                            fontSize = 10.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF8A8595),
+                        )
+                    }
+                }
             }
         }
     }

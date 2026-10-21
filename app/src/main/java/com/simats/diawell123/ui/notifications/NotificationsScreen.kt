@@ -39,8 +39,8 @@ fun NotificationsScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
-    onMealsTabClick: () -> Unit = {},
-    onGlucoseTabClick: () -> Unit = {},
+    onDietTabClick: () -> Unit = {},
+    onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
     onSettingsTabClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
@@ -174,8 +174,8 @@ fun NotificationsScreen(
             ) {
                 listOf(
                     "Home" to "🏠",
-                    "Meals" to "🥗",
-                    "Glucose" to "🩸",
+                    "Diet" to "🥗",
+                    "Meds" to "💊",
                     "Reports" to "📊",
                     "Settings" to "⚙️",
                 ).forEach { (name, icon) ->
@@ -186,8 +186,8 @@ fun NotificationsScreen(
                             selectedTab = name
                             when (name) {
                                 "Home" -> onHomeTabClick()
-                                "Meals" -> onMealsTabClick()
-                                "Glucose" -> onGlucoseTabClick()
+                                "Diet" -> onDietTabClick()
+                                "Meds" -> onMedsTabClick()
                                 "Reports" -> onReportsTabClick()
                                 "Settings" -> onSettingsTabClick()
                             }
