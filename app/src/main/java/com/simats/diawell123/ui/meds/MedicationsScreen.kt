@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -27,13 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -59,7 +58,7 @@ fun MedicationsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp)
+                .padding(bottom = 70.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -91,107 +90,78 @@ fun MedicationsScreen(
                             color = Color(0xFF1E1E22),
                         )
                         Text(
-                            text = "A routine you can keep track of.",
+                            text = "Reminders set according to your care plan.",
                             fontSize = 12.sp,
                             color = Color(0xFF6E6877),
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Demo schedule • prescription examples only",
-                    fontSize = 11.sp,
-                    color = Color(0xFF811978),
-                    fontWeight = FontWeight.Medium,
-                )
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Date Selector Bar
+                // Add Medication Bar Button
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                        .background(Color(0xFFFDEEF7))
+                        .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                        .clickable { onAddMedicationClick() }
+                        .padding(14.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(text = "‹", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
-                        Text(
-                            text = "📅  Thu, 15 Oct 2026",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                        )
-                        Text(text = "›", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
-                    }
+                    Text(
+                        text = "+ Add medication or set reminder",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB81D85),
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Medication Card 1
-                MedicationCard(
+                // Medication Cards
+                MedicationScheduleCard(
+                    time = "8:00 AM",
                     name = "Metformin",
-                    dosage = "1 tablet (500 mg) as prescribed",
-                    frequency = "Daily • twice a day",
-                    timings = listOf("8:00 AM" to true, "8:00 PM" to false),
-                    onTimingClick = onReminderClick,
+                    dose = "500 mg • 1 tablet",
+                    status = "Taken",
+                    statusColor = Color(0xFF2E7D32),
+                    statusBg = Color(0xFFE8F5E9),
+                    onClick = onReminderClick,
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Medication Card 2
-                MedicationCard(
-                    name = "Vitamin D3",
-                    dosage = "1 capsule (1,000 IU) as prescribed",
-                    frequency = "Daily • once a day",
-                    timings = listOf("9:00 AM" to true),
-                    onTimingClick = onReminderClick,
+                MedicationScheduleCard(
+                    time = "1:00 PM",
+                    name = "Multivitamin",
+                    dose = "1 capsule",
+                    status = "Taken",
+                    statusColor = Color(0xFF2E7D32),
+                    statusBg = Color(0xFFE8F5E9),
+                    onClick = onReminderClick,
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Add Medication Button
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF7A1C7D),
-                                    Color(0xFFBD1E85),
-                                    Color(0xFFFF5722),
-                                ),
-                            ),
-                        )
-                        .clickable { onAddMedicationClick() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "+  Add Medication",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                    )
-                }
+                MedicationScheduleCard(
+                    time = "8:00 PM",
+                    name = "Metformin",
+                    dose = "500 mg • 1 tablet",
+                    status = "Upcoming",
+                    statusColor = Color(0xFFB81D85),
+                    statusBg = Color(0xFFFDEEF7),
+                    onClick = onReminderClick,
+                )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = "Enter only the dosage prescribed by your clinician. DiaWell reminds you of your schedule; it does not recommend or change medication doses.",
+                    text = "Always consult your physician before changing doses.\nNotifications keep your daily routine consistent.",
                     fontSize = 11.sp,
                     color = Color(0xFF8A8595),
                     textAlign = TextAlign.Center,
-                    lineHeight = 16.sp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
@@ -199,146 +169,79 @@ fun MedicationsScreen(
             }
         }
 
-        // Bottom Navigation Bar
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(Color.White)
-                .border(width = 1.dp, color = Color(0xFFEFECEF)),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                listOf(
-                    "Home" to "🏠",
-                    "Diet" to "🥗",
-                    "Meds" to "💊",
-                    "Reports" to "📊",
-                    "Settings" to "⚙️",
-                ).forEach { (name, icon) ->
-                    val isSelected = selectedTab == name
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable {
-                            selectedTab = name
-                            when (name) {
-                                "Home" -> onHomeTabClick()
-                                "Diet" -> onDietTabClick()
-                                "Meds" -> onMedsTabClick()
-                                "Reports" -> onReportsTabClick()
-                                "Settings" -> onSettingsTabClick()
-                            }
-                        },
-                    ) {
-                        Text(text = icon, fontSize = 18.sp)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = name,
-                            fontSize = 10.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF8A8595),
-                        )
-                    }
-                }
-            }
-        }
+        // Floating iOS Liquid Glass Bottom Navigation Dock
+        IosLiquidGlassBottomNav(
+            selectedTab = selectedTab,
+            onHomeTabClick = onHomeTabClick,
+            onDietTabClick = onDietTabClick,
+            onMedsTabClick = { selectedTab = "Meds" },
+            onReportsTabClick = onReportsTabClick,
+            onSettingsTabClick = onSettingsTabClick,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
 @Composable
-fun MedicationCard(
+fun MedicationScheduleCard(
+    time: String,
     name: String,
-    dosage: String,
-    frequency: String,
-    timings: List<Pair<String, Boolean>>,
-    onTimingClick: () -> Unit = {},
+    dose: String,
+    status: String,
+    statusColor: Color,
+    statusBg: Color,
+    onClick: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-            .padding(16.dp),
+            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(14.dp),
     ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "💊", fontSize = 22.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "💊", fontSize = 28.sp)
+                Spacer(modifier = Modifier.width(14.dp))
+                Column {
+                    Text(
+                        text = time,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB81D85),
+                    )
                     Text(
                         text = name,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
                     )
-                }
-                Text(text = "•••", fontSize = 14.sp, color = Color(0xFF8A8595))
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = dosage,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF6E6877),
-            )
-
-            Text(
-                text = frequency,
-                fontSize = 11.sp,
-                color = Color(0xFF8A8595),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            timings.forEach { (time, isTaken) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onTimingClick() }
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
                     Text(
-                        text = "⏰  $time",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        text = dose,
+                        fontSize = 12.sp,
+                        color = Color(0xFF6E6877),
                     )
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (isTaken) Color(0xFFE8F5E9) else Color(0xFFFDEEF7))
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
-                    ) {
-                        Text(
-                            text = if (isTaken) "Taken" else "Upcoming",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isTaken) Color(0xFF2E7D32) else Color(0xFFB81D85),
-                        )
-                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "🔔  Reminders on", fontSize = 11.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Medium)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(statusBg)
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = status,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = statusColor,
+                )
             }
         }
     }

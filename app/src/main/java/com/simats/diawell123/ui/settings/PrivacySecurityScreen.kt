@@ -40,6 +40,7 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 fun PrivacySecurityScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
+    onChangePasswordClick: () -> Unit = {},
     onPrivacyPolicyClick: () -> Unit = {},
     onTermsOfUseClick: () -> Unit = {},
     onExportRecordsClick: () -> Unit = {},
@@ -131,7 +132,7 @@ fun PrivacySecurityScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Change Password Row
-            PrivacyLinkRow(icon = "🔑", title = "Change Password")
+            PrivacyLinkRow(icon = "🔑", title = "Change Password", onClick = onChangePasswordClick)
 
             Spacer(modifier = Modifier.height(10.dp))
 

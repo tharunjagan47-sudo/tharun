@@ -42,7 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.R
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -96,29 +98,11 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // DiaWell Logo Box
-                Box(
-                    modifier = Modifier
-                        .size(76.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    Color(0xFF7A1C7D),
-                                    Color(0xFFBD1E85),
-                                    Color(0xFFFF5722),
-                                ),
-                            ),
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_heart_pulse),
-                        contentDescription = "Logo",
-                        tint = Color.White,
-                        modifier = Modifier.size(44.dp),
-                    )
-                }
+                // Arc Reactor Logo
+                ArcReactorCanvas(
+                    rotationAngle = 0f,
+                    modifier = Modifier.size(76.dp),
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -174,30 +158,10 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 // Login Gradient Button
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF7A1C7D),
-                                    Color(0xFFBD1E85),
-                                    Color(0xFFFF5722),
-                                ),
-                            ),
-                        )
-                        .clickable { onLoginSuccess() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "Login",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                    )
-                }
+                IosLiquidGlassButton(
+                    text = "Login",
+                    onClick = onLoginSuccess,
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -314,9 +278,7 @@ fun LoginInputField(
                 focusedTextColor = Color(0xFF1E1E22),
                 unfocusedTextColor = Color(0xFF1E1E22),
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

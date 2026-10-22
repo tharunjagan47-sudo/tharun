@@ -12,17 +12,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,13 +34,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -52,6 +58,8 @@ fun WeeklyReportScreen(
     onSettingsTabClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Reports") }
+    var selectedWeekText by remember { mutableStateOf("8–15 Oct 2026") }
+    var showCalendarDialog by remember { mutableStateOf(value = false) }
 
     Box(
         modifier = modifier
@@ -62,7 +70,7 @@ fun WeeklyReportScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp)
+                .padding(bottom = 70.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -112,13 +120,14 @@ fun WeeklyReportScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Date Selector Bar
+                // Interactive Date Selector Bar (Opens Calendar Dialog)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color.White)
                         .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                        .clickable { showCalendarDialog = true }
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                 ) {
                     Row(
@@ -128,7 +137,7 @@ fun WeeklyReportScreen(
                     ) {
                         Text(text = "‹", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
                         Text(
-                            text = "📅  8–15 Oct 2026",
+                            text = "📅  $selectedWeekText",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1E1E22),
@@ -365,50 +374,202 @@ fun WeeklyReportScreen(
             }
         }
 
-        // Bottom Navigation Bar
+        // Calendar Date Picker Modal Dialog
+        if (showCalendarDialog) {
+            ReportCalendarDialog(
+                onWeekSelected = { newWeek ->
+                    selectedWeekText = newWeek
+                },
+                onDismissRequest = { showCalendarDialog = false },
+            )
+        }
+
+        // Floating iOS Liquid Glass Bottom Navigation Dock
+        IosLiquidGlassBottomNav(
+            selectedTab = selectedTab,
+            onHomeTabClick = onHomeTabClick,
+            onDietTabClick = onDietTabClick,
+            onMedsTabClick = onMedsTabClick,
+            onReportsTabClick = { selectedTab = "Reports" },
+            onSettingsTabClick = onSettingsTabClick,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
+    }
+}
+
+@Composable
+fun ReportCalendarDialog(
+    onWeekSelected: (String) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    var selectedDay by remember { mutableIntStateOf(15) }
+
+    Dialog(onDismissRequest = onDismissRequest) {
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
                 .background(Color.White)
-                .border(width = 1.dp, color = Color(0xFFEFECEF)),
+                .border(1.5.dp, Color(0xFFEFECEF), RoundedCornerShape(20.dp))
+                .padding(20.dp),
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                listOf(
-                    "Home" to "🏠",
-                    "Diet" to "🥗",
-                    "Meds" to "💊",
-                    "Reports" to "📊",
-                    "Settings" to "⚙️",
-                ).forEach { (name, icon) ->
-                    val isSelected = selectedTab == name
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable {
-                            selectedTab = name
-                            when (name) {
-                                "Home" -> onHomeTabClick()
-                                "Diet" -> onDietTabClick()
-                                "Meds" -> onMedsTabClick()
-                                "Reports" -> onReportsTabClick()
-                                "Settings" -> onSettingsTabClick()
-                            }
-                        },
-                    ) {
-                        Text(text = icon, fontSize = 18.sp)
-                        Spacer(modifier = Modifier.height(2.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Dialog Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "📅 Select Report Week",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E1E22),
+                    )
+
+                    Text(
+                        text = "✕",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF8A8595),
+                        modifier = Modifier
+                            .clickable { onDismissRequest() }
+                            .padding(4.dp),
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Month Navigator Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFDEEF7))
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(text = "‹", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
+                    Text(
+                        text = "October 2026",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF811978),
+                    )
+                    Text(text = "›", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Days of Week Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                ) {
+                    listOf("S", "M", "T", "W", "T", "F", "S").forEach { dayName ->
                         Text(
-                            text = name,
-                            fontSize = 10.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF8A8595),
+                            text = dayName,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF8A8595),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.width(32.dp),
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Days Grid (1 to 31)
+                val daysList = (1..31).toList()
+                val rows = daysList.chunked(7)
+
+                rows.forEach { week ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                    ) {
+                        week.forEach { dayNumber ->
+                            val isSelected = dayNumber == selectedDay
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isSelected) Color(0xFFB81D85) else Color.Transparent)
+                                    .border(
+                                        width = if (isSelected) 0.dp else 1.dp,
+                                        color = if (isSelected) Color.Transparent else Color(0xFFEFECEF),
+                                        shape = CircleShape,
+                                    )
+                                    .clickable { selectedDay = dayNumber }
+                                    .padding(4.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = dayNumber.toString(),
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color.White else Color(0xFF1E1E22),
+                                )
+                            }
+                        }
+
+                        if (week.size < 7) {
+                            repeat(7 - week.size) {
+                                Spacer(modifier = Modifier.size(36.dp))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Action Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFF8F7FA))
+                            .clickable { onDismissRequest() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF6E6877),
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                ),
+                            )
+                            .clickable {
+                                val startDay = (selectedDay - 7).coerceAtLeast(1)
+                                onWeekSelected("$startDay–$selectedDay Oct 2026")
+                                onDismissRequest()
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "Select Week",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
                         )
                     }
                 }

@@ -55,8 +55,7 @@ fun FoodOnboardingScreen(
             ) {
                 // Food Illustration
                 FoodIllustration(
-                    modifier = Modifier
-                        .size(260.dp)
+                    modifier = Modifier.size(260.dp)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -119,14 +118,12 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
             val center = Offset(size.width / 2, size.height / 2)
             val bgRadius = size.width * 0.48f
 
-            // Soft pink circular background
             drawCircle(
                 color = Color(0xFFFDEEF7),
                 radius = bgRadius,
                 center = center
             )
 
-            // Plate Outer White Circle
             val plateRadius = size.width * 0.34f
             drawCircle(
                 color = Color.White,
@@ -140,7 +137,6 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
                 style = Stroke(width = 3.dp.toPx())
             )
 
-            // Inner Plate Line
             drawCircle(
                 color = Color(0xFFFBF2FA),
                 radius = plateRadius * 0.78f,
@@ -148,24 +144,19 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
                 style = Stroke(width = 2.dp.toPx())
             )
 
-            // Food Items on Plate
-            // Veggies (Green circles)
             val green = Color(0xFF53A17B)
             val lightGreen = Color(0xFF6CBD92)
             drawCircle(color = green, radius = 18.dp.toPx(), center = Offset(center.x - 22.dp.toPx(), center.y - 12.dp.toPx()))
             drawCircle(color = lightGreen, radius = 14.dp.toPx(), center = Offset(center.x - 30.dp.toPx(), center.y + 12.dp.toPx()))
             drawCircle(color = green, radius = 16.dp.toPx(), center = Offset(center.x - 8.dp.toPx(), center.y + 20.dp.toPx()))
 
-            // Orange/Red circles (Carrots/Tomatoes)
             val orange = Color(0xFFE8735C)
             drawCircle(color = orange, radius = 12.dp.toPx(), center = Offset(center.x + 22.dp.toPx(), center.y - 18.dp.toPx()))
             drawCircle(color = orange, radius = 14.dp.toPx(), center = Offset(center.x + 28.dp.toPx(), center.y + 8.dp.toPx()))
 
-            // Beige/Tan circle (Grains/Protein)
             val beige = Color(0xFFD6BA96)
             drawCircle(color = beige, radius = 18.dp.toPx(), center = Offset(center.x + 4.dp.toPx(), center.y - 10.dp.toPx()))
 
-            // Fork on left side
             val forkX = center.x - plateRadius - 18.dp.toPx()
             drawLine(
                 color = Color(0xFFD4A3C8),
@@ -173,7 +164,6 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
                 end = Offset(forkX, center.y + 24.dp.toPx()),
                 strokeWidth = 2.5.dp.toPx()
             )
-            // Fork tines
             drawLine(
                 color = Color(0xFFD4A3C8),
                 start = Offset(forkX - 4.dp.toPx(), center.y - 20.dp.toPx()),
@@ -187,7 +177,6 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
                 strokeWidth = 2.dp.toPx()
             )
 
-            // Knife on left inner side
             val knifeX = forkX + 8.dp.toPx()
             drawLine(
                 color = Color(0xFFD4A3C8),
@@ -196,7 +185,6 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
                 strokeWidth = 2.5.dp.toPx()
             )
 
-            // Top-right Floating Leaf
             val leafPath = Path().apply {
                 moveTo(center.x + bgRadius * 0.65f, center.y - bgRadius * 0.65f)
                 cubicTo(

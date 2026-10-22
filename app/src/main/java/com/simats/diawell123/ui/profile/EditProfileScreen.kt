@@ -1,7 +1,14 @@
 package com.simats.diawell123.ui.profile
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +31,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +48,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.R
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import kotlinx.coroutines.delay
 
 @Composable
 fun EditProfileScreen(
@@ -52,6 +64,20 @@ fun EditProfileScreen(
     var diabetesType by remember { mutableStateOf("Type 2") }
     var height by remember { mutableStateOf("165 cm") }
     var weight by remember { mutableStateOf("68 kg") }
+
+    var showSuccessBanner by remember { mutableStateOf(value = false) }
+
+    val ageRange = remember { (18..80).map { "$it years" } }
+    val heightRange = remember { (140..210).filter { it % 5 == 0 }.map { "$it cm" } }
+    val weightRange = remember { (40..140).filter { it % 5 == 0 || it == 68 }.map { "$it kg" } }
+
+    LaunchedEffect(showSuccessBanner) {
+        if (showSuccessBanner) {
+            delay(1800)
+            showSuccessBanner = false
+            onSaveChangesClick()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -101,7 +127,42 @@ fun EditProfileScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Successfully Saved Animated Banner
+            AnimatedVisibility(
+                visible = showSuccessBanner,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut(),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFE8F5E9))
+                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .padding(14.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Changes Saved Successfully!",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E7D32),
+                            )
+                            Text(
+                                text = "Your personal profile details have been updated.",
+                                fontSize = 11.sp,
+                                color = Color(0xFF1B5E20),
+                            )
+                        }
+                    }
+                }
+            }
 
             // Profile Avatar & Name
             Column(
@@ -126,7 +187,7 @@ fun EditProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Maya Johnson",
+                    text = fullName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E1E22),
@@ -151,61 +212,62 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Full Name
-            ProfileDetailField(label = "Full Name", value = fullName, onValueChange = { fullName = it })
+            ProfileDetailInputField(label = "Full Name", value = fullName, onValueChange = { fullName = it })
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Email
-            ProfileDetailField(
+            ProfileDetailInputField(
                 label = "Email",
                 value = email,
                 onValueChange = { email = it },
                 trailingIconRes = R.drawable.ic_email,
             )
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 1. Diabetes Type Vertical Scroll Picker
+            VerticalScrollAndSelectPicker(
+                label = "Diabetes Type",
+                items = listOf("Type 1", "Type 2", "Gestational", "Pre-diabetes", "LADA / Other"),
+                selectedItem = diabetesType,
+                onItemSelected = { diabetesType = it },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 2. Age Vertical Scroll Picker
+            VerticalScrollAndSelectPicker(
+                label = "Age",
+                items = ageRange,
+                selectedItem = if (age.contains("years")) age else "$age years",
+                onItemSelected = { age = it },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 3. Height Vertical Scroll Picker
+            VerticalScrollAndSelectPicker(
+                label = "Height",
+                items = heightRange,
+                selectedItem = if (height.contains("cm")) height else "$height cm",
+                onItemSelected = { height = it },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 4. Weight Vertical Scroll Picker
+            VerticalScrollAndSelectPicker(
+                label = "Weight",
+                items = weightRange,
+                selectedItem = if (weight.contains("kg")) weight else "$weight kg",
+                onItemSelected = { weight = it },
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Age & Diabetes Type Row
-            Row(modifier = Modifier.fillMaxWidth()) {
-                ProfileDetailField(
-                    label = "Age",
-                    value = age,
-                    onValueChange = { age = it },
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                ProfileDetailField(
-                    label = "Diabetes Type",
-                    value = diabetesType,
-                    onValueChange = { diabetesType = it },
-                    trailingText = "▼",
-                    modifier = Modifier.weight(1f),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Height & Weight Row
-            Row(modifier = Modifier.fillMaxWidth()) {
-                ProfileDetailField(
-                    label = "Height",
-                    value = height,
-                    onValueChange = { height = it },
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                ProfileDetailField(
-                    label = "Weight",
-                    value = weight,
-                    onValueChange = { weight = it },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Keep your details up to date as your routine changes.",
+                text = "Scroll vertically and select your details to update your personal profile.",
                 fontSize = 11.sp,
                 color = Color(0xFF8A8595),
             )
@@ -213,30 +275,10 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             // Save Changes Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
-                        ),
-                    )
-                    .clickable { onSaveChangesClick() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "Save Changes",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
+            IosLiquidGlassButton(
+                text = "Save Changes",
+                onClick = { showSuccessBanner = true },
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -255,13 +297,12 @@ fun EditProfileScreen(
 }
 
 @Composable
-fun ProfileDetailField(
+fun ProfileDetailInputField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     trailingIconRes: Int? = null,
-    trailingText: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -277,23 +318,13 @@ fun ProfileDetailField(
             onValueChange = onValueChange,
             singleLine = true,
             trailingIcon = {
-                when {
-                    trailingIconRes != null -> {
-                        Icon(
-                            painter = painterResource(id = trailingIconRes),
-                            contentDescription = null,
-                            tint = Color(0xFF9A96A4),
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                    trailingText != null -> {
-                        Text(
-                            text = trailingText,
-                            fontSize = 10.sp,
-                            color = Color(0xFF8A8595),
-                            modifier = Modifier.padding(end = 12.dp),
-                        )
-                    }
+                if (trailingIconRes != null) {
+                    Icon(
+                        painter = painterResource(id = trailingIconRes),
+                        contentDescription = null,
+                        tint = Color(0xFF9A96A4),
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             },
             shape = RoundedCornerShape(10.dp),
@@ -305,10 +336,133 @@ fun ProfileDetailField(
                 focusedTextColor = Color(0xFF1E1E22),
                 unfocusedTextColor = Color(0xFF1E1E22),
             ),
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+fun VerticalScrollAndSelectPicker(
+    label: String,
+    items: List<String>,
+    selectedItem: String,
+    onItemSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var isExpanded by remember { mutableStateOf(value = false) }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF232226),
+            )
+            Text(
+                text = "Selected: $selectedItem",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFB81D85),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-        )
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF8F7FA))
+                .border(1.dp, if (isExpanded) Color(0xFFB81D85) else Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                .clickable { isExpanded = !isExpanded }
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = selectedItem,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E1E22),
+                )
+                Text(
+                    text = if (isExpanded) "▲ Scroll Selection" else "▼ Tap to Scroll & Select",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFFB81D85),
+                )
+            }
+        }
+
+        if (isExpanded) {
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White)
+                    .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                    .padding(vertical = 4.dp, horizontal = 6.dp),
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(items) { item ->
+                        val isSelected = item == selectedItem
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSelected) Color(0xFFFDEEF7) else Color.Transparent)
+                                .border(
+                                    width = if (isSelected) 1.dp else 0.dp,
+                                    color = if (isSelected) Color(0xFFB81D85) else Color.Transparent,
+                                    shape = RoundedCornerShape(8.dp),
+                                )
+                                .clickable {
+                                    onItemSelected(item)
+                                    isExpanded = false
+                                }
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = item,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
+                                )
+
+                                if (isSelected) {
+                                    Text(
+                                        text = "✓ Selected",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFB81D85),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

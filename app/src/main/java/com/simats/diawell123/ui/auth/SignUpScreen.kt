@@ -42,7 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.R
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -75,23 +77,38 @@ fun SignUpScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Title
-            Text(
-                text = "Create your account",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
-            )
+            // Top Header Row with Title on Left & Arc Reactor Logo on Top Right Corner
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Create your account",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E1E22),
+                    )
 
-            Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-            // Subtitle
-            Text(
-                text = "Your wellbeing starts with a simple step.",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Normal,
-                color = Color(0xFF6E6877),
-            )
+                    Text(
+                        text = "Your wellbeing starts with a simple step.",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color(0xFF6E6877),
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Arc Reactor Logo in Top Right Corner
+                ArcReactorCanvas(
+                    rotationAngle = 0f,
+                    modifier = Modifier.size(48.dp),
+                )
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -104,29 +121,11 @@ fun SignUpScreen(
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Gradient Icon Box
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    Color(0xFF7A1C7D),
-                                    Color(0xFFBD1E85),
-                                    Color(0xFFFF5722),
-                                ),
-                            ),
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_heart_pulse),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
+                // Arc Reactor Mini Logo
+                ArcReactorCanvas(
+                    rotationAngle = 0f,
+                    modifier = Modifier.size(36.dp),
+                )
 
                 Spacer(modifier = Modifier.width(12.dp))
 
@@ -194,30 +193,10 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             // Create Account Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
-                        ),
-                    )
-                    .clickable { onSignUpSuccess() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "Create Account",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
+            IosLiquidGlassButton(
+                text = "Create Account",
+                onClick = onSignUpSuccess,
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -327,9 +306,7 @@ fun SignUpInputField(
                 focusedTextColor = Color(0xFF1E1E22),
                 unfocusedTextColor = Color(0xFF1E1E22),
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

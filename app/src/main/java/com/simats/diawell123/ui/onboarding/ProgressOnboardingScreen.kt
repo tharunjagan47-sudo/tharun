@@ -121,19 +121,16 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
             val center = Offset(size.width / 2, size.height / 2)
             val bgRadius = size.width * 0.48f
 
-            // Soft pink circular background
             drawCircle(
                 color = Color(0xFFFDEEF7),
                 radius = bgRadius,
                 center = center
             )
 
-            // White Rounded Chart Card
             val cardWidth = 150.dp.toPx()
             val cardHeight = 120.dp.toPx()
             val cardTopLeft = Offset(center.x - cardWidth / 2, center.y - cardHeight / 2 - 10.dp.toPx())
 
-            // Card shadow & background
             drawRoundRect(
                 color = Color.White,
                 topLeft = cardTopLeft,
@@ -148,7 +145,6 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
                 style = Stroke(width = 2.dp.toPx())
             )
 
-            // Top Card Accent Bar
             drawRoundRect(
                 color = Color(0xFFF7EBF6),
                 topLeft = Offset(cardTopLeft.x + 16.dp.toPx(), cardTopLeft.y + 16.dp.toPx()),
@@ -156,7 +152,6 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
                 cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
             )
 
-            // Upward Line Chart Path inside card
             val chartPath = Path().apply {
                 val startX = cardTopLeft.x + 16.dp.toPx()
                 val startY = cardTopLeft.y + cardHeight - 24.dp.toPx()
@@ -175,7 +170,6 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
                 style = Stroke(width = 3.5.dp.toPx())
             )
 
-            // Gradient Circle Checkmark Badge on lower-right
             val checkBadgeCenter = Offset(cardTopLeft.x + cardWidth - 8.dp.toPx(), cardTopLeft.y + cardHeight - 8.dp.toPx())
             val checkBadgeRadius = 22.dp.toPx()
 
@@ -187,7 +181,6 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
                 center = checkBadgeCenter
             )
 
-            // White Checkmark inside badge
             val checkPath = Path().apply {
                 moveTo(checkBadgeCenter.x - 8.dp.toPx(), checkBadgeCenter.y)
                 lineTo(checkBadgeCenter.x - 2.dp.toPx(), checkBadgeCenter.y + 6.dp.toPx())

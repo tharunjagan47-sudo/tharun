@@ -1,5 +1,10 @@
 package com.simats.diawell123.ui.settings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,7 +28,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,9 +44,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
-
-import androidx.compose.runtime.mutableIntStateOf
+import kotlinx.coroutines.delay
 
 @Composable
 fun HelpSupportScreen(
@@ -49,6 +56,15 @@ fun HelpSupportScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var expandedFaq by remember { mutableIntStateOf(0) }
+    var showSuccessBanner by remember { mutableStateOf(value = false) }
+
+    LaunchedEffect(showSuccessBanner) {
+        if (showSuccessBanner) {
+            delay(1000)
+            showSuccessBanner = false
+            onContactSupportClick()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -98,7 +114,44 @@ fun HelpSupportScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 1-Second Success Confirmation Banner
+            AnimatedVisibility(
+                visible = showSuccessBanner,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut(),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFE8F5E9))
+                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .padding(14.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Support Message Sent Successfully!",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E7D32),
+                            )
+                            Text(
+                                text = "Our team will reply to your registered email shortly.",
+                                fontSize = 11.sp,
+                                color = Color(0xFF1B5E20),
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Help Icon Graphic
             Box(
@@ -141,9 +194,7 @@ fun HelpSupportScreen(
                     focusedBorderColor = Color(0xFFBD1E85),
                     unfocusedBorderColor = Color(0xFFEFECEF),
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -221,30 +272,10 @@ fun HelpSupportScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Contact Support Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
-                        ),
-                    )
-                    .clickable { onContactSupportClick() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "Contact Support",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
+            IosLiquidGlassButton(
+                text = "Contact Support",
+                onClick = { showSuccessBanner = true },
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

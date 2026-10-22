@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -34,13 +35,81 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
+data class IndianMealInfo(
+    val categoryTitle: String,
+    val mealName: String,
+    val icon: String,
+    val servingText: String,
+    val calories: Int,
+    val carbs: Int,
+    val protein: Int,
+    val fat: Int,
+    val description: String,
+    val ingredients: String,
+)
+
+fun getIndianMealInfo(mealCategory: String): IndianMealInfo {
+    return when (mealCategory.lowercase()) {
+        "lunch" -> IndianMealInfo(
+            categoryTitle = "Lunch",
+            mealName = "Multigrain Roti, Dal & Bhindi Sabzi",
+            icon = "🫓",
+            servingText = "2 rotis + 1 bowl dal + sabzi (380 g)",
+            calories = 420,
+            carbs = 52,
+            protein = 18,
+            fat = 10,
+            description = "High-fiber multigrain chapattis paired with protein-rich Bengal gram dal, stir-fried okra (bhindi sabzi), and a side of fresh cucumber salad.",
+            ingredients = "• Multigrain Flour (Atta)\n• Yellow Chana Dal & Spices\n• Fresh Bhindi (Okra)\n• Olive/Mustard Oil & Cumin",
+        )
+        "snack" -> IndianMealInfo(
+            categoryTitle = "Evening Snack",
+            mealName = "Sprouts Chaat & Green Tea",
+            icon = "🥗",
+            servingText = "1 bowl sprouts chaat (180 g)",
+            calories = 150,
+            carbs = 22,
+            protein = 11,
+            fat = 2,
+            description = "Steamed moong sprouts tossed with chopped cucumber, tomato, pomegranate seeds, lemon juice, and a warm cup of antioxidant-rich green tea.",
+            ingredients = "• Steamed Moong Sprouts\n• Cucumber & Tomatoes\n• Lemon Juice & Chaat Masala\n• Antioxidant Green Tea",
+        )
+        "dinner" -> IndianMealInfo(
+            categoryTitle = "Dinner",
+            mealName = "Palak Paneer & Brown Rice",
+            icon = "🍲",
+            servingText = "1 plate palak paneer + brown rice (350 g)",
+            calories = 380,
+            carbs = 38,
+            protein = 22,
+            fat = 14,
+            description = "Nutrient-dense spinach puree with soft low-fat cottage cheese (paneer) cubes served alongside fiber-rich brown rice.",
+            ingredients = "• Fresh Spinach (Palak)\n• Low-fat Cottage Cheese (Paneer)\n• Steamed Brown Rice\n• Garlic, Ginger & Spices",
+        )
+        else -> IndianMealInfo( // Default: Breakfast
+            categoryTitle = "Breakfast",
+            mealName = "Idli Sambar & Coconut Chutney",
+            icon = "🥣",
+            servingText = "2 idlis + 1 bowl sambar (280 g)",
+            calories = 280,
+            carbs = 44,
+            protein = 10,
+            fat = 5,
+            description = "Steamed fermented rice and lentil cakes served with vegetable-rich tur dal sambar and a side of fresh coconut chutney. Low GI and light.",
+            ingredients = "• Steamed Rice & Urad Dal Batter\n• Tur Dal Sambar with Vegetables\n• Fresh Grated Coconut\n• Curry Leaves & Mustard Seeds",
+        )
+    }
+}
+
 @Composable
 fun FoodDetailsScreen(
     modifier: Modifier = Modifier,
+    mealCategory: String = "breakfast",
     onBackClick: () -> Unit = {},
     onAddToFoodLogClick: () -> Unit = {},
 ) {
     var portionCount by remember { mutableIntStateOf(1) }
+    val meal = remember(mealCategory) { getIndianMealInfo(mealCategory) }
 
     Box(
         modifier = modifier
@@ -77,13 +146,13 @@ fun FoodDetailsScreen(
 
                 Column {
                     Text(
-                        text = "Food details",
+                        text = "Indian Food Details",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
                     )
                     Text(
-                        text = "Demo profile • Approximate nutrition",
+                        text = "Diabetic-friendly Indian Nutrition",
                         fontSize = 12.sp,
                         color = Color(0xFF6E6877),
                     )
@@ -102,12 +171,12 @@ fun FoodDetailsScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "🥣", fontSize = 64.sp)
+                    Text(text = meal.icon, fontSize = 64.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Fresh Oats with Berries & Almonds",
+                        text = "Authentic Indian ${meal.categoryTitle}",
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Bold,
                         color = Color(0xFF811978),
                     )
                 }
@@ -117,14 +186,14 @@ fun FoodDetailsScreen(
 
             // Title & Subtitle
             Text(
-                text = "Berry & almond oats",
+                text = meal.mealName,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E22),
             )
 
             Text(
-                text = "Breakfast • serving size: 1 bowl (290 g)",
+                text = "${meal.categoryTitle} • Serving: ${meal.servingText}",
                 fontSize = 13.sp,
                 color = Color(0xFF6E6877),
             )
@@ -154,10 +223,10 @@ fun FoodDetailsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        NutritionStatItem(value = (320 * portionCount).toString() + " kcal", label = "Calories")
-                        NutritionStatItem(value = "${42 * portionCount} g", label = "Carbs")
-                        NutritionStatItem(value = "${18 * portionCount} g", label = "Protein")
-                        NutritionStatItem(value = "${10 * portionCount} g", label = "Fat")
+                        NutritionStatItem(value = "${meal.calories * portionCount} kcal", label = "Calories")
+                        NutritionStatItem(value = "${meal.carbs * portionCount} g", label = "Carbs")
+                        NutritionStatItem(value = "${meal.protein * portionCount} g", label = "Protein")
+                        NutritionStatItem(value = "${meal.fat * portionCount} g", label = "Fat")
                     }
                 }
             }
@@ -196,7 +265,7 @@ fun FoodDetailsScreen(
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
-                        text = "$portionCount bowl",
+                        text = "$portionCount serving",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
@@ -220,42 +289,95 @@ fun FoodDetailsScreen(
 
             // Description
             Text(
-                text = "Whole-grain oats bring fiber, while yogurt and almonds add protein and texture. Berries offer natural sweetness. Choose unsweetened ingredients when possible.",
+                text = meal.description,
                 fontSize = 13.sp,
                 color = Color(0xFF6E6877),
                 lineHeight = 19.sp,
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Add to Food Log Button
+            // Ingredients List
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
-                        ),
-                    )
-                    .clickable { onAddToFoodLogClick() },
-                contentAlignment = Alignment.Center,
+                    .background(Color.White)
+                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                    .padding(14.dp),
             ) {
-                Text(
-                    text = "+  Add to Food Log",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
+                Column {
+                    Text(
+                        text = "Key Ingredients",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E1E22),
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = meal.ingredients,
+                        fontSize = 12.sp,
+                        color = Color(0xFF6E6877),
+                        lineHeight = 18.sp,
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(28.dp))
+
+            // iOS Liquid Glass Action Button
+            IosLiquidGlassButton(
+                text = "+ Add to Food Log",
+                onClick = onAddToFoodLogClick,
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
         }
+    }
+}
+
+@Composable
+fun IosLiquidGlassButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    gradientColors: List<Color> = listOf(
+        Color(0xFF7A1C7D),
+        Color(0xFFBD1E85),
+        Color(0xFFFF5722),
+    ),
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(32.dp),
+                ambientColor = Color(0xFFB81D85).copy(alpha = 0.35f),
+                spotColor = Color(0xFFB81D85).copy(alpha = 0.45f),
+            )
+            .clip(RoundedCornerShape(32.dp))
+            .background(brush = Brush.horizontalGradient(colors = gradientColors))
+            .border(
+                width = 1.2.dp,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.8f),
+                        Color.White.copy(alpha = 0.2f),
+                    ),
+                ),
+                shape = RoundedCornerShape(32.dp),
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
     }
 }
 

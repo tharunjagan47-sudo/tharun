@@ -1,5 +1,10 @@
 package com.simats.diawell123.ui.profile
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,10 +40,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -48,6 +57,15 @@ fun FoodPreferencesSettingsScreen(
 ) {
     var selectedDiet by remember { mutableStateOf("Non-Vegetarian") }
     var foodsToAvoid by remember { mutableStateOf("") }
+    var showSuccessBanner by remember { mutableStateOf(value = false) }
+
+    LaunchedEffect(showSuccessBanner) {
+        if (showSuccessBanner) {
+            delay(1000)
+            showSuccessBanner = false
+            onSaveFoodPreferencesClick()
+        }
+    }
 
     val allergies = remember {
         mutableStateListOf("Nuts" to true, "Milk" to false, "Dairy" to false, "Gluten" to false, "Eggs" to false, "Soy" to false)
@@ -107,6 +125,41 @@ fun FoodPreferencesSettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // 1-Second Success Confirmation Banner
+            AnimatedVisibility(
+                visible = showSuccessBanner,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut(),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFE8F5E9))
+                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .padding(14.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Food Preferences Saved Successfully!",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E7D32),
+                            )
+                            Text(
+                                text = "Your diet preferences have been updated.",
+                                fontSize = 11.sp,
+                                color = Color(0xFF1B5E20),
+                            )
+                        }
+                    }
+                }
+            }
+
             Text(
                 text = "Demo profile • Maya Johnson",
                 fontSize = 11.sp,
@@ -130,21 +183,21 @@ fun FoodPreferencesSettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                DietTypeCard(
+                DietTypeOptionCard(
                     title = "Vegetarian",
                     iconText = "🥦",
                     isSelected = selectedDiet == "Vegetarian",
                     onClick = { selectedDiet = "Vegetarian" },
                     modifier = Modifier.weight(1f),
                 )
-                DietTypeCard(
+                DietTypeOptionCard(
                     title = "Non-Vegetarian",
                     iconText = "🍗",
                     isSelected = selectedDiet == "Non-Vegetarian",
                     onClick = { selectedDiet = "Non-Vegetarian" },
                     modifier = Modifier.weight(1f),
                 )
-                DietTypeCard(
+                DietTypeOptionCard(
                     title = "Vegan",
                     iconText = "🌱",
                     isSelected = selectedDiet == "Vegan",
@@ -276,9 +329,7 @@ fun FoodPreferencesSettingsScreen(
                     focusedBorderColor = Color(0xFFBD1E85),
                     unfocusedBorderColor = Color(0xFFEFECEF),
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -311,32 +362,47 @@ fun FoodPreferencesSettingsScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             // Save Food Preferences Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
-                        ),
-                    )
-                    .clickable { onSaveFoodPreferencesClick() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "Save Food Preferences",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
+            IosLiquidGlassButton(
+                text = "Save Food Preferences",
+                onClick = { showSuccessBanner = true },
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+fun DietTypeOptionCard(
+    title: String,
+    iconText: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isSelected) Color(0xFFFDEEF7) else Color(0xFFF8F7FA))
+            .border(
+                width = 1.5.dp,
+                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                shape = RoundedCornerShape(12.dp),
+            )
+            .clickable { onClick() }
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = iconText, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = title,
+                fontSize = 11.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

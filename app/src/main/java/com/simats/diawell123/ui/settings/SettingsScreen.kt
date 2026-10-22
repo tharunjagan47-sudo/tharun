@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -64,7 +64,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp)
+                .padding(bottom = 70.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -162,7 +162,7 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
                 Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "✨", title = "Wale AI Chatbot", onClick = onAiChatbotClick)
+                SettingsRow(icon = "✨", title = "JARVIS AI Chatbot", onClick = onAiChatbotClick)
 
                 Spacer(modifier = Modifier.height(28.dp))
 
@@ -200,55 +200,16 @@ fun SettingsScreen(
             }
         }
 
-        // Bottom Navigation Bar
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(Color.White)
-                .border(width = 1.dp, color = Color(0xFFEFECEF)),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                listOf(
-                    "Home" to "🏠",
-                    "Diet" to "🥗",
-                    "Meds" to "💊",
-                    "Reports" to "📊",
-                    "Settings" to "⚙️",
-                ).forEach { (name, icon) ->
-                    val isSelected = selectedTab == name
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable {
-                            selectedTab = name
-                            when (name) {
-                                "Home" -> onHomeTabClick()
-                                "Diet" -> onDietTabClick()
-                                "Meds" -> onMedsTabClick()
-                                "Reports" -> onReportsTabClick()
-                                "Settings" -> { /* Current */ }
-                            }
-                        },
-                    ) {
-                        Text(text = icon, fontSize = 18.sp)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = name,
-                            fontSize = 10.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF8A8595),
-                        )
-                    }
-                }
-            }
-        }
+        // Floating iOS Liquid Glass Bottom Navigation Dock
+        IosLiquidGlassBottomNav(
+            selectedTab = selectedTab,
+            onHomeTabClick = onHomeTabClick,
+            onDietTabClick = onDietTabClick,
+            onMedsTabClick = onMedsTabClick,
+            onReportsTabClick = onReportsTabClick,
+            onSettingsTabClick = { selectedTab = "Settings" },
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 

@@ -24,13 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -193,51 +193,19 @@ fun MedicationReminderScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Taken Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
-                        ),
-                    )
-                    .clickable { onTakenClick() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "✓  Taken",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
+            IosLiquidGlassButton(
+                text = "✓  Taken",
+                onClick = onTakenClick,
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Snooze Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
-                    .clickable { onSnoozeClick() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "⏰  Snooze - 15 minutes",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
-                )
-            }
+            IosLiquidGlassButton(
+                text = "⏰  Snooze - 15 minutes",
+                onClick = onSnoozeClick,
+                gradientColors = listOf(Color(0xFF26A69A), Color(0xFF00897B)),
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 

@@ -1,9 +1,12 @@
 package com.simats.diawell123.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,12 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -42,23 +47,28 @@ fun PatientProfileScreen(
     onContinueClick: () -> Unit = {},
 ) {
     var age by remember { mutableStateOf("30 years") }
-    var diabetesType by remember { mutableStateOf("Type 2") }
+    var selectedDiabetesType by remember { mutableStateOf("Type 2") }
     var height by remember { mutableStateOf("165 cm") }
     var weight by remember { mutableStateOf("68 kg") }
-    var foodPreferences by remember { mutableStateOf("Non-vegetarian") }
-    var foodAllergies by remember { mutableStateOf("None reported") }
-    var activityLevel by remember { mutableStateOf("Moderately active") }
+    var currentGlucoseReading by remember { mutableStateOf("128 mg/dL") }
+    var targetFastingGlucose by remember { mutableStateOf("120 mg/dL") }
+
+    val ageRange = remember { (18..80).map { "$it years" } }
+    val heightRange = remember { (140..210).filter { it % 5 == 0 }.map { "$it cm" } }
+    val weightRange = remember { (40..140).filter { it % 5 == 0 || it == 68 }.map { "$it kg" } }
+    val glucoseRange = remember { (70..220).filter { it % 10 == 0 || it == 128 }.map { "$it mg/dL" } }
+    val targetGlucoseRange = remember { (70..180).filter { it % 10 == 0 }.map { "$it mg/dL" } }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(Color(0xFFF8F5F8))
             .systemBarsPadding(),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 22.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -73,7 +83,7 @@ fun PatientProfileScreen(
             )
 
             Text(
-                text = "A few details to shape your daily plan.",
+                text = "Scroll and select your patient profile details below.",
                 fontSize = 13.sp,
                 color = Color(0xFF6E6877),
             )
@@ -121,109 +131,71 @@ fun PatientProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Age & Diabetes Type Row
-            Row(modifier = Modifier.fillMaxWidth()) {
-                ProfileInputField(
-                    label = "Age",
-                    value = age,
-                    onValueChange = { age = it },
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                ProfileInputField(
-                    label = "Diabetes type",
-                    value = diabetesType,
-                    onValueChange = { diabetesType = it },
-                    trailingText = "▼",
-                    modifier = Modifier.weight(1f),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Height & Weight Row
-            Row(modifier = Modifier.fillMaxWidth()) {
-                ProfileInputField(
-                    label = "Height",
-                    value = height,
-                    onValueChange = { height = it },
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                ProfileInputField(
-                    label = "Weight",
-                    value = weight,
-                    onValueChange = { weight = it },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Food Preferences
-            ProfileInputField(
-                label = "Food preferences",
-                value = foodPreferences,
-                onValueChange = { foodPreferences = it },
-                trailingText = "▼",
+            // 1. Diabetes Type iOS Liquid Glass Slider
+            IosLiquidGlassSlider(
+                label = "Diabetes Type",
+                items = listOf("Type 1", "Type 2", "Gestational", "Pre-diabetes", "LADA / Other"),
+                selectedItem = selectedDiabetesType,
+                onItemSelected = { selectedDiabetesType = it },
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Food Allergies
-            ProfileInputField(
-                label = "Food allergies",
-                value = foodAllergies,
-                onValueChange = { foodAllergies = it },
-                trailingText = "▼",
+            // 2. Current Glucose Level iOS Liquid Glass Slider
+            IosLiquidGlassSlider(
+                label = "Current Glucose Reading",
+                items = glucoseRange,
+                selectedItem = if (currentGlucoseReading.contains("mg/dL")) currentGlucoseReading else "$currentGlucoseReading mg/dL",
+                onItemSelected = { currentGlucoseReading = it },
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Activity Level
-            ProfileInputField(
-                label = "Activity level",
-                value = activityLevel,
-                onValueChange = { activityLevel = it },
-                trailingText = "▼",
+            // 3. Target Fasting Glucose iOS Liquid Glass Slider
+            IosLiquidGlassSlider(
+                label = "Target Fasting Glucose",
+                items = targetGlucoseRange,
+                selectedItem = if (targetFastingGlucose.contains("mg/dL")) targetFastingGlucose else "$targetFastingGlucose mg/dL",
+                onItemSelected = { targetFastingGlucose = it },
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Text(
-                text = "Walking or light exercise 3-5 days a week.\nYou can update these details anytime.",
-                fontSize = 11.sp,
-                color = Color(0xFF8A8595),
-                lineHeight = 15.sp,
+            // 4. Age iOS Liquid Glass Slider
+            IosLiquidGlassSlider(
+                label = "Age",
+                items = ageRange,
+                selectedItem = if (age.contains("years")) age else "$age years",
+                onItemSelected = { age = it },
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 5. Height iOS Liquid Glass Slider
+            IosLiquidGlassSlider(
+                label = "Height",
+                items = heightRange,
+                selectedItem = if (height.contains("cm")) height else "$height cm",
+                onItemSelected = { height = it },
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 6. Weight iOS Liquid Glass Slider
+            IosLiquidGlassSlider(
+                label = "Weight",
+                items = weightRange,
+                selectedItem = if (weight.contains("kg")) weight else "$weight kg",
+                onItemSelected = { weight = it },
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Continue Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
-                        ),
-                    )
-                    .clickable { onContinueClick() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "→  Continue",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
+            IosLiquidGlassButton(
+                text = "→  Continue to Step 2 (Health Preferences)",
+                onClick = onContinueClick,
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -242,49 +214,154 @@ fun PatientProfileScreen(
 }
 
 @Composable
-fun ProfileInputField(
+fun IosLiquidGlassSlider(
     label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
+    items: List<String>,
+    selectedItem: String,
+    onItemSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    trailingText: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF232226),
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
-
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            trailingIcon = trailingText?.let { text ->
-                {
-                    Text(
-                        text = text,
-                        fontSize = 10.sp,
-                        color = Color(0xFF8A8595),
-                        modifier = Modifier.padding(end = 12.dp),
-                    )
-                }
-            },
-            shape = RoundedCornerShape(10.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF8F7FA),
-                unfocusedContainerColor = Color(0xFFF8F7FA),
-                focusedBorderColor = Color(0xFFBD1E85),
-                unfocusedBorderColor = Color(0xFFEFECEF),
-                focusedTextColor = Color(0xFF1E1E22),
-                unfocusedTextColor = Color(0xFF1E1E22),
-            ),
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-        )
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = label,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF232226),
+            )
+            Text(
+                text = selectedItem,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFB81D85),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Outer iOS Liquid Glass Capsule Container
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    ambientColor = Color(0xFF811978).copy(alpha = 0.15f),
+                    spotColor = Color(0xFF811978).copy(alpha = 0.20f),
+                )
+                .clip(RoundedCornerShape(32.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.90f),
+                            Color(0xFFF3EAF4).copy(alpha = 0.85f),
+                        ),
+                    ),
+                )
+                .border(
+                    width = 1.5.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White,
+                            Color.White.copy(alpha = 0.4f),
+                        ),
+                    ),
+                    shape = RoundedCornerShape(32.dp),
+                )
+                .padding(vertical = 8.dp, horizontal = 6.dp),
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // iOS Handle Bar Pill at Top Center
+                Box(
+                    modifier = Modifier
+                        .padding(bottom = 6.dp)
+                        .width(36.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color(0xFFC7BDC9)),
+                )
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    items(items) { item ->
+                        val isSelected = item == selectedItem
+
+                        if (isSelected) {
+                            // Selected Liquid Glass Pill
+                            Box(
+                                modifier = Modifier
+                                    .shadow(
+                                        elevation = 4.dp,
+                                        shape = RoundedCornerShape(24.dp),
+                                        ambientColor = Color(0xFFB81D85).copy(alpha = 0.3f),
+                                        spotColor = Color(0xFFB81D85).copy(alpha = 0.4f),
+                                    )
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color(0xFFD81B60),
+                                                Color(0xFF8E24AA),
+                                            ),
+                                        ),
+                                    )
+                                    .border(
+                                        width = 1.2.dp,
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = 0.8f),
+                                                Color.White.copy(alpha = 0.2f),
+                                            ),
+                                        ),
+                                        shape = RoundedCornerShape(24.dp),
+                                    )
+                                    .clickable { onItemSelected(item) }
+                                    .padding(horizontal = 18.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = item,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                )
+                            }
+                        } else {
+                            // Unselected Frosted Glass Pill
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(Color.White.copy(alpha = 0.65f))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.White.copy(alpha = 0.9f),
+                                        shape = RoundedCornerShape(24.dp),
+                                    )
+                                    .clickable { onItemSelected(item) }
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = item,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF232226),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

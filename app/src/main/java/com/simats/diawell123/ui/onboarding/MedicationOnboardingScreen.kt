@@ -120,14 +120,12 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
             val center = Offset(size.width / 2, size.height / 2)
             val bgRadius = size.width * 0.48f
 
-            // Soft pink circular background
             drawCircle(
                 color = Color(0xFFFDEEF7),
                 radius = bgRadius,
                 center = center
             )
 
-            // 1. Angled Pill/Capsule at top-left
             rotate(degrees = -30f, pivot = Offset(center.x - 30.dp.toPx(), center.y - 40.dp.toPx())) {
                 val pillWidth = 110.dp.toPx()
                 val pillHeight = 52.dp.toPx()
@@ -136,7 +134,6 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
                     center.y - 40.dp.toPx() - pillHeight / 2
                 )
 
-                // White full pill background & border
                 drawRoundRect(
                     color = Color.White,
                     topLeft = pillTopLeft,
@@ -144,7 +141,6 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
                     cornerRadius = CornerRadius(pillHeight / 2, pillHeight / 2)
                 )
 
-                // Magenta right half of capsule
                 drawRoundRect(
                     color = Color(0xFFB81D85),
                     topLeft = Offset(pillTopLeft.x + pillWidth / 2, pillTopLeft.y),
@@ -152,7 +148,6 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
                     cornerRadius = CornerRadius(pillHeight / 2, pillHeight / 2)
                 )
 
-                // Capsule Stroke outline
                 drawRoundRect(
                     color = Color(0xFFB81D85),
                     topLeft = pillTopLeft,
@@ -162,11 +157,9 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
                 )
             }
 
-            // 2. Clock on lower-right
             val clockCenter = Offset(center.x + 35.dp.toPx(), center.y + 25.dp.toPx())
             val clockRadius = 34.dp.toPx()
 
-            // Clock face background & outline
             drawCircle(
                 color = Color.White,
                 radius = clockRadius,
@@ -179,7 +172,6 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
                 style = Stroke(width = 2.5.dp.toPx())
             )
 
-            // Clock hands
             drawLine(
                 color = Color(0xFF9E1D81),
                 start = clockCenter,
@@ -193,7 +185,6 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
                 strokeWidth = 2.5.dp.toPx()
             )
 
-            // 3. Small Alarm Bell outline on lower-left
             val bellCenter = Offset(center.x - 50.dp.toPx(), center.y + 30.dp.toPx())
             drawCircle(
                 color = Color(0xFFD8A8CD),
