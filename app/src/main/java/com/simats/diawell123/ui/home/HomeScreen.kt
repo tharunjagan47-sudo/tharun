@@ -1,8 +1,13 @@
 package com.simats.diawell123.ui.home
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -23,6 +29,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,8 +39,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -422,29 +436,91 @@ fun IosLiquidGlassBottomNav(
     onSettingsTabClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
+    val tabs = remember {
+        listOf(
+            "Home" to "🏠",
+            "Diet" to "🥗",
+            "Meds" to "💊",
+            "Reports" to "📊",
+            "Settings" to "⚙️",
+        )
+    }
+
+    val selectedIndex = remember(selectedTab) {
+        tabs.indexOfFirst { it.first == selectedTab }.coerceAtLeast(0)
+    }
+
+    var dockWidthPx by remember { mutableFloatStateOf(0f) }
+    var isDragging by remember { mutableStateOf(false) }
+    var dragXOffsetPx by remember { mutableFloatStateOf(0f) }
+
+    fun triggerTabSelection(index: Int) {
+        val tabName = tabs.getOrNull(index)?.first ?: return
+        if (tabName != selectedTab) {
+            try {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            } catch (_: Exception) {}
+            when (tabName) {
+                "Home" -> onHomeTabClick()
+                "Diet" -> onDietTabClick()
+                "Meds" -> onMedsTabClick()
+                "Reports" -> onReportsTabClick()
+                "Settings" -> onSettingsTabClick()
+            }
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        // Floating iOS Liquid Glass Dock
+        // Floating iOS Bouncy Liquid Glass Outer Dock Container
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    dockWidthPx = coordinates.size.width.toFloat()
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            isDragging = true
+                            dragXOffsetPx = offset.x
+                            val itemWidth = dockWidthPx / tabs.size
+                            val targetIndex = (offset.x / itemWidth).toInt().coerceIn(0, tabs.size - 1)
+                            triggerTabSelection(targetIndex)
+                        },
+                        onDrag = { change, _ ->
+                            change.consume()
+                            dragXOffsetPx = change.position.x
+                            val itemWidth = dockWidthPx / tabs.size
+                            val targetIndex = (change.position.x / itemWidth).toInt().coerceIn(0, tabs.size - 1)
+                            triggerTabSelection(targetIndex)
+                        },
+                        onDragEnd = {
+                            isDragging = false
+                        },
+                        onDragCancel = {
+                            isDragging = false
+                        },
+                    )
+                }
                 .shadow(
-                    elevation = 12.dp,
+                    elevation = 18.dp,
                     shape = RoundedCornerShape(36.dp),
-                    ambientColor = Color(0xFF811978).copy(alpha = 0.20f),
-                    spotColor = Color(0xFF811978).copy(alpha = 0.25f),
+                    ambientColor = Color(0xFF811978).copy(alpha = 0.28f),
+                    spotColor = Color(0xFF811978).copy(alpha = 0.38f),
                 )
                 .clip(RoundedCornerShape(36.dp))
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.94f),
-                            Color(0xFFF5EDF6).copy(alpha = 0.90f),
+                            Color.White.copy(alpha = 0.96f),
+                            Color(0xFFF6EDF8).copy(alpha = 0.92f),
                         ),
                     ),
                 )
@@ -458,99 +534,159 @@ fun IosLiquidGlassBottomNav(
                     ),
                     shape = RoundedCornerShape(36.dp),
                 )
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+                .padding(4.dp),
         ) {
+            val tabWidthDp = if (dockWidthPx > 0f) {
+                with(LocalDensity.current) { (dockWidthPx / tabs.size).toDp() }
+            } else 0.dp
+
+            // Calculated Active Sliding Offset
+            val targetOffsetDp = if (isDragging && dockWidthPx > 0f) {
+                val itemWidth = dockWidthPx / tabs.size
+                val clampedX = dragXOffsetPx.coerceIn(0f, dockWidthPx - itemWidth)
+                with(LocalDensity.current) { clampedX.toDp() }
+            } else {
+                tabWidthDp * selectedIndex
+            }
+
+            // Ultra-Smooth Organic Glass Bouncy Gliding Animation
+            val animatedPillOffsetDp by animateDpAsState(
+                targetValue = targetOffsetDp,
+                animationSpec = spring(
+                    dampingRatio = 0.65f, // Bouncy liquid spring feel!
+                    stiffness = Spring.StiffnessMediumLow,
+                ),
+                label = "bouncyLiquidGlassOffset",
+            )
+
+            val pillBouncyScale by animateFloatAsState(
+                targetValue = if (isDragging) 1.06f else 1.0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioHighBouncy,
+                    stiffness = Spring.StiffnessMediumLow,
+                ),
+                label = "pillBouncyScale",
+            )
+
+            // ONE Continuous Bouncy Liquid Glass Sliding Pill (Smoothly travels across the entire dock!)
+            if (dockWidthPx > 0f) {
+                Box(
+                    modifier = Modifier
+                        .width(tabWidthDp)
+                        .height(46.dp)
+                        .offset(x = animatedPillOffsetDp)
+                        .graphicsLayer {
+                            scaleX = pillBouncyScale
+                            scaleY = pillBouncyScale
+                        }
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(26.dp),
+                            ambientColor = Color(0xFFB81D85).copy(alpha = 0.40f),
+                            spotColor = Color(0xFFB81D85).copy(alpha = 0.50f),
+                        )
+                        .clip(RoundedCornerShape(26.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFFD81B60),
+                                    Color(0xFF8E24AA),
+                                ),
+                            ),
+                        )
+                        .border(
+                            width = 1.2.dp,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.95f),
+                                    Color.White.copy(alpha = 0.35f),
+                                ),
+                            ),
+                            shape = RoundedCornerShape(26.dp),
+                        ),
+                ) {
+                    // Glass Top Gloss Specular Highlight
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(20.dp)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.40f),
+                                        Color.White.copy(alpha = 0f),
+                                    ),
+                                ),
+                            ),
+                    )
+                }
+            }
+
+            // Tab Icons & Labels Layer with Bouncy Pop-Up Effect (Large ➔ Small Settle)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                listOf(
-                    "Home" to "🏠",
-                    "Diet" to "🥗",
-                    "Meds" to "💊",
-                    "Reports" to "📊",
-                    "Settings" to "⚙️",
-                ).forEach { (name, icon) ->
+                tabs.forEachIndexed { index, (name, icon) ->
                     val isSelected = selectedTab == name
 
-                    if (isSelected) {
-                        // Selected Liquid Glass Active Pill
-                        Box(
+                    // Per-Tab Bouncy Large-to-Small Pop Scale Effect
+                    val iconPopScale by animateFloatAsState(
+                        targetValue = if (isSelected) 1.16f else 1.0f,
+                        animationSpec = spring(
+                            dampingRatio = 0.48f, // Organic Bouncy Pop!
+                            stiffness = Spring.StiffnessLow,
+                        ),
+                        label = "iconPopScale",
+                    )
+
+                    val iconPopLiftY by animateDpAsState(
+                        targetValue = if (isSelected) (-2).dp else 0.dp,
+                        animationSpec = spring(
+                            dampingRatio = 0.48f,
+                            stiffness = Spring.StiffnessLow,
+                        ),
+                        label = "iconPopLiftY",
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp)
+                            .clip(RoundedCornerShape(26.dp))
+                            .clickable { triggerTabSelection(index) }
+                            .padding(horizontal = 2.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
                             modifier = Modifier
-                                .shadow(
-                                    elevation = 4.dp,
-                                    shape = RoundedCornerShape(24.dp),
-                                    ambientColor = Color(0xFFB81D85).copy(alpha = 0.3f),
-                                    spotColor = Color(0xFFB81D85).copy(alpha = 0.4f),
-                                )
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color(0xFFD81B60),
-                                            Color(0xFF8E24AA),
-                                        ),
-                                    ),
-                                )
-                                .border(
-                                    width = 1.2.dp,
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.White.copy(alpha = 0.8f),
-                                            Color.White.copy(alpha = 0.2f),
-                                        ),
-                                    ),
-                                    shape = RoundedCornerShape(24.dp),
-                                )
-                                .clickable {
-                                    when (name) {
-                                        "Home" -> onHomeTabClick()
-                                        "Diet" -> onDietTabClick()
-                                        "Meds" -> onMedsTabClick()
-                                        "Reports" -> onReportsTabClick()
-                                        "Settings" -> onSettingsTabClick()
-                                    }
-                                }
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.Center,
+                                .fillMaxWidth()
+                                .graphicsLayer {
+                                    scaleX = iconPopScale
+                                    scaleY = iconPopScale
+                                    translationY = iconPopLiftY.toPx()
+                                },
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = icon, fontSize = 16.sp)
-                                Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = icon,
+                                fontSize = if (isSelected) 15.sp else 17.sp,
+                            )
+
+                            if (isSelected) {
+                                Spacer(modifier = Modifier.width(3.dp))
                                 Text(
                                     text = name,
-                                    fontSize = 11.sp,
+                                    fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    softWrap = false,
                                 )
                             }
-                        }
-                    } else {
-                        // Unselected Tab Item
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .clickable {
-                                    when (name) {
-                                        "Home" -> onHomeTabClick()
-                                        "Diet" -> onDietTabClick()
-                                        "Meds" -> onMedsTabClick()
-                                        "Reports" -> onReportsTabClick()
-                                        "Settings" -> onSettingsTabClick()
-                                    }
-                                }
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
-                        ) {
-                            Text(text = icon, fontSize = 18.sp)
-                            Spacer(modifier = Modifier.height(1.dp))
-                            Text(
-                                text = name,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF6E6877),
-                            )
                         }
                     }
                 }
