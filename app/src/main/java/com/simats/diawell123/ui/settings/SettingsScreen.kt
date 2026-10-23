@@ -34,7 +34,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
+import com.simats.diawell123.ui.profile.ProfileAvatarView
+import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -70,146 +74,152 @@ fun SettingsScreen(
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Top Bar
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onBackClick() }
-                            .padding(4.dp),
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
+                // Top Bar & Profile Card (Pops Up)
+                ElementPopUpContainer(delayMillis = 0) {
                     Column {
-                        Text(
-                            text = "Settings",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                        )
-                        Text(
-                            text = "Make DiaWell feel like you.",
-                            fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
-                        )
-                    }
-                }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            StyledBackButton(onBackClick = onBackClick)
 
-                Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                // User Profile Card
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                        .clickable { onPersonalProfileClick() }
-                        .padding(16.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column {
+                                Text(
+                                    text = "Settings",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(
+                                    text = "Make DiaWell feel like you.",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF6E6877),
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // User Profile Card
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFF3E2F0)),
-                            contentAlignment = Alignment.Center,
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                                .clickable { onPersonalProfileClick() }
+                                .padding(16.dp),
                         ) {
-                            Text(
-                                text = "MJ",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF811978),
-                            )
-                        }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                ProfileAvatarView(sizeDp = 48.dp, fontSizeSp = 16)
 
-                        Spacer(modifier = Modifier.width(14.dp))
+                                Spacer(modifier = Modifier.width(14.dp))
 
-                        Column {
-                            Text(
-                                text = "Maya Johnson",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
-                            )
-                            Text(
-                                text = "maya.johnson@example.com",
-                                fontSize = 12.sp,
-                                color = Color(0xFF6E6877),
-                            )
+                                Column {
+                                    Text(
+                                        text = ProfileState.userName,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1E1E22),
+                                    )
+                                    Text(
+                                        text = ProfileState.userEmail,
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF6E6877),
+                                    )
+                                }
+                            }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Settings List
-                SettingsRow(icon = "👤", title = "Personal Profile", onClick = onPersonalProfileClick)
+                // Settings Rows (Pop Up Staggered)
+                ElementPopUpContainer(delayMillis = 80) {
+                    Column {
+                        SettingsRow(icon = "👤", title = "Personal Profile", onClick = onPersonalProfileClick)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        SettingsRow(icon = "🔔", title = "Notification Preferences", onClick = onNotificationPrefsClick)
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "🔔", title = "Notification Preferences", onClick = onNotificationPrefsClick)
+
+                ElementPopUpContainer(delayMillis = 160) {
+                    Column {
+                        SettingsRow(icon = "🥗", title = "Food Preferences", onClick = onFoodPrefsClick)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        SettingsRow(icon = "🔒", title = "Privacy and Security", onClick = onPrivacySecurityClick)
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "🥗", title = "Food Preferences", onClick = onFoodPrefsClick)
-                Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "🔒", title = "Privacy and Security", onClick = onPrivacySecurityClick)
-                Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
-                Spacer(modifier = Modifier.height(10.dp))
-                SettingsRow(icon = "✨", title = "JARVIS AI Chatbot", onClick = onAiChatbotClick)
+
+                ElementPopUpContainer(delayMillis = 240) {
+                    Column {
+                        SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        SettingsRow(icon = "✨", title = "JARVIS AI Chatbot", onClick = onAiChatbotClick)
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // Logout Button
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFFEBEE))
-                        .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
-                        .clickable { onLogoutClick() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "➔  Logout",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD32F2F),
-                    )
+                // Logout Button & Footer (Pops Up)
+                ElementPopUpContainer(delayMillis = 300) {
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFFFEBEE))
+                                .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                                .clickable { onLogoutClick() },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = "➔  Logout",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFD32F2F),
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Text(
+                            text = "DiaWell • Version 1.0.0\nMake progress step by step for everyday habits.",
+                            fontSize = 11.sp,
+                            color = Color(0xFF8A8595),
+                            textAlign = TextAlign.Center,
+                            lineHeight = 16.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    text = "DiaWell • Version 1.0.0\nMake progress step by step for everyday habits.",
-                    fontSize = 11.sp,
-                    color = Color(0xFF8A8595),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 16.sp,
-                    modifier = Modifier.fillMaxWidth(),
-                )
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
 
-        // Floating iOS Liquid Glass Bottom Navigation Dock
-        IosLiquidGlassBottomNav(
-            selectedTab = selectedTab,
-            onHomeTabClick = onHomeTabClick,
-            onDietTabClick = onDietTabClick,
-            onMedsTabClick = onMedsTabClick,
-            onReportsTabClick = onReportsTabClick,
-            onSettingsTabClick = { selectedTab = "Settings" },
+        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
+        ElementPopUpContainer(
+            delayMillis = 340,
             modifier = Modifier.align(Alignment.BottomCenter),
-        )
+        ) {
+            IosLiquidGlassBottomNav(
+                selectedTab = selectedTab,
+                onHomeTabClick = onHomeTabClick,
+                onDietTabClick = onDietTabClick,
+                onMedsTabClick = onMedsTabClick,
+                onReportsTabClick = onReportsTabClick,
+                onSettingsTabClick = { selectedTab = "Settings" },
+            )
+        }
     }
 }
 

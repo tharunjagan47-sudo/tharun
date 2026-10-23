@@ -161,7 +161,7 @@ fun FoodPreferencesSettingsScreen(
             }
 
             Text(
-                text = "Demo profile • Maya Johnson",
+                text = "Demo profile • ${ProfileState.userName}",
                 fontSize = 11.sp,
                 color = Color(0xFF811978),
                 fontWeight = FontWeight.Medium,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -131,18 +132,9 @@ fun FoodDetailsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "←",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onBackClick() }
-                        .padding(4.dp),
-                )
+                StyledBackButton(onBackClick = onBackClick)
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
                 Column {
                     Text(
@@ -333,6 +325,44 @@ fun FoodDetailsScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
         }
+    }
+}
+
+@Composable
+fun StyledBackButton(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(38.dp)
+            .shadow(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(12.dp),
+                ambientColor = Color(0xFF811978).copy(alpha = 0.12f),
+                spotColor = Color(0xFF811978).copy(alpha = 0.18f),
+            )
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .border(
+                width = 1.2.dp,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White,
+                        Color(0xFFEFECEF),
+                    ),
+                ),
+                shape = RoundedCornerShape(12.dp),
+            )
+            .clickable { onBackClick() },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "←",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1E1E22),
+        )
     }
 }
 

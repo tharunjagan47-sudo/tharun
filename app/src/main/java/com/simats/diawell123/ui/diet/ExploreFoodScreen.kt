@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -59,87 +60,84 @@ fun ExploreFoodScreen(
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Top Bar
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onBackClick() }
-                            .padding(4.dp),
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
+                // Top Bar & Search Bar (Pops Up)
+                ElementPopUpContainer(delayMillis = 0) {
                     Column {
-                        Text(
-                            text = "Explore food",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                        )
-                        Text(
-                            text = "Find everyday meals and your favorites.",
-                            fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            StyledBackButton(onBackClick = onBackClick)
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column {
+                                Text(
+                                    text = "Explore food",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(
+                                    text = "Find everyday meals and your favorites.",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF6E6877),
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Search Bar
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = {
+                                Text(
+                                    text = "🔍 Search foods or ingredients...",
+                                    fontSize = 13.sp,
+                                    color = Color(0xFFA09BAA),
+                                )
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFFF8F7FA),
+                                unfocusedContainerColor = Color(0xFFF8F7FA),
+                                focusedBorderColor = Color(0xFFBD1E85),
+                                unfocusedBorderColor = Color(0xFFEFECEF),
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Search Bar
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text(
-                            text = "🔍 Search foods or ingredients...",
-                            fontSize = 13.sp,
-                            color = Color(0xFFA09BAA),
-                        )
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF8F7FA),
-                        unfocusedContainerColor = Color(0xFFF8F7FA),
-                        focusedBorderColor = Color(0xFFBD1E85),
-                        unfocusedBorderColor = Color(0xFFEFECEF),
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                )
-
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Category Filter Pills
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    listOf("All", "Breakfast", "Bowls", "Snacks").forEach { category ->
-                        val isSelected = selectedCategory == category
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(if (isSelected) Color(0xFFB81D85) else Color(0xFFF8F7FA))
-                                .clickable { selectedCategory = category }
-                                .padding(horizontal = 14.dp, vertical = 6.dp),
-                        ) {
-                            Text(
-                                text = category,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Color.White else Color(0xFF6E6877),
-                            )
+                // Category Filter Pills (Pops Up)
+                ElementPopUpContainer(delayMillis = 80) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        listOf("All", "Breakfast", "Bowls", "Snacks").forEach { category ->
+                            val isSelected = selectedCategory == category
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(if (isSelected) Color(0xFFB81D85) else Color(0xFFF8F7FA))
+                                    .clickable { selectedCategory = category }
+                                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                            ) {
+                                Text(
+                                    text = category,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                )
+                            }
                         }
                     }
                 }
@@ -156,86 +154,93 @@ fun ExploreFoodScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Explore Meals Header
-                Text(
-                    text = "Explore meals",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ExploreMealCard(
-                    icon = "🥣",
-                    category = "BREAKFAST",
-                    name = "Berry & almond oats",
-                    serving = "1 bowl • 290 g",
-                    macros = "270 kcal • C:42g • P:9g • F:8g",
-                    onClick = onMealDetailsClick,
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ExploreMealCard(
-                    icon = "🥗",
-                    category = "LUNCH",
-                    name = "Grilled chicken bowl",
-                    serving = "1 bowl • 350 g",
-                    macros = "450 kcal • C:48g • P:38g • F:12g",
-                    onClick = onMealDetailsClick,
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // AI Suggested Callout
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .padding(12.dp),
-                ) {
+                // Explore Meals List (Pop Up Staggered)
+                ElementPopUpContainer(delayMillis = 160) {
                     Column {
                         Text(
-                            text = "✨ AI Suggested",
-                            fontSize = 11.sp,
+                            text = "Explore meals",
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF811978),
+                            color = Color(0xFF1E1E22),
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "For your non-vegetarian preference, try the grilled chicken bowl with vegetables and whole grains.",
-                            fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
-                            lineHeight = 16.sp,
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        ExploreMealCard(
+                            icon = "🥣",
+                            category = "BREAKFAST",
+                            name = "Berry & almond oats",
+                            serving = "1 bowl • 290 g",
+                            macros = "270 kcal • C:42g • P:9g • F:8g",
+                            onClick = onMealDetailsClick,
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        ExploreMealCard(
+                            icon = "🥗",
+                            category = "LUNCH",
+                            name = "Grilled chicken bowl",
+                            serving = "1 bowl • 350 g",
+                            macros = "450 kcal • C:48g • P:38g • F:12g",
+                            onClick = onMealDetailsClick,
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // AI Alternative Callout
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .padding(12.dp),
-                ) {
+                // AI Callouts (Pops Up)
+                ElementPopUpContainer(delayMillis = 240) {
                     Column {
-                        Text(
-                            text = "💡 AI Alternative",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF811978),
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Greek yogurt & berries.",
-                            fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFFDEEF7))
+                                .padding(12.dp),
+                        ) {
+                            Column {
+                                Text(
+                                    text = "✨ AI Suggested",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF811978),
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "For your non-vegetarian preference, try the grilled chicken bowl with vegetables and whole grains.",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF6E6877),
+                                    lineHeight = 16.sp,
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFFDEEF7))
+                                .padding(12.dp),
+                        ) {
+                            Column {
+                                Text(
+                                    text = "💡 AI Alternative",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF811978),
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Greek yogurt & berries.",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF6E6877),
+                                )
+                            }
+                        }
                     }
                 }
 

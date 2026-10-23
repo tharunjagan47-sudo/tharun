@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 
@@ -102,7 +103,7 @@ fun ExportReportViewerScreen(
                         color = Color(0xFF1E1E22),
                     )
                     Text(
-                        text = "Maya_Johnson_DiaWell_Report.pdf",
+                        text = "${ProfileState.userName.replace(" ", "_")}_DiaWell_Report.pdf",
                         fontSize = 12.sp,
                         color = Color(0xFF6E6877),
                     )
@@ -137,7 +138,7 @@ fun ExportReportViewerScreen(
                                 color = Color(0xFF2E7D32),
                             )
                             Text(
-                                text = "Action completed for Maya_Johnson_DiaWell_Report.pdf",
+                                text = "Action completed for ${ProfileState.userName.replace(" ", "_")}_DiaWell_Report.pdf",
                                 fontSize = 11.sp,
                                 color = Color(0xFF1B5E20),
                             )
@@ -210,7 +211,7 @@ fun ExportReportViewerScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "Maya Johnson • Age 30 • Type 2 Diabetes\nPeriod: 8 Oct 2026 – 15 Oct 2026",
+                        text = "${ProfileState.userName} • Age 30 • Type 2 Diabetes\nPeriod: 8 Oct 2026 – 15 Oct 2026",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF1E1E22),

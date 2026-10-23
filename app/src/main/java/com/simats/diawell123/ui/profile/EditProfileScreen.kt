@@ -1,5 +1,12 @@
 package com.simats.diawell123.ui.profile
 
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -39,8 +46,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 
@@ -58,8 +67,9 @@ fun EditProfileScreen(
     onBackClick: () -> Unit = {},
     onSaveChangesClick: () -> Unit = {},
 ) {
-    var fullName by remember { mutableStateOf("Maya Johnson") }
-    var email by remember { mutableStateOf("maya.johnson@example.com") }
+    val context = LocalContext.current
+    var fullName by remember { mutableStateOf(ProfileState.userName) }
+    var email by remember { mutableStateOf(ProfileState.userEmail) }
     var age by remember { mutableStateOf("30 years") }
     var diabetesType by remember { mutableStateOf("Type 2") }
     var height by remember { mutableStateOf("165 cm") }
@@ -71,8 +81,29 @@ fun EditProfileScreen(
     val heightRange = remember { (140..210).filter { it % 5 == 0 }.map { "$it cm" } }
     val weightRange = remember { (40..140).filter { it % 5 == 0 || it == 68 }.map { "$it kg" } }
 
+    // Android Gallery Photo Picker Launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                }
+                ProfileState.profileImageBitmap = bitmap.asImageBitmap()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
+            ProfileState.userName = fullName
+            ProfileState.userEmail = email
             delay(1800)
             showSuccessBanner = false
             onSaveChangesClick()
@@ -99,18 +130,9 @@ fun EditProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "←",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onBackClick() }
-                        .padding(4.dp),
-                )
+                StyledBackButton(onBackClick = onBackClick)
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
                 Column {
                     Text(
@@ -164,37 +186,59 @@ fun EditProfileScreen(
                 }
             }
 
-            // Profile Avatar & Name
+            // Profile Avatar & Gallery Camera Picker
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFF3E2F0)),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.BottomEnd,
+                    modifier = Modifier.clickable {
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                        )
+                    },
                 ) {
-                    Text(
-                        text = "MJ",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF811978),
-                    )
+                    ProfileAvatarView(sizeDp = 72.dp, fontSizeSp = 24)
+
+                    // Gallery Picker Camera Badge
+                    Box(
+                        modifier = Modifier
+                            .size(26.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFB81D85))
+                            .border(1.5.dp, Color.White, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(text = "📷", fontSize = 12.sp)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = fullName,
+                    text = "📷 Choose Profile Photo from Gallery",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFB81D85),
+                    modifier = Modifier.clickable {
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                        )
+                    },
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = ProfileState.userName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E1E22),
                 )
 
                 Text(
-                    text = "Demo profile • Sample account",
+                    text = "User profile • DiaWell care",
                     fontSize = 11.sp,
                     color = Color(0xFF811978),
                 )
@@ -283,7 +327,7 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Sharing details assists your personalized accounting. Review this demo profile before saving. Demo logs are not a real diagnosis or medical advice.",
+                text = "Sharing details assists your personalized accounting. Review this profile before saving. Logs are for tracking, not medical advice.",
                 fontSize = 11.sp,
                 color = Color(0xFF8A8595),
                 textAlign = TextAlign.Center,

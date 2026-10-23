@@ -41,7 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 
@@ -81,36 +83,29 @@ fun LogGlucoseScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Top Bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "←",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onBackClick() }
-                        .padding(4.dp),
-                )
+            // Top Bar (Pops Up)
+            ElementPopUpContainer(delayMillis = 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    StyledBackButton(onBackClick = onBackClick)
 
-                Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(14.dp))
 
-                Column {
-                    Text(
-                        text = "Log glucose",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                    )
-                    Text(
-                        text = "Keep a record of your daily readings.",
-                        fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
-                    )
+                    Column {
+                        Text(
+                            text = "Log glucose",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E1E22),
+                        )
+                        Text(
+                            text = "Keep a record of your daily readings.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF6E6877),
+                        )
+                    }
                 }
             }
 
@@ -169,112 +164,167 @@ fun LogGlucoseScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Blood sugar reading Card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFFDEEF7))
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Blood sugar reading Card (Pops Up)
+            ElementPopUpContainer(delayMillis = 80) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFFFDEEF7))
+                        .padding(20.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Blood sugar reading",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF811978),
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = readingValue,
+                                fontSize = 42.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF7A1C7D),
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "mg/dL",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF7A1C7D),
+                                modifier = Modifier.padding(bottom = 8.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Reading Type & Inputs (Pop Up Staggered)
+            ElementPopUpContainer(delayMillis = 160) {
+                Column {
                     Text(
-                        text = "Blood sugar reading",
+                        text = "Reading type",
                         fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF811978),
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF232226),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = readingValue,
-                            fontSize = 42.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF7A1C7D),
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "mg/dL",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF7A1C7D),
-                            modifier = Modifier.padding(bottom = 8.dp),
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Reading Type
-            Text(
-                text = "Reading type",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF232226),
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                listOf("Fasting", "After meal").forEach { type ->
-                    val isSelected = readingType == type
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(44.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                if (isSelected) {
-                                    Brush.horizontalGradient(
-                                        colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
-                                    )
-                                } else {
-                                    Brush.horizontalGradient(
-                                        colors = listOf(Color(0xFFF8F7FA), Color(0xFFF8F7FA)),
-                                    )
-                                },
-                            )
-                            .clickable { readingType = type },
-                        contentAlignment = Alignment.Center,
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        Text(
-                            text = type,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isSelected) Color.White else Color(0xFF6E6877),
-                        )
+                        listOf("Fasting", "After meal").forEach { type ->
+                            val isSelected = readingType == type
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        if (isSelected) {
+                                            Brush.horizontalGradient(
+                                                colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                            )
+                                        } else {
+                                            Brush.horizontalGradient(
+                                                colors = listOf(Color(0xFFF8F7FA), Color(0xFFF8F7FA)),
+                                            )
+                                        },
+                                    )
+                                    .clickable { readingType = type },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = type,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                )
+                            }
+                        }
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-            // Date & Time Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
+                    // Date & Time Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Date",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF232226),
+                                modifier = Modifier.padding(bottom = 4.dp),
+                            )
+                            OutlinedTextField(
+                                value = readingDate,
+                                onValueChange = { readingDate = it },
+                                singleLine = true,
+                                trailingIcon = { Text(text = "📅", fontSize = 14.sp) },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = Color(0xFFF8F7FA),
+                                    unfocusedContainerColor = Color(0xFFF8F7FA),
+                                    focusedBorderColor = Color(0xFFBD1E85),
+                                    unfocusedBorderColor = Color(0xFFEFECEF),
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Time",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF232226),
+                                modifier = Modifier.padding(bottom = 4.dp),
+                            )
+                            OutlinedTextField(
+                                value = readingTime,
+                                onValueChange = { readingTime = it },
+                                singleLine = true,
+                                trailingIcon = { Text(text = "⏰", fontSize = 14.sp) },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = Color(0xFFF8F7FA),
+                                    unfocusedContainerColor = Color(0xFFF8F7FA),
+                                    focusedBorderColor = Color(0xFFBD1E85),
+                                    unfocusedBorderColor = Color(0xFFEFECEF),
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Notes (optional)
                     Text(
-                        text = "Date",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
+                        text = "Notes (optional)",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF232226),
-                        modifier = Modifier.padding(bottom = 4.dp),
                     )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
                     OutlinedTextField(
-                        value = readingDate,
-                        onValueChange = { readingDate = it },
-                        singleLine = true,
-                        trailingIcon = { Text(text = "📅", fontSize = 14.sp) },
-                        shape = RoundedCornerShape(10.dp),
+                        value = notes,
+                        onValueChange = { notes = it },
+                        shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = Color(0xFFF8F7FA),
                             unfocusedContainerColor = Color(0xFFF8F7FA),
@@ -284,64 +334,17 @@ fun LogGlucoseScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Time",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF232226),
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                    OutlinedTextField(
-                        value = readingTime,
-                        onValueChange = { readingTime = it },
-                        singleLine = true,
-                        trailingIcon = { Text(text = "⏰", fontSize = 14.sp) },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF8F7FA),
-                            unfocusedContainerColor = Color(0xFFF8F7FA),
-                            focusedBorderColor = Color(0xFFBD1E85),
-                            unfocusedBorderColor = Color(0xFFEFECEF),
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Notes (optional)
-            Text(
-                text = "Notes (optional)",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF232226),
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            OutlinedTextField(
-                value = notes,
-                onValueChange = { notes = it },
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF8F7FA),
-                    unfocusedContainerColor = Color(0xFFF8F7FA),
-                    focusedBorderColor = Color(0xFFBD1E85),
-                    unfocusedBorderColor = Color(0xFFEFECEF),
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            )
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Save Reading Button
-            IosLiquidGlassButton(
-                text = "✓  Save Reading",
-                onClick = { showSuccessBanner = true },
-            )
+            // Save Reading Button (Pops Up)
+            ElementPopUpContainer(delayMillis = 240) {
+                IosLiquidGlassButton(
+                    text = "✓  Save Reading",
+                    onClick = { showSuccessBanner = true },
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

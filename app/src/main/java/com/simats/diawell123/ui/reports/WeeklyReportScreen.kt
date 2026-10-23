@@ -1,5 +1,8 @@
 package com.simats.diawell123.ui.reports
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,14 +41,19 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
+import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -61,6 +70,19 @@ fun WeeklyReportScreen(
     var selectedWeekText by remember { mutableStateOf("8–15 Oct 2026") }
     var showCalendarDialog by remember { mutableStateOf(value = false) }
 
+    // Smooth Line Sweep & Stop Graph Animation
+    val chartProgress = remember { Animatable(0f) }
+    LaunchedEffect(selectedWeekText) {
+        chartProgress.snapTo(0f)
+        chartProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = 1800,
+                easing = FastOutSlowInEasing,
+            ),
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -76,268 +98,334 @@ fun WeeklyReportScreen(
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Top Bar
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onBackClick() }
-                            .padding(4.dp),
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
+                // Top Bar & Date Selector (Pops Up)
+                ElementPopUpContainer(delayMillis = 0) {
                     Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            StyledBackButton(onBackClick = onBackClick)
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column {
+                                Text(
+                                    text = "Your weekly report",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(
+                                    text = "A clearer view of your everyday habits.",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF6E6877),
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         Text(
-                            text = "Your weekly report",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            text = "${ProfileState.userName} • All readings are sample data",
+                            fontSize = 11.sp,
+                            color = Color(0xFF811978),
+                            fontWeight = FontWeight.Medium,
                         )
-                        Text(
-                            text = "A clearer view of your everyday habits.",
-                            fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
-                        )
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "Maya Johnson • All readings are sample data",
-                    fontSize = 11.sp,
-                    color = Color(0xFF811978),
-                    fontWeight = FontWeight.Medium,
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Interactive Date Selector Bar (Opens Calendar Dialog)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
-                        .clickable { showCalendarDialog = true }
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(text = "‹", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
-                        Text(
-                            text = "📅  $selectedWeekText",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                        )
-                        Text(text = "›", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                        // Interactive Date Selector Bar
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                                .clickable { showCalendarDialog = true }
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(text = "‹", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = "📅  $selectedWeekText",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(text = "›", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Glucose Overview Box
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                        .padding(16.dp),
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                text = "Glucose overview",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
-                            )
-                            Text(
-                                text = "mg/dL",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                        ) {
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                val w = size.width
-                                val h = size.height
-
-                                val p1 = Offset(w * 0.08f, h * 0.6f)
-                                val p2 = Offset(w * 0.3f, h * 0.35f)
-                                val p3 = Offset(w * 0.52f, h * 0.22f)
-                                val p4 = Offset(w * 0.74f, h * 0.58f)
-                                val p5 = Offset(w * 0.92f, h * 0.3f)
-
-                                val path = Path().apply {
-                                    moveTo(p1.x, p1.y)
-                                    lineTo(p2.x, p2.y)
-                                    lineTo(p3.x, p3.y)
-                                    lineTo(p4.x, p4.y)
-                                    lineTo(p5.x, p5.y)
-                                }
-
-                                drawPath(path, color = Color(0xFFB81D85), style = Stroke(width = 3.dp.toPx()))
-
-                                listOf(p1, p2, p3, p4, p5).forEach { pt ->
-                                    drawCircle(color = Color.White, radius = 5.dp.toPx(), center = pt)
-                                    drawCircle(color = Color(0xFFB81D85), radius = 3.5.dp.toPx(), center = pt)
-                                }
+                // Glucose Overview Animated Pulse Line Box (Pops Up)
+                ElementPopUpContainer(delayMillis = 80) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                            .padding(16.dp),
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = "Glucose overview",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(
+                                    text = "mg/dL",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB81D85),
+                                )
                             }
-                        }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
-                        Text(
-                            text = "7 fasting readings • average 120 mg/dL",
-                            fontSize = 11.sp,
-                            color = Color(0xFF6E6877),
-                        )
-                    }
-                }
+                            // Animated Sweep-and-Stop Glucose ECG Pulse Line Canvas
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(110.dp),
+                            ) {
+                                Canvas(modifier = Modifier.fillMaxSize()) {
+                                    val w = size.width
+                                    val h = size.height
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Meals Logged Bar Chart Box
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                        .padding(16.dp),
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                text = "Meals logged",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
-                            )
-                            Text(
-                                text = "25 of 28",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Bar Chart Canvas
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(60.dp),
-                        ) {
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                val w = size.width
-                                val h = size.height
-                                val barWidth = 16.dp.toPx()
-                                val barSpacing = (w - (barWidth * 7)) / 8
-
-                                val heights = listOf(0.9f, 1.0f, 0.8f, 1.0f, 0.95f, 1.0f, 0.85f)
-
-                                heights.forEachIndexed { i, factor ->
-                                    val left = barSpacing + i * (barWidth + barSpacing)
-                                    val barH = h * factor
-                                    drawRoundRect(
-                                        color = Color(0xFFB81D85),
-                                        topLeft = Offset(left, h - barH),
-                                        size = Size(barWidth, barH),
-                                        cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+                                    val points = listOf(
+                                        Offset(w * 0.08f, h * 0.65f),
+                                        Offset(w * 0.28f, h * 0.38f),
+                                        Offset(w * 0.50f, h * 0.22f),
+                                        Offset(w * 0.72f, h * 0.58f),
+                                        Offset(w * 0.92f, h * 0.32f),
                                     )
+
+                                    val progress = chartProgress.value
+                                    val maxAllowedX = w * progress
+
+                                    val ecgPath = Path().apply {
+                                        val startX = points.first().x
+                                        moveTo(0f, points.first().y)
+                                        lineTo(startX, points.first().y)
+
+                                        for (i in 0 until points.size - 1) {
+                                            val pA = points[i]
+                                            val pB = points[i + 1]
+                                            val segW = pB.x - pA.x
+
+                                            lineTo(pA.x + segW * 0.20f, pA.y)
+                                            lineTo(pA.x + segW * 0.35f, pA.y - 12.dp.toPx())
+                                            lineTo(pA.x + segW * 0.45f, pA.y)
+                                            lineTo(pA.x + segW * 0.52f, pA.y + 16.dp.toPx())
+                                            lineTo(pA.x + segW * 0.60f, (pA.y + pB.y) / 2 - 32.dp.toPx())
+                                            lineTo(pA.x + segW * 0.68f, (pA.y + pB.y) / 2 + 24.dp.toPx())
+                                            lineTo(pA.x + segW * 0.78f, pB.y - 10.dp.toPx())
+                                            lineTo(pA.x + segW * 0.88f, pB.y)
+                                            lineTo(pB.x, pB.y)
+                                        }
+                                        lineTo(w, points.last().y)
+                                    }
+
+                                    clipRect(left = 0f, top = 0f, right = maxAllowedX, bottom = h) {
+                                        val fillEcgPath = Path().apply {
+                                            addPath(ecgPath)
+                                            lineTo(w, h)
+                                            lineTo(0f, h)
+                                            close()
+                                        }
+
+                                        drawPath(
+                                            path = fillEcgPath,
+                                            brush = Brush.verticalGradient(
+                                                colors = listOf(
+                                                    Color(0x35B81D85),
+                                                    Color(0x00B81D85),
+                                                ),
+                                            ),
+                                        )
+
+                                        drawPath(
+                                            path = ecgPath,
+                                            brush = Brush.horizontalGradient(
+                                                colors = listOf(
+                                                    Color(0xFF00E5FF),
+                                                    Color(0xFFB81D85),
+                                                    Color(0xFFFF5722),
+                                                ),
+                                            ),
+                                            style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round),
+                                        )
+
+                                        points.forEach { pt ->
+                                            if (pt.x <= maxAllowedX) {
+                                                drawCircle(color = Color.White, radius = 5.dp.toPx(), center = pt)
+                                                drawCircle(color = Color(0xFFB81D85), radius = 3.5.dp.toPx(), center = pt)
+                                            }
+                                        }
+                                    }
+
+                                    if (progress > 0f && progress < 1f) {
+                                        val currentTipX = maxAllowedX.coerceIn(0f, w)
+                                        val tipY = h * 0.45f
+
+                                        drawCircle(color = Color.White, radius = 6.dp.toPx(), center = Offset(currentTipX, tipY))
+                                        drawCircle(
+                                            color = Color(0xFFFF5722),
+                                            radius = 8.dp.toPx(),
+                                            center = Offset(currentTipX, tipY),
+                                            style = Stroke(width = 2.dp.toPx()),
+                                        )
+                                    }
                                 }
                             }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = "7 fasting readings • average 120 mg/dL",
+                                fontSize = 11.sp,
+                                color = Color(0xFF6E6877),
+                            )
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "4 days with all four meals logged",
-                            fontSize = 11.sp,
-                            color = Color(0xFF6E6877),
-                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Medication Reminders Box
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                        .padding(16.dp),
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
+                // Meals Logged Animated Bar Chart Box (Pops Up)
+                ElementPopUpContainer(delayMillis = 160) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                            .padding(16.dp),
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = "Meals logged",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(
+                                    text = "25 of 28",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB81D85),
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(60.dp),
+                            ) {
+                                Canvas(modifier = Modifier.fillMaxSize()) {
+                                    val w = size.width
+                                    val h = size.height
+                                    val barWidth = 16.dp.toPx()
+                                    val barSpacing = (w - (barWidth * 7)) / 8
+
+                                    val heights = listOf(0.9f, 1.0f, 0.8f, 1.0f, 0.95f, 1.0f, 0.85f)
+
+                                    heights.forEachIndexed { i, factor ->
+                                        val left = barSpacing + i * (barWidth + barSpacing)
+                                        val animatedFactor = factor * chartProgress.value
+                                        val barH = h * animatedFactor
+                                        drawRoundRect(
+                                            color = Color(0xFFB81D85),
+                                            topLeft = Offset(left, h - barH),
+                                            size = Size(barWidth, barH),
+                                            cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
                             Text(
-                                text = "Medication reminders",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
-                            )
-                            Text(
-                                text = "19 of 21",
+                                text = "4 days with all four meals logged",
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
+                                color = Color(0xFF6E6877),
                             )
                         }
+                    }
+                }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                        LinearProgressIndicator(
-                            progress = { 19f / 21f },
-                            color = Color(0xFFB81D85),
-                            trackColor = Color(0xFFFDEEF7),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp)),
-                        )
+                // Medication Reminders Box (Pops Up)
+                ElementPopUpContainer(delayMillis = 240) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                            .padding(16.dp),
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = "Medication reminders",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(
+                                    text = "19 of 21",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB81D85),
+                                )
+                            }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
-                        Text(
-                            text = "18 marked taken • 1 skipped • 1 upcoming",
-                            fontSize = 11.sp,
-                            color = Color(0xFF6E6877),
-                        )
+                            LinearProgressIndicator(
+                                progress = { (19f / 21f) * chartProgress.value },
+                                color = Color(0xFFB81D85),
+                                trackColor = Color(0xFFFDEEF7),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp)),
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = "18 marked taken • 1 skipped • 1 upcoming",
+                                fontSize = 11.sp,
+                                color = Color(0xFF6E6877),
+                            )
+                        }
                     }
                 }
 
@@ -384,16 +472,20 @@ fun WeeklyReportScreen(
             )
         }
 
-        // Floating iOS Liquid Glass Bottom Navigation Dock
-        IosLiquidGlassBottomNav(
-            selectedTab = selectedTab,
-            onHomeTabClick = onHomeTabClick,
-            onDietTabClick = onDietTabClick,
-            onMedsTabClick = onMedsTabClick,
-            onReportsTabClick = { selectedTab = "Reports" },
-            onSettingsTabClick = onSettingsTabClick,
+        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
+        ElementPopUpContainer(
+            delayMillis = 300,
             modifier = Modifier.align(Alignment.BottomCenter),
-        )
+        ) {
+            IosLiquidGlassBottomNav(
+                selectedTab = selectedTab,
+                onHomeTabClick = onHomeTabClick,
+                onDietTabClick = onDietTabClick,
+                onMedsTabClick = onMedsTabClick,
+                onReportsTabClick = { selectedTab = "Reports" },
+                onSettingsTabClick = onSettingsTabClick,
+            )
+        }
     }
 }
 

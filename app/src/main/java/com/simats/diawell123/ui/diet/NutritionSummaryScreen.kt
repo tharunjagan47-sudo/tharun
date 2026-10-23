@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -87,7 +88,7 @@ fun NutritionSummaryScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Maya Johnson • Illustrative sample data",
+                    text = "${ProfileState.userName} • Illustrative sample data",
                     fontSize = 11.sp,
                     color = Color(0xFF811978),
                     fontWeight = FontWeight.Medium,

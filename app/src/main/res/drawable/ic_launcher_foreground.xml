@@ -1,80 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- BOLD 3D Shadow Backdrop -->
+    <!-- 1. Horizontal Pulse Line running across left and right -->
+    <!-- Translucent Glow Pulse Line (Outer Stroke) -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#80000000"
-        android:strokeWidth="5"
-        android:pathData="M55,19 A36,36 0 1,1 54.99,19" />
+        android:strokeColor="#66FFFFFF"
+        android:strokeWidth="3.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M5,54 L9,54 L11.4,48 L14.1,60.6 L16.5,51.6 L18,54 L20,54 M88,54 L89,54 L90.5,49.2 L93.2,61.2 L95.9,46.8 L98,54 L103,54" />
 
-    <!-- BOLD Outer Arc Reactor Power Ring (Electric Cyan) -->
+    <!-- Sharp Bright White Core Pulse Line -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#00E5FF"
-        android:strokeWidth="4.2"
-        android:pathData="M54,18 A36,36 0 1,1 53.99,18" />
-
-    <!-- BOLD Inner Metallic Ring (Neon Magenta) -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#E040AF"
-        android:strokeWidth="2.8"
-        android:pathData="M54,23 A31,31 0 1,1 53.99,23" />
-
-    <!-- BOLD Segmented Power Nodes -->
-    <path android:fillColor="#FFFFFF" android:pathData="M50,17 h8 v5 h-8 z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M50,86 h8 v5 h-8 z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M17,50 h5 v8 h-5 z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M86,50 h5 v8 h-5 z" />
-
-    <!-- BOLD Triangular Arc Reactor Core Framework -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#00E5FF"
-        android:strokeWidth="3.8"
-        android:pathData="M54,77 L29,33 L79,33 Z" />
-
-    <!-- BOLD Inverted Inner Triangle (Pure White) -->
-    <path
-        android:fillColor="#1500E5FF"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.5"
-        android:pathData="M54,67 L37,38 L71,38 Z" />
-
-    <!-- BOLD High-Voltage ECG Pulse Line Across Icon -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="4.5"
-        android:pathData="M12,55 L34,55 L41,41 L47,65 L54,33 L60,61 L66,55 L96,55" />
-
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#00E5FF"
-        android:strokeWidth="3.2"
-        android:pathData="M12,54 L34,54 L41,40 L47,64 L54,32 L60,60 L66,54 L96,54" />
-
-    <!-- BOLD Pulsing Lead Sphere -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,32m-4,0a4,4 0 1,0 8,0a4,4 0 1,0 -8,0" />
-
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#00E5FF"
-        android:strokeWidth="1.6"
-        android:pathData="M54,32m-6,0a6,6 0 1,0 12,0a6,6 0 1,0 -12,0" />
-
-    <!-- BOLD Center Glowing White Heart Core -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:strokeColor="#00E5FF"
         android:strokeWidth="1.5"
-        android:pathData="M54,58 C51,53.5 46,49 46,44.5 C46,40.5 49.5,38.5 54,42.5 C58.5,38.5 62,40.5 62,44.5 C62,49 57,53.5 54,58 Z" />
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M5,54 L9,54 L11.4,48 L14.1,60.6 L16.5,51.6 L18,54 L20,54 M88,54 L89,54 L90.5,49.2 L93.2,61.2 L95.9,46.8 L98,54 L103,54" />
+
+    <!-- 2. Cyan Radial Glow Aura -->
+    <path
+        android:fillColor="#2A9BF3FF"
+        android:pathData="M54,54m-49.5,0a49.5,49.5 0 1,0 99,0a49.5,49.5 0 1,0 -99,0" />
+
+    <!-- 3. Dark Arc Reactor Chamber Base -->
+    <path
+        android:strokeColor="#9BF3FF"
+        android:strokeWidth="0.9"
+        android:pathData="M54,54m-34.8,0a34.8,34.8 0 1,0 69.6,0a34.8,34.8 0 1,0 -69.6,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="35"
+                android:type="radial">
+                <item android:color="#2B1450" android:offset="0.0" />
+                <item android:color="#14082B" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 4. Segmented Ring Accents WITH CLEAR SPACING BLOCKS (10 Segmented Arc Blocks) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#6FDDF7"
+        android:strokeWidth="4.0"
+        android:strokeLineCap="butt"
+        android:pathData="M85.2,54 A31.2,31.2 0 0,1 81.8,68.2 M79.2,72.3 A31.2,31.2 0 0,1 68.2,81.8 M63.6,83.7 A31.2,31.2 0 0,1 49.1,84.8 M44.4,83.7 A31.2,31.2 0 0,1 31.9,76.1 M28.8,72.3 A31.2,31.2 0 0,1 23.2,58.9 M22.8,54 A31.2,31.2 0 0,1 26.2,39.8 M28.8,35.7 A31.2,31.2 0 0,1 39.8,26.2 M44.4,24.3 A31.2,31.2 0 0,1 58.9,23.2 M63.6,24.3 A31.2,31.2 0 0,1 76.1,31.9 M79.2,35.7 A31.2,31.2 0 0,1 84.8,49.1" />
+
+    <!-- Thin Inner Cyan Ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#9BF3FF"
+        android:strokeWidth="0.8"
+        android:pathData="M54,54m-27,0a27,27 0 1,0 54,0a27,27 0 1,0 -54,0" />
+
+    <!-- 5. Triangular Arc Reactor Inner Framework -->
+    <path
+        android:fillColor="#0F2F5E"
+        android:strokeColor="#9BF3FF"
+        android:strokeWidth="1.2"
+        android:strokeLineJoin="round"
+        android:pathData="M33,42 L75,42 L54,78 Z" />
+
+    <!-- Luminous Core Triangle -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.6"
+        android:strokeLineJoin="round"
+        android:pathData="M36.6,44.4 L71.4,44.4 L54,74.4 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="52"
+                android:gradientRadius="20"
+                android:type="radial">
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#C6F6FF" android:offset="0.6" />
+                <item android:color="#6FDDF7" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Inner Cyan Framework Triangle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#4FC3E8"
+        android:strokeWidth="0.75"
+        android:strokeLineJoin="round"
+        android:pathData="M42,47.4 L66,47.4 L54,67.8 Z" />
+
+    <!-- 6. GLOWING PINK / MAGENTA HEART CORE -->
+    <!-- Pink Glow Aura Circle -->
+    <path
+        android:fillColor="#55FF4FA3"
+        android:pathData="M54,56.4m-13.8,0a13.8,13.8 0 1,0 27.6,0a13.8,13.8 0 1,0 -27.6,0" />
+
+    <!-- Outer Translucent Heart Glow Rim -->
+    <path
+        android:fillColor="#4DFF4FA3"
+        android:strokeColor="#55FF4FA3"
+        android:strokeWidth="3.0"
+        android:strokeLineJoin="round"
+        android:pathData="M54,64.2 C45.6,58.5 45.6,51.6 50.4,51.3 C52.5,51.0 54,52.5 54,53.7 C54,52.5 55.5,51.0 57.6,51.3 C62.4,51.6 62.4,58.5 54,64.2 Z" />
+
+    <!-- Luminous Pink Heart Core Shape -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.5"
+        android:strokeLineJoin="round"
+        android:pathData="M54,63.6 C46.2,58.2 46.2,52.2 50.7,51.9 C52.5,51.6 54,53.1 54,54 C54,53.1 55.5,51.6 57.3,51.9 C61.8,52.2 61.8,58.2 54,63.6 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="53"
+                android:gradientRadius="12"
+                android:type="radial">
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#FF9CC8" android:offset="0.35" />
+                <item android:color="#E5167A" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- White Heart Shine Reflection -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.8"
+        android:strokeLineCap="round"
+        android:pathData="M49.8,54.3 C48.6,55.2 48.6,57 49.8,58.2" />
 
 </vector>

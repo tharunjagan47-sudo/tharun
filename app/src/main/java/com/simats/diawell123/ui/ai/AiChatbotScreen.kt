@@ -48,6 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.diet.StyledBackButton
+import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 data class ChatMessage(val sender: String, val text: String)
@@ -60,7 +63,7 @@ fun AiChatbotScreen(
     var messageText by remember { mutableStateOf("") }
     val messages = remember {
         mutableStateListOf(
-            ChatMessage("ai", "Hi Maya! I'm JARVIS, your AI Health & Glucose Assistant! ⚡🩺 I can suggest balanced meal plans, answer food questions, and track your daily routine. What's on your mind?"),
+            ChatMessage("ai", "Hi ${ProfileState.userName}! I'm JARVIS, your AI Health & Glucose Assistant! ⚡🩺 I can suggest balanced meal plans, answer food questions, and track your daily routine. What's on your mind?"),
             ChatMessage("user", "What can I eat for breakfast?"),
             ChatMessage("ai", "Try unsweetened oats with plain yogurt, berries and a few almonds. This combines whole grains, protein and fiber. Choose a portion that fits your care plan."),
         )
@@ -103,256 +106,258 @@ fun AiChatbotScreen(
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Top Bar with Iron Man JARVIS Avatar
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "←",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { onBackClick() }
-                                .padding(4.dp),
-                        )
+                // Top Bar with Iron Man JARVIS Avatar (Pops Up)
+                ElementPopUpContainer(delayMillis = 0) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            StyledBackButton(onBackClick = onBackClick)
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                        // JARVIS Avatar Container
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(46.dp),
-                        ) {
-                            // Pulsing Cyan Arc Reactor Glow Ring
+                            // JARVIS Avatar Container
                             Box(
-                                modifier = Modifier
-                                    .size(46.dp)
-                                    .scale(avatarScale)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF00E5FF).copy(alpha = auraAlpha)),
-                            )
-
-                            // Iron Man Doctor Avatar
-                            IronmanDoctorAvatar(sizeDp = 40)
-                        }
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "JARVIS AI ⚡",
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.size(46.dp),
+                            ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(8.dp)
+                                        .size(46.dp)
+                                        .scale(avatarScale)
                                         .clip(CircleShape)
-                                        .background(Color(0xFF4CAF50)),
+                                        .background(Color(0xFF00E5FF).copy(alpha = auraAlpha)),
+                                )
+
+                                IronmanDoctorAvatar(sizeDp = 40)
+                            }
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "JARVIS AI ⚡",
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1E1E22),
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF4CAF50)),
+                                    )
+                                }
+                                Text(
+                                    text = "Arc Reactor Health Intelligence",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF6E6877),
                                 )
                             }
-                            Text(
-                                text = "Arc Reactor Health Intelligence",
-                                fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
-                            )
                         }
-                    }
 
-                    Text(text = "🩺", fontSize = 22.sp)
+                        Text(text = "🩺", fontSize = 22.sp)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Disclaimer Banner
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(12.dp))
-                        .padding(12.dp),
-                ) {
-                    Text(
-                        text = "⚡ JARVIS AI gives personalized wellness guidance, not medical diagnosis. Follow your clinician's advice.",
-                        fontSize = 11.sp,
-                        color = Color(0xFF811978),
-                        lineHeight = 16.sp,
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Chat Messages
-                messages.forEach { msg ->
-                    if (msg.sender == "ai") {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(0.92f),
-                            verticalAlignment = Alignment.Top,
-                        ) {
-                            // Iron Man Doctor Avatar next to response
-                            Box(
-                                modifier = Modifier.scale(avatarScale),
-                            ) {
-                                IronmanDoctorAvatar(sizeDp = 34)
-                            }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(Color(0xFFF8F7FA))
-                                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                                    .padding(14.dp),
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "JARVIS AI ⚡🩺",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFB81D85),
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = msg.text,
-                                        fontSize = 13.sp,
-                                        color = Color(0xFF1E1E22),
-                                        lineHeight = 18.sp,
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.75f)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
-                                        ),
-                                    )
-                                    .padding(14.dp),
-                            ) {
-                                Text(
-                                    text = msg.text,
-                                    fontSize = 13.sp,
-                                    color = Color.White,
-                                    lineHeight = 18.sp,
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Quick Prompt Chips
-                Text(
-                    text = "ASK JARVIS AI",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF8A8595),
-                    letterSpacing = 0.5.sp,
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                listOf("What can I eat for breakfast?", "Suggest a healthy snack").forEach { prompt ->
+                // Disclaimer Banner (Pops Up)
+                ElementPopUpContainer(delayMillis = 60) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color(0xFFFDEEF7))
                             .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(12.dp))
-                            .clickable {
-                                messages.add(ChatMessage("user", prompt))
-                                messages.add(ChatMessage("ai", "I suggest a balanced combination of fiber, protein, and healthy fats tailored to your daily goals."))
-                            }
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                            .padding(12.dp),
                     ) {
                         Text(
-                            text = prompt,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            text = "⚡ JARVIS AI gives personalized wellness guidance, not medical diagnosis. Follow your clinician's advice.",
+                            fontSize = 11.sp,
+                            color = Color(0xFF811978),
+                            lineHeight = 16.sp,
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Chat Messages (Pop Up Staggered)
+                ElementPopUpContainer(delayMillis = 120) {
+                    Column {
+                        messages.forEach { msg ->
+                            if (msg.sender == "ai") {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(0.92f),
+                                    verticalAlignment = Alignment.Top,
+                                ) {
+                                    Box(modifier = Modifier.scale(avatarScale)) {
+                                        IronmanDoctorAvatar(sizeDp = 34)
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(Color(0xFFF8F7FA))
+                                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                                            .padding(14.dp),
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = "JARVIS AI ⚡🩺",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFB81D85),
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = msg.text,
+                                                fontSize = 13.sp,
+                                                color = Color(0xFF1E1E22),
+                                                lineHeight = 18.sp,
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End,
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.75f)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(
+                                                brush = Brush.horizontalGradient(
+                                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                                ),
+                                            )
+                                            .padding(14.dp),
+                                    ) {
+                                        Text(
+                                            text = msg.text,
+                                            fontSize = 13.sp,
+                                            color = Color.White,
+                                            lineHeight = 18.sp,
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Quick Prompt Chips (Pop Up)
+                ElementPopUpContainer(delayMillis = 200) {
+                    Column {
+                        Text(
+                            text = "ASK JARVIS AI",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF8A8595),
+                            letterSpacing = 0.5.sp,
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        listOf("What can I eat for breakfast?", "Suggest a healthy snack").forEach { prompt ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFFDEEF7))
+                                    .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        messages.add(ChatMessage("user", prompt))
+                                        messages.add(ChatMessage("ai", "I suggest a balanced combination of fiber, protein, and healthy fats tailored to your daily goals."))
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                            ) {
+                                Text(
+                                    text = prompt,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB81D85),
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
                 }
             }
         }
 
-        // Bottom Chat Input Bar
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(Color.White)
-                .border(width = 1.dp, color = Color(0xFFEFECEF))
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+        // Bottom Chat Input Bar (Pops Up)
+        ElementPopUpContainer(
+            delayMillis = 260,
+            modifier = Modifier.align(Alignment.BottomCenter),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .border(width = 1.dp, color = Color(0xFFEFECEF))
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
             ) {
-                OutlinedTextField(
-                    value = messageText,
-                    onValueChange = { messageText = it },
-                    placeholder = {
-                        Text(
-                            text = "Ask JARVIS about food or meal ideas...",
-                            fontSize = 13.sp,
-                            color = Color(0xFFA09BAA),
-                        )
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(24.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF8F7FA),
-                        unfocusedContainerColor = Color(0xFFF8F7FA),
-                        focusedBorderColor = Color(0xFFBD1E85),
-                        unfocusedBorderColor = Color(0xFFEFECEF),
-                    ),
-                    modifier = Modifier.weight(1f),
-                )
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722)),
-                            ),
-                        )
-                        .clickable {
-                            if (messageText.isNotBlank()) {
-                                messages.add(ChatMessage("user", messageText))
-                                messages.add(ChatMessage("ai", "That's a great question! For a balanced diet, prioritize whole foods, portion control, and staying consistent with your daily routine."))
-                                messageText = ""
-                            }
-                        },
-                    contentAlignment = Alignment.Center,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = "↑", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    OutlinedTextField(
+                        value = messageText,
+                        onValueChange = { messageText = it },
+                        placeholder = {
+                            Text(
+                                text = "Ask JARVIS about food or meal ideas...",
+                                fontSize = 13.sp,
+                                color = Color(0xFFA09BAA),
+                            )
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(24.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFF8F7FA),
+                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedBorderColor = Color(0xFFBD1E85),
+                            unfocusedBorderColor = Color(0xFFEFECEF),
+                        ),
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722)),
+                                ),
+                            )
+                            .clickable {
+                                if (messageText.isNotBlank()) {
+                                    messages.add(ChatMessage("user", messageText))
+                                    messages.add(ChatMessage("ai", "That's a great question! For a balanced diet, prioritize whole foods, portion control, and staying consistent with your daily routine."))
+                                    messageText = ""
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(text = "↑", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
                 }
             }
         }

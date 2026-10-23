@@ -1,5 +1,12 @@
 package com.simats.diawell123
 
+import android.content.Context
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -41,6 +48,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,21 +58,92 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
+
     // 1. Rotation animation: Spins, slows down, and STOPS completely!
     val spinRotation = remember { Animatable(0f) }
+
+    // Synchronized Sound Effects & Vibration Feedback Effect
     LaunchedEffect(Unit) {
-        spinRotation.animateTo(
-            targetValue = 720f, // 2 full spins
-            animationSpec = tween(
-                durationMillis = 2200,
-                easing = FastOutSlowInEasing, // Spins, slows down, and comes to a complete STOP
-            ),
-        )
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+            vibratorManager?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
+
+        // High-volume system tone generator for audible spin clicks
+        val toneGen = try {
+            ToneGenerator(AudioManager.STREAM_SYSTEM, 80)
+        } catch (_: Exception) {
+            try {
+                ToneGenerator(AudioManager.STREAM_MUSIC, 80)
+            } catch (_: Exception) {
+                null
+            }
+        }
+
+        // Launch Arc Reactor Rotation
+        launch {
+            spinRotation.animateTo(
+                targetValue = 720f, // 2 full spins
+                animationSpec = tween(
+                    durationMillis = 2200,
+                    easing = FastOutSlowInEasing, // Spins, slows down, and comes to a complete STOP
+                ),
+            )
+        }
+
+        // Synchronized Pulsing Sound & Haptic Ticks that slow down and stop
+        val startTime = System.currentTimeMillis()
+        val duration = 2200L
+
+        while (spinRotation.isRunning) {
+            val elapsed = System.currentTimeMillis() - startTime
+            val progress = (elapsed.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
+
+            if (progress >= 0.94f) break
+
+            // Interval slows down gradually as easing slows down the rotation (45ms -> 280ms)
+            val currentInterval = (45 + (progress * progress * 235)).toLong()
+
+            // 1. Trigger Audible Audio Beep/Click
+            toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, 30)
+
+            // 2. Trigger Compose System Haptic Feedback
+            try {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            } catch (_: Exception) {
+                // Ignore
+            }
+
+            // 3. Trigger Hardware Vibrator Feedback
+            try {
+                if (vibrator != null && vibrator.hasVibrator()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vibrator.vibrate(VibrationEffect.createOneShot(25L, VibrationEffect.DEFAULT_AMPLITUDE))
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(25L)
+                    }
+                }
+            } catch (_: Exception) {
+                // Ignore
+            }
+
+            delay(currentInterval)
+        }
+
+        toneGen?.release()
     }
 
     // 2. Infinite transition for Arc Reactor Glow + Running Horizontal ECG Pulse Wave OUTSIDE

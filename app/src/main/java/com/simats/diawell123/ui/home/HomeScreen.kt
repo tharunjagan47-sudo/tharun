@@ -20,7 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,14 +32,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.simats.diawell123.R
 import com.simats.diawell123.ui.ai.IronmanDoctorAvatar
+import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.profile.ProfileAvatarView
+import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -48,6 +48,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onLogGlucoseClick: () -> Unit = {},
     onTrackFoodClick: () -> Unit = {},
+    onActivityTrackingClick: () -> Unit = {},
     onDietChatbotClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
@@ -72,93 +73,89 @@ fun HomeScreen(
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 1. Premium Hero Header Banner Card
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF6B156E),
-                                    Color(0xFFB81D85),
-                                    Color(0xFFFF5722),
+                // 1. Premium Hero Header Banner Card (Pops Up)
+                ElementPopUpContainer(delayMillis = 0) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color(0xFF6B156E),
+                                        Color(0xFFB81D85),
+                                        Color(0xFFFF5722),
+                                    ),
                                 ),
-                            ),
-                        )
-                        .padding(18.dp),
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Good morning, Maya 👋",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                )
-                                Text(
-                                    text = "Daily Wellness • 94% On Track",
-                                    fontSize = 12.sp,
-                                    color = Color.White.copy(alpha = 0.85f),
-                                )
+                            )
+                            .padding(18.dp),
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Good morning, ${ProfileState.userName} 👋",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    )
+                                    Text(
+                                        text = "Daily Wellness • 94% On Track",
+                                        fontSize = 12.sp,
+                                        color = Color.White.copy(alpha = 0.85f),
+                                    )
+                                }
+
+                                // Profile Avatar Circle
+                                Box(
+                                    modifier = Modifier.clickable { onProfileClick() },
+                                ) {
+                                    ProfileAvatarView(
+                                        sizeDp = 42.dp,
+                                        fontSizeSp = 15,
+                                        bgCircleColor = Color.White.copy(alpha = 0.25f),
+                                        textColor = Color.White,
+                                    )
+                                }
                             }
 
-                            // Profile Circle
-                            Box(
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.25f))
-                                    .border(1.5.dp, Color.White, CircleShape)
-                                    .clickable { onProfileClick() },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_person),
-                                    contentDescription = "Profile",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(22.dp),
-                                )
-                            }
-                        }
+                            Spacer(modifier = Modifier.height(14.dp))
 
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(Color.White.copy(alpha = 0.2f))
-                                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                Text(
-                                    text = "🔥 7 Day Logging Streak",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                )
-                            }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(Color.White.copy(alpha = 0.2f))
+                                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                                ) {
+                                    Text(
+                                        text = "🔥 7 Day Logging Streak",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    )
+                                }
 
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(Color.White.copy(alpha = 0.2f))
-                                    .padding(horizontal = 10.dp, vertical = 5.dp),
-                            ) {
-                                Text(
-                                    text = "🎯 Fasting Target Met",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(Color.White.copy(alpha = 0.2f))
+                                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                                ) {
+                                    Text(
+                                        text = "🎯 Fasting Target Met",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    )
+                                }
                             }
                         }
                     }
@@ -176,224 +173,242 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // 2. Colorful Metrics Grid (2 Columns)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    // Glucose Metric Card
-                    MetricCard(
-                        icon = "🩸",
-                        title = "Glucose",
-                        value = "128 mg/dL",
-                        subtitle = "Fasting • 7:15 AM",
-                        statusText = "In Target Range",
-                        statusBg = Color(0xFFE8F5E9),
-                        statusColor = Color(0xFF2E7D32),
-                        cardBg = Color(0xFFFDEEF7),
-                        borderColor = Color(0xFFF3D5E9),
-                        actionText = "+ Log",
-                        onActionClick = onLogGlucoseClick,
-                        modifier = Modifier.weight(1f),
-                    )
+                // 2. Colorful Metrics Grid (Pops Up)
+                ElementPopUpContainer(delayMillis = 80) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            // Glucose Metric Card
+                            MetricCard(
+                                icon = "🩸",
+                                title = "Glucose",
+                                value = "128 mg/dL",
+                                subtitle = "Fasting • 7:15 AM",
+                                statusText = "In Target Range",
+                                statusBg = Color(0xFFE8F5E9),
+                                statusColor = Color(0xFF2E7D32),
+                                cardBg = Color(0xFFFDEEF7),
+                                borderColor = Color(0xFFF3D5E9),
+                                actionText = "+ Log",
+                                onActionClick = onLogGlucoseClick,
+                                modifier = Modifier.weight(1f),
+                            )
 
-                    // Today's Diet Card
-                    MetricCard(
-                        icon = "🥗",
-                        title = "Nutrition",
-                        value = "1,450 kcal",
-                        subtitle = "3 of 4 meals logged",
-                        statusText = "C:160g • P:75g",
-                        statusBg = Color(0xFFE8F5E9),
-                        statusColor = Color(0xFF2E7D32),
-                        cardBg = Color(0xFFEBF7F0),
-                        borderColor = Color(0xFFD4EFE0),
-                        actionText = "Explore",
-                        onActionClick = onTrackFoodClick,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    // Medication Card
-                    MetricCard(
-                        icon = "💊",
-                        title = "Medication",
-                        value = "Metformin",
-                        subtitle = "500mg • 8:00 PM",
-                        statusText = "Upcoming Dose",
-                        statusBg = Color(0xFFFFF3E0),
-                        statusColor = Color(0xFFE65100),
-                        cardBg = Color(0xFFFFF8EE),
-                        borderColor = Color(0xFFFFECC8),
-                        actionText = "View",
-                        onActionClick = onMedsTabClick,
-                        modifier = Modifier.weight(1f),
-                    )
-
-                    // Weekly Progress Card
-                    MetricCard(
-                        icon = "📊",
-                        title = "Weekly Report",
-                        value = "7/7 Days",
-                        subtitle = "Glucose & Diet Logged",
-                        statusText = "Excellent Routine",
-                        statusBg = Color(0xFFE3F2FD),
-                        statusColor = Color(0xFF1565C0),
-                        cardBg = Color(0xFFF0F7FF),
-                        borderColor = Color(0xFFD0E4FC),
-                        actionText = "Reports",
-                        onActionClick = onReportsTabClick,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 3. Featured Dr. JARVIS AI Daily Tip Card
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    Color(0xFFFDEEF7),
-                                    Color(0xFFFFF0F5),
-                                ),
-                            ),
-                        )
-                        .border(1.5.dp, Color(0xFFF3D5E9), RoundedCornerShape(18.dp))
-                        .clickable { onDietChatbotClick() }
-                        .padding(16.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IronmanDoctorAvatar(sizeDp = 44)
-
-                        Spacer(modifier = Modifier.width(14.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Dr. JARVIS Tip Of The Day ⚡",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB81D85),
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
-                                fontSize = 12.sp,
-                                color = Color(0xFF232226),
-                                lineHeight = 17.sp,
+                            // Today's Diet Card
+                            MetricCard(
+                                icon = "🥗",
+                                title = "Nutrition",
+                                value = "1,450 kcal",
+                                subtitle = "3 of 4 meals logged",
+                                statusText = "C:160g • P:75g",
+                                statusBg = Color(0xFFE8F5E9),
+                                statusColor = Color(0xFF2E7D32),
+                                cardBg = Color(0xFFEBF7F0),
+                                borderColor = Color(0xFFD4EFE0),
+                                actionText = "Explore",
+                                onActionClick = onTrackFoodClick,
+                                modifier = Modifier.weight(1f),
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        Text(
-                            text = "Ask →",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            // Medication Card
+                            MetricCard(
+                                icon = "💊",
+                                title = "Medication",
+                                value = "Metformin",
+                                subtitle = "500mg • 8:00 PM",
+                                statusText = "Upcoming Dose",
+                                statusBg = Color(0xFFFFF3E0),
+                                statusColor = Color(0xFFE65100),
+                                cardBg = Color(0xFFFFF8EE),
+                                borderColor = Color(0xFFFFECC8),
+                                actionText = "View",
+                                onActionClick = onMedsTabClick,
+                                modifier = Modifier.weight(1f),
+                            )
+
+                            // Weekly Progress Card
+                            MetricCard(
+                                icon = "📊",
+                                title = "Weekly Report",
+                                value = "7/7 Days",
+                                subtitle = "Glucose & Diet Logged",
+                                statusText = "Excellent Routine",
+                                statusBg = Color(0xFFE3F2FD),
+                                statusColor = Color(0xFF1565C0),
+                                cardBg = Color(0xFFF0F7FF),
+                                borderColor = Color(0xFFD0E4FC),
+                                actionText = "Reports",
+                                onActionClick = onReportsTabClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 4. Today's Routine Timeline Check-In
-                Text(
-                    text = "Today's Check-In Routine",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                        .padding(14.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically,
+                // 3. Featured Dr. JARVIS AI Daily Tip Card (Pops Up)
+                ElementPopUpContainer(delayMillis = 140) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFFFDEEF7),
+                                        Color(0xFFFFF0F5),
+                                    ),
+                                ),
+                            )
+                            .border(1.5.dp, Color(0xFFF3D5E9), RoundedCornerShape(18.dp))
+                            .clickable { onDietChatbotClick() }
+                            .padding(16.dp),
                     ) {
-                        RoutineCheckItem(icon = "🥣", label = "Breakfast", isDone = true)
-                        RoutineCheckItem(icon = "🩸", label = "Glucose", isDone = true)
-                        RoutineCheckItem(icon = "🥗", label = "Lunch", isDone = true)
-                        RoutineCheckItem(icon = "💊", label = "Dinner/Meds", isDone = false)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            IronmanDoctorAvatar(sizeDp = 44)
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Dr. JARVIS Tip Of The Day ⚡",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFB81D85),
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF232226),
+                                    lineHeight = 17.sp,
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = "Ask →",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFB81D85),
+                            )
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 5. Vibrant Quick Actions
-                Text(
-                    text = "Quick Actions",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                )
+                // 4. Today's Routine Timeline Check-In (Pops Up)
+                ElementPopUpContainer(delayMillis = 200) {
+                    Column {
+                        Text(
+                            text = "Today's Check-In Routine",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E1E22),
+                        )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    VibrantQuickActionButton(
-                        title = "Log Glucose",
-                        icon = "🩸",
-                        gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
-                        onClick = onLogGlucoseClick,
-                        modifier = Modifier.weight(1f),
-                    )
-                    VibrantQuickActionButton(
-                        title = "Track Meal",
-                        icon = "🥗",
-                        gradientColors = listOf(Color(0xFF43A047), Color(0xFF66BB6A)),
-                        onClick = onTrackFoodClick,
-                        modifier = Modifier.weight(1f),
-                    )
-                    VibrantQuickActionButton(
-                        title = "JARVIS AI",
-                        icon = "💬",
-                        gradientColors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
-                        onClick = onDietChatbotClick,
-                        modifier = Modifier.weight(1f),
-                    )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                                .padding(14.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RoutineCheckItem(icon = "🥣", label = "Breakfast", isDone = true)
+                                RoutineCheckItem(icon = "🩸", label = "Glucose", isDone = true)
+                                RoutineCheckItem(icon = "🥗", label = "Lunch", isDone = true)
+                                RoutineCheckItem(icon = "💊", label = "Dinner/Meds", isDone = false)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 5. Vibrant Quick Actions (Pops Up)
+                ElementPopUpContainer(delayMillis = 260) {
+                    Column {
+                        Text(
+                            text = "Quick Actions",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E1E22),
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            VibrantQuickActionButton(
+                                title = "Log Glucose",
+                                icon = "🩸",
+                                gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
+                                onClick = onLogGlucoseClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                            VibrantQuickActionButton(
+                                title = "Activity & Workout",
+                                icon = "🏃‍♂️",
+                                gradientColors = listOf(Color(0xFF00E5FF), Color(0xFF00838F)),
+                                onClick = onActivityTrackingClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                            VibrantQuickActionButton(
+                                title = "JARVIS AI",
+                                icon = "💬",
+                                gradientColors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                onClick = onDietChatbotClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
 
-        // Floating iOS Liquid Glass Bottom Navigation Dock
-        IosLiquidGlassBottomNav(
-            selectedTab = selectedTab,
-            onHomeTabClick = { selectedTab = "Home" },
-            onDietTabClick = onDietTabClick,
-            onMedsTabClick = onMedsTabClick,
-            onReportsTabClick = onReportsTabClick,
-            onSettingsTabClick = onSettingsTabClick,
+        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
+        ElementPopUpContainer(
+            delayMillis = 300,
             modifier = Modifier.align(Alignment.BottomCenter),
-        )
+        ) {
+            IosLiquidGlassBottomNav(
+                selectedTab = selectedTab,
+                onHomeTabClick = { selectedTab = "Home" },
+                onDietTabClick = onDietTabClick,
+                onMedsTabClick = onMedsTabClick,
+                onReportsTabClick = onReportsTabClick,
+                onSettingsTabClick = onSettingsTabClick,
+            )
+        }
     }
 }
 

@@ -19,6 +19,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.simats.diawell123.ui.activity.ActivityHistoryScreen
+import com.simats.diawell123.ui.activity.ActivityTrackingScreen
 import com.simats.diawell123.ui.ai.AiChatbotScreen
 import com.simats.diawell123.ui.auth.ForgotPasswordScreen
 import com.simats.diawell123.ui.auth.LoginScreen
@@ -125,7 +127,8 @@ class MainActivity : ComponentActivity() {
 
                         "home" -> HomeScreen(
                             onLogGlucoseClick = { currentScreen = "log_glucose" },
-                            onTrackFoodClick = { currentScreen = "explore_food" },
+                            onTrackFoodClick = { currentScreen = "daily_diet_plan" },
+                            onActivityTrackingClick = { currentScreen = "activity_tracking" },
                             onDietChatbotClick = { currentScreen = "ai_chatbot" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
                             onMedsTabClick = { currentScreen = "medications" },
@@ -180,13 +183,26 @@ class MainActivity : ComponentActivity() {
 
                         "food_log" -> FoodLogScreen(
                             onBackClick = { currentScreen = "home" },
-                            onAddFoodClick = { currentScreen = "explore_food" },
+                            onAddFoodClick = { currentScreen = "daily_diet_plan" },
                             onMealDetailsClick = { currentScreen = "food_details" },
                         )
 
                         "nutrition_summary" -> NutritionSummaryScreen(
                             onBackClick = { currentScreen = "home" },
                             onReturnToFoodLogClick = { currentScreen = "food_log" },
+                        )
+
+                        "activity_tracking" -> ActivityTrackingScreen(
+                            glucoseLevel = 128,
+                            weightKg = 68f,
+                            onBackClick = { currentScreen = "home" },
+                            onHistoryClick = { currentScreen = "activity_history" },
+                            onFinishActivityClick = { currentScreen = "activity_history" },
+                        )
+
+                        "activity_history" -> ActivityHistoryScreen(
+                            onBackClick = { currentScreen = "activity_tracking" },
+                            onStartNewWorkoutClick = { currentScreen = "activity_tracking" },
                         )
 
                         "medications" -> MedicationsScreen(

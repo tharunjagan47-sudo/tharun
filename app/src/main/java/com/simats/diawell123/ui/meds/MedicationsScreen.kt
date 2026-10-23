@@ -32,6 +32,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
@@ -64,96 +66,97 @@ fun MedicationsScreen(
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Top Bar
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onBackClick() }
-                            .padding(4.dp),
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
+                // Top Bar & Add Button (Pops Up)
+                ElementPopUpContainer(delayMillis = 0) {
                     Column {
-                        Text(
-                            text = "Your medications",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                        )
-                        Text(
-                            text = "Reminders set according to your care plan.",
-                            fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            StyledBackButton(onBackClick = onBackClick)
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column {
+                                Text(
+                                    text = "Your medications",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                Text(
+                                    text = "Reminders set according to your care plan.",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF6E6877),
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Add Medication Bar Button
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFFDEEF7))
+                                .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                                .clickable { onAddMedicationClick() }
+                                .padding(14.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = "+ Add medication or set reminder",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFB81D85),
+                            )
+                        }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Add Medication Bar Button
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
-                        .clickable { onAddMedicationClick() }
-                        .padding(14.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "+ Add medication or set reminder",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Medication Cards
-                MedicationScheduleCard(
-                    time = "8:00 AM",
-                    name = "Metformin",
-                    dose = "500 mg • 1 tablet",
-                    status = "Taken",
-                    statusColor = Color(0xFF2E7D32),
-                    statusBg = Color(0xFFE8F5E9),
-                    onClick = onReminderClick,
-                )
+                // Medication Cards (Pop Up Staggered)
+                ElementPopUpContainer(delayMillis = 80) {
+                    MedicationScheduleCard(
+                        time = "8:00 AM",
+                        name = "Metformin",
+                        dose = "500 mg • 1 tablet",
+                        status = "Taken",
+                        statusColor = Color(0xFF2E7D32),
+                        statusBg = Color(0xFFE8F5E9),
+                        onClick = onReminderClick,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                MedicationScheduleCard(
-                    time = "1:00 PM",
-                    name = "Multivitamin",
-                    dose = "1 capsule",
-                    status = "Taken",
-                    statusColor = Color(0xFF2E7D32),
-                    statusBg = Color(0xFFE8F5E9),
-                    onClick = onReminderClick,
-                )
+                ElementPopUpContainer(delayMillis = 160) {
+                    MedicationScheduleCard(
+                        time = "1:00 PM",
+                        name = "Multivitamin",
+                        dose = "1 capsule",
+                        status = "Taken",
+                        statusColor = Color(0xFF2E7D32),
+                        statusBg = Color(0xFFE8F5E9),
+                        onClick = onReminderClick,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                MedicationScheduleCard(
-                    time = "8:00 PM",
-                    name = "Metformin",
-                    dose = "500 mg • 1 tablet",
-                    status = "Upcoming",
-                    statusColor = Color(0xFFB81D85),
-                    statusBg = Color(0xFFFDEEF7),
-                    onClick = onReminderClick,
-                )
+                ElementPopUpContainer(delayMillis = 240) {
+                    MedicationScheduleCard(
+                        time = "8:00 PM",
+                        name = "Metformin",
+                        dose = "500 mg • 1 tablet",
+                        status = "Upcoming",
+                        statusColor = Color(0xFFB81D85),
+                        statusBg = Color(0xFFFDEEF7),
+                        onClick = onReminderClick,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -169,16 +172,20 @@ fun MedicationsScreen(
             }
         }
 
-        // Floating iOS Liquid Glass Bottom Navigation Dock
-        IosLiquidGlassBottomNav(
-            selectedTab = selectedTab,
-            onHomeTabClick = onHomeTabClick,
-            onDietTabClick = onDietTabClick,
-            onMedsTabClick = { selectedTab = "Meds" },
-            onReportsTabClick = onReportsTabClick,
-            onSettingsTabClick = onSettingsTabClick,
+        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
+        ElementPopUpContainer(
+            delayMillis = 300,
             modifier = Modifier.align(Alignment.BottomCenter),
-        )
+        ) {
+            IosLiquidGlassBottomNav(
+                selectedTab = selectedTab,
+                onHomeTabClick = onHomeTabClick,
+                onDietTabClick = onDietTabClick,
+                onMedsTabClick = { selectedTab = "Meds" },
+                onReportsTabClick = onReportsTabClick,
+                onSettingsTabClick = onSettingsTabClick,
+            )
+        }
     }
 }
 
