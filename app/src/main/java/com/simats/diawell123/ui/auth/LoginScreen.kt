@@ -1,5 +1,10 @@
 package com.simats.diawell123.ui.auth
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +50,9 @@ import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.profile.AiSpeechOrbLoadingView
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -56,7 +63,17 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(value = false) }
+    var isPasswordVisible by remember { mutableStateOf(false) }
+    var isLoggingIn by remember { mutableStateOf(false) }
+
+    // 3D Saturn AI Speech Orb Transition from Login to Dashboard
+    LaunchedEffect(isLoggingIn) {
+        if (isLoggingIn) {
+            delay(2200) // 2.2 Seconds 3D Rotating Saturn AI Orb
+            isLoggingIn = false
+            onLoginSuccess()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -160,7 +177,7 @@ fun LoginScreen(
                 // Login Gradient Button
                 IosLiquidGlassButton(
                     text = "Login",
-                    onClick = onLoginSuccess,
+                    onClick = { isLoggingIn = true },
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -204,6 +221,25 @@ fun LoginScreen(
                     text = "Your personal information stays private.",
                     fontSize = 12.sp,
                     color = Color(0xFF8A8595),
+                )
+            }
+        }
+
+        // ROTATING 3D SATURN AI SPEECH ORB LOADING OVERLAY FOR LOGIN
+        AnimatedVisibility(
+            visible = isLoggingIn,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = 0.96f))
+                    .clickable(enabled = false) {}, // Intercept clicks during loading
+                contentAlignment = Alignment.Center,
+            ) {
+                AiSpeechOrbLoadingView(
+                    statusText = "Logging in & Setting up your Dashboard...",
                 )
             }
         }

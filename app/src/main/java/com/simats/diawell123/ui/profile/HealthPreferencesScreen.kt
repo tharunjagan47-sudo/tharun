@@ -1,10 +1,18 @@
 package com.simats.diawell123.ui.profile
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,9 +27,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -35,8 +45,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +61,8 @@ import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
+import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -55,7 +73,7 @@ fun HealthPreferencesScreen(
 ) {
     var selectedHealthFocus by remember { mutableStateOf("Glucose Control") }
     var selectedActivityLevel by remember { mutableStateOf("Moderate (3-5 days)") }
-    var showSuccessBanner by remember { mutableStateOf(value = false) }
+    var isSavingAndLoading by remember { mutableStateOf(false) }
 
     val selectedDiets = remember {
         mutableStateListOf(
@@ -67,14 +85,6 @@ fun HealthPreferencesScreen(
         )
     }
 
-    LaunchedEffect(showSuccessBanner) {
-        if (showSuccessBanner) {
-            delay(1000)
-            showSuccessBanner = false
-            onSavePreferencesClick()
-        }
-    }
-
     val allergiesList = remember {
         mutableStateListOf(
             "Nuts" to true,
@@ -84,6 +94,15 @@ fun HealthPreferencesScreen(
             "Soy" to false,
             "Shellfish" to false,
         )
+    }
+
+    // Smooth 3D Saturn AI Orb Loading Transition into Home Screen
+    LaunchedEffect(isSavingAndLoading) {
+        if (isSavingAndLoading) {
+            delay(2200) // 2.2 Seconds 3D Rotating Saturn AI Orb Loading
+            isSavingAndLoading = false
+            onSavePreferencesClick()
+        }
     }
 
     Box(
@@ -134,174 +153,51 @@ fun HealthPreferencesScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 1-Second Success Confirmation Banner
-            AnimatedVisibility(
-                visible = showSuccessBanner,
-                enter = slideInVertically() + fadeIn(),
-                exit = slideOutVertically() + fadeOut(),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
-                        .padding(14.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "Health Preferences Saved Successfully!",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
-                            )
-                            Text(
-                                text = "Your preferences have been updated.",
-                                fontSize = 11.sp,
-                                color = Color(0xFF1B5E20),
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Profile Tag
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFFDEEF7))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-            ) {
-                Text(
-                    text = "Demo profile • ${ProfileState.userName}",
-                    fontSize = 12.sp,
-                    color = Color(0xFF811978),
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 1. Primary Health Focus Section
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                    .padding(16.dp),
-            ) {
-                Column {
-                    Text(
-                        text = "🎯 Primary Health Focus",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        listOf("Glucose Control", "Weight Balance", "Heart Health", "More Energy").forEach { focus ->
-                            val isSelected = selectedHealthFocus == focus
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(if (isSelected) Color(0xFFFDEEF7) else Color(0xFFF8F7FA))
-                                    .border(
-                                        width = 1.dp,
-                                        color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
-                                        shape = RoundedCornerShape(20.dp),
-                                    )
-                                    .clickable { selectedHealthFocus = focus }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                            ) {
-                                Text(
-                                    text = focus,
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color(0xFFB81D85) else Color(0xFF6E6877),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 2. Dietary Lifestyle Section (Multi-Select Support)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Dietary Lifestyle",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                )
-                Text(
-                    text = "Select Multiple",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
-                )
-            }
+            // 1. Health Focus Area
+            Text(
+                text = "Primary Health & Glucose Focus",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E1E22),
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(
-                    "Vegetarian" to "🥦",
-                    "Non-Vegetarian" to "🍗",
-                    "Vegan" to "🌱",
-                    "Low-Carb / Keto" to "🥗",
-                    "Pescatarian" to "🐟",
-                ).forEach { (diet, icon) ->
-                    val index = selectedDiets.indexOfFirst { it.first == diet }
-                    val isSelected = if (index != -1) selectedDiets[index].second else false
-
+                    "Glucose Control" to "🩸 Maintain target fasting & post-meal ranges",
+                    "Weight Management" to "⚖️ Calorie conscious & metabolic balance",
+                    "Hba1c Reduction" to "📉 Long-term glycemic score improvement",
+                    "Active Energy & Fitness" to "⚡ High energy routines & active lifestyle",
+                ).forEach { (title, subtitle) ->
+                    val isSelected = selectedHealthFocus == title
                     Box(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
                             .background(if (isSelected) Color(0xFFFDEEF7) else Color.White)
                             .border(
-                                width = 1.5.dp,
+                                width = 1.dp,
                                 color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
                                 shape = RoundedCornerShape(14.dp),
                             )
-                            .clickable {
-                                if (index != -1) {
-                                    selectedDiets[index] = diet to !isSelected
-                                }
-                            }
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                            .clickable { selectedHealthFocus = title }
+                            .padding(14.dp),
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = if (isSelected) "✓ $icon" else icon, fontSize = 16.sp)
-                            Spacer(modifier = Modifier.width(6.dp))
+                        Column {
                             Text(
-                                text = diet,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                text = title,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
                                 color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = subtitle,
+                                fontSize = 11.sp,
+                                color = Color(0xFF6E6877),
                             )
                         }
                     }
@@ -310,9 +206,9 @@ fun HealthPreferencesScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 3. Food Allergies & Intolerances
+            // 2. Dietary Preferences & Meal Rules
             Text(
-                text = "Food Allergies & Intolerances",
+                text = "Dietary Pattern & Restrictions",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E22),
@@ -321,28 +217,72 @@ fun HealthPreferencesScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             FlowRow(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth(),
             ) {
-                allergiesList.forEachIndexed { index, (name, isSelected) ->
+                selectedDiets.forEachIndexed { index, (dietName, isChecked) ->
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) Color(0xFFFDEEF7) else Color(0xFFF8F7FA))
+                            .background(if (isChecked) Color(0xFFB81D85) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                                color = if (isChecked) Color(0xFFB81D85) else Color(0xFFEFECEF),
                                 shape = RoundedCornerShape(20.dp),
                             )
-                            .clickable { allergiesList[index] = name to !isSelected }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            .clickable {
+                                selectedDiets[index] = dietName to !isChecked
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
                     ) {
                         Text(
-                            text = if (isSelected) "✓  $name" else name,
+                            text = if (isChecked) "✓ $dietName" else "+ $dietName",
                             fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF6E6877),
+                            fontWeight = FontWeight.Medium,
+                            color = if (isChecked) Color.White else Color(0xFF1E1E22),
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 3. Allergies & Food Sensitivities
+            Text(
+                text = "Food Allergies & Sensitivities",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E1E22),
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                allergiesList.forEachIndexed { index, (allergyName, isChecked) ->
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(if (isChecked) Color(0xFFE53935) else Color.White)
+                            .border(
+                                width = 1.dp,
+                                color = if (isChecked) Color(0xFFE53935) else Color(0xFFEFECEF),
+                                shape = RoundedCornerShape(20.dp),
+                            )
+                            .clickable {
+                                allergiesList[index] = allergyName to !isChecked
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    ) {
+                        Text(
+                            text = if (isChecked) "⚠️ $allergyName" else "+ $allergyName",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isChecked) Color.White else Color(0xFF1E1E22),
                         )
                     }
                 }
@@ -414,7 +354,7 @@ fun HealthPreferencesScreen(
             // Save Preferences Button
             IosLiquidGlassButton(
                 text = "Save Health Preferences",
-                onClick = { showSuccessBanner = true },
+                onClick = { isSavingAndLoading = true },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -429,6 +369,239 @@ fun HealthPreferencesScreen(
                     .padding(bottom = 24.dp),
             )
         }
+
+        // ROTATING 3D SATURN AI SPEECH ORB LOADING OVERLAY
+        AnimatedVisibility(
+            visible = isSavingAndLoading,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = 0.96f))
+                    .clickable(enabled = false) {}, // Intercept clicks during loading
+                contentAlignment = Alignment.Center,
+            ) {
+                AiSpeechOrbLoadingView(
+                    statusText = "Setting up your DiaWell Health AI...",
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AiSpeechOrbLoadingView(
+    modifier: Modifier = Modifier,
+    statusText: String = "Setting up your DiaWell Health AI...",
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "3DSaturnOrbTransition")
+
+    // Rotation angle
+    val rotationAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "saturnRotation",
+    )
+
+    // Pulsing scale
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.94f,
+        targetValue = 1.06f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "saturnPulse",
+    )
+
+    // Glowing aura alpha
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.45f,
+        targetValue = 0.88f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "saturnGlowAlpha",
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.padding(24.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(180.dp),
+        ) {
+            // Ambient Outer Glow Aura Ring
+            Box(
+                modifier = Modifier
+                    .size(160.dp)
+                    .scale(pulseScale)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF00E5FF).copy(alpha = glowAlpha * 0.45f),
+                                Color(0xFFB81D85).copy(alpha = glowAlpha * 0.32f),
+                                Color.Transparent,
+                            ),
+                        ),
+                    ),
+            )
+
+            // Canvas for 3D SATURN PLANETARY RING ROTATING GLOWING AI ORB
+            Canvas(
+                modifier = Modifier
+                    .size(150.dp)
+                    .scale(pulseScale),
+            ) {
+                val w = size.width
+                val h = size.height
+                val center = Offset(w / 2f, h / 2f)
+
+                val planetRadius = w * 0.28f
+                val ringRx = w * 0.46f // Horizontal radius of 3D Saturn Ring
+                val ringRy = w * 0.16f // Vertical radius (flattened 3D tilt ellipse)
+
+                // 1. BACK HALF OF 3D SATURN RING (Passes BEHIND the top half of Saturn)
+                rotate(degrees = rotationAngle, pivot = center) {
+                    drawArc(
+                        brush = Brush.sweepGradient(
+                            colors = listOf(
+                                Color(0xFF00E5FF),
+                                Color(0xFFB81D85).copy(alpha = 0.5f),
+                                Color(0xFF00E5FF).copy(alpha = 0.2f),
+                                Color(0xFF00E5FF),
+                            ),
+                        ),
+                        startAngle = 180f,
+                        sweepAngle = 180f, // Top half (180deg to 360deg - behind)
+                        useCenter = false,
+                        topLeft = Offset(center.x - ringRx, center.y - ringRy),
+                        size = Size(ringRx * 2f, ringRy * 2f),
+                        style = Stroke(width = 3.5.dp.toPx()),
+                    )
+                }
+
+                // 2. SATURN CORE LIQUID GLASS SPHERE
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF00E5FF),
+                            Color(0xFF5363FF),
+                            Color(0xFF8E24AA),
+                            Color(0xFF1B0033),
+                        ),
+                        center = Offset(center.x - planetRadius * 0.35f, center.y - planetRadius * 0.35f),
+                        radius = planetRadius * 1.3f,
+                    ),
+                    radius = planetRadius,
+                    center = center,
+                )
+
+                // Glass Planet Specular Top Arc Highlight Reflection
+                drawArc(
+                    color = Color.White.copy(alpha = 0.70f),
+                    startAngle = 200f,
+                    sweepAngle = 130f,
+                    useCenter = false,
+                    topLeft = Offset(center.x - planetRadius * 0.85f, center.y - planetRadius * 0.85f),
+                    size = Size(planetRadius * 1.7f, planetRadius * 1.7f),
+                    style = Stroke(width = 2.5.dp.toPx()),
+                )
+
+                // 3. FRONT HALF OF 3D SATURN RING (Passes IN FRONT OF the lower half of Saturn!)
+                rotate(degrees = rotationAngle, pivot = center) {
+                    // Outer Luminous 3D Ring Front
+                    drawArc(
+                        brush = Brush.sweepGradient(
+                            colors = listOf(
+                                Color(0xFF00E5FF),
+                                Color.White,
+                                Color(0xFFFF4081),
+                                Color(0xFF00E5FF),
+                            ),
+                        ),
+                        startAngle = 0f,
+                        sweepAngle = 180f, // Bottom half (0deg to 180deg - in front!)
+                        useCenter = false,
+                        topLeft = Offset(center.x - ringRx, center.y - ringRy),
+                        size = Size(ringRx * 2f, ringRy * 2f),
+                        style = Stroke(width = 4.2.dp.toPx()),
+                    )
+
+                    // Inner Fine 3D Accent Ring Front
+                    drawArc(
+                        color = Color.White.copy(alpha = 0.88f),
+                        startAngle = 0f,
+                        sweepAngle = 180f,
+                        useCenter = false,
+                        topLeft = Offset(center.x - ringRx * 0.82f, center.y - ringRy * 0.82f),
+                        size = Size(ringRx * 1.64f, ringRy * 1.64f),
+                        style = Stroke(width = 1.5.dp.toPx()),
+                    )
+
+                    // 3D Orbiting Energy Nodes on Saturn Ring Plane
+                    for (i in 0 until 3) {
+                        val angleRad = ((rotationAngle * 2.2f + i * 120f) * (Math.PI / 180.0)).toFloat()
+                        val beadX = center.x + ringRx * cos(angleRad)
+                        val beadY = center.y + ringRy * sin(angleRad)
+
+                        // Z-Sort: Only draw nodes when they are on the front side of the ring plane
+                        if (sin(angleRad) > -0.2f) {
+                            drawCircle(
+                                color = Color.White,
+                                radius = 4.dp.toPx(),
+                                center = Offset(beadX, beadY),
+                            )
+                            drawCircle(
+                                color = Color(0xFF00E5FF),
+                                radius = 7.dp.toPx(),
+                                center = Offset(beadX, beadY),
+                                style = Stroke(width = 1.5.dp.toPx()),
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Core Glowing White Light
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .shadow(elevation = 10.dp, shape = CircleShape, spotColor = Color(0xFF00E5FF)),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Status Loading Label
+        Text(
+            text = statusText,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF7A1C7D),
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = "Dr. JARVIS AI is configuring your personal routine...",
+            fontSize = 12.sp,
+            color = Color(0xFF6E6877),
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

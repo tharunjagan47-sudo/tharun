@@ -1,9 +1,15 @@
 package com.simats.diawell123.ui.home
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,8 +43,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -56,6 +66,67 @@ import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import kotlin.math.abs
+import kotlin.math.exp
+
+@Composable
+fun FloatingBubbleContainer(
+    modifier: Modifier = Modifier,
+    phaseOffsetMs: Int = 0,
+    content: @Composable () -> Unit,
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "BubbleFloat_$phaseOffsetMs")
+
+    val floatOffsetY by infiniteTransition.animateFloat(
+        initialValue = -2.2f,
+        targetValue = 2.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1800 + (phaseOffsetMs % 400),
+                easing = FastOutSlowInEasing,
+            ),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "floatOffsetY",
+    )
+
+    val floatScale by infiniteTransition.animateFloat(
+        initialValue = 0.992f,
+        targetValue = 1.012f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1500 + (phaseOffsetMs % 300),
+                easing = FastOutSlowInEasing,
+            ),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "floatScale",
+    )
+
+    val wobbleAngle by infiniteTransition.animateFloat(
+        initialValue = -0.5f,
+        targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 2200 + (phaseOffsetMs % 500),
+                easing = FastOutSlowInEasing,
+            ),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "wobbleAngle",
+    )
+
+    Box(
+        modifier = modifier.graphicsLayer {
+            translationY = floatOffsetY.dp.toPx()
+            scaleX = floatScale
+            scaleY = floatScale
+            rotationZ = wobbleAngle
+        },
+    ) {
+        content()
+    }
+}
 
 @Composable
 fun HomeScreen(
@@ -87,88 +158,90 @@ fun HomeScreen(
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 1. Premium Hero Header Banner Card (Pops Up)
+                // 1. Premium Hero Header Banner Card (Floating Bubble Effect)
                 ElementPopUpContainer(delayMillis = 0) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFF6B156E),
-                                        Color(0xFFB81D85),
-                                        Color(0xFFFF5722),
+                    FloatingBubbleContainer(phaseOffsetMs = 0) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color(0xFF6B156E),
+                                            Color(0xFFB81D85),
+                                            Color(0xFFFF5722),
+                                        ),
                                     ),
-                                ),
-                            )
-                            .padding(18.dp),
-                    ) {
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Good morning, ${ProfileState.userName} 👋",
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                    )
-                                    Text(
-                                        text = "Daily Wellness • 94% On Track",
-                                        fontSize = 12.sp,
-                                        color = Color.White.copy(alpha = 0.85f),
-                                    )
+                                )
+                                .padding(18.dp),
+                        ) {
+                            Column {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "Good morning, ${ProfileState.userName} 👋",
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                        )
+                                        Text(
+                                            text = "Daily Wellness • 94% On Track",
+                                            fontSize = 12.sp,
+                                            color = Color.White.copy(alpha = 0.85f),
+                                        )
+                                    }
+
+                                    // Profile Avatar Circle
+                                    Box(
+                                        modifier = Modifier.clickable { onProfileClick() },
+                                    ) {
+                                        ProfileAvatarView(
+                                            sizeDp = 42.dp,
+                                            fontSizeSp = 15,
+                                            bgCircleColor = Color.White.copy(alpha = 0.25f),
+                                            textColor = Color.White,
+                                        )
+                                    }
                                 }
 
-                                // Profile Avatar Circle
-                                Box(
-                                    modifier = Modifier.clickable { onProfileClick() },
-                                ) {
-                                    ProfileAvatarView(
-                                        sizeDp = 42.dp,
-                                        fontSizeSp = 15,
-                                        bgCircleColor = Color.White.copy(alpha = 0.25f),
-                                        textColor = Color.White,
-                                    )
-                                }
-                            }
+                                Spacer(modifier = Modifier.height(14.dp))
 
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(20.dp))
-                                        .background(Color.White.copy(alpha = 0.2f))
-                                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
-                                    Text(
-                                        text = "🔥 7 Day Logging Streak",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                    )
-                                }
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(Color.White.copy(alpha = 0.2f))
+                                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                                    ) {
+                                        Text(
+                                            text = "🔥 7 Day Logging Streak",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                        )
+                                    }
 
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(20.dp))
-                                        .background(Color.White.copy(alpha = 0.2f))
-                                        .padding(horizontal = 10.dp, vertical = 5.dp),
-                                ) {
-                                    Text(
-                                        text = "🎯 Fasting Target Met",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(Color.White.copy(alpha = 0.2f))
+                                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                                    ) {
+                                        Text(
+                                            text = "🎯 Fasting Target Met",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -187,7 +260,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // 2. Colorful Metrics Grid (Pops Up)
+                // 2. Colorful Metrics Grid (Floating Bubble Effect)
                 ElementPopUpContainer(delayMillis = 80) {
                     Column {
                         Row(
@@ -195,36 +268,44 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             // Glucose Metric Card
-                            MetricCard(
-                                icon = "🩸",
-                                title = "Glucose",
-                                value = "128 mg/dL",
-                                subtitle = "Fasting • 7:15 AM",
-                                statusText = "In Target Range",
-                                statusBg = Color(0xFFE8F5E9),
-                                statusColor = Color(0xFF2E7D32),
-                                cardBg = Color(0xFFFDEEF7),
-                                borderColor = Color(0xFFF3D5E9),
-                                actionText = "+ Log",
-                                onActionClick = onLogGlucoseClick,
+                            FloatingBubbleContainer(
+                                phaseOffsetMs = 200,
                                 modifier = Modifier.weight(1f),
-                            )
+                            ) {
+                                MetricCard(
+                                    icon = "🩸",
+                                    title = "Glucose",
+                                    value = "128 mg/dL",
+                                    subtitle = "Fasting • 7:15 AM",
+                                    statusText = "In Target Range",
+                                    statusBg = Color(0xFFE8F5E9),
+                                    statusColor = Color(0xFF2E7D32),
+                                    cardBg = Color(0xFFFDEEF7),
+                                    borderColor = Color(0xFFF3D5E9),
+                                    actionText = "+ Log",
+                                    onActionClick = onLogGlucoseClick,
+                                )
+                            }
 
                             // Today's Diet Card
-                            MetricCard(
-                                icon = "🥗",
-                                title = "Nutrition",
-                                value = "1,450 kcal",
-                                subtitle = "3 of 4 meals logged",
-                                statusText = "C:160g • P:75g",
-                                statusBg = Color(0xFFE8F5E9),
-                                statusColor = Color(0xFF2E7D32),
-                                cardBg = Color(0xFFEBF7F0),
-                                borderColor = Color(0xFFD4EFE0),
-                                actionText = "Explore",
-                                onActionClick = onTrackFoodClick,
+                            FloatingBubbleContainer(
+                                phaseOffsetMs = 400,
                                 modifier = Modifier.weight(1f),
-                            )
+                            ) {
+                                MetricCard(
+                                    icon = "🥗",
+                                    title = "Nutrition",
+                                    value = "1,450 kcal",
+                                    subtitle = "3 of 4 meals logged",
+                                    statusText = "C:160g • P:75g",
+                                    statusBg = Color(0xFFE8F5E9),
+                                    statusColor = Color(0xFF2E7D32),
+                                    cardBg = Color(0xFFEBF7F0),
+                                    borderColor = Color(0xFFD4EFE0),
+                                    actionText = "Explore",
+                                    onActionClick = onTrackFoodClick,
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -234,129 +315,43 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             // Medication Card
-                            MetricCard(
-                                icon = "💊",
-                                title = "Medication",
-                                value = "Metformin",
-                                subtitle = "500mg • 8:00 PM",
-                                statusText = "Upcoming Dose",
-                                statusBg = Color(0xFFFFF3E0),
-                                statusColor = Color(0xFFE65100),
-                                cardBg = Color(0xFFFFF8EE),
-                                borderColor = Color(0xFFFFECC8),
-                                actionText = "View",
-                                onActionClick = onMedsTabClick,
+                            FloatingBubbleContainer(
+                                phaseOffsetMs = 600,
                                 modifier = Modifier.weight(1f),
-                            )
-
-                            // Weekly Progress Card
-                            MetricCard(
-                                icon = "📊",
-                                title = "Weekly Report",
-                                value = "7/7 Days",
-                                subtitle = "Glucose & Diet Logged",
-                                statusText = "Excellent Routine",
-                                statusBg = Color(0xFFE3F2FD),
-                                statusColor = Color(0xFF1565C0),
-                                cardBg = Color(0xFFF0F7FF),
-                                borderColor = Color(0xFFD0E4FC),
-                                actionText = "Reports",
-                                onActionClick = onReportsTabClick,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 3. Featured Dr. JARVIS AI Daily Tip Card (Pops Up)
-                ElementPopUpContainer(delayMillis = 140) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color(0xFFFDEEF7),
-                                        Color(0xFFFFF0F5),
-                                    ),
-                                ),
-                            )
-                            .border(1.5.dp, Color(0xFFF3D5E9), RoundedCornerShape(18.dp))
-                            .clickable { onDietChatbotClick() }
-                            .padding(16.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            IronmanDoctorAvatar(sizeDp = 44)
-
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "Dr. JARVIS Tip Of The Day ⚡",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFB81D85),
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
-                                    fontSize = 12.sp,
-                                    color = Color(0xFF232226),
-                                    lineHeight = 17.sp,
+                            ) {
+                                MetricCard(
+                                    icon = "💊",
+                                    title = "Medication",
+                                    value = "Metformin",
+                                    subtitle = "500mg • 8:00 PM",
+                                    statusText = "Upcoming Dose",
+                                    statusBg = Color(0xFFFFF3E0),
+                                    statusColor = Color(0xFFE65100),
+                                    cardBg = Color(0xFFFFF8EE),
+                                    borderColor = Color(0xFFFFECC8),
+                                    actionText = "View",
+                                    onActionClick = onMedsTabClick,
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Text(
-                                text = "Ask →",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 4. Today's Routine Timeline Check-In (Pops Up)
-                ElementPopUpContainer(delayMillis = 200) {
-                    Column {
-                        Text(
-                            text = "Today's Check-In Routine",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
-                                .padding(14.dp),
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround,
-                                verticalAlignment = Alignment.CenterVertically,
+                            // Weekly Progress Card
+                            FloatingBubbleContainer(
+                                phaseOffsetMs = 800,
+                                modifier = Modifier.weight(1f),
                             ) {
-                                RoutineCheckItem(icon = "🥣", label = "Breakfast", isDone = true)
-                                RoutineCheckItem(icon = "🩸", label = "Glucose", isDone = true)
-                                RoutineCheckItem(icon = "🥗", label = "Lunch", isDone = true)
-                                RoutineCheckItem(icon = "💊", label = "Dinner/Meds", isDone = false)
+                                MetricCard(
+                                    icon = "📊",
+                                    title = "Weekly Report",
+                                    value = "7/7 Days",
+                                    subtitle = "Glucose & Diet Logged",
+                                    statusText = "Excellent Routine",
+                                    statusBg = Color(0xFFE3F2FD),
+                                    statusColor = Color(0xFF1565C0),
+                                    cardBg = Color(0xFFF0F7FF),
+                                    borderColor = Color(0xFFD0E4FC),
+                                    actionText = "Reports",
+                                    onActionClick = onReportsTabClick,
+                                )
                             }
                         }
                     }
@@ -364,7 +359,105 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 5. Vibrant Quick Actions (Pops Up)
+                // 3. Featured Dr. JARVIS AI Daily Tip Card (Floating Bubble Effect)
+                ElementPopUpContainer(delayMillis = 140) {
+                    FloatingBubbleContainer(phaseOffsetMs = 300) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFFFDEEF7),
+                                            Color(0xFFFFF0F5),
+                                        ),
+                                    ),
+                                )
+                                .border(1.5.dp, Color(0xFFF3D5E9), RoundedCornerShape(18.dp))
+                                .clickable { onDietChatbotClick() }
+                                .padding(16.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                IronmanDoctorAvatar(sizeDp = 44)
+
+                                Spacer(modifier = Modifier.width(14.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Dr. JARVIS Tip Of The Day ⚡",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFB81D85),
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF232226),
+                                        lineHeight = 17.sp,
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    text = "Ask →",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB81D85),
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 4. Today's Routine Timeline Check-In (Floating Bubble Effect)
+                ElementPopUpContainer(delayMillis = 200) {
+                    FloatingBubbleContainer(phaseOffsetMs = 500) {
+                        Column {
+                            Text(
+                                text = "Today's Check-In Routine",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1E1E22),
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                                    .padding(14.dp),
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceAround,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    RoutineCheckItem(icon = "🥣", label = "Breakfast", isDone = true)
+                                    RoutineCheckItem(icon = "🩸", label = "Glucose", isDone = true)
+                                    RoutineCheckItem(icon = "🥗", label = "Lunch", isDone = true)
+                                    RoutineCheckItem(icon = "💊", label = "Dinner/Meds", isDone = false)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 5. Vibrant Quick Actions (Floating Bubble Effect)
                 ElementPopUpContainer(delayMillis = 260) {
                     Column {
                         Text(
@@ -380,27 +473,39 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
-                            VibrantQuickActionButton(
-                                title = "Log Glucose",
-                                icon = "🩸",
-                                gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
-                                onClick = onLogGlucoseClick,
+                            FloatingBubbleContainer(
+                                phaseOffsetMs = 150,
                                 modifier = Modifier.weight(1f),
-                            )
-                            VibrantQuickActionButton(
-                                title = "Activity & Workout",
-                                icon = "🏃‍♂️",
-                                gradientColors = listOf(Color(0xFF00E5FF), Color(0xFF00838F)),
-                                onClick = onActivityTrackingClick,
+                            ) {
+                                VibrantQuickActionButton(
+                                    title = "Log Glucose",
+                                    icon = "🩸",
+                                    gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
+                                    onClick = onLogGlucoseClick,
+                                )
+                            }
+                            FloatingBubbleContainer(
+                                phaseOffsetMs = 350,
                                 modifier = Modifier.weight(1f),
-                            )
-                            VibrantQuickActionButton(
-                                title = "JARVIS AI",
-                                icon = "💬",
-                                gradientColors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
-                                onClick = onDietChatbotClick,
+                            ) {
+                                VibrantQuickActionButton(
+                                    title = "Activity & Workout",
+                                    icon = "🏃‍♂️",
+                                    gradientColors = listOf(Color(0xFF00E5FF), Color(0xFF00838F)),
+                                    onClick = onActivityTrackingClick,
+                                )
+                            }
+                            FloatingBubbleContainer(
+                                phaseOffsetMs = 550,
                                 modifier = Modifier.weight(1f),
-                            )
+                            ) {
+                                VibrantQuickActionButton(
+                                    title = "JARVIS AI",
+                                    icon = "💬",
+                                    gradientColors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                    onClick = onDietChatbotClick,
+                                )
+                            }
                         }
                     }
                 }
@@ -475,13 +580,34 @@ fun IosLiquidGlassBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        // Floating iOS Bouncy Liquid Glass Outer Dock Container
+        val density = LocalDensity.current
+        val itemWidthPx = if (dockWidthPx > 0f) dockWidthPx / tabs.size else 1f
+
+        // Target Center X of the Active Liquid Bubble
+        val targetActiveXPx = if (isDragging && dockWidthPx > 0f) {
+            dragXOffsetPx.coerceIn(itemWidthPx / 2f, dockWidthPx - itemWidthPx / 2f)
+        } else {
+            (selectedIndex + 0.5f) * itemWidthPx
+        }
+
+        // Animated Fluid Active Center X Position
+        val animatedActiveXPx by animateFloatAsState(
+            targetValue = targetActiveXPx,
+            animationSpec = spring(
+                dampingRatio = 0.68f, // Bouncy Liquid Bubble Motion
+                stiffness = Spring.StiffnessMediumLow,
+            ),
+            label = "fluidActiveXAnimation",
+        )
+
+        // Floating Organic Fluid Liquid Glass Dock Container
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(68.dp)
                 .onGloballyPositioned { coordinates ->
                     dockWidthPx = coordinates.size.width.toFloat()
                 }
@@ -490,139 +616,200 @@ fun IosLiquidGlassBottomNav(
                         onDragStart = { offset ->
                             isDragging = true
                             dragXOffsetPx = offset.x
-                            val itemWidth = dockWidthPx / tabs.size
-                            val targetIndex = (offset.x / itemWidth).toInt().coerceIn(0, tabs.size - 1)
+                            val targetIndex = (offset.x / (dockWidthPx / tabs.size)).toInt().coerceIn(0, tabs.size - 1)
                             triggerTabSelection(targetIndex)
                         },
                         onDrag = { change, _ ->
                             change.consume()
                             dragXOffsetPx = change.position.x
-                            val itemWidth = dockWidthPx / tabs.size
-                            val targetIndex = (change.position.x / itemWidth).toInt().coerceIn(0, tabs.size - 1)
+                            val targetIndex = (change.position.x / (dockWidthPx / tabs.size)).toInt().coerceIn(0, tabs.size - 1)
                             triggerTabSelection(targetIndex)
                         },
-                        onDragEnd = {
-                            isDragging = false
-                        },
-                        onDragCancel = {
-                            isDragging = false
-                        },
+                        onDragEnd = { isDragging = false },
+                        onDragCancel = { isDragging = false },
                     )
-                }
-                .shadow(
-                    elevation = 18.dp,
-                    shape = RoundedCornerShape(36.dp),
-                    ambientColor = Color(0xFF811978).copy(alpha = 0.28f),
-                    spotColor = Color(0xFF811978).copy(alpha = 0.38f),
-                )
-                .clip(RoundedCornerShape(36.dp))
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.96f),
-                            Color(0xFFF6EDF8).copy(alpha = 0.92f),
-                        ),
-                    ),
-                )
-                .border(
-                    width = 1.5.dp,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White,
-                            Color.White.copy(alpha = 0.5f),
-                        ),
-                    ),
-                    shape = RoundedCornerShape(36.dp),
-                )
-                .padding(4.dp),
+                },
+            contentAlignment = Alignment.Center,
         ) {
-            val tabWidthDp = if (dockWidthPx > 0f) {
-                with(LocalDensity.current) { (dockWidthPx / tabs.size).toDp() }
-            } else 0.dp
+            // 1. ORGANIC FLUID LIQUID GLASS CANVAS DOCK (Bulges dynamically around active tab!)
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val w = size.width
+                val h = size.height
+                val centerY = h / 2f
 
-            // Calculated Active Sliding Offset
-            val targetOffsetDp = if (isDragging && dockWidthPx > 0f) {
-                val itemWidth = dockWidthPx / tabs.size
-                val clampedX = dragXOffsetPx.coerceIn(0f, dockWidthPx - itemWidth)
-                with(LocalDensity.current) { clampedX.toDp() }
-            } else {
-                tabWidthDp * selectedIndex
+                val baseHeight = 46.dp.toPx()
+                val bulgeHeight = 60.dp.toPx()
+                val halfBase = baseHeight / 2f
+                val halfBulge = bulgeHeight / 2f
+                val bulgeRadiusPx = itemWidthPx * 0.70f
+
+                // Draw Organic Morphing Liquid Glass Outer Boundary Path
+                val fluidPath = Path().apply {
+                    val steps = 60
+                    val dx = w / steps
+
+                    // Top Organic Curve
+                    val topPoints = ArrayList<Offset>()
+                    for (i in 0..steps) {
+                        val x = i * dx
+                        val distFromActive = abs(x - animatedActiveXPx)
+                        val influence = exp(-((distFromActive / bulgeRadiusPx) * (distFromActive / bulgeRadiusPx)).toDouble()).toFloat()
+                        val currentHalfH = halfBase + (halfBulge - halfBase) * influence
+                        topPoints.add(Offset(x, centerY - currentHalfH))
+                    }
+
+                    // Bottom Organic Curve
+                    val bottomPoints = ArrayList<Offset>()
+                    for (i in 0..steps) {
+                        val x = i * dx
+                        val distFromActive = abs(x - animatedActiveXPx)
+                        val influence = exp(-((distFromActive / bulgeRadiusPx) * (distFromActive / bulgeRadiusPx)).toDouble()).toFloat()
+                        val currentHalfH = halfBase + (halfBulge - halfBase) * influence
+                        bottomPoints.add(Offset(x, centerY + currentHalfH))
+                    }
+
+                    // Build Closed Organic Path
+                    val firstPt = topPoints.first()
+                    moveTo(firstPt.x, firstPt.y)
+                    for (i in 1 until topPoints.size) {
+                        lineTo(topPoints[i].x, topPoints[i].y)
+                    }
+
+                    // Right Cap
+                    arcTo(
+                        rect = Rect(
+                            left = w - baseHeight,
+                            top = centerY - halfBase,
+                            right = w,
+                            bottom = centerY + halfBase,
+                        ),
+                        startAngleDegrees = -90f,
+                        sweepAngleDegrees = 180f,
+                        forceMoveTo = false,
+                    )
+
+                    // Bottom Curve (Right to Left)
+                    for (i in bottomPoints.size - 1 downTo 0) {
+                        lineTo(bottomPoints[i].x, bottomPoints[i].y)
+                    }
+
+                    // Left Cap
+                    arcTo(
+                        rect = Rect(
+                            left = 0f,
+                            top = centerY - halfBase,
+                            right = baseHeight,
+                            bottom = centerY + halfBase,
+                        ),
+                        startAngleDegrees = 90f,
+                        sweepAngleDegrees = 180f,
+                        forceMoveTo = false,
+                    )
+
+                    close()
+                }
+
+                // Glass Ambient Blue/Purple Shadow Glow
+                drawPath(
+                    path = fluidPath,
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0x668E24AA),
+                            Color(0x225363FF),
+                            Color.Transparent,
+                        ),
+                        center = Offset(animatedActiveXPx, centerY),
+                        radius = bulgeRadiusPx * 1.5f,
+                    ),
+                )
+
+                // Translucent Liquid Glass Background Fill
+                drawPath(
+                    path = fluidPath,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.92f),
+                            Color(0xFFF2E6F5).copy(alpha = 0.88f),
+                        ),
+                    ),
+                )
+
+                // Luminous White Specular Glass Outline Rim
+                drawPath(
+                    path = fluidPath,
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.95f),
+                            Color(0xFF00E5FF).copy(alpha = 0.60f),
+                            Color(0xFFB81D85).copy(alpha = 0.60f),
+                            Color.White.copy(alpha = 0.95f),
+                        ),
+                    ),
+                    style = Stroke(width = 1.8.dp.toPx()),
+                )
             }
 
-            // Ultra-Smooth Organic Glass Bouncy Gliding Animation
-            val animatedPillOffsetDp by animateDpAsState(
-                targetValue = targetOffsetDp,
-                animationSpec = spring(
-                    dampingRatio = 0.65f, // Bouncy liquid spring feel!
-                    stiffness = Spring.StiffnessMediumLow,
-                ),
-                label = "bouncyLiquidGlassOffset",
-            )
-
-            val pillBouncyScale by animateFloatAsState(
-                targetValue = if (isDragging) 1.06f else 1.0f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioHighBouncy,
-                    stiffness = Spring.StiffnessMediumLow,
-                ),
-                label = "pillBouncyScale",
-            )
-
-            // ONE Continuous Bouncy Liquid Glass Sliding Pill (Smoothly travels across the entire dock!)
+            // 2. INNER FLOATING ACTIVE LIQUID GLASS BUTTON PILL (Matches Image EXACTLY!)
             if (dockWidthPx > 0f) {
+                val pillWidthDp = with(density) { (itemWidthPx - 10.dp.toPx()).toDp() }
+                val pillOffsetDp = with(density) { (animatedActiveXPx - (itemWidthPx - 10.dp.toPx()) / 2f).toDp() }
+
                 Box(
                     modifier = Modifier
-                        .width(tabWidthDp)
-                        .height(46.dp)
-                        .offset(x = animatedPillOffsetDp)
-                        .graphicsLayer {
-                            scaleX = pillBouncyScale
-                            scaleY = pillBouncyScale
-                        }
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(26.dp),
-                            ambientColor = Color(0xFFB81D85).copy(alpha = 0.40f),
-                            spotColor = Color(0xFFB81D85).copy(alpha = 0.50f),
-                        )
-                        .clip(RoundedCornerShape(26.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFFD81B60),
-                                    Color(0xFF8E24AA),
-                                ),
-                            ),
-                        )
-                        .border(
-                            width = 1.2.dp,
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.95f),
-                                    Color.White.copy(alpha = 0.35f),
-                                ),
-                            ),
-                            shape = RoundedCornerShape(26.dp),
-                        ),
+                        .fillMaxWidth()
+                        .height(68.dp),
+                    contentAlignment = Alignment.CenterStart,
                 ) {
-                    // Glass Top Gloss Specular Highlight
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(20.dp)
+                            .offset(x = pillOffsetDp)
+                            .width(pillWidthDp)
+                            .height(50.dp)
+                            .shadow(
+                                elevation = 10.dp,
+                                shape = RoundedCornerShape(20.dp),
+                                ambientColor = Color(0xFF5363FF).copy(alpha = 0.45f),
+                                spotColor = Color(0xFF8E24AA).copy(alpha = 0.55f),
+                            )
+                            .clip(RoundedCornerShape(20.dp))
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        Color.White.copy(alpha = 0.40f),
-                                        Color.White.copy(alpha = 0f),
+                                        Color(0xFF5363FF),
+                                        Color(0xFF8E24AA),
                                     ),
                                 ),
+                            )
+                            .border(
+                                width = 1.2.dp,
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.95f),
+                                        Color.White.copy(alpha = 0.30f),
+                                    ),
+                                ),
+                                shape = RoundedCornerShape(20.dp),
                             ),
-                    )
+                    ) {
+                        // Glass Top Gloss Highlight Line
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(22.dp)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.42f),
+                                            Color.White.copy(alpha = 0f),
+                                        ),
+                                    ),
+                                ),
+                        )
+                    }
                 }
             }
 
-            // Tab Icons & Labels Layer with Bouncy Pop-Up Effect (Large ➔ Small Settle)
+            // 3. TAB ICONS & LABELS LAYER
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
@@ -631,62 +818,47 @@ fun IosLiquidGlassBottomNav(
                 tabs.forEachIndexed { index, (name, icon) ->
                     val isSelected = selectedTab == name
 
-                    // Per-Tab Bouncy Large-to-Small Pop Scale Effect
                     val iconPopScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.16f else 1.0f,
+                        targetValue = if (isSelected) 1.12f else 1.0f,
                         animationSpec = spring(
-                            dampingRatio = 0.48f, // Organic Bouncy Pop!
+                            dampingRatio = 0.55f,
                             stiffness = Spring.StiffnessLow,
                         ),
-                        label = "iconPopScale",
-                    )
-
-                    val iconPopLiftY by animateDpAsState(
-                        targetValue = if (isSelected) (-2).dp else 0.dp,
-                        animationSpec = spring(
-                            dampingRatio = 0.48f,
-                            stiffness = Spring.StiffnessLow,
-                        ),
-                        label = "iconPopLiftY",
+                        label = "tabPopScale",
                     )
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(46.dp)
-                            .clip(RoundedCornerShape(26.dp))
-                            .clickable { triggerTabSelection(index) }
-                            .padding(horizontal = 2.dp),
+                            .height(52.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { triggerTabSelection(index) },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .graphicsLayer {
-                                    scaleX = iconPopScale
-                                    scaleY = iconPopScale
-                                    translationY = iconPopLiftY.toPx()
-                                },
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.graphicsLayer {
+                                scaleX = iconPopScale
+                                scaleY = iconPopScale
+                            },
                         ) {
                             Text(
                                 text = icon,
-                                fontSize = if (isSelected) 15.sp else 17.sp,
+                                fontSize = if (isSelected) 18.sp else 16.sp,
                             )
 
-                            if (isSelected) {
-                                Spacer(modifier = Modifier.width(3.dp))
-                                Text(
-                                    text = name,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    softWrap = false,
-                                )
-                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+
+                            Text(
+                                text = name,
+                                fontSize = if (isSelected) 10.sp else 9.5.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                softWrap = false,
+                            )
                         }
                     }
                 }
