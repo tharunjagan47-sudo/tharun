@@ -1,5 +1,12 @@
 package com.simats.diawell123.ui.diet
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,101 +23,41 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.theme.Diawell123Theme
-
-data class IndianMealInfo(
-    val categoryTitle: String,
-    val mealName: String,
-    val icon: String,
-    val servingText: String,
-    val calories: Int,
-    val carbs: Int,
-    val protein: Int,
-    val fat: Int,
-    val description: String,
-    val ingredients: String,
-)
-
-fun getIndianMealInfo(mealCategory: String): IndianMealInfo {
-    return when (mealCategory.lowercase()) {
-        "lunch" -> IndianMealInfo(
-            categoryTitle = "Lunch",
-            mealName = "Multigrain Roti, Dal & Bhindi Sabzi",
-            icon = "🫓",
-            servingText = "2 rotis + 1 bowl dal + sabzi (380 g)",
-            calories = 420,
-            carbs = 52,
-            protein = 18,
-            fat = 10,
-            description = "High-fiber multigrain chapattis paired with protein-rich Bengal gram dal, stir-fried okra (bhindi sabzi), and a side of fresh cucumber salad.",
-            ingredients = "• Multigrain Flour (Atta)\n• Yellow Chana Dal & Spices\n• Fresh Bhindi (Okra)\n• Olive/Mustard Oil & Cumin",
-        )
-        "snack" -> IndianMealInfo(
-            categoryTitle = "Evening Snack",
-            mealName = "Sprouts Chaat & Green Tea",
-            icon = "🥗",
-            servingText = "1 bowl sprouts chaat (180 g)",
-            calories = 150,
-            carbs = 22,
-            protein = 11,
-            fat = 2,
-            description = "Steamed moong sprouts tossed with chopped cucumber, tomato, pomegranate seeds, lemon juice, and a warm cup of antioxidant-rich green tea.",
-            ingredients = "• Steamed Moong Sprouts\n• Cucumber & Tomatoes\n• Lemon Juice & Chaat Masala\n• Antioxidant Green Tea",
-        )
-        "dinner" -> IndianMealInfo(
-            categoryTitle = "Dinner",
-            mealName = "Palak Paneer & Brown Rice",
-            icon = "🍲",
-            servingText = "1 plate palak paneer + brown rice (350 g)",
-            calories = 380,
-            carbs = 38,
-            protein = 22,
-            fat = 14,
-            description = "Nutrient-dense spinach puree with soft low-fat cottage cheese (paneer) cubes served alongside fiber-rich brown rice.",
-            ingredients = "• Fresh Spinach (Palak)\n• Low-fat Cottage Cheese (Paneer)\n• Steamed Brown Rice\n• Garlic, Ginger & Spices",
-        )
-        else -> IndianMealInfo( // Default: Breakfast
-            categoryTitle = "Breakfast",
-            mealName = "Idli Sambar & Coconut Chutney",
-            icon = "🥣",
-            servingText = "2 idlis + 1 bowl sambar (280 g)",
-            calories = 280,
-            carbs = 44,
-            protein = 10,
-            fat = 5,
-            description = "Steamed fermented rice and lentil cakes served with vegetable-rich tur dal sambar and a side of fresh coconut chutney. Low GI and light.",
-            ingredients = "• Steamed Rice & Urad Dal Batter\n• Tur Dal Sambar with Vegetables\n• Fresh Grated Coconut\n• Curry Leaves & Mustard Seeds",
-        )
-    }
-}
 
 @Composable
 fun FoodDetailsScreen(
+    mealCategory: String,
     modifier: Modifier = Modifier,
-    mealCategory: String = "breakfast",
     onBackClick: () -> Unit = {},
     onAddToFoodLogClick: () -> Unit = {},
 ) {
-    var portionCount by remember { mutableIntStateOf(1) }
-    val meal = remember(mealCategory) { getIndianMealInfo(mealCategory) }
+    val mealDetails = rememberMealDetailsForCategory(mealCategory)
 
     Box(
         modifier = modifier
@@ -127,195 +74,164 @@ fun FoodDetailsScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Top Bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                StyledBackButton(onBackClick = onBackClick)
+            // Top Bar with Styled Floating Bubble Back Button
+            ElementPopUpContainer(delayMillis = 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    StyledBackButton(onBackClick = onBackClick)
 
-                Spacer(modifier = Modifier.width(14.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                Column {
                     Text(
-                        text = "Indian Food Details",
+                        text = "$mealCategory Details",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
                     )
-                    Text(
-                        text = "Diabetic-friendly Indian Nutrition",
-                        fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Meal Banner Illustration Box
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFFFDEEF7)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = meal.icon, fontSize = 64.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Authentic Indian ${meal.categoryTitle}",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF811978),
-                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Title & Subtitle
-            Text(
-                text = meal.mealName,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
-            )
+            // Food Header Card (Image / Icon + Title)
+            ElementPopUpContainer(delayMillis = 60) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF6B156E), Color(0xFFB81D85)),
+                            ),
+                        )
+                        .padding(20.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(text = mealDetails.icon, fontSize = 28.sp)
+                        }
 
-            Text(
-                text = "${meal.categoryTitle} • Serving: ${meal.servingText}",
-                fontSize = 13.sp,
-                color = Color(0xFF6E6877),
-            )
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Column {
+                            Text(
+                                text = mealDetails.title,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "${mealDetails.portion} • ${mealDetails.calories} kcal",
+                                fontSize = 13.sp,
+                                color = Color.White.copy(alpha = 0.85f),
+                            )
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Approximate Nutrition Card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFFDEEF7))
-                    .padding(16.dp),
-            ) {
+            // Glycemic & Diabetic Impact Callout
+            ElementPopUpContainer(delayMillis = 120) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFE8F5E9))
+                        .border(1.dp, Color(0xFFC8E6C9), RoundedCornerShape(14.dp))
+                        .padding(14.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "📉", fontSize = 22.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Glycemic Index: ${mealDetails.glycemicIndex}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E7D32),
+                            )
+                            Text(
+                                text = mealDetails.giNote,
+                                fontSize = 11.sp,
+                                color = Color(0xFF1B5E20),
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Macronutrient Breakdown
+            ElementPopUpContainer(delayMillis = 180) {
                 Column {
                     Text(
-                        text = "APPROXIMATE NUTRITION PER SERVING",
-                        fontSize = 11.sp,
+                        text = "Macronutrient Breakdown",
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
-                        letterSpacing = 0.5.sp,
+                        color = Color(0xFF1E1E22),
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        NutritionStatItem(value = "${meal.calories * portionCount} kcal", label = "Calories")
-                        NutritionStatItem(value = "${meal.carbs * portionCount} g", label = "Carbs")
-                        NutritionStatItem(value = "${meal.protein * portionCount} g", label = "Protein")
-                        NutritionStatItem(value = "${meal.fat * portionCount} g", label = "Fat")
+                        NutrientStatCard(title = "Carbs", value = mealDetails.carbs, color = Color(0xFFE53935), modifier = Modifier.weight(1f))
+                        NutrientStatCard(title = "Protein", value = mealDetails.protein, color = Color(0xFF1E88E5), modifier = Modifier.weight(1f))
+                        NutrientStatCard(title = "Fats", value = mealDetails.fats, color = Color(0xFFFDD835), modifier = Modifier.weight(1f))
+                        NutrientStatCard(title = "Fiber", value = mealDetails.fiber, color = Color(0xFF43A047), modifier = Modifier.weight(1f))
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Portion Selector
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Your portion",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFF8F7FA))
-                            .clickable { if (portionCount > 1) portionCount-- }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                    ) {
-                        Text(text = "−", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Text(
-                        text = "$portionCount serving",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFF8F7FA))
-                            .clickable { portionCount++ }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                    ) {
-                        Text(text = "+", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Description
-            Text(
-                text = meal.description,
-                fontSize = 13.sp,
-                color = Color(0xFF6E6877),
-                lineHeight = 19.sp,
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Ingredients List
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
-                    .padding(14.dp),
-            ) {
+            // Key Health Ingredients & Benefits
+            ElementPopUpContainer(delayMillis = 240) {
                 Column {
                     Text(
-                        text = "Key Ingredients",
-                        fontSize = 13.sp,
+                        text = "Recommended Ingredients",
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = meal.ingredients,
-                        fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
-                        lineHeight = 18.sp,
-                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    mealDetails.ingredients.forEach { item ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                                .padding(12.dp),
+                        ) {
+                            Text(
+                                text = "• $item",
+                                fontSize = 12.sp,
+                                color = Color(0xFF1E1E22),
+                            )
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // iOS Liquid Glass Action Button
             IosLiquidGlassButton(
@@ -328,41 +244,186 @@ fun FoodDetailsScreen(
     }
 }
 
+// 3D FLOATING LIQUID GLASS BUBBLE BACK NAVIGATION BUTTON (Matches User Image Exactly!)
 @Composable
 fun StyledBackButton(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "BackButtonFloat")
+
+    // Gentle floating translation Y
+    val floatOffsetY by infiniteTransition.animateFloat(
+        initialValue = -2.5f,
+        targetValue = 2.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "backFloatOffsetY",
+    )
+
+    // Gentle breathing scale
+    val floatScale by infiniteTransition.animateFloat(
+        initialValue = 0.98f,
+        targetValue = 1.03f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "backFloatScale",
+    )
+
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.40f,
+        targetValue = 0.80f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "backGlowAlpha",
+    )
+
     Box(
         modifier = modifier
-            .size(38.dp)
-            .shadow(
-                elevation = 3.dp,
-                shape = RoundedCornerShape(12.dp),
-                ambientColor = Color(0xFF811978).copy(alpha = 0.12f),
-                spotColor = Color(0xFF811978).copy(alpha = 0.18f),
-            )
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(
-                width = 1.2.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White,
-                        Color(0xFFEFECEF),
-                    ),
-                ),
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clickable { onBackClick() },
+            .graphicsLayer {
+                translationY = floatOffsetY.dp.toPx()
+                scaleX = floatScale
+                scaleY = floatScale
+            }
+            .clip(CircleShape)
+            .clickable { onBackClick() }
+            .padding(2.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = "←",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E1E22),
-        )
+        Canvas(
+            modifier = Modifier.size(width = 64.dp, height = 42.dp),
+        ) {
+            val w = size.width
+            val h = size.height
+            val centerY = h / 2f
+
+            val mainRadius = 17.dp.toPx()
+            val mainCenterX = 20.dp.toPx()
+
+            // 1. Ambient Blue/Purple Outer Glow Aura
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF5363FF).copy(alpha = glowAlpha * 0.45f),
+                        Color(0xFFA173FF).copy(alpha = glowAlpha * 0.25f),
+                        Color.Transparent,
+                    ),
+                ),
+                radius = mainRadius * 1.45f,
+                center = Offset(mainCenterX, centerY),
+            )
+
+            // 2. Main Organic Liquid Bubble Metaball Path
+            val metaballPath = Path().apply {
+                // Main Sphere
+                addOval(
+                    Rect(
+                        left = mainCenterX - mainRadius,
+                        top = centerY - mainRadius,
+                        right = mainCenterX + mainRadius,
+                        bottom = centerY + mainRadius,
+                    ),
+                )
+
+                // Droplet Extension Tail
+                val tailLeft = mainCenterX + mainRadius * 0.55f
+                val tailRight = mainCenterX + mainRadius * 1.50f
+                val tailTop = centerY - mainRadius * 0.52f
+                val tailBottom = centerY + mainRadius * 0.52f
+
+                addOval(
+                    Rect(
+                        left = tailLeft,
+                        top = tailTop,
+                        right = tailRight,
+                        bottom = tailBottom,
+                    ),
+                )
+            }
+
+            // Draw Liquid Bubble Translucent Gradient Fill
+            drawPath(
+                path = metaballPath,
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF8BA5FF).copy(alpha = 0.95f),
+                        Color(0xFF5363FF).copy(alpha = 0.85f),
+                        Color(0xFF8E24AA).copy(alpha = 0.75f),
+                        Color(0xFF3B1E94).copy(alpha = 0.65f),
+                    ),
+                    center = Offset(mainCenterX - mainRadius * 0.3f, centerY - mainRadius * 0.3f),
+                    radius = mainRadius * 1.6f,
+                ),
+            )
+
+            // Luminous Glass Rim Outline
+            drawPath(
+                path = metaballPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.95f),
+                        Color(0xFF00E5FF).copy(alpha = 0.70f),
+                        Color.White.copy(alpha = 0.50f),
+                    ),
+                ),
+                style = Stroke(width = 1.6.dp.toPx()),
+            )
+
+            // Glass Specular Crescent Arc Highlight
+            drawArc(
+                color = Color.White.copy(alpha = 0.85f),
+                startAngle = 190f,
+                sweepAngle = 120f,
+                useCenter = false,
+                topLeft = Offset(mainCenterX - mainRadius * 0.82f, centerY - mainRadius * 0.82f),
+                size = Size(mainRadius * 1.64f, mainRadius * 1.64f),
+                style = Stroke(width = 2.0.dp.toPx()),
+            )
+
+            // 3. Small Satellite Floating Bubble Sphere (To the right)
+            val satCenterX = w - 7.dp.toPx()
+            val satRadius = 5.dp.toPx()
+
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.95f),
+                        Color(0xFF7CA3FF).copy(alpha = 0.80f),
+                        Color(0xFF5363FF).copy(alpha = 0.60f),
+                    ),
+                    center = Offset(satCenterX - satRadius * 0.3f, centerY - satRadius * 0.3f),
+                    radius = satRadius * 1.2f,
+                ),
+                radius = satRadius,
+                center = Offset(satCenterX, centerY),
+            )
+
+            drawCircle(
+                color = Color.White.copy(alpha = 0.90f),
+                radius = satRadius,
+                center = Offset(satCenterX, centerY),
+                style = Stroke(width = 1.2.dp.toPx()),
+            )
+
+            // 4. White Crisp Back Chevron Arrow Icon `<`
+            val arrowPath = Path().apply {
+                moveTo(mainCenterX + 3.5.dp.toPx(), centerY - 6.dp.toPx())
+                lineTo(mainCenterX - 3.5.dp.toPx(), centerY)
+                lineTo(mainCenterX + 3.5.dp.toPx(), centerY + 6.dp.toPx())
+            }
+
+            drawPath(
+                path = arrowPath,
+                color = Color.White,
+                style = Stroke(width = 2.6.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+            )
+        }
     }
 }
 
@@ -371,6 +432,7 @@ fun IosLiquidGlassButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     gradientColors: List<Color> = listOf(
         Color(0xFF7A1C7D),
         Color(0xFFBD1E85),
@@ -380,28 +442,35 @@ fun IosLiquidGlassButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(54.dp)
             .shadow(
-                elevation = 6.dp,
-                shape = RoundedCornerShape(32.dp),
+                elevation = 8.dp,
+                shape = RoundedCornerShape(16.dp),
                 ambientColor = Color(0xFFB81D85).copy(alpha = 0.35f),
                 spotColor = Color(0xFFB81D85).copy(alpha = 0.45f),
             )
-            .clip(RoundedCornerShape(32.dp))
-            .background(brush = Brush.horizontalGradient(colors = gradientColors))
-            .border(
-                width = 1.2.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.8f),
-                        Color.White.copy(alpha = 0.2f),
-                    ),
-                ),
-                shape = RoundedCornerShape(32.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                brush = Brush.horizontalGradient(colors = gradientColors),
             )
-            .clickable { onClick() },
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp)
+                .align(Alignment.TopCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.35f),
+                            Color.White.copy(alpha = 0f),
+                        ),
+                    ),
+                ),
+        )
+
         Text(
             text = text,
             fontSize = 15.sp,
@@ -412,21 +481,113 @@ fun IosLiquidGlassButton(
 }
 
 @Composable
-fun NutritionStatItem(
+fun NutrientStatCard(
+    title: String,
     value: String,
-    label: String,
+    color: Color,
+    modifier: Modifier = Modifier,
 ) {
-    Column(horizontalAlignment = Alignment.Start) {
-        Text(
-            text = value,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF7A1C7D),
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(color.copy(alpha = 0.1f))
+            .border(1.dp, color.copy(alpha = 0.25f), RoundedCornerShape(12.dp))
+            .padding(vertical = 10.dp, horizontal = 6.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = title, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = color)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
+        }
+    }
+}
+
+private data class MealDetailsData(
+    val icon: String,
+    val title: String,
+    val calories: String,
+    val portion: String,
+    val glycemicIndex: String,
+    val giNote: String,
+    val carbs: String,
+    val protein: String,
+    val fats: String,
+    val fiber: String,
+    val ingredients: List<String>,
+)
+
+private fun rememberMealDetailsForCategory(category: String): MealDetailsData {
+    return when (category.lowercase()) {
+        "breakfast" -> MealDetailsData(
+            icon = "🥣",
+            title = "Oatmeal Bowl & Berries",
+            calories = "340",
+            portion = "1 Medium Bowl (250g)",
+            glycemicIndex = "55 (Low GI)",
+            giNote = "Gradual energy release, prevents morning glucose spikes.",
+            carbs = "48g",
+            protein = "14g",
+            fats = "7g",
+            fiber = "8g",
+            ingredients = listOf(
+                "Whole rolled oats (40g)",
+                "Unsweetened Greek yogurt (100g)",
+                "Fresh blueberries & strawberries (50g)",
+                "Chia seeds & crushed almonds (10g)",
+            ),
         )
-        Text(
-            text = label,
-            fontSize = 11.sp,
-            color = Color(0xFF6E6877),
+        "lunch" -> MealDetailsData(
+            icon = "🥗",
+            title = "Grilled Chicken & Quinoa Salad",
+            calories = "480",
+            portion = "1 Large Bowl (350g)",
+            glycemicIndex = "42 (Low GI)",
+            giNote = "High lean protein & fiber keeps post-prandial blood sugar steady.",
+            carbs = "42g",
+            protein = "38g",
+            fats = "12g",
+            fiber = "9g",
+            ingredients = listOf(
+                "Skinless grilled chicken breast (150g)",
+                "Cooked organic quinoa (100g)",
+                "Mixed greens, cucumber & cherry tomatoes",
+                "Cold-pressed extra virgin olive oil (1 tbsp)",
+            ),
+        )
+        "dinner" -> MealDetailsData(
+            icon = "🐟",
+            title = "Baked Salmon & Steamed Broccoli",
+            calories = "420",
+            portion = "1 Plate (300g)",
+            glycemicIndex = "28 (Very Low GI)",
+            giNote = "Rich in Omega-3 fatty acids, excellent overnight metabolic control.",
+            carbs = "18g",
+            protein = "36g",
+            fats = "18g",
+            fiber = "6g",
+            ingredients = listOf(
+                "Fresh wild salmon fillet (160g)",
+                "Steamed fresh broccoli florets (120g)",
+                "Lemon juice, garlic & herbs seasoning",
+            ),
+        )
+        else -> MealDetailsData(
+            icon = "🥑",
+            title = "Avocado & Roasted Chickpea Bowl",
+            calories = "290",
+            portion = "1 Serving (200g)",
+            glycemicIndex = "35 (Low GI)",
+            giNote = "Heart-healthy fats and plant protein for sustained energy.",
+            carbs = "26g",
+            protein = "10g",
+            fats = "14g",
+            fiber = "7g",
+            ingredients = listOf(
+                "Hass avocado slices (half)",
+                "Roasted seasoned chickpeas (80g)",
+                "Pumpkin seeds & microgreens",
+            ),
         )
     }
 }
@@ -435,6 +596,6 @@ fun NutritionStatItem(
 @Composable
 fun FoodDetailsScreenPreview() {
     Diawell123Theme {
-        FoodDetailsScreen()
+        FoodDetailsScreen(mealCategory = "Breakfast")
     }
 }

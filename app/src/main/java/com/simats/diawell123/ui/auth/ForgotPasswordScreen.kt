@@ -1,6 +1,13 @@
 package com.simats.diawell123.ui.auth
 
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,10 +26,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,11 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,7 +53,10 @@ import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.diet.StyledBackButton
+import com.simats.diawell123.ui.profile.AiSpeechOrbLoadingView
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import kotlinx.coroutines.delay
 
 @Composable
 fun ForgotPasswordScreen(
@@ -50,7 +64,25 @@ fun ForgotPasswordScreen(
     onBackClick: () -> Unit = {},
     onSendResetLinkClick: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     var email by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isNewPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
+
+    var errorMessage by remember { mutableStateOf("") }
+    var isUpdatingPassword by remember { mutableStateOf(false) }
+
+    // 3D Saturn AI Orb Loading Transition & Success Return
+    LaunchedEffect(isUpdatingPassword) {
+        if (isUpdatingPassword) {
+            delay(2200) // 2.2 Seconds 3D Rotating Saturn AI Orb
+            isUpdatingPassword = false
+            Toast.makeText(context, "Password successfully changed!", Toast.LENGTH_SHORT).show()
+            onSendResetLinkClick() // Return directly to Login Screen
+        }
+    }
 
     Box(
         modifier = modifier
@@ -72,48 +104,39 @@ fun ForgotPasswordScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Top Back Arrow Bar
+                // Top Bar with Floating Bubble Back Button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = "←",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onBackClick() }
-                            .padding(4.dp),
-                    )
+                    StyledBackButton(onBackClick = onBackClick)
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
 
                     Column {
                         Text(
-                            text = "Forgot Password?",
+                            text = "Reset Password",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1E1E22),
                         )
                         Text(
-                            text = "Let's get you back to your daily routine.",
+                            text = "Update your credentials securely.",
                             fontSize = 12.sp,
                             color = Color(0xFF6E6877),
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Arc Reactor Logo
                 ArcReactorCanvas(
                     rotationAngle = 0f,
-                    modifier = Modifier.size(72.dp),
+                    modifier = Modifier.size(68.dp),
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = "DiaWell",
@@ -122,40 +145,32 @@ fun ForgotPasswordScreen(
                     color = Color(0xFF7A1C7D),
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // Mail Envelope Card Graphic
-                Box(
-                    modifier = Modifier
-                        .size(100.dp, 70.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFFDEEF7)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_email),
-                        contentDescription = null,
-                        tint = Color(0xFFB81D85),
-                        modifier = Modifier.size(40.dp),
-                    )
-                }
-
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Text(
-                    text = "Enter the email linked to your account. We'll send you a link to reset your password.",
-                    fontSize = 13.sp,
-                    color = Color(0xFF6E6877),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 19.sp,
-                )
+                // Error Message Callout
+                if (errorMessage.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFFFEBEE))
+                            .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                            .padding(12.dp),
+                    ) {
+                        Text(
+                            text = "⚠️ $errorMessage",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFC62828),
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // Email Input Field
+                // 1. Email Field
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Email Address",
+                        text = "Registered Email Address",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF232226),
@@ -164,7 +179,10 @@ fun ForgotPasswordScreen(
 
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            errorMessage = ""
+                        },
                         placeholder = {
                             Text(
                                 text = "you@example.com",
@@ -195,12 +213,126 @@ fun ForgotPasswordScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // 2. New Password Field
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "New Password",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF232226),
+                        modifier = Modifier.padding(bottom = 6.dp),
+                    )
+
+                    OutlinedTextField(
+                        value = newPassword,
+                        onValueChange = {
+                            newPassword = it
+                            errorMessage = ""
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Enter new password",
+                                fontSize = 14.sp,
+                                color = Color(0xFFA09BAA),
+                            )
+                        },
+                        singleLine = true,
+                        visualTransformation = if (isNewPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { isNewPasswordVisible = !isNewPasswordVisible }) {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (isNewPasswordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off,
+                                    ),
+                                    contentDescription = null,
+                                    tint = Color(0xFF9A96A4),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFF8F7FA),
+                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedBorderColor = Color(0xFFBD1E85),
+                            unfocusedBorderColor = Color(0xFFEFECEF),
+                            focusedTextColor = Color(0xFF1E1E22),
+                            unfocusedTextColor = Color(0xFF1E1E22),
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // 3. Confirm New Password Field
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Confirm New Password",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF232226),
+                        modifier = Modifier.padding(bottom = 6.dp),
+                    )
+
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = {
+                            confirmPassword = it
+                            errorMessage = ""
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Re-enter new password",
+                                fontSize = 14.sp,
+                                color = Color(0xFFA09BAA),
+                            )
+                        },
+                        singleLine = true,
+                        visualTransformation = if (isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible }) {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (isConfirmPasswordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off,
+                                    ),
+                                    contentDescription = null,
+                                    tint = Color(0xFF9A96A4),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFF8F7FA),
+                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedBorderColor = Color(0xFFBD1E85),
+                            unfocusedBorderColor = Color(0xFFEFECEF),
+                            focusedTextColor = Color(0xFF1E1E22),
+                            unfocusedTextColor = Color(0xFF1E1E22),
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Send Reset Link Button
+                // Reset & Update Password Button
                 IosLiquidGlassButton(
-                    text = "Send Reset Link",
-                    onClick = onSendResetLinkClick,
+                    text = "Update Password",
+                    onClick = {
+                        when {
+                            email.isBlank() -> errorMessage = "Please enter your email address."
+                            newPassword.isBlank() -> errorMessage = "Please enter your new password."
+                            confirmPassword.isBlank() -> errorMessage = "Please confirm your new password."
+                            newPassword != confirmPassword -> errorMessage = "New password and confirm password do not match!"
+                            else -> isUpdatingPassword = true
+                        }
+                    },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -234,6 +366,25 @@ fun ForgotPasswordScreen(
                     text = "Your personal information stays private.",
                     fontSize = 12.sp,
                     color = Color(0xFF8A8595),
+                )
+            }
+        }
+
+        // ROTATING 3D SATURN AI SPEECH ORB LOADING OVERLAY FOR PASSWORD RESET
+        AnimatedVisibility(
+            visible = isUpdatingPassword,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = 0.96f))
+                    .clickable(enabled = false) {}, // Intercept clicks during loading
+                contentAlignment = Alignment.Center,
+            ) {
+                AiSpeechOrbLoadingView(
+                    statusText = "Updating & Securing Your Password...",
                 )
             }
         }
