@@ -32,7 +32,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.model.HomeRoutineItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -131,7 +136,9 @@ fun FloatingBubbleContainer(
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = viewModel(),
     onLogGlucoseClick: () -> Unit = {},
+    onGlucoseHistoryClick: () -> Unit = {},
     onTrackFoodClick: () -> Unit = {},
     onActivityTrackingClick: () -> Unit = {},
     onDietChatbotClick: () -> Unit = {},
@@ -142,6 +149,12 @@ fun HomeScreen(
     onProfileClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
+    val uiState by viewModel.uiState.collectAsState()
+    val data = uiState.dashboardData
+
+    LaunchedEffect(Unit) {
+        viewModel.loadDashboard(isPullToRefresh = false)
+    }
 
     Box(
         modifier = modifier
@@ -184,13 +197,13 @@ fun HomeScreen(
                                 ) {
                                     Column {
                                         Text(
-                                            text = "Good morning, ${ProfileState.userName} 👋",
+                                            text = data?.greeting?.takeIf { it.isNotBlank() } ?: "Good morning, ${ProfileState.userName} 👋",
                                             fontSize = 20.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White,
                                         )
                                         Text(
-                                            text = "Daily Wellness • 94% On Track",
+                                            text = data?.wellnessSubtitle?.takeIf { it.isNotBlank() } ?: "Daily Wellness • 94% On Track",
                                             fontSize = 12.sp,
                                             color = Color.White.copy(alpha = 0.85f),
                                         )
@@ -222,7 +235,7 @@ fun HomeScreen(
                                             .padding(horizontal = 10.dp, vertical = 5.dp),
                                     ) {
                                         Text(
-                                            text = "🔥 7 Day Logging Streak",
+                                            text = data?.streakBadge?.takeIf { it.isNotBlank() } ?: "🔥 7 Day Logging Streak",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White,
@@ -236,7 +249,7 @@ fun HomeScreen(
                                             .padding(horizontal = 10.dp, vertical = 5.dp),
                                     ) {
                                         Text(
-                                            text = "🎯 Fasting Target Met",
+                                            text = data?.targetBadge?.takeIf { it.isNotBlank() } ?: "🎯 Fasting Target Met",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White,
@@ -244,6 +257,38 @@ fun HomeScreen(
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+
+                                if (uiState.errorMessage != null && data == null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFFFEBEE))
+                            .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                            .clickable { viewModel.loadDashboard(isPullToRefresh = true) }
+                            .padding(12.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "⚠️ ${uiState.errorMessage}",
+                                fontSize = 12.sp,
+                                color = Color(0xFFC62828),
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "Retry ↻",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFC62828)
+                            )
                         }
                     }
                 }
@@ -263,6 +308,11 @@ fun HomeScreen(
                 // 2. Colorful Metrics Grid (Floating Bubble Effect)
                 ElementPopUpContainer(delayMillis = 80) {
                     Column {
+                        val gMetric = data?.metrics?.glucose
+                        val nMetric = data?.metrics?.nutrition
+                        val mMetric = data?.metrics?.medication
+                        val wMetric = data?.metrics?.weeklyProgress
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -274,16 +324,16 @@ fun HomeScreen(
                             ) {
                                 MetricCard(
                                     icon = "🩸",
-                                    title = "Glucose",
-                                    value = "128 mg/dL",
-                                    subtitle = "Fasting • 7:15 AM",
-                                    statusText = "In Target Range",
-                                    statusBg = Color(0xFFE8F5E9),
-                                    statusColor = Color(0xFF2E7D32),
+                                    title = gMetric?.title?.ifBlank { "Glucose" } ?: "Glucose",
+                                    value = gMetric?.value?.ifBlank { "128 mg/dL" } ?: "128 mg/dL",
+                                    subtitle = gMetric?.subtitle?.ifBlank { "Fasting • 7:15 AM" } ?: "Fasting • 7:15 AM",
+                                    statusText = gMetric?.statusText?.ifBlank { "In Target Range" } ?: "In Target Range",
+                                    statusBg = parseHexColor(gMetric?.statusBg, Color(0xFFE8F5E9)),
+                                    statusColor = parseHexColor(gMetric?.statusColor, Color(0xFF2E7D32)),
                                     cardBg = Color(0xFFFDEEF7),
                                     borderColor = Color(0xFFF3D5E9),
-                                    actionText = "+ Log",
-                                    onActionClick = onLogGlucoseClick,
+                                    actionText = "History ›",
+                                    onActionClick = onGlucoseHistoryClick,
                                 )
                             }
 
@@ -294,12 +344,12 @@ fun HomeScreen(
                             ) {
                                 MetricCard(
                                     icon = "🥗",
-                                    title = "Nutrition",
-                                    value = "1,450 kcal",
-                                    subtitle = "3 of 4 meals logged",
-                                    statusText = "C:160g • P:75g",
-                                    statusBg = Color(0xFFE8F5E9),
-                                    statusColor = Color(0xFF2E7D32),
+                                    title = nMetric?.title?.ifBlank { "Nutrition" } ?: "Nutrition",
+                                    value = nMetric?.value?.ifBlank { "1,450 kcal" } ?: "1,450 kcal",
+                                    subtitle = nMetric?.subtitle?.ifBlank { "3 of 4 meals logged" } ?: "3 of 4 meals logged",
+                                    statusText = nMetric?.statusText?.ifBlank { "C:160g • P:75g" } ?: "C:160g • P:75g",
+                                    statusBg = parseHexColor(nMetric?.statusBg, Color(0xFFE8F5E9)),
+                                    statusColor = parseHexColor(nMetric?.statusColor, Color(0xFF2E7D32)),
                                     cardBg = Color(0xFFEBF7F0),
                                     borderColor = Color(0xFFD4EFE0),
                                     actionText = "Explore",
@@ -321,12 +371,12 @@ fun HomeScreen(
                             ) {
                                 MetricCard(
                                     icon = "💊",
-                                    title = "Medication",
-                                    value = "Metformin",
-                                    subtitle = "500mg • 8:00 PM",
-                                    statusText = "Upcoming Dose",
-                                    statusBg = Color(0xFFFFF3E0),
-                                    statusColor = Color(0xFFE65100),
+                                    title = mMetric?.title?.ifBlank { "Medication" } ?: "Medication",
+                                    value = mMetric?.value?.ifBlank { "Metformin" } ?: "Metformin",
+                                    subtitle = mMetric?.subtitle?.ifBlank { "500mg • 8:00 PM" } ?: "500mg • 8:00 PM",
+                                    statusText = mMetric?.statusText?.ifBlank { "Upcoming Dose" } ?: "Upcoming Dose",
+                                    statusBg = parseHexColor(mMetric?.statusBg, Color(0xFFFFF3E0)),
+                                    statusColor = parseHexColor(mMetric?.statusColor, Color(0xFFE65100)),
                                     cardBg = Color(0xFFFFF8EE),
                                     borderColor = Color(0xFFFFECC8),
                                     actionText = "View",
@@ -341,12 +391,12 @@ fun HomeScreen(
                             ) {
                                 MetricCard(
                                     icon = "📊",
-                                    title = "Weekly Report",
-                                    value = "7/7 Days",
-                                    subtitle = "Glucose & Diet Logged",
-                                    statusText = "Excellent Routine",
-                                    statusBg = Color(0xFFE3F2FD),
-                                    statusColor = Color(0xFF1565C0),
+                                    title = wMetric?.title?.ifBlank { "Weekly Report" } ?: "Weekly Report",
+                                    value = wMetric?.value?.ifBlank { "7/7 Days" } ?: "7/7 Days",
+                                    subtitle = wMetric?.subtitle?.ifBlank { "Glucose & Diet Logged" } ?: "Glucose & Diet Logged",
+                                    statusText = wMetric?.statusText?.ifBlank { "Excellent Routine" } ?: "Excellent Routine",
+                                    statusBg = parseHexColor(wMetric?.statusBg, Color(0xFFE3F2FD)),
+                                    statusColor = parseHexColor(wMetric?.statusColor, Color(0xFF1565C0)),
                                     cardBg = Color(0xFFF0F7FF),
                                     borderColor = Color(0xFFD0E4FC),
                                     actionText = "Reports",
@@ -389,7 +439,7 @@ fun HomeScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "Dr. JARVIS Tip Of The Day ⚡",
+                                            text = data?.aiTip?.title ?: "Dr. JARVIS Tip Of The Day ⚡",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFB81D85),
@@ -397,7 +447,7 @@ fun HomeScreen(
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
+                                        text = data?.aiTip?.tip ?: "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
                                         fontSize = 12.sp,
                                         color = Color(0xFF232226),
                                         lineHeight = 17.sp,
@@ -445,10 +495,19 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.SpaceAround,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    RoutineCheckItem(icon = "🥣", label = "Breakfast", isDone = true)
-                                    RoutineCheckItem(icon = "🩸", label = "Glucose", isDone = true)
-                                    RoutineCheckItem(icon = "🥗", label = "Lunch", isDone = true)
-                                    RoutineCheckItem(icon = "💊", label = "Dinner/Meds", isDone = false)
+                                    val routineItems = data?.routine?.takeIf { it.isNotEmpty() } ?: listOf(
+                                        HomeRoutineItem(icon = "🥣", label = "Breakfast", isDone = false),
+                                        HomeRoutineItem(icon = "🩸", label = "Glucose", isDone = true),
+                                        HomeRoutineItem(icon = "🥗", label = "Lunch", isDone = false),
+                                        HomeRoutineItem(icon = "💊", label = "Dinner/Meds", isDone = false)
+                                    )
+                                    routineItems.forEach { item ->
+                                        RoutineCheckItem(
+                                            icon = item.icon.ifBlank { "✓" },
+                                            label = item.label,
+                                            isDone = item.isDone
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1026,6 +1085,24 @@ fun VibrantQuickActionButton(
                 textAlign = TextAlign.Center,
             )
         }
+    }
+}
+
+
+fun parseHexColor(hexString: String?, fallback: Color): Color {
+    if (hexString.isNullOrBlank()) return fallback
+    return try {
+        val cleanHex = hexString.removePrefix("#").trim()
+        val colorInt = cleanHex.toLong(16)
+        if (cleanHex.length == 6) {
+            Color(0xFF000000 or colorInt)
+        } else if (cleanHex.length == 8) {
+            Color(colorInt)
+        } else {
+            fallback
+        }
+    } catch (_: Exception) {
+        fallback
     }
 }
 

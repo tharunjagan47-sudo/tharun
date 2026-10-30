@@ -1,10 +1,12 @@
 package com.simats.diawell123.ui.auth
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +32,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,31 +50,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.profile.AiSpeechOrbLoadingView
 import com.simats.diawell123.ui.theme.Diawell123Theme
-import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = viewModel(),
     onLoginSuccess: () -> Unit = {},
     onForgotPasswordClick: () -> Unit = {},
     onCreateAccountClick: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
-    var isLoggingIn by remember { mutableStateOf(false) }
 
-    // 3D Saturn AI Speech Orb Transition from Login to Dashboard
-    LaunchedEffect(isLoggingIn) {
-        if (isLoggingIn) {
-            delay(2200) // 2.2 Seconds 3D Rotating Saturn AI Orb
-            isLoggingIn = false
+    // Check for auto-logout / session expiry notice on composition
+    LaunchedEffect(Unit) {
+        viewModel.checkExpiredReason()
+    }
+
+    // Handle Login Success Navigation
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
             onLoginSuccess()
+            viewModel.resetState()
         }
     }
 
@@ -130,13 +139,72 @@ fun LoginScreen(
                     color = Color(0xFF7A1C7D),
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Animated Error Banner
+                AnimatedVisibility(
+                    visible = !uiState.errorMessage.isNullOrBlank(),
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically(),
+                ) {
+                    uiState.errorMessage?.let { errorText ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFFDE8E8))
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_shield_check),
+                                    contentDescription = "Alert",
+                                    tint = Color(0xFFC53030),
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = errorText,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF9B1C1C),
+                                    lineHeight = 18.sp,
+                                )
+                            }
+                            IconButton(
+                                onClick = { viewModel.clearError() },
+                                modifier = Modifier.size(24.dp),
+                            ) {
+                                Text(
+                                    text = "✕",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF9B1C1C),
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (!uiState.errorMessage.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
                 // Email Field
                 LoginInputField(
                     label = "Email Address",
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        if (uiState.errorMessage != null) viewModel.clearError()
+                    },
                     placeholder = "you@example.com",
                     trailingIconRes = R.drawable.ic_email,
                     keyboardType = KeyboardType.Email,
@@ -148,7 +216,10 @@ fun LoginScreen(
                 LoginInputField(
                     label = "Password",
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        if (uiState.errorMessage != null) viewModel.clearError()
+                    },
                     placeholder = "Enter your password",
                     isPassword = true,
                     isPasswordVisible = isPasswordVisible,
@@ -176,8 +247,12 @@ fun LoginScreen(
 
                 // Login Gradient Button
                 IosLiquidGlassButton(
-                    text = "Login",
-                    onClick = { isLoggingIn = true },
+                    text = if (uiState.isLoading) "Logging in..." else "Login",
+                    onClick = {
+                        if (!uiState.isLoading) {
+                            viewModel.onLogin(email, password)
+                        }
+                    },
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -227,7 +302,7 @@ fun LoginScreen(
 
         // ROTATING 3D SATURN AI SPEECH ORB LOADING OVERLAY FOR LOGIN
         AnimatedVisibility(
-            visible = isLoggingIn,
+            visible = uiState.isLoading,
             enter = fadeIn() + scaleIn(),
             exit = fadeOut() + scaleOut(),
         ) {
@@ -289,7 +364,7 @@ fun LoginInputField(
                                 painter = painterResource(
                                     id = if (isPasswordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off,
                                 ),
-                                contentDescription = null,
+                                contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
                                 tint = Color(0xFF9A96A4),
                                 modifier = Modifier.size(20.dp),
                             )

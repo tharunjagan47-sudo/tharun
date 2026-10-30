@@ -19,13 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,88 +33,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.model.ActivityHistoryItem
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
-data class ActivityRecord(
-    val id: String,
-    val type: String, // "Walking", "Cycling", "Running"
-    val icon: String,
-    val date: String,
-    val durationMins: Int,
-    val distanceKm: Float,
-    val caloriesKcal: Int,
-    val glucoseBefore: Int,
-    val glucoseAfter: Int,
-)
-
 @Composable
 fun ActivityHistoryScreen(
     modifier: Modifier = Modifier,
+    viewModel: ActivityViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onStartNewWorkoutClick: () -> Unit = {},
 ) {
-    var selectedFilter by remember { mutableStateOf("All") }
+    val historyState by viewModel.historyState.collectAsState()
 
-    // Sample Saved Workouts History
-    val historyRecords = remember {
-        mutableStateListOf(
-            ActivityRecord(
-                id = "1",
-                type = "Walking",
-                icon = "🚶‍♂️",
-                date = "Today, 15 Oct • 7:45 AM",
-                durationMins = 33,
-                distanceKm = 2.8f,
-                caloriesKcal = 185,
-                glucoseBefore = 128,
-                glucoseAfter = 106,
-            ),
-            ActivityRecord(
-                id = "2",
-                type = "Cycling",
-                icon = "🚴",
-                date = "Yesterday, 14 Oct • 6:30 PM",
-                durationMins = 25,
-                distanceKm = 8.2f,
-                caloriesKcal = 240,
-                glucoseBefore = 142,
-                glucoseAfter = 118,
-            ),
-            ActivityRecord(
-                id = "3",
-                type = "Running",
-                icon = "🏃",
-                date = "13 Oct • 6:15 AM",
-                durationMins = 20,
-                distanceKm = 3.5f,
-                caloriesKcal = 210,
-                glucoseBefore = 135,
-                glucoseAfter = 112,
-            ),
-            ActivityRecord(
-                id = "4",
-                type = "Walking",
-                icon = "🚶‍♂️",
-                date = "12 Oct • 7:15 AM",
-                durationMins = 30,
-                distanceKm = 2.4f,
-                caloriesKcal = 160,
-                glucoseBefore = 130,
-                glucoseAfter = 110,
-            ),
-        )
-    }
-
-    val filteredList = historyRecords.filter {
-        selectedFilter == "All" || it.type == selectedFilter
-    }
-
-    val totalWorkouts = historyRecords.size
-    val totalDistance = historyRecords.sumOf { it.distanceKm.toDouble() }
-    val totalCalories = historyRecords.sumOf { it.caloriesKcal }
+    val totalWorkouts = historyState.summary.totalWorkouts
+    val totalDistance = historyState.summary.totalDistanceKm
+    val totalCalories = historyState.summary.totalCaloriesKcal
+    val filteredList = historyState.historyRecords
 
     Box(
         modifier = modifier
@@ -143,12 +79,22 @@ fun ActivityHistoryScreen(
                     Spacer(modifier = Modifier.width(14.dp))
 
                     Column {
-                        Text(
-                            text = "Activity History & Logs",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Activity History & Logs",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1E1E22),
+                            )
+                            if (historyState.isLoading) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                CircularProgressIndicator(
+                                    color = Color(0xFFB81D85),
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                         Text(
                             text = "Track your workout progress & glucose improvements.",
                             fontSize = 12.sp,
@@ -175,7 +121,7 @@ fun ActivityHistoryScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Weekly Workout Summary 🏆",
+                            text = "Workout Summary & Care Log 🏆",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -204,7 +150,7 @@ fun ActivityHistoryScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     listOf("All", "Walking", "Cycling", "Running").forEach { filter ->
-                        val isSelected = selectedFilter == filter
+                        val isSelected = historyState.selectedFilter.equals(filter, ignoreCase = true)
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
@@ -214,7 +160,7 @@ fun ActivityHistoryScreen(
                                     color = Color(0xFFEFECEF),
                                     shape = RoundedCornerShape(20.dp),
                                 )
-                                .clickable { selectedFilter = filter }
+                                .clickable { viewModel.loadHistory(filter) }
                                 .padding(horizontal = 14.dp, vertical = 7.dp),
                         ) {
                             Text(
@@ -233,7 +179,7 @@ fun ActivityHistoryScreen(
             // 4. Saved Activity Log Items (Pop Up Staggered)
             ElementPopUpContainer(delayMillis = 180) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (filteredList.isEmpty()) {
+                    if (filteredList.isEmpty() && !historyState.isLoading) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -241,7 +187,7 @@ fun ActivityHistoryScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = "No workouts recorded for $selectedFilter yet.",
+                                text = "No workouts recorded for ${historyState.selectedFilter} yet.",
                                 fontSize = 13.sp,
                                 color = Color(0xFF8A8595),
                             )
@@ -292,7 +238,7 @@ fun SummaryStatItem(
 
 @Composable
 fun ActivityHistoryCard(
-    item: ActivityRecord,
+    item: ActivityHistoryItem,
 ) {
     Box(
         modifier = Modifier
@@ -316,7 +262,7 @@ fun ActivityHistoryCard(
                             .background(Color(0xFFFDEEF7)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = item.icon, fontSize = 20.sp)
+                        Text(text = item.icon.ifBlank { "🏃" }, fontSize = 20.sp)
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -369,7 +315,7 @@ fun ActivityHistoryCard(
                     color = Color(0xFF1E1E22),
                 )
                 Text(
-                    text = "📍 ${String.format("%.1f", item.distanceKm)} km",
+                    text = "📍 ${String.format("%.2f", item.distanceKm)} km",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1E1E22),
@@ -382,26 +328,29 @@ fun ActivityHistoryCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            // Glucose Effect Line if recorded
+            if (item.glucoseBefore > 0 || item.glucoseAfter > 0) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Glucose Impact:",
+                        fontSize = 11.sp,
+                        color = Color(0xFF6E6877),
+                    )
 
-            // Glucose Effect Line
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Glucose Impact:",
-                    fontSize = 11.sp,
-                    color = Color(0xFF6E6877),
-                )
-
-                Text(
-                    text = "🩸 ${item.glucoseBefore} ➔ ${item.glucoseAfter} mg/dL (-${item.glucoseBefore - item.glucoseAfter} mg/dL)",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
-                )
+                    val diff = item.glucoseBefore - item.glucoseAfter
+                    val diffText = if (diff > 0) " (-${diff} mg/dL)" else ""
+                    Text(
+                        text = "🩸 ${item.glucoseBefore} ➔ ${item.glucoseAfter} mg/dL$diffText",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB81D85),
+                    )
+                }
             }
         }
     }

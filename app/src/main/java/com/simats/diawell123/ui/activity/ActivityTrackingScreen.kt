@@ -24,9 +24,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
@@ -54,24 +57,30 @@ fun ActivityTrackingScreen(
     modifier: Modifier = Modifier,
     glucoseLevel: Int = 128,
     weightKg: Float = 68f,
+    viewModel: ActivityViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     onFinishActivityClick: () -> Unit = {},
 ) {
-    var selectedActivity by remember { mutableStateOf("Walking") } // "Walking", "Cycling", "Running"
+    val trackingState by viewModel.trackingState.collectAsState()
+
     var isTrackingActive by remember { mutableStateOf(false) }
     var elapsedSeconds by remember { mutableIntStateOf(0) }
     var showCompletedBanner by remember { mutableStateOf(false) }
 
-    // Dynamic AI Activity Recommendations based on Glucose & Weight
-    val (recommendedMins, targetDistanceKm, metValue) = remember(selectedActivity, glucoseLevel, weightKg) {
-        val baseGlucoseFactor = if (glucoseLevel > 140) 1.25f else if (glucoseLevel > 100) 1.1f else 1.0f
-        when (selectedActivity) {
-            "Walking" -> Triple((30 * baseGlucoseFactor).toInt(), 2.5f * baseGlucoseFactor, 3.8f)
-            "Cycling" -> Triple((25 * baseGlucoseFactor).toInt(), 8.0f * baseGlucoseFactor, 6.8f)
-            else -> Triple((20 * baseGlucoseFactor).toInt(), 3.5f * baseGlucoseFactor, 9.8f) // Running
-        }
-    }
+    // Dynamic AI Activity Recommendations from Python Microservice & 2024 Adult Compendium
+    val activeRec = trackingState.activeRecommendation
+    val recommendedMins = activeRec?.durationMinutes ?: 30
+    val targetDistanceKm = activeRec?.distanceKm ?: 2.5f
+    val metValue = activeRec?.metValue ?: 3.8f
+    val intensity = activeRec?.intensity ?: "Moderate"
+    val clinicalReason = activeRec?.reason
+        ?: "Evidence-informed exercise activates muscle GLUT4 transporters to improve glycemic control."
+    val safetyNote = activeRec?.safetyNote ?: trackingState.safetyGuidance
+        ?: "Stay hydrated, monitor symptoms, and avoid exercising through discomfort."
+
+    val effectiveWeight = trackingState.userContext?.weightKg ?: weightKg
+    val effectiveGlucose = trackingState.userContext?.currentGlucoseMgDl?.toInt() ?: glucoseLevel
 
     // Live Activity Timer Effect
     LaunchedEffect(isTrackingActive) {
@@ -81,11 +90,24 @@ fun ActivityTrackingScreen(
         }
     }
 
+    // Auto-dismiss completed banner after 1.5 seconds and trigger navigation
+    LaunchedEffect(showCompletedBanner) {
+        if (showCompletedBanner) {
+            delay(1500L)
+            showCompletedBanner = false
+            onFinishActivityClick()
+        }
+    }
+
     // Calculated Live Statistics
     val elapsedMins = elapsedSeconds / 60
-    val progressFraction = (elapsedMins.toFloat() / recommendedMins.toFloat()).coerceIn(0f, 1f)
-    val distanceCoveredKm = targetDistanceKm * progressFraction
-    val caloriesBurned = (metValue * weightKg * (elapsedSeconds / 3600f)).toInt()
+    val progressFraction = (elapsedMins.toFloat() / maxOf(1, recommendedMins).toFloat()).coerceIn(0f, 1f)
+    val distanceCoveredKm = if (activeRec?.speedKmh != null) {
+        (activeRec.speedKmh * (elapsedSeconds / 3600f))
+    } else {
+        targetDistanceKm * progressFraction
+    }
+    val caloriesBurned = (metValue * effectiveWeight * (elapsedSeconds / 3600f)).toInt()
 
     Box(
         modifier = modifier
@@ -114,14 +136,24 @@ fun ActivityTrackingScreen(
                         Spacer(modifier = Modifier.width(14.dp))
 
                         Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "AI Activity Coach",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E1E22),
+                                )
+                                if (trackingState.isLoading) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    CircularProgressIndicator(
+                                        color = Color(0xFFB81D85),
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
                             Text(
-                                text = "Activity & Workout",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
-                            )
-                            Text(
-                                text = "Target for Glucose $glucoseLevel mg/dL • $weightKg kg",
+                                text = "Personalized for Glucose $effectiveGlucose mg/dL • $effectiveWeight kg",
                                 fontSize = 11.sp,
                                 color = Color(0xFF6E6877),
                             )
@@ -169,13 +201,13 @@ fun ActivityTrackingScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Workout Completed Successfully!",
+                                text = "Workout Saved Successfully!",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF2E7D32),
                             )
                             Text(
-                                text = "Great job! $caloriesBurned kcal burned for optimal glucose balance.",
+                                text = "Logged $caloriesBurned kcal • ${String.format("%.2f", distanceCoveredKm)} km in history.",
                                 fontSize = 11.sp,
                                 color = Color(0xFF1B5E20),
                             )
@@ -184,16 +216,42 @@ fun ActivityTrackingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            // Error / Safety Contraindication Banner if any
+            if (trackingState.errorMessage != null && !showCompletedBanner) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                        .padding(12.dp),
+                ) {
+                    Text(
+                        text = "⚠️ ${trackingState.errorMessage}",
+                        fontSize = 12.sp,
+                        color = Color(0xFFC62828),
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
 
             // 2. Activity Mode Selection Pills (Pops Up)
+            val activityOptions = if (trackingState.recommendations.isNotEmpty()) {
+                trackingState.recommendations.map { it.activity to it.icon }
+            } else {
+                listOf("Walking" to "🚶‍♂️", "Cycling" to "🚴", "Running" to "🏃")
+            }
+
             ElementPopUpContainer(delayMillis = 60) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    listOf("Walking" to "🚶‍♂️", "Cycling" to "🚴", "Running" to "🏃").forEach { (type, icon) ->
-                        val isSelected = selectedActivity == type
+                    activityOptions.forEach { (type, icon) ->
+                        val isSelected = trackingState.selectedActivity.equals(type, ignoreCase = true)
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -217,7 +275,7 @@ fun ActivityTrackingScreen(
                                 )
                                 .clickable {
                                     if (!isTrackingActive) {
-                                        selectedActivity = type
+                                        viewModel.selectActivity(type)
                                     }
                                 },
                             contentAlignment = Alignment.Center,
@@ -237,7 +295,7 @@ fun ActivityTrackingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // 3. Central Interactive Progress Dial Card (Pops Up)
             ElementPopUpContainer(delayMillis = 120) {
@@ -247,10 +305,41 @@ fun ActivityTrackingScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .background(Color.White)
                         .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(20.dp))
-                        .padding(24.dp),
+                        .padding(22.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        // Intensity & MET Reference Badge
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        when (intensity) {
+                                            "Light" -> Color(0xFFE3F2FD)
+                                            "Moderate" -> Color(0xFFE8F5E9)
+                                            else -> Color(0xFFFFF3E0)
+                                        }
+                                    )
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Intensity: $intensity • $metValue MET",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = when (intensity) {
+                                        "Light" -> Color(0xFF1976D2)
+                                        "Moderate" -> Color(0xFF2E7D32)
+                                        else -> Color(0xFFE65100)
+                                    }
+                                )
+                            }
+                        }
+
                         // Circular Progress Ring Arc Canvas
                         Box(
                             modifier = Modifier.size(170.dp),
@@ -295,23 +384,50 @@ fun ActivityTrackingScreen(
                                     color = Color(0xFF1E1E22),
                                 )
                                 Text(
-                                    text = "Goal: $recommendedMins mins",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
+                                    text = "AI Goal: $recommendedMins mins",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF8A8595),
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        // Target Recommendation Subtitle
-                        Text(
-                            text = "Target Distance: ${String.format("%.1f", targetDistanceKm)} km",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
-                        )
+                        // Target Distance (Calculated via Validated Speed / Compendium Benchmark)
+                        if (activeRec?.distanceKm != null) {
+                            Text(
+                                text = "Target Distance: ${String.format("%.2f", activeRec.distanceKm)} km",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFB81D85),
+                            )
+                            if (activeRec.speedSource != null) {
+                                Text(
+                                    text = activeRec.speedSource,
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF8A8595),
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "Pace: Self-selected cadence",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF6E6877),
+                            )
+                        }
+
+                        // Compendium Reference Code
+                        if (activeRec?.compendiumDescription != null) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "2024 Compendium Code ${activeRec.compendiumCode ?: ""}: ${activeRec.compendiumDescription}",
+                                fontSize = 9.5.sp,
+                                color = Color(0xFFA09BAA),
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }
@@ -347,9 +463,9 @@ fun ActivityTrackingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 5. Dr. JARVIS AI Recommendation Box (Pops Up)
+            // 5. AI Recommendation Rationale Box (Pops Up)
             ElementPopUpContainer(delayMillis = 240) {
                 Box(
                     modifier = Modifier
@@ -359,22 +475,46 @@ fun ActivityTrackingScreen(
                         .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(16.dp))
                         .padding(14.dp),
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "⚡", fontSize = 22.sp)
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text(text = "⚡", fontSize = 20.sp, modifier = Modifier.padding(top = 2.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Dr. JARVIS Recommendation",
+                                text = "AI Recommendation Rationale",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF811978),
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Based on your fasting glucose ($glucoseLevel mg/dL) & weight ($weightKg kg), a $recommendedMins-min $selectedActivity will optimize insulin sensitivity today!",
-                                fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                text = clinicalReason,
+                                fontSize = 11.5.sp,
+                                color = Color(0xFF4A4453),
                                 lineHeight = 16.sp,
                             )
+
+                            if (safetyNote.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color.White.copy(alpha = 0.8f))
+                                        .padding(8.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(text = "🛡", fontSize = 14.sp)
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = safetyNote,
+                                            fontSize = 10.5.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color(0xFF2E7D32),
+                                            lineHeight = 14.sp
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -396,17 +536,25 @@ fun ActivityTrackingScreen(
                         )
 
                         IosLiquidGlassButton(
-                            text = "✓ Complete",
+                            text = if (trackingState.isLoggingWorkout) "Saving..." else "✓ Complete",
                             onClick = {
                                 isTrackingActive = false
-                                showCompletedBanner = true
-                                onFinishActivityClick()
+                                viewModel.logCompletedWorkout(
+                                    activityType = trackingState.selectedActivity,
+                                    durationMins = maxOf(1, elapsedMins),
+                                    distanceKm = distanceCoveredKm,
+                                    caloriesKcal = caloriesBurned,
+                                    glucoseBefore = effectiveGlucose.toFloat(),
+                                    notes = "Completed $intensity workout ($metValue MET)"
+                                ) {
+                                    showCompletedBanner = true
+                                }
                             },
                             modifier = Modifier.weight(1f),
                         )
                     } else {
                         IosLiquidGlassButton(
-                            text = if (elapsedSeconds > 0) "▶ Resume Activity" else "▶ Start $selectedActivity",
+                            text = if (elapsedSeconds > 0) "▶ Resume Activity" else "▶ Start ${trackingState.selectedActivity}",
                             onClick = { isTrackingActive = true },
                             modifier = Modifier.fillMaxWidth(),
                         )

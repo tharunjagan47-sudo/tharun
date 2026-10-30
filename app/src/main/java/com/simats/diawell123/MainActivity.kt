@@ -31,6 +31,7 @@ import com.simats.diawell123.ui.diet.FoodDetailsScreen
 import com.simats.diawell123.ui.diet.FoodLogScreen
 import com.simats.diawell123.ui.diet.NutritionSummaryScreen
 import com.simats.diawell123.ui.glucose.GlucoseHistoryScreen
+import com.simats.diawell123.ui.glucose.GlucoseViewModel
 import com.simats.diawell123.ui.glucose.LogGlucoseScreen
 import com.simats.diawell123.ui.glucose.ReadingDetailsScreen
 import com.simats.diawell123.ui.home.HomeScreen
@@ -56,8 +57,15 @@ import com.simats.diawell123.ui.settings.PrivacyPolicyScreen
 import com.simats.diawell123.ui.settings.PrivacySecurityScreen
 import com.simats.diawell123.ui.settings.SettingsScreen
 import com.simats.diawell123.ui.settings.TermsOfUseScreen
+import com.simats.diawell123.data.local.SessionManager
+import com.simats.diawell123.data.repository.AuthRepositoryImpl
+import com.simats.diawell123.ui.diet.DietViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,23 +75,62 @@ class MainActivity : ComponentActivity() {
             Diawell123Theme {
                 var currentScreen by remember { mutableStateOf("splash") }
                 var selectedMealCategory by remember { mutableStateOf("breakfast") }
+                var selectedFoodId by remember { mutableStateOf<Int?>(null) }
+                var selectedDishName by remember { mutableStateOf<String?>(null) }
+
+                val dietViewModel: DietViewModel = viewModel()
+                val glucoseViewModel: GlucoseViewModel = viewModel()
+                val homeViewModel: com.simats.diawell123.ui.home.HomeViewModel = viewModel()
+                val medsViewModel: com.simats.diawell123.ui.meds.MedsViewModel = viewModel()
+                val activityViewModel: com.simats.diawell123.ui.activity.ActivityViewModel = viewModel()
+                var selectedGlucoseReadingId by remember { mutableStateOf<Int?>(null) }
+                var selectedMedication by remember { mutableStateOf<com.simats.diawell123.data.model.MedicationItem?>(null) }
 
                 var selectedTabletName by remember { mutableStateOf("Metformin") }
                 var selectedTabletDose by remember { mutableStateOf("500 mg • 1 Tablet") }
 
+                val sessionManager = remember {
+                    try {
+                        SessionManager.getInstance()
+                    } catch (_: Exception) {
+                        SessionManager.init(applicationContext)
+                    }
+                }
+
+                // Auto-Logout Observer: Listens to 401 Unauthorized or manual logout broadcasts
                 LaunchedEffect(Unit) {
-                    delay(2200)
+                    sessionManager.sessionExpiredEvents.collect {
+                        if (currentScreen !in listOf("login", "signup", "splash")) {
+                            currentScreen = "login"
+                        }
+                    }
+                }
+
+                // Update activity timestamp on screen changes
+                LaunchedEffect(currentScreen) {
+                    sessionManager.updateLastActiveTime()
+                }
+
+                // Splash screen initial routing based on saved persistent authentication session
+                LaunchedEffect(Unit) {
+                    delay(2200) // Show Splash Screen first
                     if (currentScreen == "splash") {
-                        currentScreen = "onboarding"
+                        if (sessionManager.hasActiveSession()) {
+                            // Persistent login: Automatically navigate directly to Dashboard without showing Login
+                            currentScreen = "home"
+                        } else {
+                            // Logged out or session invalid: navigate to Login screen (or Onboarding if first launch)
+                            currentScreen = if (sessionManager.hasCompletedOnboarding()) "login" else "onboarding"
+                        }
                     }
                 }
 
                 AnimatedContent(
                     targetState = currentScreen,
                     transitionSpec = {
-                        if (initialState == "splash" && targetState == "onboarding") {
+                        if (initialState == "splash" && (targetState == "home" || targetState == "login" || targetState == "onboarding")) {
                             (fadeIn(animationSpec = tween(700, easing = FastOutSlowInEasing)) +
-                                scaleIn(initialScale = 0.92f, animationSpec = tween(700))) togetherWith
+                                scaleIn(initialScale = 0.94f, animationSpec = tween(700))) togetherWith
                                 (fadeOut(animationSpec = tween(500)) +
                                     scaleOut(targetScale = 1.05f, animationSpec = tween(500)))
                         } else {
@@ -99,7 +146,10 @@ class MainActivity : ComponentActivity() {
                         "splash" -> SplashScreen()
 
                         "onboarding" -> OnboardingContainerScreen(
-                            onFinishOnboarding = { currentScreen = "signup" },
+                            onFinishOnboarding = {
+                                sessionManager.setOnboardingCompleted()
+                                currentScreen = "signup"
+                            },
                         )
 
                         "signup" -> SignUpScreen(
@@ -126,7 +176,9 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "home" -> HomeScreen(
+                            viewModel = homeViewModel,
                             onLogGlucoseClick = { currentScreen = "log_glucose" },
+                            onGlucoseHistoryClick = { currentScreen = "glucose_history" },
                             onTrackFoodClick = { currentScreen = "daily_diet_plan" },
                             onActivityTrackingClick = { currentScreen = "activity_tracking" },
                             onDietChatbotClick = { currentScreen = "ai_chatbot" },
@@ -143,26 +195,39 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "log_glucose" -> LogGlucoseScreen(
+                            viewModel = glucoseViewModel,
                             onBackClick = { currentScreen = "home" },
                             onSaveReadingClick = { currentScreen = "glucose_history" },
                         )
 
                         "glucose_history" -> GlucoseHistoryScreen(
+                            viewModel = glucoseViewModel,
                             onBackClick = { currentScreen = "home" },
                             onLogGlucoseClick = { currentScreen = "log_glucose" },
-                            onReadingClick = { currentScreen = "reading_details" },
+                            onReadingClick = { readingId ->
+                                selectedGlucoseReadingId = readingId
+                                currentScreen = "reading_details"
+                            },
                         )
 
                         "reading_details" -> ReadingDetailsScreen(
+                            readingId = selectedGlucoseReadingId,
+                            viewModel = glucoseViewModel,
                             onBackClick = { currentScreen = "glucose_history" },
+                            onDeleted = { currentScreen = "glucose_history" },
                         )
 
                         "daily_diet_plan" -> DailyDietPlanScreen(
+                            viewModel = dietViewModel,
                             onBackClick = { currentScreen = "home" },
-                            onMealDetailsClick = { category ->
+                            onMealDetailsClick = { category, foodId, dishName ->
                                 selectedMealCategory = category
+                                selectedFoodId = foodId
+                                selectedDishName = dishName
                                 currentScreen = "food_details"
                             },
+                            onFoodLogClick = { currentScreen = "food_log" },
+                            onExploreFoodClick = { currentScreen = "explore_food" },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
                             onMedsTabClick = { currentScreen = "medications" },
@@ -171,17 +236,27 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "explore_food" -> ExploreFoodScreen(
+                            viewModel = dietViewModel,
                             onBackClick = { currentScreen = "daily_diet_plan" },
-                            onMealDetailsClick = { currentScreen = "food_details" },
+                            onMealDetailsClick = { category, foodId, dishName ->
+                                selectedMealCategory = category
+                                selectedFoodId = foodId
+                                selectedDishName = dishName
+                                currentScreen = "food_details"
+                            },
                         )
 
                         "food_details" -> FoodDetailsScreen(
                             mealCategory = selectedMealCategory,
+                            foodId = selectedFoodId,
+                            dishName = selectedDishName,
+                            viewModel = dietViewModel,
                             onBackClick = { currentScreen = "daily_diet_plan" },
                             onAddToFoodLogClick = { currentScreen = "food_log" },
                         )
 
                         "food_log" -> FoodLogScreen(
+                            viewModel = dietViewModel,
                             onBackClick = { currentScreen = "home" },
                             onAddFoodClick = { currentScreen = "daily_diet_plan" },
                             onMealDetailsClick = { currentScreen = "food_details" },
@@ -193,22 +268,26 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "activity_tracking" -> ActivityTrackingScreen(
-                            glucoseLevel = 128,
-                            weightKg = 68f,
+                            viewModel = activityViewModel,
                             onBackClick = { currentScreen = "home" },
                             onHistoryClick = { currentScreen = "activity_history" },
                             onFinishActivityClick = { currentScreen = "activity_history" },
                         )
 
                         "activity_history" -> ActivityHistoryScreen(
+                            viewModel = activityViewModel,
                             onBackClick = { currentScreen = "activity_tracking" },
                             onStartNewWorkoutClick = { currentScreen = "activity_tracking" },
                         )
 
                         "medications" -> MedicationsScreen(
+                            viewModel = medsViewModel,
                             onBackClick = { currentScreen = "home" },
                             onAddMedicationClick = { currentScreen = "search_medication" },
-                            onReminderClick = { currentScreen = "medication_reminder" },
+                            onReminderClick = { med ->
+                                selectedMedication = med
+                                currentScreen = "medication_reminder"
+                            },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
                             onMedsTabClick = { currentScreen = "medications" },
@@ -217,6 +296,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "search_medication" -> SearchMedicationScreen(
+                            viewModel = medsViewModel,
                             onBackClick = { currentScreen = "medications" },
                             onSelectMedication = { name, dose ->
                                 selectedTabletName = name
@@ -226,6 +306,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "set_medication_reminder" -> SetMedicationReminderScreen(
+                            viewModel = medsViewModel,
                             medicationName = selectedTabletName,
                             medicationDose = selectedTabletDose,
                             onBackClick = { currentScreen = "search_medication" },
@@ -233,6 +314,8 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "medication_reminder" -> MedicationReminderScreen(
+                            viewModel = medsViewModel,
+                            medication = selectedMedication,
                             onBackClick = { currentScreen = "medications" },
                             onTakenClick = { currentScreen = "medications" },
                             onSnoozeClick = { currentScreen = "medications" },
@@ -330,7 +413,15 @@ class MainActivity : ComponentActivity() {
 
                         "logout_dialog" -> LogoutConfirmationDialog(
                             onCancelClick = { currentScreen = "settings" },
-                            onConfirmLogoutClick = { currentScreen = "login" },
+                            onConfirmLogoutClick = {
+                                sessionManager.clearSession()
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        AuthRepositoryImpl().logout()
+                                    } catch (_: Exception) {}
+                                }
+                                currentScreen = "login"
+                            },
                         )
 
                         else -> SplashScreen()

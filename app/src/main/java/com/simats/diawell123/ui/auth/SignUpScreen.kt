@@ -1,5 +1,12 @@
 package com.simats.diawell123.ui.auth
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +31,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,24 +50,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.profile.AiSpeechOrbLoadingView
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = viewModel(),
     onSignUpSuccess: () -> Unit = {},
     onLogInClick: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    var isPasswordVisible by remember { mutableStateOf(value = false) }
-    var isConfirmPasswordVisible by remember { mutableStateOf(value = false) }
+    var isPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
+
+    // Handle SignUp Success Navigation
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            onSignUpSuccess()
+            viewModel.resetState()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -121,7 +142,6 @@ fun SignUpScreen(
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Arc Reactor Mini Logo
                 ArcReactorCanvas(
                     rotationAngle = 0f,
                     modifier = Modifier.size(36.dp),
@@ -138,13 +158,72 @@ fun SignUpScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Animated Error Banner
+            AnimatedVisibility(
+                visible = !uiState.errorMessage.isNullOrBlank(),
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+            ) {
+                uiState.errorMessage?.let { errorText ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFFDE8E8))
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_shield_check),
+                                contentDescription = "Alert",
+                                tint = Color(0xFFC53030),
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = errorText,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF9B1C1C),
+                                lineHeight = 18.sp,
+                            )
+                        }
+                        IconButton(
+                            onClick = { viewModel.clearError() },
+                            modifier = Modifier.size(24.dp),
+                        ) {
+                            Text(
+                                text = "✕",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF9B1C1C),
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (!uiState.errorMessage.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+            } else {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
 
             // Input: Full Name
             SignUpInputField(
                 label = "Full Name",
                 value = fullName,
-                onValueChange = { fullName = it },
+                onValueChange = {
+                    fullName = it
+                    if (uiState.errorMessage != null) viewModel.clearError()
+                },
                 placeholder = "Enter your full name",
                 trailingIconRes = R.drawable.ic_person,
                 keyboardType = KeyboardType.Text,
@@ -156,7 +235,10 @@ fun SignUpScreen(
             SignUpInputField(
                 label = "Email Address",
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    if (uiState.errorMessage != null) viewModel.clearError()
+                },
                 placeholder = "you@example.com",
                 trailingIconRes = R.drawable.ic_email,
                 keyboardType = KeyboardType.Email,
@@ -168,8 +250,11 @@ fun SignUpScreen(
             SignUpInputField(
                 label = "Password",
                 value = password,
-                onValueChange = { password = it },
-                placeholder = "Create a password",
+                onValueChange = {
+                    password = it
+                    if (uiState.errorMessage != null) viewModel.clearError()
+                },
+                placeholder = "Create a password (min. 8 characters)",
                 isPassword = true,
                 isPasswordVisible = isPasswordVisible,
                 onPasswordToggleClick = { isPasswordVisible = !isPasswordVisible },
@@ -182,7 +267,10 @@ fun SignUpScreen(
             SignUpInputField(
                 label = "Confirm Password",
                 value = confirmPassword,
-                onValueChange = { confirmPassword = it },
+                onValueChange = {
+                    confirmPassword = it
+                    if (uiState.errorMessage != null) viewModel.clearError()
+                },
                 placeholder = "Re-enter your password",
                 isPassword = true,
                 isPasswordVisible = isConfirmPasswordVisible,
@@ -194,8 +282,17 @@ fun SignUpScreen(
 
             // Create Account Button
             IosLiquidGlassButton(
-                text = "Create Account",
-                onClick = onSignUpSuccess,
+                text = if (uiState.isLoading) "Creating Account..." else "Create Account",
+                onClick = {
+                    if (!uiState.isLoading) {
+                        viewModel.onRegister(
+                            name = fullName,
+                            email = email,
+                            password = password,
+                            confirmPassword = confirmPassword,
+                        )
+                    }
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -231,6 +328,25 @@ fun SignUpScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFB81D85),
                     modifier = Modifier.clickable { onLogInClick() },
+                )
+            }
+        }
+
+        // ROTATING 3D SATURN AI SPEECH ORB LOADING OVERLAY FOR SIGNUP
+        AnimatedVisibility(
+            visible = uiState.isLoading,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = 0.96f))
+                    .clickable(enabled = false) {}, // Intercept clicks during loading
+                contentAlignment = Alignment.Center,
+            ) {
+                AiSpeechOrbLoadingView(
+                    statusText = "Creating your account & preparing profile...",
                 )
             }
         }

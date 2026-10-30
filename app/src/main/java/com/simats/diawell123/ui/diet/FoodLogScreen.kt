@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,15 +30,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
 fun FoodLogScreen(
     modifier: Modifier = Modifier,
+    viewModel: DietViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onAddFoodClick: () -> Unit = {},
     onMealDetailsClick: () -> Unit = {},
 ) {
+    val uiState by viewModel.foodLogState.collectAsState()
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -101,14 +107,30 @@ fun FoodLogScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = "‹", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
                         Text(
-                            text = "📅  Thu, 15 Oct 2026",
+                            text = "‹",
+                            fontSize = 18.sp,
+                            color = Color(0xFFB81D85),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clickable { viewModel.navigateDate(-1) }
+                                .padding(horizontal = 4.dp)
+                        )
+                        Text(
+                            text = "📅  ${uiState.selectedDateLabel}",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1E1E22),
                         )
-                        Text(text = "›", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                        Text(
+                            text = "›",
+                            fontSize = 18.sp,
+                            color = Color(0xFFB81D85),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clickable { viewModel.navigateDate(1) }
+                                .padding(horizontal = 4.dp)
+                        )
                     }
                 }
 
@@ -135,7 +157,7 @@ fun FoodLogScreen(
                                 color = Color(0xFF811978),
                             )
                             Text(
-                                text = "1,410 kcal",
+                                text = "${uiState.totalCaloriesNum} kcal",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF7A1C7D),
@@ -145,7 +167,7 @@ fun FoodLogScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Carbs 147 g • Protein 103 g • Fat 41 g",
+                            text = "Carbs ${uiState.totalCarbsG} g • Protein ${uiState.totalProteinG} g • Fat ${uiState.totalFatG} g",
                             fontSize = 12.sp,
                             color = Color(0xFF6E6877),
                         )
@@ -154,54 +176,36 @@ fun FoodLogScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Logged Meals
-                FoodLogItem(
-                    category = "BREAKFAST",
-                    time = "8:30 AM",
-                    title = "Berry & almond oats",
-                    portion = "1 bowl • 290 g",
-                    calories = "320 kcal",
-                    icon = "🥣",
-                    onClick = onMealDetailsClick,
-                )
+                // Logged Meals List
+                if (uiState.meals.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No meals logged for this day yet.",
+                            fontSize = 13.sp,
+                            color = Color(0xFF8A8595)
+                        )
+                    }
+                } else {
+                    uiState.meals.forEach { meal ->
+                        FoodLogItem(
+                            category = meal.category,
+                            time = meal.time,
+                            title = meal.title,
+                            portion = meal.portion,
+                            calories = meal.calories,
+                            icon = meal.icon,
+                            onClick = onMealDetailsClick,
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                FoodLogItem(
-                    category = "LUNCH",
-                    time = "1:00 PM",
-                    title = "Grilled chicken bowl",
-                    portion = "1 bowl • 350 g",
-                    calories = "450 kcal",
-                    icon = "🥗",
-                    onClick = onMealDetailsClick,
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                FoodLogItem(
-                    category = "SNACKS",
-                    time = "4:30 PM",
-                    title = "Greek yogurt & berries",
-                    portion = "1 cup • 170 g",
-                    calories = "160 kcal",
-                    icon = "🫐",
-                    onClick = onMealDetailsClick,
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                FoodLogItem(
-                    category = "DINNER",
-                    time = "7:30 PM",
-                    title = "Salmon & brown rice",
-                    portion = "1 plate • 380 g",
-                    calories = "480 kcal",
-                    icon = "🍱",
-                    onClick = onMealDetailsClick,
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Add Food Button
                 Box(

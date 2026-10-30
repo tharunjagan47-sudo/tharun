@@ -26,8 +26,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
@@ -54,10 +58,30 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 fun FoodDetailsScreen(
     mealCategory: String,
     modifier: Modifier = Modifier,
+    foodId: Int? = null,
+    dishName: String? = null,
+    viewModel: DietViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onAddToFoodLogClick: () -> Unit = {},
 ) {
-    val mealDetails = rememberMealDetailsForCategory(mealCategory)
+    val uiState by viewModel.detailsState.collectAsState()
+    val fallbackDetails = rememberMealDetailsForCategory(mealCategory)
+
+    LaunchedEffect(mealCategory, foodId, dishName) {
+        viewModel.loadFoodDetails(foodId = foodId, dishName = dishName, category = mealCategory)
+    }
+
+    val displayDetails = uiState.details
+    val title = displayDetails?.title ?: fallbackDetails.title
+    val portionText = if (displayDetails != null) "${displayDetails.portion} • ${displayDetails.caloriesLabel}" else "${fallbackDetails.portion} • ${fallbackDetails.calories} kcal"
+    val icon = displayDetails?.icon ?: fallbackDetails.icon
+    val giIndex = displayDetails?.glycemicIndex ?: fallbackDetails.glycemicIndex
+    val giNote = displayDetails?.glycemicDetails?.description?.takeIf { it.isNotBlank() } ?: fallbackDetails.giNote
+    val carbsVal = displayDetails?.macros?.carbsG?.let { "${it.toInt()}g" } ?: fallbackDetails.carbs
+    val proteinVal = displayDetails?.macros?.proteinG?.let { "${it.toInt()}g" } ?: fallbackDetails.protein
+    val fatVal = displayDetails?.macros?.fatG?.let { "${it.toInt()}g" } ?: fallbackDetails.fats
+    val fiberVal = displayDetails?.macros?.fiberG?.let { "${it.toInt()}g" } ?: fallbackDetails.fiber
+    val ingredientsList = displayDetails?.ingredients?.takeIf { it.isNotEmpty() } ?: fallbackDetails.ingredients
 
     Box(
         modifier = modifier
@@ -116,21 +140,21 @@ fun FoodDetailsScreen(
                                 .background(Color.White.copy(alpha = 0.2f)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(text = mealDetails.icon, fontSize = 28.sp)
+                            Text(text = icon, fontSize = 28.sp)
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
 
                         Column {
                             Text(
-                                text = mealDetails.title,
+                                text = title,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "${mealDetails.portion} • ${mealDetails.calories} kcal",
+                                text = portionText,
                                 fontSize = 13.sp,
                                 color = Color.White.copy(alpha = 0.85f),
                             )
@@ -143,12 +167,18 @@ fun FoodDetailsScreen(
 
             // Glycemic & Diabetic Impact Callout
             ElementPopUpContainer(delayMillis = 120) {
+                val (giColor, giBgColor) = when {
+                    giIndex.contains("Low", ignoreCase = true) -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
+                    giIndex.contains("Medium", ignoreCase = true) || giIndex.contains("Mod", ignoreCase = true) -> Color(0xFFE65100) to Color(0xFFFFF3E0)
+                    else -> Color(0xFFC62828) to Color(0xFFFFEBEE)
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .border(1.dp, Color(0xFFC8E6C9), RoundedCornerShape(14.dp))
+                        .background(giBgColor)
+                        .border(1.dp, giColor.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -156,15 +186,15 @@ fun FoodDetailsScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Glycemic Index: ${mealDetails.glycemicIndex}",
+                                text = "Glycemic Index: $giIndex",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
+                                color = giColor,
                             )
                             Text(
-                                text = mealDetails.giNote,
+                                text = giNote,
                                 fontSize = 11.sp,
-                                color = Color(0xFF1B5E20),
+                                color = giColor.copy(alpha = 0.9f),
                             )
                         }
                     }
@@ -189,10 +219,97 @@ fun FoodDetailsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        NutrientStatCard(title = "Carbs", value = mealDetails.carbs, color = Color(0xFFE53935), modifier = Modifier.weight(1f))
-                        NutrientStatCard(title = "Protein", value = mealDetails.protein, color = Color(0xFF1E88E5), modifier = Modifier.weight(1f))
-                        NutrientStatCard(title = "Fats", value = mealDetails.fats, color = Color(0xFFFDD835), modifier = Modifier.weight(1f))
-                        NutrientStatCard(title = "Fiber", value = mealDetails.fiber, color = Color(0xFF43A047), modifier = Modifier.weight(1f))
+                        NutrientStatCard(title = "Carbs", value = carbsVal, color = Color(0xFFE53935), modifier = Modifier.weight(1f))
+                        NutrientStatCard(title = "Protein", value = proteinVal, color = Color(0xFF1E88E5), modifier = Modifier.weight(1f))
+                        NutrientStatCard(title = "Fats", value = fatVal, color = Color(0xFFFDD835), modifier = Modifier.weight(1f))
+                        NutrientStatCard(title = "Fiber", value = fiberVal, color = Color(0xFF43A047), modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+
+            // Micronutrient Profile (Dataset Verified)
+            val micro = displayDetails?.micronutrients
+            if (micro != null) {
+                Spacer(modifier = Modifier.height(20.dp))
+                ElementPopUpContainer(delayMillis = 210) {
+                    Column {
+                        Text(
+                            text = "Micronutrient Profile (Dataset Verified)",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E1E22),
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            MicroStatCard(title = "Free Sugar", value = "${micro.freeSugarG}g", modifier = Modifier.weight(1f))
+                            MicroStatCard(title = "Sodium", value = "${micro.sodiumMg.toInt()}mg", modifier = Modifier.weight(1f))
+                            MicroStatCard(title = "Calcium", value = "${micro.calciumMg.toInt()}mg", modifier = Modifier.weight(1f))
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            MicroStatCard(title = "Iron", value = "${micro.ironMg}mg", modifier = Modifier.weight(1f))
+                            MicroStatCard(title = "Vit C", value = "${micro.vitaminCMg}mg", modifier = Modifier.weight(1f))
+                            MicroStatCard(title = "Folate", value = "${micro.folateUg.toInt()}µg", modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+
+            // Diabetic Health Guidance & Benefits
+            val healthBenefitsText = displayDetails?.healthBenefits ?: ""
+            val diabeticGuidanceText = displayDetails?.diabeticGuidance ?: ""
+            if (healthBenefitsText.isNotBlank() || diabeticGuidanceText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(20.dp))
+                ElementPopUpContainer(delayMillis = 230) {
+                    Column {
+                        Text(
+                            text = "Diabetic Health Guidance",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E1E22),
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                                .padding(14.dp),
+                        ) {
+                            Column {
+                                if (healthBenefitsText.isNotBlank()) {
+                                    Text(
+                                        text = "🌱 $healthBenefitsText",
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF1E1E22),
+                                        lineHeight = 17.sp,
+                                    )
+                                }
+                                if (diabeticGuidanceText.isNotBlank()) {
+                                    if (healthBenefitsText.isNotBlank()) Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "🩺 $diabeticGuidanceText",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF6B156E),
+                                        lineHeight = 17.sp,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -211,7 +328,7 @@ fun FoodDetailsScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    mealDetails.ingredients.forEach { item ->
+                    ingredientsList.forEach { item ->
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -233,10 +350,29 @@ fun FoodDetailsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // iOS Liquid Glass Action Button
+            // iOS Liquid Glass Action Button (Adds meal to Food Log)
             IosLiquidGlassButton(
-                text = "+ Add to Food Log",
-                onClick = onAddToFoodLogClick,
+                text = if (uiState.isLogging) "Adding to Food Log..." else "+ Add to Food Log",
+                onClick = {
+                    if (!uiState.isLogging) {
+                        val calInt = displayDetails?.calories ?: (fallbackDetails.calories.filter { it.isDigit() }.toIntOrNull() ?: 300)
+                        val carbsFloat = displayDetails?.macros?.carbsG ?: (fallbackDetails.carbs.filter { it.isDigit() }.toFloatOrNull() ?: 30f)
+                        val proteinFloat = displayDetails?.macros?.proteinG ?: (fallbackDetails.protein.filter { it.isDigit() }.toFloatOrNull() ?: 15f)
+                        val fatFloat = displayDetails?.macros?.fatG ?: (fallbackDetails.fats.filter { it.isDigit() }.toFloatOrNull() ?: 8f)
+
+                        viewModel.addCurrentFoodToLog(
+                            categoryFallback = mealCategory.ifBlank { "BREAKFAST" },
+                            titleFallback = title,
+                            portionFallback = displayDetails?.portion ?: fallbackDetails.portion,
+                            caloriesFallback = calInt,
+                            carbsFallback = carbsFloat,
+                            proteinFallback = proteinFloat,
+                            fatFallback = fatFloat,
+                            iconFallback = displayDetails?.icon ?: "🥗",
+                            onSuccess = onAddToFoodLogClick,
+                        )
+                    }
+                },
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -244,7 +380,7 @@ fun FoodDetailsScreen(
     }
 }
 
-// 3D FLOATING LIQUID GLASS BUBBLE BACK NAVIGATION BUTTON (Matches User Image Exactly!)
+// 3D FLOATING LIQUID GLASS BUBBLE BACK NAVIGATION BUTTON
 @Composable
 fun StyledBackButton(
     onBackClick: () -> Unit,
@@ -252,7 +388,6 @@ fun StyledBackButton(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "BackButtonFloat")
 
-    // Gentle floating translation Y
     val floatOffsetY by infiniteTransition.animateFloat(
         initialValue = -2.5f,
         targetValue = 2.5f,
@@ -263,7 +398,6 @@ fun StyledBackButton(
         label = "backFloatOffsetY",
     )
 
-    // Gentle breathing scale
     val floatScale by infiniteTransition.animateFloat(
         initialValue = 0.98f,
         targetValue = 1.03f,
@@ -301,173 +435,139 @@ fun StyledBackButton(
         ) {
             val w = size.width
             val h = size.height
-            val centerY = h / 2f
 
-            val mainRadius = 17.dp.toPx()
-            val mainCenterX = 20.dp.toPx()
-
-            // 1. Ambient Blue/Purple Outer Glow Aura
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF5363FF).copy(alpha = glowAlpha * 0.45f),
-                        Color(0xFFA173FF).copy(alpha = glowAlpha * 0.25f),
+                        Color(0xFFFF80AB).copy(alpha = glowAlpha * 0.45f),
+                        Color(0xFFBD1E85).copy(alpha = glowAlpha * 0.20f),
                         Color.Transparent,
                     ),
-                ),
-                radius = mainRadius * 1.45f,
-                center = Offset(mainCenterX, centerY),
-            )
-
-            // 2. Main Organic Liquid Bubble Metaball Path
-            val metaballPath = Path().apply {
-                // Main Sphere
-                addOval(
-                    Rect(
-                        left = mainCenterX - mainRadius,
-                        top = centerY - mainRadius,
-                        right = mainCenterX + mainRadius,
-                        bottom = centerY + mainRadius,
-                    ),
-                )
-
-                // Droplet Extension Tail
-                val tailLeft = mainCenterX + mainRadius * 0.55f
-                val tailRight = mainCenterX + mainRadius * 1.50f
-                val tailTop = centerY - mainRadius * 0.52f
-                val tailBottom = centerY + mainRadius * 0.52f
-
-                addOval(
-                    Rect(
-                        left = tailLeft,
-                        top = tailTop,
-                        right = tailRight,
-                        bottom = tailBottom,
-                    ),
-                )
-            }
-
-            // Draw Liquid Bubble Translucent Gradient Fill
-            drawPath(
-                path = metaballPath,
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF8BA5FF).copy(alpha = 0.95f),
-                        Color(0xFF5363FF).copy(alpha = 0.85f),
-                        Color(0xFF8E24AA).copy(alpha = 0.75f),
-                        Color(0xFF3B1E94).copy(alpha = 0.65f),
-                    ),
-                    center = Offset(mainCenterX - mainRadius * 0.3f, centerY - mainRadius * 0.3f),
-                    radius = mainRadius * 1.6f,
+                    center = Offset(w * 0.5f, h * 0.5f),
+                    radius = w * 0.70f,
                 ),
             )
 
-            // Luminous Glass Rim Outline
-            drawPath(
-                path = metaballPath,
+            drawRoundRect(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color.White.copy(alpha = 0.95f),
-                        Color(0xFF00E5FF).copy(alpha = 0.70f),
-                        Color.White.copy(alpha = 0.50f),
+                        Color(0xFFBD1E85).copy(alpha = 0.35f),
+                        Color(0xFF7A1C7D).copy(alpha = 0.20f),
+                        Color(0xFF4A0E4E).copy(alpha = 0.15f),
                     ),
                 ),
-                style = Stroke(width = 1.6.dp.toPx()),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(h / 2, h / 2),
             )
 
-            // Glass Specular Crescent Arc Highlight
-            drawArc(
-                color = Color.White.copy(alpha = 0.85f),
-                startAngle = 190f,
-                sweepAngle = 120f,
-                useCenter = false,
-                topLeft = Offset(mainCenterX - mainRadius * 0.82f, centerY - mainRadius * 0.82f),
-                size = Size(mainRadius * 1.64f, mainRadius * 1.64f),
-                style = Stroke(width = 2.0.dp.toPx()),
-            )
-
-            // 3. Small Satellite Floating Bubble Sphere (To the right)
-            val satCenterX = w - 7.dp.toPx()
-            val satRadius = 5.dp.toPx()
-
-            drawCircle(
-                brush = Brush.radialGradient(
+            drawRoundRect(
+                brush = Brush.linearGradient(
                     colors = listOf(
-                        Color.White.copy(alpha = 0.95f),
-                        Color(0xFF7CA3FF).copy(alpha = 0.80f),
-                        Color(0xFF5363FF).copy(alpha = 0.60f),
+                        Color.White.copy(alpha = 0.90f),
+                        Color(0xFFFF80AB).copy(alpha = 0.60f),
+                        Color(0xFFBD1E85).copy(alpha = 0.40f),
                     ),
-                    center = Offset(satCenterX - satRadius * 0.3f, centerY - satRadius * 0.3f),
-                    radius = satRadius * 1.2f,
+                    start = Offset(0f, 0f),
+                    end = Offset(w, h),
                 ),
-                radius = satRadius,
-                center = Offset(satCenterX, centerY),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(h / 2, h / 2),
+                style = Stroke(width = 1.8.dp.toPx()),
             )
 
-            drawCircle(
-                color = Color.White.copy(alpha = 0.90f),
-                radius = satRadius,
-                center = Offset(satCenterX, centerY),
-                style = Stroke(width = 1.2.dp.toPx()),
-            )
-
-            // 4. White Crisp Back Chevron Arrow Icon `<`
             val arrowPath = Path().apply {
-                moveTo(mainCenterX + 3.5.dp.toPx(), centerY - 6.dp.toPx())
-                lineTo(mainCenterX - 3.5.dp.toPx(), centerY)
-                lineTo(mainCenterX + 3.5.dp.toPx(), centerY + 6.dp.toPx())
+                moveTo(w * 0.60f, h * 0.28f)
+                lineTo(w * 0.38f, h * 0.50f)
+                lineTo(w * 0.60f, h * 0.72f)
             }
-
             drawPath(
                 path = arrowPath,
-                color = Color.White,
-                style = Stroke(width = 2.6.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+                color = Color(0xFF7A1C7D),
+                style = Stroke(
+                    width = 2.8.dp.toPx(),
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round,
+                ),
             )
         }
     }
 }
 
+// iOS LIQUID GLASS BUTTON
 @Composable
 fun IosLiquidGlassButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
     gradientColors: List<Color> = listOf(
         Color(0xFF7A1C7D),
         Color(0xFFBD1E85),
-        Color(0xFFFF5722),
+        Color(0xFFFF4081),
     ),
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "LiquidGlassPulse")
+
+    val shimmerProgress by infiniteTransition.animateFloat(
+        initialValue = -1.2f,
+        targetValue = 2.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "shimmerProgress",
+    )
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(54.dp)
             .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                ambientColor = Color(0xFFB81D85).copy(alpha = 0.35f),
-                spotColor = Color(0xFFB81D85).copy(alpha = 0.45f),
+                elevation = 14.dp,
+                shape = RoundedCornerShape(27.dp),
+                spotColor = (gradientColors.getOrNull(1) ?: gradientColors.firstOrNull() ?: Color(0xFFBD1E85)).copy(alpha = 0.55f),
+                ambientColor = (gradientColors.firstOrNull() ?: Color(0xFF7A1C7D)).copy(alpha = 0.35f),
             )
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(27.dp))
             .background(
-                brush = Brush.horizontalGradient(colors = gradientColors),
+                brush = Brush.horizontalGradient(
+                    colors = gradientColors,
+                ),
             )
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable { onClick() },
         contentAlignment = Alignment.Center,
     ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val width = size.width
+            val height = size.height
+
+            val shimmerX = width * shimmerProgress
+            drawRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.White.copy(alpha = 0.28f),
+                        Color.White.copy(alpha = 0.50f),
+                        Color.White.copy(alpha = 0.28f),
+                        Color.Transparent,
+                    ),
+                    start = Offset(shimmerX - 80f, 0f),
+                    end = Offset(shimmerX + 80f, height),
+                ),
+            )
+        }
+
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(24.dp)
-                .align(Alignment.TopCenter)
-                .background(
+                .fillMaxSize()
+                .padding(1.2.dp)
+                .clip(RoundedCornerShape(26.dp))
+                .border(
+                    width = 1.2.dp,
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.35f),
-                            Color.White.copy(alpha = 0f),
+                            Color.White.copy(alpha = 0.70f),
+                            Color.White.copy(alpha = 0.15f),
                         ),
                     ),
+                    shape = RoundedCornerShape(26.dp),
                 ),
         )
 
@@ -497,6 +597,28 @@ fun NutrientStatCard(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = title, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = color)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
+        }
+    }
+}
+
+@Composable
+fun MicroStatCard(
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+            .padding(vertical = 10.dp, horizontal = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = title, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6E6877))
             Spacer(modifier = Modifier.height(2.dp))
             Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
         }

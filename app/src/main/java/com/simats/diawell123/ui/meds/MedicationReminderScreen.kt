@@ -19,8 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,17 +33,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
 fun MedicationReminderScreen(
     modifier: Modifier = Modifier,
+    medication: MedicationItem? = null,
+    viewModel: MedsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onTakenClick: () -> Unit = {},
     onSnoozeClick: () -> Unit = {},
     onSkipClick: () -> Unit = {},
 ) {
+    val detailState by viewModel.detailState.collectAsState()
+    val activeMed = medication ?: detailState.medication
+
+    val medId = activeMed?.id ?: 0
+    val medName = activeMed?.name?.ifBlank { "Metformin" } ?: "Metformin"
+    val medDose = activeMed?.dose?.ifBlank { "500 mg • 1 Tablet" } ?: "500 mg • 1 Tablet"
+    val medTime = activeMed?.reminderTime?.ifBlank { "8:00 PM" } ?: "8:00 PM"
+    val medTiming = activeMed?.timing?.ifBlank { "After Meal" } ?: "After Meal"
+    val medDate = activeMed?.reminderDate?.ifBlank { "Today" } ?: "Today"
+    val medNotes = activeMed?.notes?.ifBlank { "Follow prescribed routine and drink water." } ?: "Follow prescribed routine and drink water."
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -85,7 +103,7 @@ fun MedicationReminderScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Sample • Reminder reminder",
+                text = "$medName • Scheduled reminder",
                 fontSize = 11.sp,
                 color = Color(0xFF811978),
                 modifier = Modifier.fillMaxWidth(),
@@ -108,7 +126,7 @@ fun MedicationReminderScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "A gentle nudge for\nyour evening routine.",
+                text = "A gentle nudge for\nyour daily routine.",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E22),
@@ -140,7 +158,7 @@ fun MedicationReminderScreen(
                                 .padding(horizontal = 8.dp, vertical = 3.dp),
                         ) {
                             Text(
-                                text = "Today • 15 Oct",
+                                text = medDate,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFB81D85),
@@ -148,7 +166,7 @@ fun MedicationReminderScreen(
                         }
 
                         Text(
-                            text = "8:00 PM",
+                            text = medTime,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF7A1C7D),
@@ -158,7 +176,7 @@ fun MedicationReminderScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Metformin",
+                        text = medName,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
@@ -167,20 +185,82 @@ fun MedicationReminderScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "1 tablet (500 mg) as prescribed",
+                        text = medDose,
                         fontSize = 13.sp,
                         color = Color(0xFF6E6877),
                     )
 
                     Text(
-                        text = "Daily at 8:00 AM and 8:00 PM",
+                        text = "$medTiming • ${activeMed?.frequency ?: "Daily"}",
                         fontSize = 11.sp,
                         color = Color(0xFF8A8595),
                     )
+
+                    // Enriched Clinical Dataset Details
+                    if (activeMed?.primaryIngredient?.isNotBlank() == true ||
+                        activeMed?.therapeuticClass?.isNotBlank() == true ||
+                        activeMed?.manufacturer?.isNotBlank() == true
+                    ) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFFF8F7FA))
+                                .padding(10.dp),
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                if (!activeMed.primaryIngredient.isNullOrBlank()) {
+                                    Text(
+                                        text = "🔬 Active: ${activeMed.primaryIngredient}",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF2E7D32),
+                                    )
+                                }
+                                if (!activeMed.therapeuticClass.isNullOrBlank()) {
+                                    Text(
+                                        text = "🏷️ Class: ${activeMed.therapeuticClass}",
+                                        fontSize = 10.5.sp,
+                                        color = Color(0xFFB81D85),
+                                    )
+                                }
+                                if (!activeMed.manufacturer.isNullOrBlank() || !activeMed.packaging.isNullOrBlank()) {
+                                    val mfdPack = listOf(activeMed.manufacturer, activeMed.packaging)
+                                        .filter { it.isNotBlank() }
+                                        .joinToString(" • ")
+                                    Text(
+                                        text = "🏭 $mfdPack",
+                                        fontSize = 10.5.sp,
+                                        color = Color(0xFF6E6877),
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (medNotes.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Note: $medNotes",
+                            fontSize = 11.sp,
+                            color = Color(0xFF6E6877),
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+
+            if (detailState.errorMessage != null) {
+                Text(
+                    text = "⚠️ ${detailState.errorMessage}",
+                    fontSize = 12.sp,
+                    color = Color(0xFFC62828),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
 
             Text(
                 text = "Follow your prescribed schedule.\nMark Taken after taking your medication.",
@@ -192,34 +272,70 @@ fun MedicationReminderScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Taken Button
-            IosLiquidGlassButton(
-                text = "✓  Taken",
-                onClick = onTakenClick,
-            )
+            if (detailState.isUpdating) {
+                CircularProgressIndicator(
+                    color = Color(0xFFB81D85),
+                    strokeWidth = 2.5.dp,
+                    modifier = Modifier.size(32.dp)
+                )
+            } else {
+                // Taken Button
+                IosLiquidGlassButton(
+                    text = "✓  Taken",
+                    onClick = {
+                        if (medId > 0) {
+                            viewModel.updateStatus(medId, "Taken", onSuccess = onTakenClick)
+                        } else {
+                            onTakenClick()
+                        }
+                    },
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            // Snooze Button
-            IosLiquidGlassButton(
-                text = "⏰  Snooze - 15 minutes",
-                onClick = onSnoozeClick,
-                gradientColors = listOf(Color(0xFF26A69A), Color(0xFF00897B)),
-            )
+                // Snooze Button
+                IosLiquidGlassButton(
+                    text = "⏰  Snooze - 15 minutes",
+                    onClick = onSnoozeClick,
+                    gradientColors = listOf(Color(0xFF26A69A), Color(0xFF00897B)),
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            // Skip Button
-            Text(
-                text = "Skip",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFB81D85),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onSkipClick() }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-            )
+                // Skip Button
+                Text(
+                    text = "Skip",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFB81D85),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            if (medId > 0) {
+                                viewModel.updateStatus(medId, "Missed", onSuccess = onSkipClick)
+                            } else {
+                                onSkipClick()
+                            }
+                        }
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                )
+
+                if (medId > 0) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "🗑 Delete Reminder",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFFD32F2F),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                viewModel.deleteMedication(medId, onSuccess = onBackClick)
+                            }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
