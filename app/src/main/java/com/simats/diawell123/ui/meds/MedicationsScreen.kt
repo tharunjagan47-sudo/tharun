@@ -281,7 +281,7 @@ fun MedicationsScreen(
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                        .padding(bottom = 88.dp),
                 )
             }
         }

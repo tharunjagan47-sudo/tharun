@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -203,24 +204,46 @@ fun DailyDietPlanScreen(
                         OutlinedTextField(
                             value = uiState.searchQuery,
                             onValueChange = { viewModel.onDailyDietSearchChanged(it) },
+                            leadingIcon = {
+                                Text(
+                                    text = "🔍",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+                                )
+                            },
+                            trailingIcon = {
+                                if (uiState.searchQuery.isNotEmpty()) {
+                                    Text(
+                                        text = "✕",
+                                        fontSize = 15.sp,
+                                        color = AppTheme.colors.textMuted,
+                                        modifier = Modifier
+                                            .clickable { viewModel.onDailyDietSearchChanged("") }
+                                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    )
+                                }
+                            },
                             placeholder = {
                                 Text(
-                                    text = "🔍 Search foods, recipes or ingredients...",
+                                    text = "Search foods, recipes or ingredients...",
                                     fontSize = 13.sp,
                                     color = AppTheme.colors.textMuted,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(14.dp),
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = AppTheme.colors.textPrimary,
+                                unfocusedTextColor = AppTheme.colors.textPrimary,
+                                cursorColor = Color(0xFFBD1E85),
                                 focusedContainerColor = AppTheme.colors.inputBackground,
                                 unfocusedContainerColor = AppTheme.colors.inputBackground,
                                 focusedBorderColor = Color(0xFFBD1E85),
                                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                             ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -514,7 +537,7 @@ fun DailyDietPlanScreen(
                     lineHeight = 14.sp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                        .padding(bottom = 88.dp),
                 )
             }
         }
@@ -778,6 +801,9 @@ fun AdjustHealthInputsDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = AppTheme.colors.textPrimary,
+                        unfocusedTextColor = AppTheme.colors.textPrimary,
+                        cursorColor = Color(0xFFBD1E85),
                         focusedContainerColor = AppTheme.colors.inputBackground,
                         unfocusedContainerColor = AppTheme.colors.inputBackground,
                         focusedBorderColor = Color(0xFFBD1E85),

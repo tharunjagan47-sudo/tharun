@@ -260,6 +260,9 @@ fun LogGlucoseScreen(
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = AppTheme.colors.textPrimary,
+                            unfocusedTextColor = AppTheme.colors.textPrimary,
+                            cursorColor = Color(0xFFBD1E85),
                             focusedContainerColor = AppTheme.colors.inputBackground,
                             unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFBD1E85),
@@ -340,6 +343,9 @@ fun LogGlucoseScreen(
                                 trailingIcon = { Text(text = "📅", fontSize = 14.sp) },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = AppTheme.colors.textPrimary,
+                                    unfocusedTextColor = AppTheme.colors.textPrimary,
+                                    cursorColor = Color(0xFFBD1E85),
                                     focusedContainerColor = AppTheme.colors.inputBackground,
                                     unfocusedContainerColor = AppTheme.colors.inputBackground,
                                     focusedBorderColor = Color(0xFFBD1E85),
@@ -364,6 +370,9 @@ fun LogGlucoseScreen(
                                 trailingIcon = { Text(text = "⏰", fontSize = 14.sp) },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = AppTheme.colors.textPrimary,
+                                    unfocusedTextColor = AppTheme.colors.textPrimary,
+                                    cursorColor = Color(0xFFBD1E85),
                                     focusedContainerColor = AppTheme.colors.inputBackground,
                                     unfocusedContainerColor = AppTheme.colors.inputBackground,
                                     focusedBorderColor = Color(0xFFBD1E85),
@@ -398,6 +407,9 @@ fun LogGlucoseScreen(
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = AppTheme.colors.textPrimary,
+                            unfocusedTextColor = AppTheme.colors.textPrimary,
+                            cursorColor = Color(0xFFBD1E85),
                             focusedContainerColor = AppTheme.colors.inputBackground,
                             unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFBD1E85),

@@ -4,6 +4,7 @@ import com.simats.diawell123.ui.theme.AppTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -114,24 +116,46 @@ fun ExploreFoodScreen(
                         OutlinedTextField(
                             value = uiState.searchQuery,
                             onValueChange = { viewModel.onDailyDietSearchChanged(it) },
+                            leadingIcon = {
+                                Text(
+                                    text = "🔍",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+                                )
+                            },
+                            trailingIcon = {
+                                if (uiState.searchQuery.isNotEmpty()) {
+                                    Text(
+                                        text = "✕",
+                                        fontSize = 15.sp,
+                                        color = AppTheme.colors.textMuted,
+                                        modifier = Modifier
+                                            .clickable { viewModel.onDailyDietSearchChanged("") }
+                                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    )
+                                }
+                            },
                             placeholder = {
                                 Text(
-                                    text = "🔍 Search 1000+ dishes (e.g., Paneer, Dal, Chicken)...",
+                                    text = "Search 1000+ dishes (e.g., Paneer, Dal, Chicken)...",
                                     fontSize = 13.sp,
                                     color = AppTheme.colors.textMuted,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = AppTheme.colors.textPrimary,
+                                unfocusedTextColor = AppTheme.colors.textPrimary,
+                                cursorColor = Color(0xFFBD1E85),
                                 focusedContainerColor = AppTheme.colors.inputBackground,
                                 unfocusedContainerColor = AppTheme.colors.inputBackground,
                                 focusedBorderColor = Color(0xFFBD1E85),
                                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                             ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -142,7 +166,9 @@ fun ExploreFoodScreen(
                 ElementPopUpContainer(delayMillis = 80) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                     ) {
                         listOf("All", "Breakfast", "Lunch", "Snack", "Dinner").forEach { category ->
                             val isSelected = uiState.selectedCategory.equals(category, ignoreCase = true)

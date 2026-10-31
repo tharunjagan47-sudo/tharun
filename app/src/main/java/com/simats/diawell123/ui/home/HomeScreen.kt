@@ -620,7 +620,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(88.dp))
             }
         }
 

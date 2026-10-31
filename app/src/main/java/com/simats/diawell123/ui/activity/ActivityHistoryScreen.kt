@@ -4,6 +4,7 @@ import com.simats.diawell123.ui.theme.AppTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -147,7 +148,9 @@ fun ActivityHistoryScreen(
             // 3. Filter Category Pills (Pops Up)
             ElementPopUpContainer(delayMillis = 120) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     listOf("All", "Walking", "Cycling", "Running").forEach { filter ->

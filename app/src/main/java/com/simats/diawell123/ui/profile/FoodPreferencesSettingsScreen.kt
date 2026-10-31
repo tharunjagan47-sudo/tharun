@@ -358,6 +358,9 @@ fun FoodPreferencesSettingsScreen(
                 singleLine = true,
                 shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = AppTheme.colors.textPrimary,
+                    unfocusedTextColor = AppTheme.colors.textPrimary,
+                    cursorColor = Color(0xFFBD1E85),
                     focusedContainerColor = AppTheme.colors.inputBackground,
                     unfocusedContainerColor = AppTheme.colors.inputBackground,
                     focusedBorderColor = Color(0xFFBD1E85),

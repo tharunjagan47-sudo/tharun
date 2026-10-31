@@ -228,14 +228,15 @@ fun DeleteAccountScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = AppTheme.colors.textPrimary,
+                        unfocusedTextColor = AppTheme.colors.textPrimary,
+                        cursorColor = Color(0xFFD32F2F),
                         focusedContainerColor = AppTheme.colors.inputBackground,
                         unfocusedContainerColor = AppTheme.colors.inputBackground,
                         focusedBorderColor = Color(0xFFD32F2F),
                         unfocusedBorderColor = AppTheme.colors.inputBorder,
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
@@ -260,14 +261,15 @@ fun DeleteAccountScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = AppTheme.colors.textPrimary,
+                        unfocusedTextColor = AppTheme.colors.textPrimary,
+                        cursorColor = Color(0xFFD32F2F),
                         focusedContainerColor = AppTheme.colors.inputBackground,
                         unfocusedContainerColor = AppTheme.colors.inputBackground,
                         focusedBorderColor = Color(0xFFD32F2F),
                         unfocusedBorderColor = AppTheme.colors.inputBorder,
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
