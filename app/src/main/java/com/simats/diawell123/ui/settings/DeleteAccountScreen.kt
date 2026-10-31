@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,19 +33,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
 fun DeleteAccountScreen(
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onConfirmDeleteClick: () -> Unit = {},
 ) {
+    val deleteState by viewModel.deleteState.collectAsState()
+
     var confirmText by remember { mutableStateOf("") }
+    var passwordText by remember { mutableStateOf("") }
     var selectedReason by remember { mutableStateOf("I no longer need the app") }
 
     Box(
@@ -137,6 +146,24 @@ fun DeleteAccountScreen(
                 )
             }
 
+            if (deleteState.errorMessage != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(12.dp))
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = deleteState.errorMessage ?: "Deletion failed.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // Reason Selection
@@ -177,7 +204,41 @@ fun DeleteAccountScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Password Field
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Confirm with your password:",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E1E22),
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+
+                OutlinedTextField(
+                    value = passwordText,
+                    onValueChange = { passwordText = it },
+                    placeholder = {
+                        Text(text = "Enter current password", fontSize = 13.sp, color = Color(0xFFA09BAA))
+                    },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFF8F7FA),
+                        unfocusedContainerColor = Color(0xFFF8F7FA),
+                        focusedBorderColor = Color(0xFFD32F2F),
+                        unfocusedBorderColor = Color(0xFFEFECEF),
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Confirmation Input Field
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -205,13 +266,13 @@ fun DeleteAccountScreen(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .height(52.dp),
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            val isConfirmed = confirmText.trim().equals("DELETE", ignoreCase = true)
+            val isConfirmed = confirmText.trim().equals("DELETE", ignoreCase = true) && passwordText.isNotEmpty()
 
             // Delete Button
             Box(
@@ -219,12 +280,18 @@ fun DeleteAccountScreen(
                     .fillMaxWidth()
                     .height(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (isConfirmed) Color(0xFFD32F2F) else Color(0xFFE57373).copy(alpha = 0.5f))
-                    .clickable(enabled = isConfirmed) { onConfirmDeleteClick() },
+                    .background(if (isConfirmed && !deleteState.isDeleting) Color(0xFFD32F2F) else Color(0xFFE57373).copy(alpha = 0.5f))
+                    .clickable(enabled = isConfirmed && !deleteState.isDeleting) {
+                        viewModel.deleteAccount(
+                            password = passwordText,
+                            reason = selectedReason,
+                            onSuccess = onConfirmDeleteClick
+                        )
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Permanently Delete Account",
+                    text = if (deleteState.isDeleting) "Deleting Account..." else "Permanently Delete Account",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,

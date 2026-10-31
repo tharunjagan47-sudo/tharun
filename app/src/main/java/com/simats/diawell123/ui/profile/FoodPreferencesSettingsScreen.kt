@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,13 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
@@ -52,16 +53,30 @@ import kotlinx.coroutines.delay
 @Composable
 fun FoodPreferencesSettingsScreen(
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveFoodPreferencesClick: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var selectedDiet by remember { mutableStateOf("Non-Vegetarian") }
     var foodsToAvoid by remember { mutableStateOf("") }
-    var showSuccessBanner by remember { mutableStateOf(value = false) }
+    var showSuccessBanner by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadFoodPreferences()
+    }
+
+    LaunchedEffect(uiState.foodPreferences) {
+        uiState.foodPreferences?.let { fp ->
+            selectedDiet = fp.preferredDiet
+            foodsToAvoid = fp.foodsToAvoid.joinToString(", ")
+        }
+    }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
-            delay(1000)
+            delay(1200)
             showSuccessBanner = false
             onSaveFoodPreferencesClick()
         }
@@ -151,7 +166,7 @@ fun FoodPreferencesSettingsScreen(
                                 color = Color(0xFF2E7D32),
                             )
                             Text(
-                                text = "Your diet preferences have been updated.",
+                                text = "Your diet preferences have been updated in your profile.",
                                 fontSize = 11.sp,
                                 color = Color(0xFF1B5E20),
                             )
@@ -160,8 +175,26 @@ fun FoodPreferencesSettingsScreen(
                 }
             }
 
+            if (uiState.errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(12.dp))
+                        .padding(10.dp)
+                ) {
+                    Text(
+                        text = uiState.errorMessage ?: "Failed to save food preferences.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
+                }
+            }
+
             Text(
-                text = "Demo profile • ${ProfileState.userName}",
+                text = "Profile • ${ProfileState.userName}",
                 fontSize = 11.sp,
                 color = Color(0xFF811978),
                 fontWeight = FontWeight.Medium,
@@ -222,7 +255,7 @@ fun FoodPreferencesSettingsScreen(
                 )
 
                 Text(
-                    text = "+ Add allergy",
+                    text = "+ Common allergies",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFB81D85),
@@ -303,7 +336,7 @@ fun FoodPreferencesSettingsScreen(
 
             // Foods to avoid (optional)
             Text(
-                text = "Foods to avoid (optional)",
+                text = "Foods to avoid (comma-separated)",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E22),
@@ -316,7 +349,7 @@ fun FoodPreferencesSettingsScreen(
                 onValueChange = { foodsToAvoid = it },
                 placeholder = {
                     Text(
-                        text = "Add foods you prefer not to eat",
+                        text = "e.g. Shellfish, Raw onions, Grapefruit",
                         fontSize = 13.sp,
                         color = Color(0xFFA09BAA),
                     )
@@ -351,7 +384,7 @@ fun FoodPreferencesSettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "AI uses your preferences for general nutrition guidance, not medical advice. Check for allergies and ingredients independently; suggestions do not guarantee allergy safety.",
+                        text = "DiaWell AI uses your preferences for general nutrition guidance, not medical advice. Check for allergies and ingredients independently; suggestions do not guarantee allergy safety.",
                         fontSize = 11.sp,
                         color = Color(0xFF6E6877),
                         lineHeight = 16.sp,
@@ -363,8 +396,21 @@ fun FoodPreferencesSettingsScreen(
 
             // Save Food Preferences Button
             IosLiquidGlassButton(
-                text = "Save Food Preferences",
-                onClick = { showSuccessBanner = true },
+                text = if (uiState.isSaving) "Saving Preferences..." else "Save Food Preferences",
+                onClick = {
+                    val allergiesSelected = allergies.filter { it.second }.map { it.first }
+                    val stylesSelected = preferredStyles.filter { it.second }.map { it.first }
+
+                    viewModel.saveFoodPreferences(
+                        preferredDiet = selectedDiet,
+                        allergies = allergiesSelected,
+                        preferredStyles = stylesSelected,
+                        foodsToAvoid = foodsToAvoid,
+                        onSuccess = {
+                            showSuccessBanner = true
+                        }
+                    )
+                },
             )
 
             Spacer(modifier = Modifier.height(24.dp))

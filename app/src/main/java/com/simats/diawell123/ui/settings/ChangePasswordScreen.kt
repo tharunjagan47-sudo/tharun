@@ -30,6 +30,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,17 +38,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -56,22 +56,26 @@ import kotlinx.coroutines.delay
 @Composable
 fun ChangePasswordScreen(
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSavePasswordClick: () -> Unit = {},
 ) {
+    val passwordState by viewModel.passwordState.collectAsState()
+
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var localValidationErr by remember { mutableStateOf<String?>(null) }
 
-    var isCurrentPasswordVisible by remember { mutableStateOf(value = false) }
-    var isNewPasswordVisible by remember { mutableStateOf(value = false) }
-    var isConfirmPasswordVisible by remember { mutableStateOf(value = false) }
+    var isCurrentPasswordVisible by remember { mutableStateOf(false) }
+    var isNewPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
 
-    var showSuccessBanner by remember { mutableStateOf(value = false) }
+    var showSuccessBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
-            delay(1000)
+            delay(1200)
             showSuccessBanner = false
             onSavePasswordClick()
         }
@@ -127,7 +131,7 @@ fun ChangePasswordScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 1-Second Success Confirmation Banner
+            // Success Confirmation Banner
             AnimatedVisibility(
                 visible = showSuccessBanner,
                 enter = slideInVertically() + fadeIn(),
@@ -162,6 +166,26 @@ fun ChangePasswordScreen(
                 }
             }
 
+            // Error Banner
+            val errorText = localValidationErr ?: passwordState.errorMessage
+            if (errorText != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = errorText,
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
+                }
+            }
+
             // Info Card
             Box(
                 modifier = Modifier
@@ -188,7 +212,10 @@ fun ChangePasswordScreen(
             PasswordInputField(
                 label = "Current Password",
                 value = currentPassword,
-                onValueChange = { currentPassword = it },
+                onValueChange = {
+                    currentPassword = it
+                    localValidationErr = null
+                },
                 placeholder = "Enter current password",
                 isPasswordVisible = isCurrentPasswordVisible,
                 onToggleVisibility = { isCurrentPasswordVisible = !isCurrentPasswordVisible },
@@ -200,7 +227,10 @@ fun ChangePasswordScreen(
             PasswordInputField(
                 label = "New Password",
                 value = newPassword,
-                onValueChange = { newPassword = it },
+                onValueChange = {
+                    newPassword = it
+                    localValidationErr = null
+                },
                 placeholder = "Enter new password",
                 isPasswordVisible = isNewPasswordVisible,
                 onToggleVisibility = { isNewPasswordVisible = !isNewPasswordVisible },
@@ -212,7 +242,10 @@ fun ChangePasswordScreen(
             PasswordInputField(
                 label = "Confirm New Password",
                 value = confirmPassword,
-                onValueChange = { confirmPassword = it },
+                onValueChange = {
+                    confirmPassword = it
+                    localValidationErr = null
+                },
                 placeholder = "Re-enter new password",
                 isPasswordVisible = isConfirmPasswordVisible,
                 onToggleVisibility = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
@@ -250,8 +283,31 @@ fun ChangePasswordScreen(
 
             // Update Password Button
             IosLiquidGlassButton(
-                text = "Update Password",
-                onClick = { showSuccessBanner = true },
+                text = if (passwordState.isSubmitting) "Updating..." else "Update Password",
+                onClick = {
+                    when {
+                        currentPassword.isBlank() -> {
+                            localValidationErr = "Please enter your current password."
+                        }
+                        newPassword.length < 8 -> {
+                            localValidationErr = "New password must be at least 8 characters long."
+                        }
+                        newPassword != confirmPassword -> {
+                            localValidationErr = "New password and confirmation do not match."
+                        }
+                        else -> {
+                            localValidationErr = null
+                            viewModel.changePassword(
+                                currentPassword = currentPassword,
+                                newPassword = newPassword,
+                                confirmPassword = confirmPassword,
+                                onSuccess = {
+                                    showSuccessBanner = true
+                                }
+                            )
+                        }
+                    }
+                },
             )
 
             Spacer(modifier = Modifier.height(24.dp))

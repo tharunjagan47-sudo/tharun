@@ -27,6 +27,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,13 +35,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
@@ -48,19 +49,17 @@ import kotlinx.coroutines.delay
 @Composable
 fun NotificationPreferencesScreen(
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSavePreferencesClick: () -> Unit = {},
 ) {
-    var medicationReminders by remember { mutableStateOf(value = true) }
-    var mealReminders by remember { mutableStateOf(value = true) }
-    var glucoseReminders by remember { mutableStateOf(value = true) }
-    var weeklyReportAlerts by remember { mutableStateOf(value = true) }
-    var vibration by remember { mutableStateOf(value = true) }
-    var showSuccessBanner by remember { mutableStateOf(value = false) }
+    val prefsState by viewModel.prefsState.collectAsState()
+    var vibration by remember { mutableStateOf(true) }
+    var showSuccessBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
-            delay(1000)
+            delay(1200)
             showSuccessBanner = false
             onSavePreferencesClick()
         }
@@ -151,6 +150,24 @@ fun NotificationPreferencesScreen(
                 }
             }
 
+            if (prefsState.errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = prefsState.errorMessage ?: "An error occurred.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
+                }
+            }
+
             Text(
                 text = "Choose the check-ins that assist for you.",
                 fontSize = 12.sp,
@@ -172,8 +189,8 @@ fun NotificationPreferencesScreen(
                 title = "Medication Reminders",
                 subtitle = "For the dose schedule you set.",
                 icon = "💊",
-                checked = medicationReminders,
-                onCheckedChange = { medicationReminders = it },
+                checked = prefsState.medicationReminders,
+                onCheckedChange = { viewModel.toggleMedicationReminders(it) },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -182,8 +199,8 @@ fun NotificationPreferencesScreen(
                 title = "Meal Logging Reminders",
                 subtitle = "A nudge to record meals and portions.",
                 icon = "🥗",
-                checked = mealReminders,
-                onCheckedChange = { mealReminders = it },
+                checked = prefsState.mealLoggingReminders,
+                onCheckedChange = { viewModel.toggleMealLoggingReminders(it) },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -192,8 +209,8 @@ fun NotificationPreferencesScreen(
                 title = "Glucose Logging Reminders",
                 subtitle = "Follow your agreed care routine.",
                 icon = "🩸",
-                checked = glucoseReminders,
-                onCheckedChange = { glucoseReminders = it },
+                checked = prefsState.glucoseCheckins,
+                onCheckedChange = { viewModel.toggleGlucoseCheckins(it) },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -202,8 +219,8 @@ fun NotificationPreferencesScreen(
                 title = "Weekly Report Alerts",
                 subtitle = "Know when your weekly summary is ready.",
                 icon = "📊",
-                checked = weeklyReportAlerts,
-                onCheckedChange = { weeklyReportAlerts = it },
+                checked = prefsState.weeklyReportAlerts,
+                onCheckedChange = { viewModel.toggleWeeklyReportAlerts(it) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -257,7 +274,7 @@ fun NotificationPreferencesScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "10:00 PM - 7:00 AM • example",
+                        text = "10:00 PM - 7:00 AM • active",
                         fontSize = 11.sp,
                         color = Color(0xFF6E6877),
                     )
@@ -277,14 +294,18 @@ fun NotificationPreferencesScreen(
 
             // Save Preferences Button
             IosLiquidGlassButton(
-                text = "Save Preferences",
-                onClick = { showSuccessBanner = true },
+                text = if (prefsState.isSaving) "Saving..." else "Save Preferences",
+                onClick = {
+                    viewModel.saveNotificationPreferences(onSuccess = {
+                        showSuccessBanner = true
+                    })
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Demo preferences • Static preview",
+                text = "Preferences automatically sync with your DiaWell profile.",
                 fontSize = 11.sp,
                 color = Color(0xFF8A8595),
                 textAlign = TextAlign.Center,

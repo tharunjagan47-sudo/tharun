@@ -139,4 +139,16 @@ object ApiClient {
 
     val activityApiService: ActivityApiService
         get() = getRetrofit().create(ActivityApiService::class.java)
+
+    val notificationsApiService: NotificationsApiService
+        get() = getRetrofit().create(NotificationsApiService::class.java)
+
+    val reportsApiService: ReportsApiService
+        get() = getRetrofit().create(ReportsApiService::class.java)
+
+    val settingsApiService: SettingsApiService
+        get() = getRetrofit().create(SettingsApiService::class.java)
+
+    val profileApiService: ProfileApiService
+        get() = getRetrofit().create(ProfileApiService::class.java)
 }

@@ -147,6 +147,7 @@ fun HomeScreen(
     onReportsTabClick: () -> Unit = {},
     onSettingsTabClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
     val uiState by viewModel.uiState.collectAsState()
@@ -209,16 +210,32 @@ fun HomeScreen(
                                         )
                                     }
 
-                                    // Profile Avatar Circle
-                                    Box(
-                                        modifier = Modifier.clickable { onProfileClick() },
+                                    // Top Right Actions: Bell & Profile Avatar
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
-                                        ProfileAvatarView(
-                                            sizeDp = 42.dp,
-                                            fontSizeSp = 15,
-                                            bgCircleColor = Color.White.copy(alpha = 0.25f),
-                                            textColor = Color.White,
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(21.dp))
+                                                .background(Color.White.copy(alpha = 0.25f))
+                                                .clickable { onNotificationsClick() }
+                                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            Text(text = "🔔", fontSize = 16.sp)
+                                        }
+
+                                        Box(
+                                            modifier = Modifier.clickable { onProfileClick() },
+                                        ) {
+                                            ProfileAvatarView(
+                                                sizeDp = 42.dp,
+                                                fontSizeSp = 15,
+                                                bgCircleColor = Color.White.copy(alpha = 0.25f),
+                                                textColor = Color.White,
+                                            )
+                                        }
                                     }
                                 }
 

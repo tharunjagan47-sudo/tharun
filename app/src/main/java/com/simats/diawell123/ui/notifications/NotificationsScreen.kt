@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,12 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
 fun NotificationsScreen(
     modifier: Modifier = Modifier,
+    viewModel: NotificationsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
@@ -46,6 +51,7 @@ fun NotificationsScreen(
     onNotificationClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
+    val uiState by viewModel.uiState.collectAsState()
 
     Box(
         modifier = modifier
@@ -86,6 +92,23 @@ fun NotificationsScreen(
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
                     )
+
+                    if (uiState.unreadCount > 0) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFFB81D85))
+                                .padding(horizontal = 7.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "${uiState.unreadCount}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -97,60 +120,87 @@ fun NotificationsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Today • 15 October",
+                        text = uiState.dateHeader,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF6E6877),
                     )
 
-                    Text(
-                        text = "Clear all",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
-                    )
+                    if (uiState.notifications.isNotEmpty()) {
+                        Text(
+                            text = "Clear all",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFB81D85),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .clickable { viewModel.clearAll() }
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Notification Cards
-                NotificationItem(
-                    title = "Evening medication reminder",
-                    body = "Metformin • scheduled at 8:00 PM. Follow your prescribed schedule.",
-                    time = "7:50 PM • Unread",
-                    isUnread = true,
-                    onClick = onNotificationClick,
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                NotificationItem(
-                    title = "A little meal check-in",
-                    body = "Remember to log your dinner and portion when you're ready.",
-                    time = "6:30 PM • Unread",
-                    isUnread = true,
-                    onClick = onNotificationClick,
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                NotificationItem(
-                    title = "Time for a glucose check-in",
-                    body = "Log a reading according to the routine agreed with your care team.",
-                    time = "7:15 AM • Read",
-                    isUnread = false,
-                    onClick = onNotificationClick,
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                NotificationItem(
-                    title = "Your weekly report is ready",
-                    body = "See your food, glucose and medication tracking for 8-15 October.",
-                    time = "8:00 AM • Read",
-                    isUnread = false,
-                    onClick = onNotificationClick,
-                )
+                // Loading Indicator
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color(0xFFB81D85),
+                            modifier = Modifier.size(32.dp),
+                            strokeWidth = 3.dp
+                        )
+                    }
+                } else if (uiState.notifications.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "🔔",
+                                fontSize = 36.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "All caught up!",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1E1E22)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "No unread alerts or reminders right now.",
+                                fontSize = 12.sp,
+                                color = Color(0xFF6E6877)
+                            )
+                        }
+                    }
+                } else {
+                    // Notification Cards
+                    uiState.notifications.forEach { item ->
+                        NotificationItem(
+                            title = item.title,
+                            body = item.body,
+                            time = item.time,
+                            isUnread = item.isUnread,
+                            onClick = {
+                                if (item.isUnread) {
+                                    viewModel.markAsRead(item.id)
+                                }
+                                onNotificationClick()
+                            },
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
             }

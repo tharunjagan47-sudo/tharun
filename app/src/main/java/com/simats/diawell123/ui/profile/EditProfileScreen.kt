@@ -1,5 +1,6 @@
 package com.simats.diawell123.ui.profile
 
+import android.content.Context
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -33,12 +34,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,19 +58,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
+import java.io.File
 
 @Composable
 fun EditProfileScreen(
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveChangesClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+
     var fullName by remember { mutableStateOf(ProfileState.userName) }
     var email by remember { mutableStateOf(ProfileState.userEmail) }
     var age by remember { mutableStateOf("30 years") }
@@ -75,7 +83,19 @@ fun EditProfileScreen(
     var height by remember { mutableStateOf("165 cm") }
     var weight by remember { mutableStateOf("68 kg") }
 
-    var showSuccessBanner by remember { mutableStateOf(value = false) }
+    var showSuccessBanner by remember { mutableStateOf(false) }
+
+    // Sync from profile data when loaded from backend
+    LaunchedEffect(uiState.profile) {
+        uiState.profile?.let { p ->
+            fullName = p.fullName
+            email = p.email
+            p.diabetesType?.let { diabetesType = it }
+            p.age?.let { age = "$it years" }
+            p.heightCm?.let { height = "${it.toInt()} cm" }
+            p.weightKg?.let { weight = "${it.toInt()} kg" }
+        }
+    }
 
     val ageRange = remember { (18..80).map { "$it years" } }
     val heightRange = remember { (140..210).filter { it % 5 == 0 }.map { "$it cm" } }
@@ -94,6 +114,12 @@ fun EditProfileScreen(
                     MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 }
                 ProfileState.profileImageBitmap = bitmap.asImageBitmap()
+
+                // Upload to server
+                val tempFile = uriToFile(context, uri)
+                if (tempFile != null) {
+                    viewModel.uploadProfilePhoto(tempFile)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -104,7 +130,7 @@ fun EditProfileScreen(
         if (showSuccessBanner) {
             ProfileState.userName = fullName
             ProfileState.userEmail = email
-            delay(1800)
+            delay(1500)
             showSuccessBanner = false
             onSaveChangesClick()
         }
@@ -186,6 +212,24 @@ fun EditProfileScreen(
                 }
             }
 
+            if (uiState.errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = uiState.errorMessage ?: "Failed to update profile.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
+                }
+            }
+
             // Profile Avatar & Gallery Camera Picker
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -210,7 +254,15 @@ fun EditProfileScreen(
                             .border(1.5.dp, Color.White, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = "📷", fontSize = 12.sp)
+                        if (uiState.isUploadingPhoto) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        } else {
+                            Text(text = "📷", fontSize = 12.sp)
+                        }
                     }
                 }
 
@@ -231,7 +283,7 @@ fun EditProfileScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = ProfileState.userName,
+                    text = fullName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E1E22),
@@ -320,8 +372,24 @@ fun EditProfileScreen(
 
             // Save Changes Button
             IosLiquidGlassButton(
-                text = "Save Changes",
-                onClick = { showSuccessBanner = true },
+                text = if (uiState.isSaving) "Saving Changes..." else "Save Changes",
+                onClick = {
+                    val ageNum = age.replace(Regex("[^0-9]"), "").toIntOrNull()
+                    val heightNum = height.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+                    val weightNum = weight.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+
+                    viewModel.updateProfile(
+                        fullName = fullName,
+                        email = email,
+                        diabetesType = diabetesType,
+                        age = ageNum,
+                        heightCm = heightNum,
+                        weightKg = weightNum,
+                        onSuccess = {
+                            showSuccessBanner = true
+                        }
+                    )
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -337,6 +405,19 @@ fun EditProfileScreen(
                     .padding(bottom = 24.dp),
             )
         }
+    }
+}
+
+private fun uriToFile(context: Context, uri: Uri): File? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val tempFile = File.createTempFile("profile_upload_", ".jpg", context.cacheDir)
+        tempFile.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+        tempFile
+    } catch (e: Exception) {
+        null
     }
 }
 
@@ -393,116 +474,59 @@ fun VerticalScrollAndSelectPicker(
     onItemSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var isExpanded by remember { mutableStateOf(value = false) }
-
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 6.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = label,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF232226),
             )
             Text(
-                text = "Selected: $selectedItem",
-                fontSize = 11.sp,
+                text = selectedItem,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFB81D85),
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF8F7FA))
-                .border(1.dp, if (isExpanded) Color(0xFFB81D85) else Color(0xFFEFECEF), RoundedCornerShape(12.dp))
-                .clickable { isExpanded = !isExpanded }
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .height(115.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color.White)
+                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                .padding(vertical = 4.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = selectedItem,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
-                )
-                Text(
-                    text = if (isExpanded) "▲ Scroll Selection" else "▼ Tap to Scroll & Select",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFB81D85),
-                )
-            }
-        }
-
-        if (isExpanded) {
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
-                    .padding(vertical = 4.dp, horizontal = 6.dp),
-            ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    items(items) { item ->
-                        val isSelected = item == selectedItem
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) Color(0xFFFDEEF7) else Color.Transparent)
-                                .border(
-                                    width = if (isSelected) 1.dp else 0.dp,
-                                    color = if (isSelected) Color(0xFFB81D85) else Color.Transparent,
-                                    shape = RoundedCornerShape(8.dp),
-                                )
-                                .clickable {
-                                    onItemSelected(item)
-                                    isExpanded = false
-                                }
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            contentAlignment = Alignment.CenterStart,
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = item,
-                                    fontSize = 13.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
-                                )
-
-                                if (isSelected) {
-                                    Text(
-                                        text = "✓ Selected",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFB81D85),
-                                    )
-                                }
-                            }
-                        }
+                items(items) { item ->
+                    val isSelected = item == selectedItem
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (isSelected) Color(0xFFFDEEF7) else Color.Transparent)
+                            .clickable { onItemSelected(item) }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = item,
+                            fontSize = 13.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF6E6877),
+                        )
                     }
                 }
             }

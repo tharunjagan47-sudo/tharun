@@ -3,6 +3,7 @@ package com.simats.diawell123.ui.diet
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +60,7 @@ fun DailyDietPlanScreen(
     onMealDetailsClick: (category: String, foodId: Int?, dishName: String?) -> Unit = { _, _, _ -> },
     onFoodLogClick: () -> Unit = {},
     onExploreFoodClick: () -> Unit = {},
+    onNutritionSummaryClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
@@ -93,7 +95,7 @@ fun DailyDietPlanScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 70.dp)
+                .padding(bottom = 90.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -108,56 +110,77 @@ fun DailyDietPlanScreen(
                         ) {
                             StyledBackButton(onBackClick = onBackClick)
 
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Diet & Nutrition",
-                                    fontSize = 19.sp,
+                                    fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF1E1E22),
                                 )
                                 Text(
                                     text = "AI-matched Indian foods for your health",
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     color = Color(0xFF6E6877),
                                 )
                             }
+                        }
 
-                            Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFFDEEF7))
+                                    .clickable { onFoodLogClick() }
+                                    .padding(vertical = 9.dp),
+                                contentAlignment = Alignment.Center,
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(Color(0xFFFDEEF7))
-                                        .clickable { onFoodLogClick() }
-                                        .padding(horizontal = 9.dp, vertical = 6.dp),
-                                ) {
-                                    Text(
-                                        text = "📖 Log",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF811978),
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(Color(0xFFF2EFF6))
-                                        .clickable { onExploreFoodClick() }
-                                        .padding(horizontal = 9.dp, vertical = 6.dp),
-                                ) {
-                                    Text(
-                                        text = "🔍 Explore",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF5B1761),
-                                    )
-                                }
+                                Text(
+                                    text = "📖 Food Log",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF811978),
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF2EFF6))
+                                    .clickable { onExploreFoodClick() }
+                                    .padding(vertical = 9.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = "🔍 Explore",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF5B1761),
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFE8F5E9))
+                                    .clickable { onNutritionSummaryClick() }
+                                    .padding(vertical = 9.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = "📊 Summary",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF2E7D32),
+                                )
                             }
                         }
 
@@ -204,7 +227,9 @@ fun DailyDietPlanScreen(
                         // Category Filter Pills
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
                         ) {
                             listOf("All", "Breakfast", "Lunch", "Snack", "Dinner").forEach { category ->
                                 val isSelected = uiState.selectedCategory.equals(category, ignoreCase = true)
@@ -213,11 +238,11 @@ fun DailyDietPlanScreen(
                                         .clip(RoundedCornerShape(20.dp))
                                         .background(if (isSelected) Color(0xFFB81D85) else Color(0xFFF8F7FA))
                                         .clickable { viewModel.onDailyDietCategoryChanged(category) }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                        .padding(horizontal = 14.dp, vertical = 7.dp),
                                 ) {
                                     Text(
                                         text = category,
-                                        fontSize = 11.sp,
+                                        fontSize = 12.sp,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                         color = if (isSelected) Color.White else Color(0xFF6E6877),
                                     )
@@ -592,7 +617,10 @@ fun ActiveHealthMatchCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -603,7 +631,7 @@ fun ActiveHealthMatchCard(
                         Text(text = "🩸", fontSize = 18.sp)
                     }
                     Spacer(modifier = Modifier.width(10.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
                         Text(
                             text = "Blood Glucose: ${glucose.toInt()} mg/dL",
                             fontSize = 14.sp,
@@ -625,6 +653,8 @@ fun ActiveHealthMatchCard(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
 
                 Box(
                     modifier = Modifier
@@ -999,7 +1029,7 @@ fun AiDietMealCard(
                         Text(text = item.icon, fontSize = 22.sp)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
                         Text(
                             text = item.category.uppercase(),
                             fontSize = 10.sp,
@@ -1020,6 +1050,8 @@ fun AiDietMealCard(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
 
                 Box(
                     modifier = Modifier
@@ -1124,10 +1156,13 @@ fun DietPlanMealCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(text = icon, fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(14.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f, fill = false)) {
                     Text(
                         text = category,
                         fontSize = 10.sp,
@@ -1153,6 +1188,8 @@ fun DietPlanMealCard(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = "View ›",

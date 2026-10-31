@@ -19,13 +19,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.local.SessionManager
+import com.simats.diawell123.data.repository.AuthRepositoryImpl
 import com.simats.diawell123.ui.activity.ActivityHistoryScreen
 import com.simats.diawell123.ui.activity.ActivityTrackingScreen
+import com.simats.diawell123.ui.activity.ActivityViewModel
 import com.simats.diawell123.ui.ai.AiChatbotScreen
 import com.simats.diawell123.ui.auth.ForgotPasswordScreen
 import com.simats.diawell123.ui.auth.LoginScreen
 import com.simats.diawell123.ui.auth.SignUpScreen
 import com.simats.diawell123.ui.diet.DailyDietPlanScreen
+import com.simats.diawell123.ui.diet.DietViewModel
 import com.simats.diawell123.ui.diet.ExploreFoodScreen
 import com.simats.diawell123.ui.diet.FoodDetailsScreen
 import com.simats.diawell123.ui.diet.FoodLogScreen
@@ -35,16 +40,21 @@ import com.simats.diawell123.ui.glucose.GlucoseViewModel
 import com.simats.diawell123.ui.glucose.LogGlucoseScreen
 import com.simats.diawell123.ui.glucose.ReadingDetailsScreen
 import com.simats.diawell123.ui.home.HomeScreen
+import com.simats.diawell123.ui.home.HomeViewModel
 import com.simats.diawell123.ui.meds.MedicationReminderScreen
 import com.simats.diawell123.ui.meds.MedicationsScreen
+import com.simats.diawell123.ui.meds.MedsViewModel
 import com.simats.diawell123.ui.meds.SearchMedicationScreen
 import com.simats.diawell123.ui.meds.SetMedicationReminderScreen
 import com.simats.diawell123.ui.notifications.NotificationsScreen
+import com.simats.diawell123.ui.notifications.NotificationsViewModel
 import com.simats.diawell123.ui.onboarding.OnboardingContainerScreen
 import com.simats.diawell123.ui.profile.EditProfileScreen
 import com.simats.diawell123.ui.profile.FoodPreferencesSettingsScreen
 import com.simats.diawell123.ui.profile.HealthPreferencesScreen
 import com.simats.diawell123.ui.profile.PatientProfileScreen
+import com.simats.diawell123.ui.profile.ProfileViewModel
+import com.simats.diawell123.ui.reports.ReportsViewModel
 import com.simats.diawell123.ui.reports.WeeklyReportScreen
 import com.simats.diawell123.ui.settings.ChangePasswordScreen
 import com.simats.diawell123.ui.settings.DeleteAccountScreen
@@ -56,11 +66,8 @@ import com.simats.diawell123.ui.settings.NotificationPreferencesScreen
 import com.simats.diawell123.ui.settings.PrivacyPolicyScreen
 import com.simats.diawell123.ui.settings.PrivacySecurityScreen
 import com.simats.diawell123.ui.settings.SettingsScreen
+import com.simats.diawell123.ui.settings.SettingsViewModel
 import com.simats.diawell123.ui.settings.TermsOfUseScreen
-import com.simats.diawell123.data.local.SessionManager
-import com.simats.diawell123.data.repository.AuthRepositoryImpl
-import com.simats.diawell123.ui.diet.DietViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,9 +87,14 @@ class MainActivity : ComponentActivity() {
 
                 val dietViewModel: DietViewModel = viewModel()
                 val glucoseViewModel: GlucoseViewModel = viewModel()
-                val homeViewModel: com.simats.diawell123.ui.home.HomeViewModel = viewModel()
-                val medsViewModel: com.simats.diawell123.ui.meds.MedsViewModel = viewModel()
-                val activityViewModel: com.simats.diawell123.ui.activity.ActivityViewModel = viewModel()
+                val homeViewModel: HomeViewModel = viewModel()
+                val medsViewModel: MedsViewModel = viewModel()
+                val activityViewModel: ActivityViewModel = viewModel()
+                val notificationsViewModel: NotificationsViewModel = viewModel()
+                val reportsViewModel: ReportsViewModel = viewModel()
+                val settingsViewModel: SettingsViewModel = viewModel()
+                val profileViewModel: ProfileViewModel = viewModel()
+
                 var selectedGlucoseReadingId by remember { mutableStateOf<Int?>(null) }
                 var selectedMedication by remember { mutableStateOf<com.simats.diawell123.data.model.MedicationItem?>(null) }
 
@@ -113,15 +125,13 @@ class MainActivity : ComponentActivity() {
 
                 // Splash screen initial routing based on saved persistent authentication session
                 LaunchedEffect(Unit) {
-                    delay(2200) // Show Splash Screen first
-                    if (currentScreen == "splash") {
-                        if (sessionManager.hasActiveSession()) {
-                            // Persistent login: Automatically navigate directly to Dashboard without showing Login
-                            currentScreen = "home"
-                        } else {
-                            // Logged out or session invalid: navigate to Login screen (or Onboarding if first launch)
-                            currentScreen = if (sessionManager.hasCompletedOnboarding()) "login" else "onboarding"
-                        }
+                    delay(2400)
+                    if (sessionManager.isLoggedIn()) {
+                        currentScreen = "home"
+                    } else if (sessionManager.isOnboardingCompleted()) {
+                        currentScreen = "login"
+                    } else {
+                        currentScreen = "onboarding"
                     }
                 }
 
@@ -167,10 +177,12 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "patient_profile" -> PatientProfileScreen(
+                            viewModel = profileViewModel,
                             onContinueClick = { currentScreen = "health_preferences" },
                         )
 
                         "health_preferences" -> HealthPreferencesScreen(
+                            viewModel = profileViewModel,
                             onBackClick = { currentScreen = "patient_profile" },
                             onSavePreferencesClick = { currentScreen = "home" },
                         )
@@ -187,9 +199,11 @@ class MainActivity : ComponentActivity() {
                             onReportsTabClick = { currentScreen = "weekly_report" },
                             onSettingsTabClick = { currentScreen = "settings" },
                             onProfileClick = { currentScreen = "edit_profile" },
+                            onNotificationsClick = { currentScreen = "notifications" },
                         )
 
                         "edit_profile" -> EditProfileScreen(
+                            viewModel = profileViewModel,
                             onBackClick = { currentScreen = "settings" },
                             onSaveChangesClick = { currentScreen = "settings" },
                         )
@@ -228,6 +242,7 @@ class MainActivity : ComponentActivity() {
                             },
                             onFoodLogClick = { currentScreen = "food_log" },
                             onExploreFoodClick = { currentScreen = "explore_food" },
+                            onNutritionSummaryClick = { currentScreen = "nutrition_summary" },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
                             onMedsTabClick = { currentScreen = "medications" },
@@ -257,13 +272,14 @@ class MainActivity : ComponentActivity() {
 
                         "food_log" -> FoodLogScreen(
                             viewModel = dietViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onAddFoodClick = { currentScreen = "daily_diet_plan" },
-                            onMealDetailsClick = { currentScreen = "food_details" },
+                            onBackClick = { currentScreen = "daily_diet_plan" },
+                            onAddFoodClick = { currentScreen = "explore_food" },
+                            onMealDetailsClick = { currentScreen = "explore_food" },
+                            onNutritionSummaryClick = { currentScreen = "nutrition_summary" },
                         )
 
                         "nutrition_summary" -> NutritionSummaryScreen(
-                            onBackClick = { currentScreen = "home" },
+                            onBackClick = { currentScreen = "daily_diet_plan" },
                             onReturnToFoodLogClick = { currentScreen = "food_log" },
                         )
 
@@ -327,6 +343,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "weekly_report" -> WeeklyReportScreen(
+                            viewModel = reportsViewModel,
                             onBackClick = { currentScreen = "home" },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
@@ -335,6 +352,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "notifications" -> NotificationsScreen(
+                            viewModel = notificationsViewModel,
                             onBackClick = { currentScreen = "home" },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
@@ -345,11 +363,13 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "notification_prefs" -> NotificationPreferencesScreen(
+                            viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "settings" },
                             onSavePreferencesClick = { currentScreen = "settings" },
                         )
 
                         "food_preferences_settings" -> FoodPreferencesSettingsScreen(
+                            viewModel = profileViewModel,
                             onBackClick = { currentScreen = "settings" },
                             onSaveFoodPreferencesClick = { currentScreen = "settings" },
                         )
@@ -364,6 +384,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "change_password" -> ChangePasswordScreen(
+                            viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "privacy_security" },
                             onSavePasswordClick = { currentScreen = "privacy_security" },
                         )
@@ -377,6 +398,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "export_records" -> ExportRecordsScreen(
+                            viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "privacy_security" },
                             onExportClick = { currentScreen = "export_report_viewer" },
                         )
@@ -387,6 +409,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "delete_account" -> DeleteAccountScreen(
+                            viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "privacy_security" },
                             onConfirmDeleteClick = { currentScreen = "login" },
                         )
@@ -397,6 +420,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "settings" -> SettingsScreen(
+                            profileViewModel = profileViewModel,
                             onBackClick = { currentScreen = "home" },
                             onPersonalProfileClick = { currentScreen = "edit_profile" },
                             onNotificationPrefsClick = { currentScreen = "notification_prefs" },

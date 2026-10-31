@@ -23,6 +23,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,20 +40,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
 fun PatientProfileScreen(
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = viewModel(),
     onContinueClick: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var age by remember { mutableStateOf("30 years") }
     var selectedDiabetesType by remember { mutableStateOf("Type 2") }
     var height by remember { mutableStateOf("165 cm") }
     var weight by remember { mutableStateOf("68 kg") }
     var currentGlucoseReading by remember { mutableStateOf("128 mg/dL") }
     var targetFastingGlucose by remember { mutableStateOf("120 mg/dL") }
+
+    LaunchedEffect(uiState.profile) {
+        uiState.profile?.let { p ->
+            p.diabetesType?.let { selectedDiabetesType = it }
+            p.age?.let { age = "$it years" }
+            p.heightCm?.let { height = "${it.toInt()} cm" }
+            p.weightKg?.let { weight = "${it.toInt()} kg" }
+        }
+    }
 
     val ageRange = remember { (18..80).map { "$it years" } }
     val heightRange = remember { (140..210).filter { it % 5 == 0 }.map { "$it cm" } }
@@ -113,7 +128,7 @@ fun PatientProfileScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Demo Profile Tag
+            // Profile Tag
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,11 +137,29 @@ fun PatientProfileScreen(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
-                    text = "Demo profile • ${ProfileState.userName}",
+                    text = "Profile • ${ProfileState.userName}",
                     fontSize = 12.sp,
                     color = Color(0xFF811978),
                     fontWeight = FontWeight.Medium,
                 )
+            }
+
+            if (uiState.errorMessage != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(10.dp))
+                        .padding(10.dp)
+                ) {
+                    Text(
+                        text = uiState.errorMessage ?: "Failed to save details.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -193,8 +226,24 @@ fun PatientProfileScreen(
 
             // Continue Button
             IosLiquidGlassButton(
-                text = "→  Continue to Step 2 (Health Preferences)",
-                onClick = onContinueClick,
+                text = if (uiState.isSaving) "Saving Details..." else "→  Continue to Step 2 (Health Preferences)",
+                onClick = {
+                    val ageNum = age.replace(Regex("[^0-9]"), "").toIntOrNull()
+                    val heightNum = height.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+                    val weightNum = weight.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+                    val currentGlucoseNum = currentGlucoseReading.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+                    val targetGlucoseNum = targetFastingGlucose.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+
+                    viewModel.savePatientDetails(
+                        diabetesType = selectedDiabetesType,
+                        age = ageNum,
+                        heightCm = heightNum,
+                        weightKg = weightNum,
+                        currentGlucose = currentGlucoseNum,
+                        targetGlucose = targetGlucoseNum,
+                        onSuccess = onContinueClick
+                    )
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))

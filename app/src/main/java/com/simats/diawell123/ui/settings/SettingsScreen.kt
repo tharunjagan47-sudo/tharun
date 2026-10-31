@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,16 +36,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
+import com.simats.diawell123.ui.profile.ProfileViewModel
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
+    profileViewModel: ProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onPersonalProfileClick: () -> Unit = {},
     onNotificationPrefsClick: () -> Unit = {},
@@ -58,6 +63,14 @@ fun SettingsScreen(
     onReportsTabClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Settings") }
+    val profileUiState by profileViewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        profileViewModel.loadProfile()
+    }
+
+    val currentName = profileUiState.profile?.fullName ?: ProfileState.userName
+    val currentEmail = profileUiState.profile?.email ?: ProfileState.userEmail
 
     Box(
         modifier = modifier
@@ -119,13 +132,13 @@ fun SettingsScreen(
 
                                 Column {
                                     Text(
-                                        text = ProfileState.userName,
+                                        text = currentName,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF1E1E22),
                                     )
                                     Text(
-                                        text = ProfileState.userEmail,
+                                        text = currentEmail,
                                         fontSize = 12.sp,
                                         color = Color(0xFF6E6877),
                                     )
@@ -162,44 +175,22 @@ fun SettingsScreen(
                     Column {
                         SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
                         Spacer(modifier = Modifier.height(10.dp))
-                        SettingsRow(icon = "✨", title = "JARVIS AI Chatbot", onClick = onAiChatbotClick)
+                        SettingsRow(icon = "🚪", title = "Log Out", isDestructive = true, onClick = onLogoutClick)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Logout Button & Footer (Pops Up)
-                ElementPopUpContainer(delayMillis = 300) {
-                    Column {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFFFEBEE))
-                                .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
-                                .clickable { onLogoutClick() },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = "➔  Logout",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFD32F2F),
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Text(
-                            text = "DiaWell • Version 1.0.0\nMake progress step by step for everyday habits.",
-                            fontSize = 11.sp,
-                            color = Color(0xFF8A8595),
-                            textAlign = TextAlign.Center,
-                            lineHeight = 16.sp,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
+                // App Version Text
+                ElementPopUpContainer(delayMillis = 280) {
+                    Text(
+                        text = "DiaWell Version 1.0.0 (Build 123)\nConnected to Local PHP Backend",
+                        fontSize = 11.sp,
+                        color = Color(0xFF8A8595),
+                        textAlign = TextAlign.Center,
+                        lineHeight = 16.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -208,7 +199,7 @@ fun SettingsScreen(
 
         // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
         ElementPopUpContainer(
-            delayMillis = 340,
+            delayMillis = 300,
             modifier = Modifier.align(Alignment.BottomCenter),
         ) {
             IosLiquidGlassBottomNav(
@@ -227,14 +218,16 @@ fun SettingsScreen(
 fun SettingsRow(
     icon: String,
     title: String,
-    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isDestructive: Boolean = false,
+    onClick: () -> Unit = {},
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -244,16 +237,32 @@ fun SettingsRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = icon, fontSize = 18.sp)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(if (isDestructive) Color(0xFFFFEBEE) else Color(0xFFFDEEF7)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(text = icon, fontSize = 16.sp)
+                }
+
                 Spacer(modifier = Modifier.width(12.dp))
+
                 Text(
                     text = title,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1E1E22),
+                    fontWeight = FontWeight.Medium,
+                    color = if (isDestructive) Color(0xFFD32F2F) else Color(0xFF1E1E22),
                 )
             }
-            Text(text = "›", fontSize = 18.sp, color = Color(0xFF8A8595))
+
+            Text(
+                text = "›",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF8A8595),
+            )
         }
     }
 }

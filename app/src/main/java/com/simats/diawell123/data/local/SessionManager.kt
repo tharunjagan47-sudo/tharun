@@ -167,6 +167,16 @@ class SessionManager private constructor(context: Context) {
         return prefs.getBoolean(KEY_HAS_COMPLETED_ONBOARDING, false)
     }
 
+    fun isOnboardingCompleted(): Boolean = hasCompletedOnboarding()
+
+    fun saveUserName(name: String) {
+        prefs.edit().putString(KEY_FULL_NAME, name).apply()
+    }
+
+    fun saveUserEmail(email: String) {
+        prefs.edit().putString(KEY_EMAIL, email).apply()
+    }
+
     /**
      * Updates activity timestamp.
      */

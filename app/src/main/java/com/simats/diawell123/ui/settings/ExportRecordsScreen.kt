@@ -27,6 +27,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,13 +35,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
@@ -48,16 +49,19 @@ import kotlinx.coroutines.delay
 @Composable
 fun ExportRecordsScreen(
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onExportClick: () -> Unit = {},
 ) {
+    val exportState by viewModel.exportState.collectAsState()
+
     var selectedTimeRange by remember { mutableStateOf("Last 30 Days") }
     var selectedFormat by remember { mutableStateOf("PDF") }
 
-    var includeGlucose by remember { mutableStateOf(value = true) }
-    var includeMeals by remember { mutableStateOf(value = true) }
-    var includeMedications by remember { mutableStateOf(value = true) }
-    var showSuccessBanner by remember { mutableStateOf(value = false) }
+    var includeGlucose by remember { mutableStateOf(true) }
+    var includeMeals by remember { mutableStateOf(true) }
+    var includeMedications by remember { mutableStateOf(true) }
+    var showSuccessBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
@@ -117,7 +121,7 @@ fun ExportRecordsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 1-Second Success Confirmation Banner
+            // Success Confirmation Banner
             AnimatedVisibility(
                 visible = showSuccessBanner,
                 enter = slideInVertically() + fadeIn(),
@@ -143,12 +147,30 @@ fun ExportRecordsScreen(
                                 color = Color(0xFF2E7D32),
                             )
                             Text(
-                                text = "Your report file has been generated.",
+                                text = "Your report file has been generated from live data.",
                                 fontSize = 11.sp,
                                 color = Color(0xFF1B5E20),
                             )
                         }
                     }
+                }
+            }
+
+            if (exportState.errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = exportState.errorMessage ?: "Failed to export data.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
                 }
             }
 
@@ -285,9 +307,24 @@ fun ExportRecordsScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             // Export Button
+            val backendRange = when (selectedTimeRange) {
+                "Last 30 Days" -> "30"
+                "Last 3 Months" -> "90"
+                else -> "all"
+            }
+            val backendFormat = if (selectedFormat == "PDF") "pdf" else "csv"
+
             IosLiquidGlassButton(
-                text = "Export & Share Report",
-                onClick = { showSuccessBanner = true },
+                text = if (exportState.isLoading) "Exporting Data..." else "Export & Share Report",
+                onClick = {
+                    viewModel.exportRecords(
+                        range = backendRange,
+                        format = backendFormat,
+                        onSuccess = {
+                            showSuccessBanner = true
+                        }
+                    )
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -319,7 +356,7 @@ fun ExportFormatCard(
             .clip(RoundedCornerShape(14.dp))
             .background(if (isSelected) Color(0xFFFDEEF7) else Color.White)
             .border(
-                width = 1.5.dp,
+                width = 1.2.dp,
                 color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
                 shape = RoundedCornerShape(14.dp),
             )
@@ -329,16 +366,16 @@ fun ExportFormatCard(
         Column {
             Text(
                 text = title,
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = subtitle,
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 color = Color(0xFF6E6877),
-                lineHeight = 15.sp,
+                lineHeight = 14.sp,
             )
         }
     }
@@ -361,13 +398,13 @@ fun ExportCheckOption(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = label,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
                 color = Color(0xFF1E1E22),
             )
 
@@ -377,6 +414,7 @@ fun ExportCheckOption(
                 colors = CheckboxDefaults.colors(
                     checkedColor = Color(0xFFB81D85),
                     uncheckedColor = Color(0xFF8A8595),
+                    checkmarkColor = Color.White,
                 ),
             )
         }

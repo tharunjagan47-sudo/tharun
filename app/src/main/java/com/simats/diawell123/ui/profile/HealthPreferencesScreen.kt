@@ -37,6 +37,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +59,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
@@ -68,11 +70,14 @@ import kotlin.math.sin
 @Composable
 fun HealthPreferencesScreen(
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSavePreferencesClick: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var selectedHealthFocus by remember { mutableStateOf("Glucose Control") }
-    var selectedActivityLevel by remember { mutableStateOf("Moderate (3-5 days)") }
+    var selectedActivityLevel by remember { mutableStateOf("Moderate (3-5 days/week)") }
     var isSavingAndLoading by remember { mutableStateOf(false) }
 
     val selectedDiets = remember {
@@ -140,13 +145,13 @@ fun HealthPreferencesScreen(
 
                 Column {
                     Text(
-                        text = "Health & Lifestyle Preferences",
+                        text = "Health Preferences",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1E1E22),
                     )
                     Text(
-                        text = "Customize your daily goals, dietary rules, and care routine.",
+                        text = "Step 2 of 2 • Health focus & dietary preferences",
                         fontSize = 12.sp,
                         color = Color(0xFF6E6877),
                     )
@@ -155,9 +160,27 @@ fun HealthPreferencesScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 1. Health Focus Area
+            if (uiState.errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFFEBEE))
+                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(12.dp))
+                        .padding(10.dp)
+                ) {
+                    Text(
+                        text = uiState.errorMessage ?: "Failed to save preferences.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFD32F2F)
+                    )
+                }
+            }
+
+            // 1. Primary Health Focus Selection
             Text(
-                text = "Primary Health & Glucose Focus",
+                text = "Primary Health Focus",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E22),
@@ -167,28 +190,27 @@ fun HealthPreferencesScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(
-                    "Glucose Control" to "🩸 Maintain target fasting & post-meal ranges",
-                    "Weight Management" to "⚖️ Calorie conscious & metabolic balance",
-                    "Hba1c Reduction" to "📉 Long-term glycemic score improvement",
-                    "Active Energy & Fitness" to "⚡ High energy routines & active lifestyle",
+                    "Glucose Control" to "Keep daily sugar levels balanced and steady.",
+                    "Weight Management" to "Calorie-conscious meal suggestions for steady goals.",
+                    "Energy & Stamina" to "Nutritious routines to prevent spikes and crashes.",
                 ).forEach { (title, subtitle) ->
                     val isSelected = selectedHealthFocus == title
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .background(if (isSelected) Color(0xFFFDEEF7) else Color.White)
                             .border(
                                 width = 1.dp,
                                 color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
-                                shape = RoundedCornerShape(14.dp),
+                                shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedHealthFocus = title }
-                            .padding(14.dp),
+                            .padding(12.dp),
                     ) {
                         Column {
                             Text(
-                                text = title,
+                                text = if (isSelected) "●  $title" else "○  $title",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
@@ -206,9 +228,9 @@ fun HealthPreferencesScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 2. Dietary Preferences & Meal Rules
+            // 2. Dietary Preferences Chips
             Text(
-                text = "Dietary Pattern & Restrictions",
+                text = "Dietary Style",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E22),
@@ -342,7 +364,7 @@ fun HealthPreferencesScreen(
                     .padding(12.dp),
             ) {
                 Text(
-                    text = "Your health preferences guide JARVIS AI to suggest balanced, personalized meal plans tailored for your diabetes management.",
+                    text = "Your health preferences guide AI recommendation models to suggest balanced, personalized meal and exercise plans tailored for your diabetes management.",
                     fontSize = 12.sp,
                     color = Color(0xFF811978),
                     lineHeight = 17.sp,
@@ -353,8 +375,21 @@ fun HealthPreferencesScreen(
 
             // Save Preferences Button
             IosLiquidGlassButton(
-                text = "Save Health Preferences",
-                onClick = { isSavingAndLoading = true },
+                text = if (uiState.isSaving) "Saving Preferences..." else "Save Health Preferences",
+                onClick = {
+                    val diets = selectedDiets.filter { it.second }.map { it.first }
+                    val allergies = allergiesList.filter { it.second }.map { it.first }
+
+                    viewModel.saveHealthPreferences(
+                        healthFocus = selectedHealthFocus,
+                        dietaryPreferences = diets,
+                        allergies = allergies,
+                        activityLevel = selectedActivityLevel,
+                        onSuccess = {
+                            isSavingAndLoading = true
+                        }
+                    )
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -597,7 +632,7 @@ fun AiSpeechOrbLoadingView(
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "Dr. JARVIS AI is configuring your personal routine...",
+            text = "DiaWell AI is configuring your personal routine...",
             fontSize = 12.sp,
             color = Color(0xFF6E6877),
             textAlign = TextAlign.Center,

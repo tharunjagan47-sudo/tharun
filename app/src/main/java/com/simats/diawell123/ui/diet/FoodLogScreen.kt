@@ -40,6 +40,7 @@ fun FoodLogScreen(
     onBackClick: () -> Unit = {},
     onAddFoodClick: () -> Unit = {},
     onMealDetailsClick: () -> Unit = {},
+    onNutritionSummaryClick: () -> Unit = {},
 ) {
     val uiState by viewModel.foodLogState.collectAsState()
 
@@ -142,6 +143,7 @@ fun FoodLogScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color(0xFFFDEEF7))
+                        .clickable { onNutritionSummaryClick() }
                         .padding(16.dp),
                 ) {
                     Column {

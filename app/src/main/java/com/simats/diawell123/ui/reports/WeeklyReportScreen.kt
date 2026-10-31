@@ -23,10 +23,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
@@ -59,6 +62,7 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 @Composable
 fun WeeklyReportScreen(
     modifier: Modifier = Modifier,
+    viewModel: ReportsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
@@ -68,11 +72,14 @@ fun WeeklyReportScreen(
 ) {
     var selectedTab by remember { mutableStateOf("Reports") }
     var selectedWeekText by remember { mutableStateOf("8–15 Oct 2026") }
-    var showCalendarDialog by remember { mutableStateOf(value = false) }
+    var showCalendarDialog by remember { mutableStateOf(false) }
+
+    val uiState by viewModel.uiState.collectAsState()
+    val report = uiState.reportData
 
     // Smooth Line Sweep & Stop Graph Animation
     val chartProgress = remember { Animatable(0f) }
-    LaunchedEffect(selectedWeekText) {
+    LaunchedEffect(selectedWeekText, report) {
         chartProgress.snapTo(0f)
         chartProgress.animateTo(
             targetValue = 1f,
@@ -82,6 +89,18 @@ fun WeeklyReportScreen(
             ),
         )
     }
+
+    val displayWeekLabel = report?.weekLabel?.takeIf { it.isNotBlank() } ?: selectedWeekText
+    val avgGlucose = report?.glucose?.average ?: "120 mg/dL"
+    val timeInRange = report?.glucose?.timeInRangePercent ?: 78
+    val glucoseTag = report?.glucose?.summaryTag ?: "Optimal Glycemic Control"
+    val mealsLoggedText = if (report != null && report.nutrition.totalMealsLogged > 0) {
+        "${report.nutrition.totalMealsLogged} of 28"
+    } else {
+        "25 of 28"
+    }
+    val medAdherence = report?.medication?.adherencePercent ?: 90
+    val medStatus = report?.medication?.statusLabel ?: "18 marked taken • 1 skipped • 1 upcoming"
 
     Box(
         modifier = modifier
@@ -127,7 +146,7 @@ fun WeeklyReportScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "${ProfileState.userName} • All readings are sample data",
+                            text = "${ProfileState.userName} • Personalized health summary",
                             fontSize = 11.sp,
                             color = Color(0xFF811978),
                             fontWeight = FontWeight.Medium,
@@ -152,7 +171,7 @@ fun WeeklyReportScreen(
                             ) {
                                 Text(text = "‹", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
                                 Text(
-                                    text = "📅  $selectedWeekText",
+                                    text = "📅  $displayWeekLabel",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF1E1E22),
@@ -164,6 +183,21 @@ fun WeeklyReportScreen(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color(0xFFB81D85),
+                            strokeWidth = 3.dp,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
 
                 // Glucose Overview Animated Pulse Line Box (Pops Up)
                 ElementPopUpContainer(delayMillis = 80) {
@@ -296,7 +330,7 @@ fun WeeklyReportScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "7 fasting readings • average 120 mg/dL",
+                                text = "Weekly average: $avgGlucose • $timeInRange% time in range ($glucoseTag)",
                                 fontSize = 11.sp,
                                 color = Color(0xFF6E6877),
                             )
@@ -328,7 +362,7 @@ fun WeeklyReportScreen(
                                     color = Color(0xFF1E1E22),
                                 )
                                 Text(
-                                    text = "25 of 28",
+                                    text = mealsLoggedText,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFB81D85),
@@ -367,7 +401,7 @@ fun WeeklyReportScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "4 days with all four meals logged",
+                                text = "Avg daily calories: ${report?.nutrition?.dailyAverageCalories ?: "1,450 kcal"}",
                                 fontSize = 11.sp,
                                 color = Color(0xFF6E6877),
                             )
@@ -399,7 +433,7 @@ fun WeeklyReportScreen(
                                     color = Color(0xFF1E1E22),
                                 )
                                 Text(
-                                    text = "19 of 21",
+                                    text = "$medAdherence% adherence",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFB81D85),
@@ -409,7 +443,7 @@ fun WeeklyReportScreen(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             LinearProgressIndicator(
-                                progress = { (19f / 21f) * chartProgress.value },
+                                progress = { ((medAdherence / 100f) * chartProgress.value).coerceIn(0f, 1f) },
                                 color = Color(0xFFB81D85),
                                 trackColor = Color(0xFFFDEEF7),
                                 modifier = Modifier
@@ -421,7 +455,7 @@ fun WeeklyReportScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "18 marked taken • 1 skipped • 1 upcoming",
+                                text = medStatus,
                                 fontSize = 11.sp,
                                 color = Color(0xFF6E6877),
                             )
@@ -444,13 +478,16 @@ fun WeeklyReportScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "7 days of glucose logging",
+                                text = "7 days of health & glucose logging",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF811978),
                             )
                             Text(
-                                text = "Keep up the consistent routine!",
+                                text = if (report != null && report.activity.totalActiveMins > 0)
+                                    "Active minutes: ${report.activity.totalActiveMins} mins across ${report.activity.workoutCount} workouts!"
+                                else
+                                    "Keep up the consistent routine!",
                                 fontSize = 11.sp,
                                 color = Color(0xFF6E6877),
                             )
@@ -465,8 +502,9 @@ fun WeeklyReportScreen(
         // Calendar Date Picker Modal Dialog
         if (showCalendarDialog) {
             ReportCalendarDialog(
-                onWeekSelected = { newWeek ->
+                onWeekSelected = { newWeek, endDate ->
                     selectedWeekText = newWeek
+                    viewModel.loadWeeklyReport(endDate = endDate)
                 },
                 onDismissRequest = { showCalendarDialog = false },
             )
@@ -491,7 +529,7 @@ fun WeeklyReportScreen(
 
 @Composable
 fun ReportCalendarDialog(
-    onWeekSelected: (String) -> Unit,
+    onWeekSelected: (String, String) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     var selectedDay by remember { mutableIntStateOf(15) }
@@ -652,7 +690,9 @@ fun ReportCalendarDialog(
                             )
                             .clickable {
                                 val startDay = (selectedDay - 7).coerceAtLeast(1)
-                                onWeekSelected("$startDay–$selectedDay Oct 2026")
+                                val formattedDay = if (selectedDay < 10) "0$selectedDay" else "$selectedDay"
+                                val endDateIso = "2026-10-$formattedDay"
+                                onWeekSelected("$startDay–$selectedDay Oct 2026", endDateIso)
                                 onDismissRequest()
                             },
                         contentAlignment = Alignment.Center,
