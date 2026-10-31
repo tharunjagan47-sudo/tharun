@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.profile
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.ui.theme.AppTheme
 
 import android.content.Context
@@ -114,7 +115,12 @@ fun EditProfileScreen(
                     @Suppress("DEPRECATION")
                     MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 }
-                ProfileState.profileImageBitmap = bitmap.asImageBitmap()
+                val sessionManager = try {
+                    SessionManager.getInstance()
+                } catch (_: Exception) {
+                    SessionManager.init(context)
+                }
+                ProfileState.saveProfileBitmap(context, bitmap, sessionManager.getUserId())
 
                 // Upload to server
                 val tempFile = uriToFile(context, uri)

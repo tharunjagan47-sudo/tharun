@@ -177,6 +177,14 @@ class SessionManager private constructor(context: Context) {
         prefs.edit().putString(KEY_EMAIL, email).apply()
     }
 
+    fun saveProfilePhotoUrl(url: String) {
+        prefs.edit().putString(KEY_PROFILE_PHOTO_URL, url).apply()
+    }
+
+    fun saveProfilePhoto(path: String) {
+        prefs.edit().putString(KEY_PROFILE_PHOTO, path).apply()
+    }
+
     /**
      * Updates activity timestamp.
      */

@@ -198,58 +198,76 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Column {
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 10.dp),
+                                    ) {
                                         Text(
                                             text = data?.greeting?.takeIf { it.isNotBlank() } ?: "Good morning, ${ProfileState.userName} 👋",
-                                            fontSize = 20.sp,
+                                            fontSize = 19.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
                                         )
                                         Text(
                                             text = data?.wellnessSubtitle?.takeIf { it.isNotBlank() } ?: "Daily Wellness • 94% On Track",
                                             fontSize = 12.sp,
                                             color = Color.White.copy(alpha = 0.85f),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
                                         )
                                     }
 
-                                    // Top Right Actions: Bell & Profile Avatar
+                                    // Top Right Actions: Theme Toggle, Notifications Bell & Profile Avatar
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
-                                        // Quick Theme Toggle Button (☀️ / 🌙)
+                                        // Quick Theme Toggle Button (☀️ / 🌙) - Perfectly Circular
                                         Box(
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(21.dp))
-                                                .background(Color.White.copy(alpha = 0.25f))
-                                                .clickable { ThemeManager.toggleTheme() }
-                                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(Color.White.copy(alpha = 0.20f))
+                                                .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape)
+                                                .clickable { ThemeManager.toggleTheme() },
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             Text(
                                                 text = if (AppTheme.colors.isDark) "🌙" else "☀️",
-                                                fontSize = 16.sp,
+                                                fontSize = 15.sp,
                                             )
                                         }
 
+                                        // Notification Bell - Perfectly Circular
                                         Box(
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(21.dp))
-                                                .background(Color.White.copy(alpha = 0.25f))
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(Color.White.copy(alpha = 0.20f))
+                                                .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape)
                                                 .clickable { onNotificationsClick() }
-                                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                                                .padding(2.dp),
                                             contentAlignment = Alignment.Center,
                                         ) {
-                                            Text(text = "🔔", fontSize = 16.sp)
+                                            Text(text = "🔔", fontSize = 15.sp)
                                         }
 
+                                        // Profile Avatar - Crisp, distinct, perfectly circular with specular border
                                         Box(
-                                            modifier = Modifier.clickable { onProfileClick() },
+                                            modifier = Modifier
+                                                .size(42.dp)
+                                                .clip(CircleShape)
+                                                .clickable { onProfileClick() },
+                                            contentAlignment = Alignment.Center,
                                         ) {
                                             ProfileAvatarView(
                                                 sizeDp = 42.dp,
                                                 fontSizeSp = 15,
                                                 bgCircleColor = Color.White.copy(alpha = 0.25f),
+                                                borderColor = Color.White.copy(alpha = 0.90f),
                                                 textColor = Color.White,
                                             )
                                         }

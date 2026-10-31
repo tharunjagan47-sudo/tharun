@@ -54,6 +54,13 @@ class HomeViewModel(
                         }
                     }
 
+                    // Synchronize user profile photo if present and not yet loaded
+                    data.profile?.photoUrl?.let { url ->
+                        if (url.isNotBlank() && ProfileState.profileImageBitmap == null) {
+                            ProfileState.loadPhotoFromUrl(url, data.userId)
+                        }
+                    }
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,

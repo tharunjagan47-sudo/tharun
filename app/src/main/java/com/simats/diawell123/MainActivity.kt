@@ -53,6 +53,7 @@ import com.simats.diawell123.ui.profile.EditProfileScreen
 import com.simats.diawell123.ui.profile.FoodPreferencesSettingsScreen
 import com.simats.diawell123.ui.profile.HealthPreferencesScreen
 import com.simats.diawell123.ui.profile.PatientProfileScreen
+import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.profile.ProfileViewModel
 import com.simats.diawell123.ui.reports.ReportsViewModel
 import com.simats.diawell123.ui.reports.WeeklyReportScreen
@@ -107,6 +108,11 @@ class MainActivity : ComponentActivity() {
                     } catch (_: Exception) {
                         SessionManager.init(applicationContext)
                     }
+                }
+
+                // Initialize ProfileState from disk cache & session so avatar and username persist across launches
+                LaunchedEffect(Unit) {
+                    ProfileState.init(applicationContext, sessionManager.getUserId())
                 }
 
                 // Auto-Logout Observer: Listens to 401 Unauthorized or manual logout broadcasts
@@ -167,7 +173,10 @@ class MainActivity : ComponentActivity() {
                         ) { currentScreen = "login" }
 
                         "login" -> LoginScreen(
-                            onLoginSuccess = { currentScreen = "home" },
+                            onLoginSuccess = {
+                                ProfileState.init(applicationContext, sessionManager.getUserId())
+                                currentScreen = "home"
+                            },
                             onForgotPasswordClick = { currentScreen = "forgot_password" },
                         ) { currentScreen = "signup" }
 
@@ -432,6 +441,7 @@ class MainActivity : ComponentActivity() {
                             onCancelClick = { currentScreen = "settings" },
                             onConfirmLogoutClick = {
                                 sessionManager.clearSession()
+                                ProfileState.clear()
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
                                         AuthRepositoryImpl().logout()

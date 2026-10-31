@@ -1,10 +1,10 @@
 package com.simats.diawell123.ui.profile
-import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -15,15 +15,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.theme.AppTheme
 
+/**
+ * Reusable Circular Avatar Component.
+ * Automatically displays the cached profile photo if available,
+ * or gracefully falls back to the patient's bold two-letter initials.
+ * Guarantees a perfectly circular aspect ratio with customizable size and border.
+ */
 @Composable
 fun ProfileAvatarView(
     modifier: Modifier = Modifier,
     sizeDp: Dp = 48.dp,
     bgCircleColor: Color = if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else AppTheme.colors.border,
+    borderColor: Color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color.White,
     textColor: Color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
     fontSizeSp: Int = 16,
 ) {
@@ -38,8 +47,8 @@ fun ProfileAvatarView(
         modifier = modifier
             .size(sizeDp)
             .clip(CircleShape)
-            .background(bgCircleColor)
-            .border(1.5.dp, if (AppTheme.colors.isDark) AppTheme.colors.border else Color.White, CircleShape),
+            .background(bgCircleColor, CircleShape)
+            .border(1.5.dp, borderColor, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         if (bitmap != null) {
@@ -48,7 +57,7 @@ fun ProfileAvatarView(
                 contentDescription = "Profile Picture",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(sizeDp)
+                    .fillMaxSize()
                     .clip(CircleShape),
             )
         } else {
@@ -57,6 +66,7 @@ fun ProfileAvatarView(
                 fontSize = fontSizeSp.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor,
+                textAlign = TextAlign.Center,
             )
         }
     }

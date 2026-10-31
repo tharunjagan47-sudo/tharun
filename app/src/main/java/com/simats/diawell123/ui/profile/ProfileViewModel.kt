@@ -47,6 +47,11 @@ class ProfileViewModel(
                     // Synchronize shared ProfileState
                     ProfileState.userName = data.fullName
                     ProfileState.userEmail = data.email
+                    data.profilePhotoUrl?.let { url ->
+                        if (url.isNotBlank() && ProfileState.profileImageBitmap == null) {
+                            ProfileState.loadPhotoFromUrl(url, data.userId)
+                        }
+                    }
 
                     _uiState.update {
                         it.copy(
@@ -257,6 +262,8 @@ class ProfileViewModel(
             val result = repository.uploadProfilePhoto(photoFile)
             result.fold(
                 onSuccess = { data ->
+                    data.photoPath?.let { sessionManager.saveProfilePhoto(it) }
+                    data.photoUrl?.let { sessionManager.saveProfilePhotoUrl(it) }
                     _uiState.update {
                         it.copy(
                             isUploadingPhoto = false,
