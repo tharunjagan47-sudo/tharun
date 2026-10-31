@@ -1,27 +1,67 @@
 package com.simats.diawell123.ui.theme
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFFB81D85),
-    secondary = Color(0xFF7A1C7D),
-    tertiary = Color(0xFFFF5722),
-    background = Color(0xFFFCFAFC),
-    surface = Color.White,
-    onBackground = Color(0xFF1E1E22),
-    onSurface = Color(0xFF1E1E22),
-)
+val LocalAppColors = staticCompositionLocalOf { LightAppColors }
+
+/**
+ * Access point for DiaWell theme colors: AppTheme.colors.background, AppTheme.colors.cardBackground, etc.
+ */
+object AppTheme {
+    val colors: AppColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAppColors.current
+}
 
 @Composable
 fun Diawell123Theme(
+    darkTheme: Boolean = ThemeManager.isDark.value,
     content: @Composable () -> Unit
 ) {
-    MaterialTheme(
-        colorScheme = LightColorScheme,
-        typography = Typography,
-        content = content
-    )
+    val appColors = if (darkTheme) DarkAppColors else LightAppColors
+
+    val colorScheme = if (darkTheme) {
+        darkColorScheme(
+            primary = appColors.primaryAccent,
+            secondary = appColors.secondaryAccent,
+            tertiary = DiawellOrange,
+            background = appColors.background,
+            surface = appColors.cardBackground,
+            onBackground = appColors.textPrimary,
+            onSurface = appColors.textPrimary,
+            surfaceVariant = appColors.elevatedSurface,
+            outline = appColors.border,
+            error = appColors.error
+        )
+    } else {
+        lightColorScheme(
+            primary = appColors.primaryAccent,
+            secondary = appColors.secondaryAccent,
+            tertiary = DiawellOrange,
+            background = appColors.background,
+            surface = appColors.cardBackground,
+            onBackground = appColors.textPrimary,
+            onSurface = appColors.textPrimary,
+            surfaceVariant = appColors.elevatedSurface,
+            outline = appColors.border,
+            error = appColors.error
+        )
+    }
+
+    CompositionLocalProvider(
+        LocalAppColors provides appColors
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }
