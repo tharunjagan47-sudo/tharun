@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.notifications
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,7 +57,7 @@ fun NotificationsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -77,7 +78,7 @@ fun NotificationsScreen(
                         text = "←",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .clickable { onBackClick() }
@@ -90,7 +91,7 @@ fun NotificationsScreen(
                         text = "Notifications",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     if (uiState.unreadCount > 0) {
@@ -123,7 +124,7 @@ fun NotificationsScreen(
                         text = uiState.dateHeader,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
 
                     if (uiState.notifications.isNotEmpty()) {
@@ -173,13 +174,13 @@ fun NotificationsScreen(
                                 text = "All caught up!",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22)
+                                color = AppTheme.colors.textPrimary
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "No unread alerts or reminders right now.",
                                 fontSize = 12.sp,
-                                color = Color(0xFF6E6877)
+                                color = AppTheme.colors.textSecondary
                             )
                         }
                     }
@@ -232,7 +233,7 @@ fun NotificationItem(
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(if (isUnread) Color(0xFFFDEEF7) else Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -241,13 +242,13 @@ fun NotificationItem(
                 text = title,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = body,
                 fontSize = 12.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
                 lineHeight = 17.sp,
             )
             Spacer(modifier = Modifier.height(6.dp))
@@ -255,7 +256,7 @@ fun NotificationItem(
                 text = time,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isUnread) Color(0xFFB81D85) else Color(0xFF8A8595),
+                color = if (isUnread) Color(0xFFB81D85) else AppTheme.colors.textMuted,
             )
         }
     }

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -45,7 +46,8 @@ fun LogoutConfirmationDialog(
             modifier = Modifier
                 .fillMaxWidth(0.88f)
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color.White)
+                .background(AppTheme.colors.cardBackground)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(24.dp))
                 .padding(24.dp),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -54,7 +56,8 @@ fun LogoutConfirmationDialog(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFDEEF7)),
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .border(1.dp, AppTheme.colors.border, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(text = "➔", fontSize = 28.sp, color = Color(0xFFB81D85))
@@ -67,7 +70,7 @@ fun LogoutConfirmationDialog(
                     text = "Are you sure you want to log out?",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                     lineHeight = 26.sp,
                 )
@@ -78,7 +81,7 @@ fun LogoutConfirmationDialog(
                 Text(
                     text = "Your saved records will stay safe. You can log back in whenever you're ready.",
                     fontSize = 13.sp,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
                     lineHeight = 18.sp,
                 )
@@ -115,8 +118,8 @@ fun LogoutConfirmationDialog(
                         .fillMaxWidth()
                         .height(48.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                         .clickable { onCancelClick() },
                     contentAlignment = Alignment.Center,
                 ) {
@@ -124,7 +127,7 @@ fun LogoutConfirmationDialog(
                         text = "Cancel",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
 
@@ -133,7 +136,7 @@ fun LogoutConfirmationDialog(
                 Text(
                     text = "A little support, whenever you need it.",
                     fontSize = 11.sp,
-                    color = Color(0xFF8A8595),
+                    color = AppTheme.colors.textMuted,
                     textAlign = TextAlign.Center,
                 )
             }

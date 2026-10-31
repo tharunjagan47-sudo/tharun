@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.profile
+import com.simats.diawell123.ui.theme.AppTheme
 
 import android.content.Context
 import android.graphics.ImageDecoder
@@ -139,7 +140,7 @@ fun EditProfileScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -165,12 +166,12 @@ fun EditProfileScreen(
                         text = "Personal Profile",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Settings",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -286,13 +287,13 @@ fun EditProfileScreen(
                     text = fullName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
 
                 Text(
                     text = "User profile • DiaWell care",
                     fontSize = 11.sp,
-                    color = Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                 )
             }
 
@@ -302,7 +303,7 @@ fun EditProfileScreen(
                 text = "Your details",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -365,7 +366,7 @@ fun EditProfileScreen(
             Text(
                 text = "Scroll vertically and select your details to update your personal profile.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -397,7 +398,7 @@ fun EditProfileScreen(
             Text(
                 text = "Sharing details assists your personalized accounting. Review this profile before saving. Logs are for tracking, not medical advice.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp,
                 modifier = Modifier
@@ -434,7 +435,7 @@ fun ProfileDetailInputField(
             text = label,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF232226),
+            color = AppTheme.colors.textPrimary,
             modifier = Modifier.padding(bottom = 4.dp),
         )
 
@@ -454,12 +455,12 @@ fun ProfileDetailInputField(
             },
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF8F7FA),
-                unfocusedContainerColor = Color(0xFFF8F7FA),
+                focusedContainerColor = AppTheme.colors.inputBackground,
+                unfocusedContainerColor = AppTheme.colors.inputBackground,
                 focusedBorderColor = Color(0xFFBD1E85),
-                unfocusedBorderColor = Color(0xFFEFECEF),
-                focusedTextColor = Color(0xFF1E1E22),
-                unfocusedTextColor = Color(0xFF1E1E22),
+                unfocusedBorderColor = AppTheme.colors.inputBorder,
+                focusedTextColor = AppTheme.colors.textPrimary,
+                unfocusedTextColor = AppTheme.colors.textPrimary,
             ),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -486,7 +487,7 @@ fun VerticalScrollAndSelectPicker(
                 text = label,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF232226),
+                color = AppTheme.colors.textPrimary,
             )
             Text(
                 text = selectedItem,
@@ -501,8 +502,8 @@ fun VerticalScrollAndSelectPicker(
                 .fillMaxWidth()
                 .height(115.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color.White)
-                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                .background(AppTheme.colors.cardBackground)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                 .padding(vertical = 4.dp),
         ) {
             LazyColumn(
@@ -516,7 +517,7 @@ fun VerticalScrollAndSelectPicker(
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSelected) Color(0xFFFDEEF7) else Color.Transparent)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.Transparent)
                             .clickable { onItemSelected(item) }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center,
@@ -525,7 +526,7 @@ fun VerticalScrollAndSelectPicker(
                             text = item,
                             fontSize = 13.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF6E6877),
+                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
                         )
                     }
                 }

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -84,7 +85,7 @@ fun ChangePasswordScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -105,7 +106,7 @@ fun ChangePasswordScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -119,12 +120,12 @@ fun ChangePasswordScreen(
                         text = "Change Password",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Settings",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -191,7 +192,7 @@ fun ChangePasswordScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -200,7 +201,7 @@ fun ChangePasswordScreen(
                     Text(
                         text = "Keep your DiaWell account safe with a strong, unique password.",
                         fontSize = 12.sp,
-                        color = Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         lineHeight = 16.sp,
                     )
                 }
@@ -258,8 +259,8 @@ fun ChangePasswordScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                    .background(AppTheme.colors.cardBackground)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                     .padding(14.dp),
             ) {
                 Column {
@@ -267,13 +268,13 @@ fun ChangePasswordScreen(
                         text = "Password Requirements",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "✓ At least 8 characters\n✓ Include numbers or symbols for better security",
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                         lineHeight = 16.sp,
                     )
                 }
@@ -330,7 +331,7 @@ fun PasswordInputField(
             text = label,
             fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF232226),
+            color = AppTheme.colors.textPrimary,
             modifier = Modifier.padding(bottom = 6.dp),
         )
 
@@ -341,7 +342,7 @@ fun PasswordInputField(
                 Text(
                     text = placeholder,
                     fontSize = 14.sp,
-                    color = Color(0xFFA09BAA),
+                    color = AppTheme.colors.textMuted,
                 )
             },
             singleLine = true,
@@ -361,12 +362,12 @@ fun PasswordInputField(
             },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF8F7FA),
-                unfocusedContainerColor = Color(0xFFF8F7FA),
+                focusedContainerColor = AppTheme.colors.inputBackground,
+                unfocusedContainerColor = AppTheme.colors.inputBackground,
                 focusedBorderColor = Color(0xFFBD1E85),
-                unfocusedBorderColor = Color(0xFFEFECEF),
-                focusedTextColor = Color(0xFF1E1E22),
-                unfocusedTextColor = Color(0xFF1E1E22),
+                unfocusedBorderColor = AppTheme.colors.inputBorder,
+                focusedTextColor = AppTheme.colors.textPrimary,
+                unfocusedTextColor = AppTheme.colors.textPrimary,
             ),
             modifier = Modifier.fillMaxWidth(),
         )

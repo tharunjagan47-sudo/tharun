@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.glucose
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -68,7 +69,7 @@ fun GlucoseHistoryScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -94,12 +95,12 @@ fun GlucoseHistoryScreen(
                             text = "Glucose History",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "Track your blood sugar trends over time",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
 
@@ -119,7 +120,7 @@ fun GlucoseHistoryScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF3E2F0))
+                        .background(AppTheme.colors.border)
                         .padding(4.dp),
                 ) {
                     listOf("7 days", "30 days", "3 months").forEach { range ->
@@ -147,7 +148,7 @@ fun GlucoseHistoryScreen(
                                 text = range,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -165,12 +166,12 @@ fun GlucoseHistoryScreen(
                         text = history?.dateRangeLabel?.takeIf { it.isNotBlank() } ?: "Date Range",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFFDEEF7))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                     ) {
                         Text(
@@ -225,8 +226,8 @@ fun GlucoseHistoryScreen(
                         .fillMaxWidth()
                         .height(150.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                         .clickable {
                             if (readings.isNotEmpty()) {
                                 onReadingClick(readings.first().id)
@@ -249,7 +250,7 @@ fun GlucoseHistoryScreen(
                             Text(
                                 text = "No glucose readings recorded in this range.\nTap + Log glucose below to record your first reading.",
                                 fontSize = 12.sp,
-                                color = Color(0xFF8A8595),
+                                color = AppTheme.colors.textMuted,
                                 textAlign = TextAlign.Center,
                                 lineHeight = 17.sp,
                             )
@@ -293,12 +294,12 @@ fun GlucoseHistoryScreen(
                         text = "Recent readings (${readings.size})",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFFDEEF7))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                             .clickable { onLogGlucoseClick() }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     ) {
@@ -329,7 +330,7 @@ fun GlucoseHistoryScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF8F7FA))
+                            .background(AppTheme.colors.secondaryBackground)
                             .padding(24.dp),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -340,13 +341,13 @@ fun GlucoseHistoryScreen(
                                 text = "No readings logged for this timeframe",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E1E22),
+                                color = AppTheme.colors.textPrimary,
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Start tracking to monitor your daily glycemic patterns.",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                                 textAlign = TextAlign.Center,
                             )
                         }
@@ -365,13 +366,13 @@ fun DynamicGlucoseLineChart(chartData: List<GlucoseChartPoint>) {
 
         // Reference grid lines
         drawLine(
-            color = Color(0xFFF3E2F0),
+            color = AppTheme.colors.border,
             start = Offset(0f, h * 0.25f),
             end = Offset(w, h * 0.25f),
             strokeWidth = 1.dp.toPx(),
         )
         drawLine(
-            color = Color(0xFFF3E2F0),
+            color = AppTheme.colors.border,
             start = Offset(0f, h * 0.75f),
             end = Offset(w, h * 0.75f),
             strokeWidth = 1.dp.toPx(),
@@ -432,7 +433,7 @@ fun HistoryStatCard(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFFDEEF7))
+            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
             .padding(vertical = 10.dp, horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -446,7 +447,7 @@ fun HistoryStatCard(
             Text(
                 text = label,
                 fontSize = 10.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
             )
         }
     }
@@ -471,8 +472,8 @@ fun ReadingHistoryItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -486,12 +487,12 @@ fun ReadingHistoryItem(
                     text = date,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
                 Text(
                     text = time,
                     fontSize = 11.sp,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                 )
             }
 
@@ -508,7 +509,7 @@ fun ReadingHistoryItem(
                         Text(
                             text = "mg/dL",
                             fontSize = 11.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                             modifier = Modifier.padding(bottom = 2.dp),
                         )
                     }
@@ -527,7 +528,7 @@ fun ReadingHistoryItem(
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "›", fontSize = 18.sp, color = Color(0xFFA09BAA), fontWeight = FontWeight.Bold)
+                Text(text = "›", fontSize = 18.sp, color = AppTheme.colors.textMuted, fontWeight = FontWeight.Bold)
             }
         }
     }

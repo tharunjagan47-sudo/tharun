@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.diet
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -89,7 +90,7 @@ fun DailyDietPlanScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -117,12 +118,12 @@ fun DailyDietPlanScreen(
                                     text = "Diet & Nutrition",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = "AI-matched Indian foods for your health",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF6E6877),
+                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -138,7 +139,7 @@ fun DailyDietPlanScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFFDEEF7))
+                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                                     .clickable { onFoodLogClick() }
                                     .padding(vertical = 9.dp),
                                 contentAlignment = Alignment.Center,
@@ -147,7 +148,7 @@ fun DailyDietPlanScreen(
                                     text = "📖 Food Log",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF811978),
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                                 )
                             }
                             Box(
@@ -206,16 +207,16 @@ fun DailyDietPlanScreen(
                                 Text(
                                     text = "🔍 Search foods, recipes or ingredients...",
                                     fontSize = 13.sp,
-                                    color = Color(0xFFA09BAA),
+                                    color = AppTheme.colors.textMuted,
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(14.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
+                                focusedContainerColor = AppTheme.colors.inputBackground,
+                                unfocusedContainerColor = AppTheme.colors.inputBackground,
                                 focusedBorderColor = Color(0xFFBD1E85),
-                                unfocusedBorderColor = Color(0xFFEFECEF),
+                                unfocusedBorderColor = AppTheme.colors.inputBorder,
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -236,7 +237,7 @@ fun DailyDietPlanScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(20.dp))
-                                        .background(if (isSelected) Color(0xFFB81D85) else Color(0xFFF8F7FA))
+                                        .background(if (isSelected) Color(0xFFB81D85) else AppTheme.colors.secondaryBackground)
                                         .clickable { viewModel.onDailyDietCategoryChanged(category) }
                                         .padding(horizontal = 14.dp, vertical = 7.dp),
                                 ) {
@@ -244,7 +245,7 @@ fun DailyDietPlanScreen(
                                         text = category,
                                         fontSize = 12.sp,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                        color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                     )
                                 }
                             }
@@ -257,8 +258,8 @@ fun DailyDietPlanScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                                .background(AppTheme.colors.cardBackground)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                                 .padding(horizontal = 16.dp, vertical = 10.dp),
                         ) {
                             Row(
@@ -279,7 +280,7 @@ fun DailyDietPlanScreen(
                                     text = "📅  ${uiState.selectedDateLabel}",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                     modifier = Modifier.clickable { showDatePickerDialog = true }
                                 )
                                 Text(
@@ -387,7 +388,7 @@ fun DailyDietPlanScreen(
                         text = "✨ AI Recommended for Your Health",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     if (aiState.isLoading || aiState.isUpdatingInputs) {
@@ -495,7 +496,7 @@ fun DailyDietPlanScreen(
                             Text(
                                 text = "No matching dishes found in nutrition dataset.",
                                 fontSize = 13.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -508,7 +509,7 @@ fun DailyDietPlanScreen(
                     text = aiState.data?.disclaimer
                         ?: "Medical Disclaimer: Suggestions are calculated from nutritional dataset values and personal health context. Always consult your physician or registered dietitian.",
                     fontSize = 10.sp,
-                    color = Color(0xFF8A8595),
+                    color = AppTheme.colors.textMuted,
                     textAlign = TextAlign.Center,
                     lineHeight = 14.sp,
                     modifier = Modifier
@@ -575,12 +576,12 @@ fun MealTimeSectionHeader(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
             Text(
                 text = subtitle,
                 fontSize = 11.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
             )
         }
     }
@@ -607,8 +608,8 @@ fun ActiveHealthMatchCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
             .padding(14.dp),
     ) {
         Column {
@@ -625,7 +626,7 @@ fun ActiveHealthMatchCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFDEEF7)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = "🩸", fontSize = 18.sp)
@@ -636,7 +637,7 @@ fun ActiveHealthMatchCard(
                             text = "Blood Glucose: ${glucose.toInt()} mg/dL",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Box(
                             modifier = Modifier
@@ -659,7 +660,7 @@ fun ActiveHealthMatchCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFF8F7FA))
+                        .background(AppTheme.colors.secondaryBackground)
                         .border(1.dp, Color(0xFFBD1E85).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
                         .clickable { onAdjustClick() }
                         .padding(horizontal = 10.dp, vertical = 6.dp),
@@ -668,7 +669,7 @@ fun ActiveHealthMatchCard(
                         text = "⚙️ Adjust",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                     )
                 }
             }
@@ -699,7 +700,7 @@ fun HealthTagPill(icon: String, text: String) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFF8F7FA))
+            .background(AppTheme.colors.secondaryBackground)
             .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Text(
@@ -744,7 +745,7 @@ fun AdjustHealthInputsDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.White)
+                .background(AppTheme.colors.cardBackground)
                 .padding(20.dp),
         ) {
             Column {
@@ -752,12 +753,12 @@ fun AdjustHealthInputsDialog(
                     text = "Adjust Health & Glucose Inputs",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
                 Text(
                     text = "AI recommendations dynamically adapt to these parameters.",
                     fontSize = 11.sp,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -767,7 +768,7 @@ fun AdjustHealthInputsDialog(
                     text = "Current Blood Glucose (mg/dL)",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
@@ -777,10 +778,10 @@ fun AdjustHealthInputsDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF8F7FA),
-                        unfocusedContainerColor = Color(0xFFF8F7FA),
+                        focusedContainerColor = AppTheme.colors.inputBackground,
+                        unfocusedContainerColor = AppTheme.colors.inputBackground,
                         focusedBorderColor = Color(0xFFBD1E85),
-                        unfocusedBorderColor = Color(0xFFEFECEF),
+                        unfocusedBorderColor = AppTheme.colors.inputBorder,
                     ),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -793,7 +794,7 @@ fun AdjustHealthInputsDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (glucoseInput == valStr) Color(0xFFBD1E85) else Color(0xFFF8F7FA))
+                                .background(if (glucoseInput == valStr) Color(0xFFBD1E85) else AppTheme.colors.secondaryBackground)
                                 .clickable { glucoseInput = valStr }
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                         ) {
@@ -801,7 +802,7 @@ fun AdjustHealthInputsDialog(
                                 text = "$valStr ($label)",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (glucoseInput == valStr) Color.White else Color(0xFF6E6877),
+                                color = if (glucoseInput == valStr) Color.White else AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -819,7 +820,7 @@ fun AdjustHealthInputsDialog(
                         text = "Dietary Preference",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Multiple selection",
@@ -841,12 +842,12 @@ fun AdjustHealthInputsDialog(
                                     if (isSelected) {
                                         Brush.horizontalGradient(listOf(Color(0xFF811978), Color(0xFFBD1E85)))
                                     } else {
-                                        Brush.horizontalGradient(listOf(Color(0xFFF8F7FA), Color(0xFFF8F7FA)))
+                                        Brush.horizontalGradient(listOf(AppTheme.colors.secondaryBackground, AppTheme.colors.secondaryBackground))
                                     }
                                 )
                                 .border(
                                     1.dp,
-                                    if (isSelected) Color(0xFFBD1E85) else Color(0xFFEFECEF),
+                                    if (isSelected) Color(0xFFBD1E85) else AppTheme.colors.border,
                                     RoundedCornerShape(10.dp)
                                 )
                                 .clickable {
@@ -871,7 +872,7 @@ fun AdjustHealthInputsDialog(
                                     text = diet,
                                     fontSize = 11.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                    color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -890,7 +891,7 @@ fun AdjustHealthInputsDialog(
                         text = "Health Focus",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Multiple selection",
@@ -912,12 +913,12 @@ fun AdjustHealthInputsDialog(
                                     if (isSelected) {
                                         Brush.horizontalGradient(listOf(Color(0xFF6B156E), Color(0xFF9E1B80)))
                                     } else {
-                                        Brush.horizontalGradient(listOf(Color(0xFFF8F7FA), Color(0xFFF8F7FA)))
+                                        Brush.horizontalGradient(listOf(AppTheme.colors.secondaryBackground, AppTheme.colors.secondaryBackground))
                                     }
                                 )
                                 .border(
                                     1.dp,
-                                    if (isSelected) Color(0xFFBD1E85) else Color(0xFFEFECEF),
+                                    if (isSelected) Color(0xFFBD1E85) else AppTheme.colors.border,
                                     RoundedCornerShape(10.dp)
                                 )
                                 .clickable {
@@ -942,7 +943,7 @@ fun AdjustHealthInputsDialog(
                                     text = focus,
                                     fontSize = 11.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                    color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -960,12 +961,12 @@ fun AdjustHealthInputsDialog(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF8F7FA))
+                            .background(AppTheme.colors.secondaryBackground)
                             .clickable { onDismiss() }
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = "Cancel", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6E6877))
+                        Text(text = "Cancel", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textSecondary)
                     }
 
                     Box(
@@ -1004,8 +1005,8 @@ fun AiDietMealCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -1023,7 +1024,7 @@ fun AiDietMealCard(
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFDEEF7)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = item.icon, fontSize = 22.sp)
@@ -1041,12 +1042,12 @@ fun AiDietMealCard(
                             text = item.title,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "${item.portion} • ${item.caloriesLabel}",
                             fontSize = 11.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -1077,7 +1078,7 @@ fun AiDietMealCard(
             Text(
                 text = "Carbs ${item.carbsG}g • Fibre ${item.fibreG}g • Protein ${item.proteinG}g • Sugar ${item.freeSugarG}g",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
             )
 
             if (item.recommendationReason.isNotBlank()) {
@@ -1100,14 +1101,14 @@ fun AiDietMealCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFF8F7FA))
+                                .background(AppTheme.colors.secondaryBackground)
                                 .padding(horizontal = 6.dp, vertical = 3.dp),
                         ) {
                             Text(
                                 text = tag,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             )
                         }
                     }
@@ -1146,8 +1147,8 @@ fun DietPlanMealCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -1174,17 +1175,17 @@ fun DietPlanMealCard(
                         text = name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = serving,
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                     Text(
                         text = macros,
                         fontSize = 10.sp,
-                        color = Color(0xFF8A8595),
+                        color = AppTheme.colors.textMuted,
                     )
                 }
             }
@@ -1212,7 +1213,7 @@ fun CalendarDatePickerDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.White)
+                .background(AppTheme.colors.cardBackground)
                 .padding(20.dp),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1220,12 +1221,12 @@ fun CalendarDatePickerDialog(
                     text = "Select Diet Date",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
                 Text(
                     text = "Currently viewing $selectedDateText",
                     fontSize = 12.sp,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -1238,7 +1239,7 @@ fun CalendarDatePickerDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFFDEEF7))
+                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                                 .clickable {
                                     val c = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, offset) }
                                     onDateSelected(c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH))
@@ -1250,7 +1251,7 @@ fun CalendarDatePickerDialog(
                                 text = label,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             )
                         }
                     }
@@ -1262,7 +1263,7 @@ fun CalendarDatePickerDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFF8F7FA))
+                        .background(AppTheme.colors.secondaryBackground)
                         .clickable { onDismissRequest() }
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
@@ -1271,7 +1272,7 @@ fun CalendarDatePickerDialog(
                         text = "Close",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.glucose
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -89,7 +90,7 @@ fun ReadingDetailsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                    Text("Cancel", color = Color(0xFF6E6877))
+                    Text("Cancel", color = AppTheme.colors.textSecondary)
                 }
             }
         )
@@ -98,7 +99,7 @@ fun ReadingDetailsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -126,12 +127,12 @@ fun ReadingDetailsScreen(
                             text = "Reading details",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "A closer look at your recorded glucose.",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -207,8 +208,8 @@ fun ReadingDetailsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(16.dp))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                         .padding(20.dp),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -216,7 +217,7 @@ fun ReadingDetailsScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color.White)
+                                .background(AppTheme.colors.cardBackground)
                                 .padding(horizontal = 10.dp, vertical = 4.dp),
                         ) {
                             Text(
@@ -267,7 +268,7 @@ fun ReadingDetailsScreen(
                         Text(
                             text = details.dateTimeLabel,
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -279,7 +280,7 @@ fun ReadingDetailsScreen(
                     text = "Recent ${details.readingType.lowercase()} readings",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF232226),
+                    color = AppTheme.colors.textPrimary,
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -289,8 +290,8 @@ fun ReadingDetailsScreen(
                         .fillMaxWidth()
                         .height(130.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                         .padding(16.dp),
                 ) {
                     if (details.recentReadings.isNotEmpty()) {
@@ -300,7 +301,7 @@ fun ReadingDetailsScreen(
                             Text(
                                 text = "Single reading recorded in this category.",
                                 fontSize = 12.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -313,7 +314,7 @@ fun ReadingDetailsScreen(
                     text = "Notes",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF232226),
+                    color = AppTheme.colors.textPrimary,
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -322,13 +323,13 @@ fun ReadingDetailsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF8F7FA))
+                        .background(AppTheme.colors.secondaryBackground)
                         .padding(14.dp),
                 ) {
                     Text(
                         text = details.notes.ifBlank { "No notes recorded for this reading." },
                         fontSize = 13.sp,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                         lineHeight = 18.sp,
                     )
                 }
@@ -340,8 +341,8 @@ fun ReadingDetailsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(14.dp))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                         .padding(16.dp),
                 ) {
                     Column {
@@ -352,7 +353,7 @@ fun ReadingDetailsScreen(
                                 text = "AI Trend Summary",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             )
                         }
 
@@ -361,7 +362,7 @@ fun ReadingDetailsScreen(
                         Text(
                             text = details.aiTrendSummary.ifBlank { "Single reading recorded. Continue regular logging to generate personalized trend analysis." },
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                             lineHeight = 18.sp,
                         )
                     }
@@ -372,7 +373,7 @@ fun ReadingDetailsScreen(
                 Text(
                     text = "About glucose tracking:\nLogging the time, reading types and notes helps your medical team spot glycemic patterns. A single reading is contextual.",
                     fontSize = 11.sp,
-                    color = Color(0xFF8A8595),
+                    color = AppTheme.colors.textMuted,
                     textAlign = TextAlign.Center,
                     lineHeight = 16.sp,
                     modifier = Modifier
@@ -392,7 +393,7 @@ fun RecentReadingsLineChart(readings: List<GlucoseRecentPoint>) {
 
         // Reference line
         drawLine(
-            color = Color(0xFFF3E2F0),
+            color = AppTheme.colors.border,
             start = Offset(0f, h * 0.5f),
             end = Offset(w, h * 0.5f),
             strokeWidth = 1.dp.toPx(),

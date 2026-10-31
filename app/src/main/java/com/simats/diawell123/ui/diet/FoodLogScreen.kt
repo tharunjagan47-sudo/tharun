@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.diet
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,7 +48,7 @@ fun FoodLogScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -68,7 +69,7 @@ fun FoodLogScreen(
                         text = "←",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .clickable { onBackClick() }
@@ -82,12 +83,12 @@ fun FoodLogScreen(
                             text = "Your food log",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "Every meal is a little check-in.",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -99,8 +100,8 @@ fun FoodLogScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                 ) {
                     Row(
@@ -121,7 +122,7 @@ fun FoodLogScreen(
                             text = "📅  ${uiState.selectedDateLabel}",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "›",
@@ -142,7 +143,7 @@ fun FoodLogScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFFDEEF7))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                         .clickable { onNutritionSummaryClick() }
                         .padding(16.dp),
                 ) {
@@ -156,7 +157,7 @@ fun FoodLogScreen(
                                 text = "Daily nutrition",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             )
                             Text(
                                 text = "${uiState.totalCaloriesNum} kcal",
@@ -171,7 +172,7 @@ fun FoodLogScreen(
                         Text(
                             text = "Carbs ${uiState.totalCarbsG} g • Protein ${uiState.totalProteinG} g • Fat ${uiState.totalFatG} g",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -189,7 +190,7 @@ fun FoodLogScreen(
                         Text(
                             text = "No meals logged for this day yet.",
                             fontSize = 13.sp,
-                            color = Color(0xFF8A8595)
+                            color = AppTheme.colors.textMuted
                         )
                     }
                 } else {
@@ -255,8 +256,8 @@ fun FoodLogItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -281,19 +282,19 @@ fun FoodLogItem(
                         Text(
                             text = time,
                             fontSize = 10.sp,
-                            color = Color(0xFF8A8595),
+                            color = AppTheme.colors.textMuted,
                         )
                     }
                     Text(
                         text = title,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = portion,
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }

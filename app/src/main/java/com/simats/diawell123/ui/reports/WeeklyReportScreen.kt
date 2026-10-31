@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.reports
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -105,7 +106,7 @@ fun WeeklyReportScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -133,12 +134,12 @@ fun WeeklyReportScreen(
                                     text = "Your weekly report",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = "A clearer view of your everyday habits.",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF6E6877),
+                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -148,7 +149,7 @@ fun WeeklyReportScreen(
                         Text(
                             text = "${ProfileState.userName} • Personalized health summary",
                             fontSize = 11.sp,
-                            color = Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             fontWeight = FontWeight.Medium,
                         )
 
@@ -159,8 +160,8 @@ fun WeeklyReportScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                                .background(AppTheme.colors.cardBackground)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                                 .clickable { showCalendarDialog = true }
                                 .padding(horizontal = 16.dp, vertical = 10.dp),
                         ) {
@@ -174,7 +175,7 @@ fun WeeklyReportScreen(
                                     text = "📅  $displayWeekLabel",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(text = "›", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
                             }
@@ -205,8 +206,8 @@ fun WeeklyReportScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                            .background(AppTheme.colors.cardBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                             .padding(16.dp),
                     ) {
                         Column {
@@ -218,7 +219,7 @@ fun WeeklyReportScreen(
                                     text = "Glucose overview",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = "mg/dL",
@@ -332,7 +333,7 @@ fun WeeklyReportScreen(
                             Text(
                                 text = "Weekly average: $avgGlucose • $timeInRange% time in range ($glucoseTag)",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -346,8 +347,8 @@ fun WeeklyReportScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                            .background(AppTheme.colors.cardBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                             .padding(16.dp),
                     ) {
                         Column {
@@ -359,7 +360,7 @@ fun WeeklyReportScreen(
                                     text = "Meals logged",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = mealsLoggedText,
@@ -403,7 +404,7 @@ fun WeeklyReportScreen(
                             Text(
                                 text = "Avg daily calories: ${report?.nutrition?.dailyAverageCalories ?: "1,450 kcal"}",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -417,8 +418,8 @@ fun WeeklyReportScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                            .background(AppTheme.colors.cardBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                             .padding(16.dp),
                     ) {
                         Column {
@@ -430,7 +431,7 @@ fun WeeklyReportScreen(
                                     text = "Medication reminders",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = "$medAdherence% adherence",
@@ -445,7 +446,7 @@ fun WeeklyReportScreen(
                             LinearProgressIndicator(
                                 progress = { ((medAdherence / 100f) * chartProgress.value).coerceIn(0f, 1f) },
                                 color = Color(0xFFB81D85),
-                                trackColor = Color(0xFFFDEEF7),
+                                trackColor = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFFDEEF7),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(8.dp)
@@ -457,7 +458,7 @@ fun WeeklyReportScreen(
                             Text(
                                 text = medStatus,
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -470,7 +471,8 @@ fun WeeklyReportScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFDEEF7))
+                        .background(AppTheme.colors.elevatedSurface)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                         .padding(12.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -481,7 +483,7 @@ fun WeeklyReportScreen(
                                 text = "7 days of health & glucose logging",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             )
                             Text(
                                 text = if (report != null && report.activity.totalActiveMins > 0)
@@ -489,7 +491,7 @@ fun WeeklyReportScreen(
                                 else
                                     "Keep up the consistent routine!",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -539,8 +541,8 @@ fun ReportCalendarDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.White)
-                .border(1.5.dp, Color(0xFFEFECEF), RoundedCornerShape(20.dp))
+                .background(AppTheme.colors.cardBackground)
+                .border(1.5.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
                 .padding(20.dp),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -554,14 +556,14 @@ fun ReportCalendarDialog(
                         text = "📅 Select Report Week",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     Text(
                         text = "✕",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF8A8595),
+                        color = AppTheme.colors.textMuted,
                         modifier = Modifier
                             .clickable { onDismissRequest() }
                             .padding(4.dp),
@@ -575,7 +577,8 @@ fun ReportCalendarDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFDEEF7))
+                        .background(AppTheme.colors.elevatedSurface)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                         .padding(horizontal = 14.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -585,7 +588,7 @@ fun ReportCalendarDialog(
                         text = "October 2026",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                     )
                     Text(text = "›", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
                 }
@@ -602,7 +605,7 @@ fun ReportCalendarDialog(
                             text = dayName,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF8A8595),
+                            color = AppTheme.colors.textMuted,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.width(32.dp),
                         )
@@ -629,7 +632,7 @@ fun ReportCalendarDialog(
                                     .background(if (isSelected) Color(0xFFB81D85) else Color.Transparent)
                                     .border(
                                         width = if (isSelected) 0.dp else 1.dp,
-                                        color = if (isSelected) Color.Transparent else Color(0xFFEFECEF),
+                                        color = if (isSelected) Color.Transparent else AppTheme.colors.border,
                                         shape = CircleShape,
                                     )
                                     .clickable { selectedDay = dayNumber }
@@ -640,7 +643,7 @@ fun ReportCalendarDialog(
                                     text = dayNumber.toString(),
                                     fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) Color.White else Color(0xFF1E1E22),
+                                    color = if (isSelected) Color.White else AppTheme.colors.textPrimary,
                                 )
                             }
                         }
@@ -666,7 +669,8 @@ fun ReportCalendarDialog(
                             .weight(1f)
                             .height(44.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF8F7FA))
+                            .background(AppTheme.colors.secondaryBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                             .clickable { onDismissRequest() },
                         contentAlignment = Alignment.Center,
                     ) {
@@ -674,7 +678,7 @@ fun ReportCalendarDialog(
                             text = "Cancel",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
 

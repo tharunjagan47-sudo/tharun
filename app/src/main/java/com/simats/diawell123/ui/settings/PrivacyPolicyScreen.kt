@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,7 +38,7 @@ fun PrivacyPolicyScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -58,7 +59,7 @@ fun PrivacyPolicyScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -72,12 +73,12 @@ fun PrivacyPolicyScreen(
                         text = "Privacy Policy",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Settings",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -87,7 +88,7 @@ fun PrivacyPolicyScreen(
             Text(
                 text = "Effective Date: October 15, 2026 • DiaWell Health",
                 fontSize = 11.sp,
-                color = Color(0xFF811978),
+                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                 fontWeight = FontWeight.Medium,
             )
 
@@ -98,7 +99,7 @@ fun PrivacyPolicyScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -107,7 +108,7 @@ fun PrivacyPolicyScreen(
                     Text(
                         text = "Your privacy matters. Learn how we handle your data with care and confidentiality.",
                         fontSize = 12.sp,
-                        color = Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         lineHeight = 16.sp,
                     )
                 }
@@ -154,7 +155,7 @@ fun PrivacyPolicyScreen(
             Text(
                 text = "For privacy inquiries, contact us at privacy@example.com.\nDiaWell Health • Version 1.0.0",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp,
                 modifier = Modifier
@@ -174,8 +175,8 @@ fun PrivacyPolicySection(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .padding(14.dp),
     ) {
         Column {
@@ -183,13 +184,13 @@ fun PrivacyPolicySection(
                 text = title,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = body,
                 fontSize = 12.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
                 lineHeight = 17.sp,
             )
         }

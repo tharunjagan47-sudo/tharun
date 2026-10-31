@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.auth
+import com.simats.diawell123.ui.theme.AppTheme
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
@@ -87,7 +88,7 @@ fun ForgotPasswordScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -118,12 +119,12 @@ fun ForgotPasswordScreen(
                             text = "Reset Password",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "Update your credentials securely.",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -173,7 +174,7 @@ fun ForgotPasswordScreen(
                         text = "Registered Email Address",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF232226),
+                        color = AppTheme.colors.textPrimary,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )
 
@@ -187,7 +188,7 @@ fun ForgotPasswordScreen(
                             Text(
                                 text = "you@example.com",
                                 fontSize = 14.sp,
-                                color = Color(0xFFA09BAA),
+                                color = AppTheme.colors.textMuted,
                             )
                         },
                         singleLine = true,
@@ -202,12 +203,12 @@ fun ForgotPasswordScreen(
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF8F7FA),
-                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedContainerColor = AppTheme.colors.inputBackground,
+                            unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFBD1E85),
-                            unfocusedBorderColor = Color(0xFFEFECEF),
-                            focusedTextColor = Color(0xFF1E1E22),
-                            unfocusedTextColor = Color(0xFF1E1E22),
+                            unfocusedBorderColor = AppTheme.colors.inputBorder,
+                            focusedTextColor = AppTheme.colors.textPrimary,
+                            unfocusedTextColor = AppTheme.colors.textPrimary,
                         ),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -221,7 +222,7 @@ fun ForgotPasswordScreen(
                         text = "New Password",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF232226),
+                        color = AppTheme.colors.textPrimary,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )
 
@@ -235,7 +236,7 @@ fun ForgotPasswordScreen(
                             Text(
                                 text = "Enter new password",
                                 fontSize = 14.sp,
-                                color = Color(0xFFA09BAA),
+                                color = AppTheme.colors.textMuted,
                             )
                         },
                         singleLine = true,
@@ -255,12 +256,12 @@ fun ForgotPasswordScreen(
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF8F7FA),
-                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedContainerColor = AppTheme.colors.inputBackground,
+                            unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFBD1E85),
-                            unfocusedBorderColor = Color(0xFFEFECEF),
-                            focusedTextColor = Color(0xFF1E1E22),
-                            unfocusedTextColor = Color(0xFF1E1E22),
+                            unfocusedBorderColor = AppTheme.colors.inputBorder,
+                            focusedTextColor = AppTheme.colors.textPrimary,
+                            unfocusedTextColor = AppTheme.colors.textPrimary,
                         ),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -274,7 +275,7 @@ fun ForgotPasswordScreen(
                         text = "Confirm New Password",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF232226),
+                        color = AppTheme.colors.textPrimary,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )
 
@@ -288,7 +289,7 @@ fun ForgotPasswordScreen(
                             Text(
                                 text = "Re-enter new password",
                                 fontSize = 14.sp,
-                                color = Color(0xFFA09BAA),
+                                color = AppTheme.colors.textMuted,
                             )
                         },
                         singleLine = true,
@@ -308,12 +309,12 @@ fun ForgotPasswordScreen(
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF8F7FA),
-                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedContainerColor = AppTheme.colors.inputBackground,
+                            unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFBD1E85),
-                            unfocusedBorderColor = Color(0xFFEFECEF),
-                            focusedTextColor = Color(0xFF1E1E22),
-                            unfocusedTextColor = Color(0xFF1E1E22),
+                            unfocusedBorderColor = AppTheme.colors.inputBorder,
+                            focusedTextColor = AppTheme.colors.textPrimary,
+                            unfocusedTextColor = AppTheme.colors.textPrimary,
                         ),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -365,7 +366,7 @@ fun ForgotPasswordScreen(
                 Text(
                     text = "Your personal information stays private.",
                     fontSize = 12.sp,
-                    color = Color(0xFF8A8595),
+                    color = AppTheme.colors.textMuted,
                 )
             }
         }

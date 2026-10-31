@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.glucose
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -76,7 +77,7 @@ fun LogGlucoseScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -103,12 +104,12 @@ fun LogGlucoseScreen(
                             text = "Log Glucose",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "Keep an active record of your blood sugar.",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -177,8 +178,8 @@ fun LogGlucoseScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(16.dp))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                         .padding(20.dp),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -187,7 +188,7 @@ fun LogGlucoseScreen(
                             text = "Blood sugar reading",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -221,7 +222,7 @@ fun LogGlucoseScreen(
                                         .background(if (isSelected) Color(0xFFBD1E85) else Color.White)
                                         .border(
                                             1.dp,
-                                            if (isSelected) Color(0xFFBD1E85) else Color(0xFFEFECEF),
+                                            if (isSelected) Color(0xFFBD1E85) else AppTheme.colors.border,
                                             RoundedCornerShape(8.dp)
                                         )
                                         .clickable { viewModel.onReadingValueChanged(presetVal) }
@@ -231,7 +232,7 @@ fun LogGlucoseScreen(
                                         text = "$presetVal ($label)",
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                        color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                     )
                                 }
                             }
@@ -249,7 +250,7 @@ fun LogGlucoseScreen(
                         text = "Enter Value (mg/dL)",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF232226),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(
@@ -259,10 +260,10 @@ fun LogGlucoseScreen(
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF8F7FA),
-                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedContainerColor = AppTheme.colors.inputBackground,
+                            unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFBD1E85),
-                            unfocusedBorderColor = Color(0xFFEFECEF),
+                            unfocusedBorderColor = AppTheme.colors.inputBorder,
                         ),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -273,7 +274,7 @@ fun LogGlucoseScreen(
                         text = "Reading type",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF232226),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -295,13 +296,13 @@ fun LogGlucoseScreen(
                                             )
                                         } else {
                                             Brush.horizontalGradient(
-                                                colors = listOf(Color(0xFFF8F7FA), Color(0xFFF8F7FA)),
+                                                colors = listOf(AppTheme.colors.secondaryBackground, AppTheme.colors.secondaryBackground),
                                             )
                                         },
                                     )
                                     .border(
                                         1.dp,
-                                        if (isSelected) Color(0xFFBD1E85) else Color(0xFFEFECEF),
+                                        if (isSelected) Color(0xFFBD1E85) else AppTheme.colors.border,
                                         RoundedCornerShape(12.dp)
                                     )
                                     .clickable { viewModel.onReadingTypeChanged(type) }
@@ -311,7 +312,7 @@ fun LogGlucoseScreen(
                                     text = type,
                                     fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                    color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -329,7 +330,7 @@ fun LogGlucoseScreen(
                                 text = "Date (YYYY-MM-DD)",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF232226),
+                                color = AppTheme.colors.textPrimary,
                                 modifier = Modifier.padding(bottom = 4.dp),
                             )
                             OutlinedTextField(
@@ -339,10 +340,10 @@ fun LogGlucoseScreen(
                                 trailingIcon = { Text(text = "📅", fontSize = 14.sp) },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color(0xFFF8F7FA),
-                                    unfocusedContainerColor = Color(0xFFF8F7FA),
+                                    focusedContainerColor = AppTheme.colors.inputBackground,
+                                    unfocusedContainerColor = AppTheme.colors.inputBackground,
                                     focusedBorderColor = Color(0xFFBD1E85),
-                                    unfocusedBorderColor = Color(0xFFEFECEF),
+                                    unfocusedBorderColor = AppTheme.colors.inputBorder,
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -353,7 +354,7 @@ fun LogGlucoseScreen(
                                 text = "Time",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF232226),
+                                color = AppTheme.colors.textPrimary,
                                 modifier = Modifier.padding(bottom = 4.dp),
                             )
                             OutlinedTextField(
@@ -363,10 +364,10 @@ fun LogGlucoseScreen(
                                 trailingIcon = { Text(text = "⏰", fontSize = 14.sp) },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color(0xFFF8F7FA),
-                                    unfocusedContainerColor = Color(0xFFF8F7FA),
+                                    focusedContainerColor = AppTheme.colors.inputBackground,
+                                    unfocusedContainerColor = AppTheme.colors.inputBackground,
                                     focusedBorderColor = Color(0xFFBD1E85),
-                                    unfocusedBorderColor = Color(0xFFEFECEF),
+                                    unfocusedBorderColor = AppTheme.colors.inputBorder,
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -380,7 +381,7 @@ fun LogGlucoseScreen(
                         text = "Notes (optional)",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF232226),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -392,15 +393,15 @@ fun LogGlucoseScreen(
                             Text(
                                 text = "e.g., Before breakfast, after 20m light walk...",
                                 fontSize = 12.sp,
-                                color = Color(0xFFA09BAA),
+                                color = AppTheme.colors.textMuted,
                             )
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF8F7FA),
-                            unfocusedContainerColor = Color(0xFFF8F7FA),
+                            focusedContainerColor = AppTheme.colors.inputBackground,
+                            unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFBD1E85),
-                            unfocusedBorderColor = Color(0xFFEFECEF),
+                            unfocusedBorderColor = AppTheme.colors.inputBorder,
                         ),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -448,7 +449,7 @@ fun LogGlucoseScreen(
             Text(
                 text = "Readings are for tracking, not a diagnosis.\nAlways review sustained high or low readings with your healthcare provider.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp,
                 modifier = Modifier

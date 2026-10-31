@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.activity
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -112,7 +113,7 @@ fun ActivityTrackingScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -141,7 +142,7 @@ fun ActivityTrackingScreen(
                                     text = "AI Activity Coach",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 if (trackingState.isLoading) {
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -155,7 +156,7 @@ fun ActivityTrackingScreen(
                             Text(
                                 text = "Personalized for Glucose $effectiveGlucose mg/dL • $effectiveWeight kg",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -164,8 +165,8 @@ fun ActivityTrackingScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFDEEF7))
-                            .border(1.dp, Color(0xFFF3D5E9), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.elevatedSurface)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                             .clickable { onHistoryClick() }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     ) {
@@ -264,13 +265,13 @@ fun ActivityTrackingScreen(
                                         )
                                     } else {
                                         Brush.horizontalGradient(
-                                            colors = listOf(Color.White, Color.White),
+                                            colors = listOf(AppTheme.colors.cardBackground, AppTheme.colors.cardBackground),
                                         )
                                     },
                                 )
                                 .border(
                                     width = if (isSelected) 0.dp else 1.dp,
-                                    color = Color(0xFFEFECEF),
+                                    color = AppTheme.colors.border,
                                     shape = RoundedCornerShape(14.dp),
                                 )
                                 .clickable {
@@ -287,7 +288,7 @@ fun ActivityTrackingScreen(
                                     text = type,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else Color(0xFF1E1E22),
+                                    color = if (isSelected) Color.White else AppTheme.colors.textPrimary,
                                 )
                             }
                         }
@@ -303,8 +304,8 @@ fun ActivityTrackingScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(20.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
                         .padding(22.dp),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -349,7 +350,7 @@ fun ActivityTrackingScreen(
                                 val strokeWidth = 14.dp.toPx()
                                 // Background Track Arc
                                 drawArc(
-                                    color = Color(0xFFFDEEF7),
+                                    color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFFDEEF7),
                                     startAngle = 135f,
                                     sweepAngle = 270f,
                                     useCenter = false,
@@ -381,13 +382,13 @@ fun ActivityTrackingScreen(
                                     text = "$minsStr:$secsStr",
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = "AI Goal: $recommendedMins mins",
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF8A8595),
+                                    color = AppTheme.colors.textMuted,
                                 )
                             }
                         }
@@ -406,7 +407,7 @@ fun ActivityTrackingScreen(
                                 Text(
                                     text = activeRec.speedSource,
                                     fontSize = 10.sp,
-                                    color = Color(0xFF8A8595),
+                                    color = AppTheme.colors.textMuted,
                                 )
                             }
                         } else {
@@ -414,7 +415,7 @@ fun ActivityTrackingScreen(
                                 text = "Pace: Self-selected cadence",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
 
@@ -424,7 +425,7 @@ fun ActivityTrackingScreen(
                             Text(
                                 text = "2024 Compendium Code ${activeRec.compendiumCode ?: ""}: ${activeRec.compendiumDescription}",
                                 fontSize = 9.5.sp,
-                                color = Color(0xFFA09BAA),
+                                color = AppTheme.colors.textMuted,
                                 maxLines = 1
                             )
                         }
@@ -471,8 +472,8 @@ fun ActivityTrackingScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(16.dp))
+                        .background(AppTheme.colors.elevatedSurface)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.Top) {
@@ -483,7 +484,7 @@ fun ActivityTrackingScreen(
                                 text = "AI Recommendation Rationale",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
@@ -577,8 +578,8 @@ fun ActivityStatBox(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .padding(12.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -589,13 +590,13 @@ fun ActivityStatBox(
                 text = title,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
             )
             Text(
                 text = value,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
         }
     }

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.onboarding
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -39,7 +40,7 @@ fun ProgressOnboardingScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding()
     ) {
         Column(
@@ -73,7 +74,7 @@ fun ProgressOnboardingScreen(
                     text = "Small steps.\nA clearer picture.",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                     lineHeight = 30.sp
                 )
@@ -85,7 +86,7 @@ fun ProgressOnboardingScreen(
                     text = "Log your glucose readings and explore weekly reports. See your habits over time, one day at a time.",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
                     lineHeight = 19.sp
                 )
@@ -122,7 +123,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = Color(0xFFFDEEF7),
+                color = if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.20f) else Color(0xFFFDEEF7),
                 radius = bgRadius,
                 center = center
             )
@@ -138,7 +139,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
                 cornerRadius = CornerRadius(18.dp.toPx(), 18.dp.toPx())
             )
             drawRoundRect(
-                color = Color(0xFFF2E0EE),
+                color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFF2E0EE),
                 topLeft = cardTopLeft,
                 size = Size(cardWidth, cardHeight),
                 cornerRadius = CornerRadius(18.dp.toPx(), 18.dp.toPx()),
@@ -146,7 +147,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
             )
 
             drawRoundRect(
-                color = Color(0xFFF7EBF6),
+                color = if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF7EBF6),
                 topLeft = Offset(cardTopLeft.x + 16.dp.toPx(), cardTopLeft.y + 16.dp.toPx()),
                 size = Size(60.dp.toPx(), 8.dp.toPx()),
                 cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())

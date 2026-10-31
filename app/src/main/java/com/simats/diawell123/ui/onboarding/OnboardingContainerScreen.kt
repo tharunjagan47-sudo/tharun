@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.onboarding
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager

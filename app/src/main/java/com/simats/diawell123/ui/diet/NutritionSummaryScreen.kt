@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.diet
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -40,7 +41,7 @@ fun NutritionSummaryScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -61,7 +62,7 @@ fun NutritionSummaryScreen(
                         text = "←",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .clickable { onBackClick() }
@@ -75,12 +76,12 @@ fun NutritionSummaryScreen(
                             text = "Nutrition summary",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "A snapshot of your estimated meals.",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -90,7 +91,7 @@ fun NutritionSummaryScreen(
                 Text(
                     text = "${ProfileState.userName} • Illustrative sample data",
                     fontSize = 11.sp,
-                    color = Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                     fontWeight = FontWeight.Medium,
                 )
 
@@ -101,8 +102,8 @@ fun NutritionSummaryScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                 ) {
                     Row(
@@ -115,7 +116,7 @@ fun NutritionSummaryScreen(
                             text = "📅  Thu, 15 Oct 2026",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(text = "›", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
                     }
@@ -132,14 +133,14 @@ fun NutritionSummaryScreen(
                         modifier = Modifier
                             .weight(1.5f)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFFDEEF7))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                             .padding(16.dp),
                     ) {
                         Column {
                             Text(
                                 text = "Approx. consumed",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -155,8 +156,8 @@ fun NutritionSummaryScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                            .background(AppTheme.colors.cardBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                             .padding(16.dp),
                     ) {
                         Column {
@@ -164,12 +165,12 @@ fun NutritionSummaryScreen(
                                 text = "4 of 4",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
+                                color = AppTheme.colors.textPrimary,
                             )
                             Text(
                                 text = "Meals logged",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -182,8 +183,8 @@ fun NutritionSummaryScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                         .padding(16.dp),
                 ) {
                     Column {
@@ -191,7 +192,7 @@ fun NutritionSummaryScreen(
                             text = "Nutrition distribution",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -228,7 +229,7 @@ fun NutritionSummaryScreen(
                     text = "Meal breakdown",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -248,7 +249,7 @@ fun NutritionSummaryScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFFDEEF7))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                         .padding(14.dp),
                 ) {
                     Column {
@@ -256,13 +257,13 @@ fun NutritionSummaryScreen(
                             text = "✨ AI • nutrition insight",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Your 4 logged meals include grains, fruit and protein. Add varied vegetables across meals.",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                             lineHeight = 17.sp,
                         )
                     }
@@ -317,9 +318,9 @@ fun MacroLegendItem(
                     .padding(4.dp),
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(text = label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
+            Text(text = label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
         }
-        Text(text = percent, fontSize = 10.sp, color = Color(0xFF6E6877))
+        Text(text = percent, fontSize = 10.sp, color = AppTheme.colors.textSecondary)
     }
 }
 
@@ -333,8 +334,8 @@ fun MealBreakdownRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
             .padding(12.dp),
     ) {
         Row(
@@ -349,7 +350,7 @@ fun MealBreakdownRow(
                     text = name,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
             }
             Text(

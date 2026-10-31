@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -65,7 +66,7 @@ fun ExportReportViewerScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -86,7 +87,7 @@ fun ExportReportViewerScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -100,12 +101,12 @@ fun ExportReportViewerScreen(
                         text = "Generated Health Report",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "${ProfileState.userName.replace(" ", "_")}_DiaWell_Report.pdf",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -152,8 +153,8 @@ fun ExportReportViewerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
-                    .background(Color.White)
-                    .border(1.5.dp, Color(0xFFEFECEF), RoundedCornerShape(18.dp))
+                    .background(AppTheme.colors.cardBackground)
+                    .border(1.5.dp, AppTheme.colors.border, RoundedCornerShape(18.dp))
                     .padding(20.dp),
             ) {
                 Column {
@@ -178,7 +179,7 @@ fun ExportReportViewerScreen(
                                 Text(
                                     text = "Clinical PDF Report",
                                     fontSize = 11.sp,
-                                    color = Color(0xFF8A8595),
+                                    color = AppTheme.colors.textMuted,
                                 )
                             }
                         }
@@ -214,7 +215,7 @@ fun ExportReportViewerScreen(
                         text = "${ProfileState.userName} • Age 30 • Type 2 Diabetes\nPeriod: 8 Oct 2026 – 15 Oct 2026",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                         lineHeight = 17.sp,
                     )
 
@@ -234,7 +235,7 @@ fun ExportReportViewerScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF8F7FA))
+                            .background(AppTheme.colors.secondaryBackground)
                             .padding(12.dp),
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -250,7 +251,7 @@ fun ExportReportViewerScreen(
                     Text(
                         text = "Care Note: Logged regularly with high adherence. Shared for clinical review with doctor.",
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                         lineHeight = 16.sp,
                     )
                 }
@@ -263,7 +264,7 @@ fun ExportReportViewerScreen(
                 text = "Share or Save Report",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -326,8 +327,8 @@ fun ReportSummaryRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = label, fontSize = 11.sp, color = Color(0xFF6E6877))
-        Text(text = value, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
+        Text(text = label, fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+        Text(text = value, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
     }
 }
 
@@ -341,8 +342,8 @@ fun ReportActionButton(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(12.dp),
         contentAlignment = Alignment.Center,
@@ -354,7 +355,7 @@ fun ReportActionButton(
                 text = label,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,
             )
         }

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.activity
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -57,7 +58,7 @@ fun ActivityHistoryScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -84,7 +85,7 @@ fun ActivityHistoryScreen(
                                 text = "Activity History & Logs",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
+                                color = AppTheme.colors.textPrimary,
                             )
                             if (historyState.isLoading) {
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -98,7 +99,7 @@ fun ActivityHistoryScreen(
                         Text(
                             text = "Track your workout progress & glucose improvements.",
                             fontSize = 12.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -154,10 +155,10 @@ fun ActivityHistoryScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(if (isSelected) Color(0xFFB81D85) else Color(0xFFF8F7FA))
+                                .background(if (isSelected) Color(0xFFB81D85) else AppTheme.colors.secondaryBackground)
                                 .border(
                                     width = if (isSelected) 0.dp else 1.dp,
-                                    color = Color(0xFFEFECEF),
+                                    color = AppTheme.colors.border,
                                     shape = RoundedCornerShape(20.dp),
                                 )
                                 .clickable { viewModel.loadHistory(filter) }
@@ -167,7 +168,7 @@ fun ActivityHistoryScreen(
                                 text = filter,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -189,7 +190,7 @@ fun ActivityHistoryScreen(
                             Text(
                                 text = "No workouts recorded for ${historyState.selectedFilter} yet.",
                                 fontSize = 13.sp,
-                                color = Color(0xFF8A8595),
+                                color = AppTheme.colors.textMuted,
                             )
                         }
                     } else {
@@ -244,8 +245,8 @@ fun ActivityHistoryCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
             .padding(16.dp),
     ) {
         Column {
@@ -259,7 +260,7 @@ fun ActivityHistoryCard(
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFDEEF7)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = item.icon.ifBlank { "🏃" }, fontSize = 20.sp)
@@ -272,12 +273,12 @@ fun ActivityHistoryCard(
                             text = item.type,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = item.date,
                             fontSize = 11.sp,
-                            color = Color(0xFF8A8595),
+                            color = AppTheme.colors.textMuted,
                         )
                     }
                 }
@@ -304,7 +305,7 @@ fun ActivityHistoryCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF8F7FA))
+                    .background(AppTheme.colors.secondaryBackground)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -312,19 +313,19 @@ fun ActivityHistoryCard(
                     text = "⏱ ${item.durationMins} mins",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
                 Text(
                     text = "📍 ${String.format("%.2f", item.distanceKm)} km",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
                 Text(
                     text = "🔥 ${item.caloriesKcal} kcal",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
             }
 
@@ -339,7 +340,7 @@ fun ActivityHistoryCard(
                     Text(
                         text = "Glucose Impact:",
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
 
                     val diff = item.glucoseBefore - item.glucoseAfter

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.diet
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -86,7 +87,7 @@ fun FoodDetailsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -112,7 +113,7 @@ fun FoodDetailsScreen(
                         text = "$mealCategory Details",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                 }
             }
@@ -210,7 +211,7 @@ fun FoodDetailsScreen(
                         text = "Macronutrient Breakdown",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -237,7 +238,7 @@ fun FoodDetailsScreen(
                             text = "Micronutrient Profile (Dataset Verified)",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -276,7 +277,7 @@ fun FoodDetailsScreen(
                             text = "Diabetic Health Guidance",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -285,8 +286,8 @@ fun FoodDetailsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                                .background(AppTheme.colors.cardBackground)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                                 .padding(14.dp),
                         ) {
                             Column {
@@ -294,7 +295,7 @@ fun FoodDetailsScreen(
                                     Text(
                                         text = "🌱 $healthBenefitsText",
                                         fontSize = 12.sp,
-                                        color = Color(0xFF1E1E22),
+                                        color = AppTheme.colors.textPrimary,
                                         lineHeight = 17.sp,
                                     )
                                 }
@@ -323,7 +324,7 @@ fun FoodDetailsScreen(
                         text = "Recommended Ingredients",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -334,14 +335,14 @@ fun FoodDetailsScreen(
                                 .fillMaxWidth()
                                 .padding(bottom = 8.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                                .background(AppTheme.colors.cardBackground)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                                 .padding(12.dp),
                         ) {
                             Text(
                                 text = "• $item",
                                 fontSize = 12.sp,
-                                color = Color(0xFF1E1E22),
+                                color = AppTheme.colors.textPrimary,
                             )
                         }
                     }
@@ -480,7 +481,7 @@ fun StyledBackButton(
             }
             drawPath(
                 path = arrowPath,
-                color = Color(0xFF7A1C7D),
+                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
                 style = Stroke(
                     width = 2.8.dp.toPx(),
                     cap = StrokeCap.Round,
@@ -598,7 +599,7 @@ fun NutrientStatCard(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = title, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = color)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
+            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
         }
     }
 }
@@ -612,15 +613,15 @@ fun MicroStatCard(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
             .padding(vertical = 10.dp, horizontal = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = title, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6E6877))
+            Text(text = title, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = AppTheme.colors.textSecondary)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
+            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
         }
     }
 }

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.notifications
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,7 +59,7 @@ fun DeleteAccountScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -79,7 +80,7 @@ fun DeleteAccountScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -98,7 +99,7 @@ fun DeleteAccountScreen(
                     Text(
                         text = "Settings",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -122,7 +123,7 @@ fun DeleteAccountScreen(
                 text = "Are you sure you want to delete your account?",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,
                 lineHeight = 26.sp,
             )
@@ -171,7 +172,7 @@ fun DeleteAccountScreen(
                 text = "Please tell us why you're leaving:",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start,
             )
@@ -190,8 +191,8 @@ fun DeleteAccountScreen(
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (isSelected) Color(0xFFFDEEF7) else Color.White)
-                        .border(1.dp, if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF), RoundedCornerShape(10.dp))
+                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
+                        .border(1.dp, if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border, RoundedCornerShape(10.dp))
                         .clickable { selectedReason = reason }
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                 ) {
@@ -199,7 +200,7 @@ fun DeleteAccountScreen(
                         text = if (isSelected) "●  $reason" else "○  $reason",
                         fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
+                        color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
                     )
                 }
             }
@@ -212,7 +213,7 @@ fun DeleteAccountScreen(
                     text = "Confirm with your password:",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier.padding(bottom = 6.dp),
                 )
 
@@ -220,17 +221,17 @@ fun DeleteAccountScreen(
                     value = passwordText,
                     onValueChange = { passwordText = it },
                     placeholder = {
-                        Text(text = "Enter current password", fontSize = 13.sp, color = Color(0xFFA09BAA))
+                        Text(text = "Enter current password", fontSize = 13.sp, color = AppTheme.colors.textMuted)
                     },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF8F7FA),
-                        unfocusedContainerColor = Color(0xFFF8F7FA),
+                        focusedContainerColor = AppTheme.colors.inputBackground,
+                        unfocusedContainerColor = AppTheme.colors.inputBackground,
                         focusedBorderColor = Color(0xFFD32F2F),
-                        unfocusedBorderColor = Color(0xFFEFECEF),
+                        unfocusedBorderColor = AppTheme.colors.inputBorder,
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -246,7 +247,7 @@ fun DeleteAccountScreen(
                     text = "Type 'DELETE' to confirm:",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier.padding(bottom = 6.dp),
                 )
 
@@ -254,15 +255,15 @@ fun DeleteAccountScreen(
                     value = confirmText,
                     onValueChange = { confirmText = it },
                     placeholder = {
-                        Text(text = "Type DELETE here", fontSize = 13.sp, color = Color(0xFFA09BAA))
+                        Text(text = "Type DELETE here", fontSize = 13.sp, color = AppTheme.colors.textMuted)
                     },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF8F7FA),
-                        unfocusedContainerColor = Color(0xFFF8F7FA),
+                        focusedContainerColor = AppTheme.colors.inputBackground,
+                        unfocusedContainerColor = AppTheme.colors.inputBackground,
                         focusedBorderColor = Color(0xFFD32F2F),
-                        unfocusedBorderColor = Color(0xFFEFECEF),
+                        unfocusedBorderColor = AppTheme.colors.inputBorder,
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -306,8 +307,8 @@ fun DeleteAccountScreen(
                     .fillMaxWidth()
                     .height(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                    .background(AppTheme.colors.cardBackground)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                     .clickable { onBackClick() },
                 contentAlignment = Alignment.Center,
             ) {
@@ -315,7 +316,7 @@ fun DeleteAccountScreen(
                     text = "Cancel",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                 )
             }
 

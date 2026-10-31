@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.profile
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -113,7 +114,7 @@ fun HealthPreferencesScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -134,7 +135,7 @@ fun HealthPreferencesScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -148,12 +149,12 @@ fun HealthPreferencesScreen(
                         text = "Health Preferences",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Step 2 of 2 • Health focus & dietary preferences",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -183,7 +184,7 @@ fun HealthPreferencesScreen(
                 text = "Primary Health Focus",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -199,10 +200,10 @@ fun HealthPreferencesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFFFDEEF7) else Color.White)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedHealthFocus = title }
@@ -213,13 +214,13 @@ fun HealthPreferencesScreen(
                                 text = if (isSelected) "●  $title" else "○  $title",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
+                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = subtitle,
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -233,7 +234,7 @@ fun HealthPreferencesScreen(
                 text = "Dietary Style",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -250,7 +251,7 @@ fun HealthPreferencesScreen(
                             .background(if (isChecked) Color(0xFFB81D85) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isChecked) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                                color = if (isChecked) Color(0xFFB81D85) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable {
@@ -262,7 +263,7 @@ fun HealthPreferencesScreen(
                             text = if (isChecked) "✓ $dietName" else "+ $dietName",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isChecked) Color.White else Color(0xFF1E1E22),
+                            color = if (isChecked) Color.White else AppTheme.colors.textPrimary,
                         )
                     }
                 }
@@ -275,7 +276,7 @@ fun HealthPreferencesScreen(
                 text = "Food Allergies & Sensitivities",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -292,7 +293,7 @@ fun HealthPreferencesScreen(
                             .background(if (isChecked) Color(0xFFE53935) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isChecked) Color(0xFFE53935) else Color(0xFFEFECEF),
+                                color = if (isChecked) Color(0xFFE53935) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable {
@@ -304,7 +305,7 @@ fun HealthPreferencesScreen(
                             text = if (isChecked) "⚠️ $allergyName" else "+ $allergyName",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isChecked) Color.White else Color(0xFF1E1E22),
+                            color = if (isChecked) Color.White else AppTheme.colors.textPrimary,
                         )
                     }
                 }
@@ -317,7 +318,7 @@ fun HealthPreferencesScreen(
                 text = "Activity & Exercise Routine",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -334,10 +335,10 @@ fun HealthPreferencesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFFFDEEF7) else Color.White)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedActivityLevel = level }
@@ -347,7 +348,7 @@ fun HealthPreferencesScreen(
                             text = if (isSelected) "●  $level" else "○  $level",
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
+                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
                         )
                     }
                 }
@@ -360,13 +361,13 @@ fun HealthPreferencesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                     .padding(12.dp),
             ) {
                 Text(
                     text = "Your health preferences guide AI recommendation models to suggest balanced, personalized meal and exercise plans tailored for your diabetes management.",
                     fontSize = 12.sp,
-                    color = Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                     lineHeight = 17.sp,
                 )
             }
@@ -397,7 +398,7 @@ fun HealthPreferencesScreen(
             Text(
                 text = "General meal and lifestyle ideas, not a medical diet prescription.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -613,7 +614,7 @@ fun AiSpeechOrbLoadingView(
                 modifier = Modifier
                     .size(16.dp)
                     .clip(CircleShape)
-                    .background(Color.White)
+                    .background(AppTheme.colors.cardBackground)
                     .shadow(elevation = 10.dp, shape = CircleShape, spotColor = Color(0xFF00E5FF)),
             )
         }
@@ -634,7 +635,7 @@ fun AiSpeechOrbLoadingView(
         Text(
             text = "DiaWell AI is configuring your personal routine...",
             fontSize = 12.sp,
-            color = Color(0xFF6E6877),
+            color = AppTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
         )
     }

@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.meds
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -67,7 +68,7 @@ fun MedicationsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -95,13 +96,13 @@ fun MedicationsScreen(
                                     text = "Your medications",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = medsData?.dateLabel?.takeIf { it.isNotBlank() }
                                         ?: "Reminders set according to your care plan.",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF6E6877),
+                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -113,7 +114,7 @@ fun MedicationsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFFDEEF7))
+                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                                 .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
                                 .clickable { onAddMedicationClick() }
                                 .padding(14.dp),
@@ -172,8 +173,8 @@ fun MedicationsScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color.White)
-                                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                                    .background(AppTheme.colors.cardBackground)
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                                     .padding(14.dp),
                             ) {
                                 Row(
@@ -182,16 +183,16 @@ fun MedicationsScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(text = "${stats.total}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1E22))
-                                        Text(text = "Total Scheduled", fontSize = 11.sp, color = Color(0xFF6E6877))
+                                        Text(text = "${stats.total}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                                        Text(text = "Total Scheduled", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                     }
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(text = "${stats.taken}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
-                                        Text(text = "Taken", fontSize = 11.sp, color = Color(0xFF6E6877))
+                                        Text(text = "Taken", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                     }
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(text = "${stats.adherencePercent}%", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
-                                        Text(text = "Adherence", fontSize = 11.sp, color = Color(0xFF6E6877))
+                                        Text(text = "Adherence", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                     }
                                 }
                             }
@@ -224,8 +225,8 @@ fun MedicationsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                            .background(AppTheme.colors.cardBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -236,13 +237,13 @@ fun MedicationsScreen(
                                 text = "No medication reminders set",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22)
+                                color = AppTheme.colors.textPrimary
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Tap '+ Add medication' above to add your daily tablets and configure schedules.",
                                 fontSize = 12.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -276,7 +277,7 @@ fun MedicationsScreen(
                 Text(
                     text = "Always consult your physician before changing doses.\nNotifications keep your daily routine consistent.",
                     fontSize = 11.sp,
-                    color = Color(0xFF8A8595),
+                    color = AppTheme.colors.textMuted,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -328,8 +329,8 @@ fun MedicationScheduleCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -356,7 +357,7 @@ fun MedicationScheduleCard(
                             Text(
                                 text = " • $timing",
                                 fontSize = 11.sp,
-                                color = Color(0xFF8A8595),
+                                color = AppTheme.colors.textMuted,
                             )
                         }
                     }
@@ -364,12 +365,12 @@ fun MedicationScheduleCard(
                         text = name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = dose,
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                     if (primaryIngredient.isNotBlank() || category.isNotBlank()) {
                         val subInfo = listOf(

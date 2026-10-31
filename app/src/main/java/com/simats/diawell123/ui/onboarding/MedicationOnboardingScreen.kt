@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.onboarding
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -38,7 +39,7 @@ fun MedicationOnboardingScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding()
     ) {
         Column(
@@ -72,7 +73,7 @@ fun MedicationOnboardingScreen(
                     text = "A gentle reminder.\nRight on time.",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                     lineHeight = 30.sp
                 )
@@ -84,7 +85,7 @@ fun MedicationOnboardingScreen(
                     text = "Keep your prescribed medication schedule in one place. Get friendly reminders and mark each dose as taken.",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
                     lineHeight = 19.sp
                 )
@@ -121,7 +122,7 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = Color(0xFFFDEEF7),
+                color = if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.20f) else Color(0xFFFDEEF7),
                 radius = bgRadius,
                 center = center
             )

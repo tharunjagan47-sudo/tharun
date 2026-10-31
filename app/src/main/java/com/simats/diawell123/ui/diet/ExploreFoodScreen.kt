@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.diet
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -69,7 +70,7 @@ fun ExploreFoodScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -97,12 +98,12 @@ fun ExploreFoodScreen(
                                     text = "Explore food",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = "AI-powered recommendations & 1000+ dish dataset",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF6E6877),
+                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -117,16 +118,16 @@ fun ExploreFoodScreen(
                                 Text(
                                     text = "🔍 Search 1000+ dishes (e.g., Paneer, Dal, Chicken)...",
                                     fontSize = 13.sp,
-                                    color = Color(0xFFA09BAA),
+                                    color = AppTheme.colors.textMuted,
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = Color(0xFFF8F7FA),
-                                unfocusedContainerColor = Color(0xFFF8F7FA),
+                                focusedContainerColor = AppTheme.colors.inputBackground,
+                                unfocusedContainerColor = AppTheme.colors.inputBackground,
                                 focusedBorderColor = Color(0xFFBD1E85),
-                                unfocusedBorderColor = Color(0xFFEFECEF),
+                                unfocusedBorderColor = AppTheme.colors.inputBorder,
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -148,7 +149,7 @@ fun ExploreFoodScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(20.dp))
-                                    .background(if (isSelected) Color(0xFFB81D85) else Color(0xFFF8F7FA))
+                                    .background(if (isSelected) Color(0xFFB81D85) else AppTheme.colors.secondaryBackground)
                                     .clickable { viewModel.onDailyDietCategoryChanged(category) }
                                     .padding(horizontal = 14.dp, vertical = 6.dp),
                             ) {
@@ -156,7 +157,7 @@ fun ExploreFoodScreen(
                                     text = category,
                                     fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                    color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -208,7 +209,7 @@ fun ExploreFoodScreen(
                                 text = "✨ AI Recommended for You",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
+                                color = AppTheme.colors.textPrimary,
                             )
 
                             if (aiState.isLoading) {
@@ -236,13 +237,13 @@ fun ExploreFoodScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFFDEEF7))
+                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                                     .padding(12.dp),
                             ) {
                                 Text(
                                     text = "Analyzing your profile and nutritional dataset to rank optimal meals...",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF6E6877),
+                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -258,7 +259,7 @@ fun ExploreFoodScreen(
                             text = "Explore meals (${uiState.filteredMeals.size} available)",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -285,7 +286,7 @@ fun ExploreFoodScreen(
                                 Text(
                                     text = "No matching dishes found in nutrition dataset.",
                                     fontSize = 13.sp,
-                                    color = Color(0xFF6E6877),
+                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -300,15 +301,15 @@ fun ExploreFoodScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF8F7FA))
-                            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.secondaryBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                             .padding(12.dp),
                     ) {
                         Text(
                             text = aiState.data?.disclaimer
                                 ?: "Medical Disclaimer: Suggestions are calculated from nutritional dataset values and personal health context. Always consult your physician or registered dietitian before altering your diabetes meal plan.",
                             fontSize = 10.sp,
-                            color = Color(0xFF8A8595),
+                            color = AppTheme.colors.textMuted,
                             lineHeight = 14.sp,
                         )
                     }
@@ -330,8 +331,8 @@ fun AiRecommendedFoodCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -346,7 +347,7 @@ fun AiRecommendedFoodCard(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFDEEF7)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = item.icon, fontSize = 20.sp)
@@ -364,7 +365,7 @@ fun AiRecommendedFoodCard(
                             text = item.title,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                     }
                 }
@@ -395,7 +396,7 @@ fun AiRecommendedFoodCard(
             Text(
                 text = "${item.portion} • ${item.caloriesLabel} • Carbs ${item.carbsG}g • Fibre ${item.fibreG}g • Sugar ${item.freeSugarG}g",
                 fontSize = 11.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
             )
 
             if (item.recommendationReason.isNotBlank()) {
@@ -418,14 +419,14 @@ fun AiRecommendedFoodCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFF8F7FA))
+                                .background(AppTheme.colors.secondaryBackground)
                                 .padding(horizontal = 6.dp, vertical = 3.dp),
                         ) {
                             Text(
                                 text = tag,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                             )
                         }
                     }
@@ -464,8 +465,8 @@ fun ExploreMealCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(12.dp),
     ) {
@@ -489,17 +490,17 @@ fun ExploreMealCard(
                         text = name,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = serving,
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                     Text(
                         text = macros,
                         fontSize = 10.sp,
-                        color = Color(0xFF8A8595),
+                        color = AppTheme.colors.textMuted,
                     )
                 }
             }
@@ -511,7 +512,7 @@ fun ExploreMealCard(
                 color = Color(0xFFB81D85),
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                     .padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }

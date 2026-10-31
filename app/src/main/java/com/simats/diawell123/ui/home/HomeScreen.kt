@@ -70,7 +70,9 @@ import com.simats.diawell123.ui.ai.IronmanDoctorAvatar
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
+import com.simats.diawell123.ui.theme.AppTheme
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import com.simats.diawell123.ui.theme.ThemeManager
 import kotlin.math.abs
 import kotlin.math.exp
 
@@ -160,7 +162,7 @@ fun HomeScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -215,6 +217,21 @@ fun HomeScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
+                                        // Quick Theme Toggle Button (☀️ / 🌙)
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(21.dp))
+                                                .background(Color.White.copy(alpha = 0.25f))
+                                                .clickable { ThemeManager.toggleTheme() }
+                                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            Text(
+                                                text = if (AppTheme.colors.isDark) "🌙" else "☀️",
+                                                fontSize = 16.sp,
+                                            )
+                                        }
+
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(21.dp))
@@ -317,7 +334,7 @@ fun HomeScreen(
                     text = "Key Health Metrics",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -348,7 +365,7 @@ fun HomeScreen(
                                     statusBg = parseHexColor(gMetric?.statusBg, Color(0xFFE8F5E9)),
                                     statusColor = parseHexColor(gMetric?.statusColor, Color(0xFF2E7D32)),
                                     cardBg = Color(0xFFFDEEF7),
-                                    borderColor = Color(0xFFF3D5E9),
+                                    borderColor = AppTheme.colors.border,
                                     actionText = "History ›",
                                     onActionClick = onGlucoseHistoryClick,
                                 )
@@ -434,14 +451,13 @@ fun HomeScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(18.dp))
                                 .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            Color(0xFFFDEEF7),
-                                            Color(0xFFFFF0F5),
-                                        ),
-                                    ),
+                                    brush = if (AppTheme.colors.isDark) {
+                                        Brush.linearGradient(listOf(Color(0xFF202C40), Color(0xFF182235)))
+                                    } else {
+                                        Brush.linearGradient(listOf(Color(0xFFFDEEF7), Color(0xFFFFF0F5)))
+                                    },
                                 )
-                                .border(1.5.dp, Color(0xFFF3D5E9), RoundedCornerShape(18.dp))
+                                .border(1.5.dp, if (AppTheme.colors.isDark) AppTheme.colors.border else AppTheme.colors.border, RoundedCornerShape(18.dp))
                                 .clickable { onDietChatbotClick() }
                                 .padding(16.dp),
                         ) {
@@ -466,7 +482,7 @@ fun HomeScreen(
                                     Text(
                                         text = data?.aiTip?.tip ?: "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
                                         fontSize = 12.sp,
-                                        color = Color(0xFF232226),
+                                        color = AppTheme.colors.textSecondary,
                                         lineHeight = 17.sp,
                                     )
                                 }
@@ -494,7 +510,7 @@ fun HomeScreen(
                                 text = "Today's Check-In Routine",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
+                                color = AppTheme.colors.textPrimary,
                             )
 
                             Spacer(modifier = Modifier.height(10.dp))
@@ -503,8 +519,8 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(Color.White)
-                                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                                    .background(AppTheme.colors.cardBackground)
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                                     .padding(14.dp),
                             ) {
                                 Row(
@@ -540,7 +556,7 @@ fun HomeScreen(
                             text = "Quick Actions",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -930,7 +946,7 @@ fun IosLiquidGlassBottomNav(
                                 text = name,
                                 fontSize = if (isSelected) 10.sp else 9.5.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else Color(0xFF6E6877),
+                                color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 softWrap = false,
@@ -958,11 +974,15 @@ fun MetricCard(
     onActionClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val actualCardBg = if (AppTheme.colors.isDark) AppTheme.colors.cardBackground else cardBg
+    val actualBorder = if (AppTheme.colors.isDark) AppTheme.colors.border else borderColor
+    val actualStatusBg = if (AppTheme.colors.isDark) statusColor.copy(alpha = 0.22f) else statusBg
+    val actualActionColor = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85)
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(cardBg)
-            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+            .background(actualCardBg)
+            .border(1.dp, actualBorder, RoundedCornerShape(16.dp))
             .clickable { onActionClick() }
             .padding(14.dp),
     ) {
@@ -994,14 +1014,14 @@ fun MetricCard(
                 text = title,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
             )
 
             Text(
                 text = value,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(2.dp))
@@ -1009,7 +1029,7 @@ fun MetricCard(
             Text(
                 text = subtitle,
                 fontSize = 10.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -1022,7 +1042,7 @@ fun MetricCard(
                     text = "$actionText →",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
+                    color = actualActionColor,
                 )
             }
         }
@@ -1042,15 +1062,15 @@ fun RoutineCheckItem(
             modifier = Modifier
                 .size(42.dp)
                 .clip(CircleShape)
-                .background(if (isDone) Color(0xFFE8F5E9) else Color(0xFFF8F7FA))
+                .background(if (isDone) AppTheme.colors.successBg else AppTheme.colors.secondaryBackground)
                 .border(
                     width = 1.5.dp,
-                    color = if (isDone) Color(0xFF2E7D32) else Color(0xFFEFECEF),
+                    color = if (isDone) AppTheme.colors.success else AppTheme.colors.border,
                     shape = CircleShape,
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = if (isDone) "✓" else icon, fontSize = 16.sp, color = if (isDone) Color(0xFF2E7D32) else Color(0xFF1E1E22))
+            Text(text = if (isDone) "✓" else icon, fontSize = 16.sp, color = if (isDone) AppTheme.colors.successText else AppTheme.colors.textPrimary)
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -1059,7 +1079,7 @@ fun RoutineCheckItem(
             text = label,
             fontSize = 10.sp,
             fontWeight = if (isDone) FontWeight.Bold else FontWeight.Medium,
-            color = if (isDone) Color(0xFF2E7D32) else Color(0xFF6E6877),
+            color = if (isDone) AppTheme.colors.successText else AppTheme.colors.textSecondary,
         )
     }
 }
@@ -1075,8 +1095,8 @@ fun VibrantQuickActionButton(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(12.dp),
         contentAlignment = Alignment.Center,

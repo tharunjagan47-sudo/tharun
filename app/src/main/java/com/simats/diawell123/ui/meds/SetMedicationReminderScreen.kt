@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.meds
+import com.simats.diawell123.ui.theme.AppTheme
 
 import android.app.TimePickerDialog
 import androidx.compose.animation.AnimatedVisibility
@@ -126,7 +127,7 @@ fun SetMedicationReminderScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -147,7 +148,7 @@ fun SetMedicationReminderScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -161,12 +162,12 @@ fun SetMedicationReminderScreen(
                         text = "Set Medication Reminder",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Configure time, meal timing & care plan.",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -232,8 +233,8 @@ fun SetMedicationReminderScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFFDEEF7))
-                    .border(1.dp, Color(0xFFF3D5E9), RoundedCornerShape(16.dp))
+                    .background(AppTheme.colors.elevatedSurface)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                     .padding(16.dp),
             ) {
                 Column {
@@ -262,7 +263,7 @@ fun SetMedicationReminderScreen(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(8.dp))
-                                            .background(Color.White.copy(alpha = 0.8f))
+                                            .background(if (AppTheme.colors.isDark) AppTheme.colors.cardBackground else Color.White.copy(alpha = 0.8f))
                                             .padding(horizontal = 6.dp, vertical = 2.dp),
                                     ) {
                                         Text(
@@ -278,13 +279,13 @@ fun SetMedicationReminderScreen(
                                 text = activeName,
                                 fontSize = 17.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E22),
+                                color = AppTheme.colors.textPrimary,
                             )
                             Text(
                                 text = activeDose,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF7A1C7D),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
                             )
                         }
                     }
@@ -296,7 +297,7 @@ fun SetMedicationReminderScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color.White.copy(alpha = 0.7f))
+                                .background(if (AppTheme.colors.isDark) AppTheme.colors.cardBackground else Color.White.copy(alpha = 0.7f))
                                 .padding(10.dp),
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -322,7 +323,7 @@ fun SetMedicationReminderScreen(
                                     Text(
                                         text = "📦 Packaging: $packPrice",
                                         fontSize = 10.5.sp,
-                                        color = Color(0xFF6E6877),
+                                        color = AppTheme.colors.textSecondary,
                                     )
                                 }
                             }
@@ -338,7 +339,7 @@ fun SetMedicationReminderScreen(
                 text = "Reminder Date",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -347,8 +348,8 @@ fun SetMedicationReminderScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+                    .background(AppTheme.colors.cardBackground)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                     .clickable { showDatePickerDialog = true }
                     .padding(horizontal = 14.dp, vertical = 12.dp),
             ) {
@@ -361,7 +362,7 @@ fun SetMedicationReminderScreen(
                         text = "📅  $reminderDateText",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     Text(
@@ -385,7 +386,7 @@ fun SetMedicationReminderScreen(
                     text = "Reminder Time",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
 
                 Text(
@@ -403,7 +404,7 @@ fun SetMedicationReminderScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                    .background(AppTheme.colors.cardBackground)
                     .border(1.2.dp, Color(0xFFB81D85).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                     .clickable { showCustomTimePicker() }
                     .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -420,14 +421,14 @@ fun SetMedicationReminderScreen(
                             text = selectedTime,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF7A1C7D),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
                         )
                     }
 
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFFDEEF7))
+                            .background(AppTheme.colors.elevatedSurface)
                             .padding(horizontal = 10.dp, vertical = 4.dp),
                     ) {
                         Text(
@@ -460,10 +461,10 @@ fun SetMedicationReminderScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) Color(0xFFFDEEF7) else Color(0xFFF8F7FA))
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
                             .border(
                                 width = if (isSelected) 1.5.dp else 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable { selectedTime = time }
@@ -473,7 +474,7 @@ fun SetMedicationReminderScreen(
                             text = time,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF6E6877),
+                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -512,7 +513,7 @@ fun SetMedicationReminderScreen(
                     text = "Meal Schedule Timing",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
                 if (reminderState.selectedTiming.isNotBlank()) {
                     Text(
@@ -536,10 +537,10 @@ fun SetMedicationReminderScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) Color(0xFFFDEEF7) else Color(0xFFF8F7FA))
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable { selectedTiming = timing }
@@ -549,7 +550,7 @@ fun SetMedicationReminderScreen(
                             text = timing,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF6E6877),
+                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -562,7 +563,7 @@ fun SetMedicationReminderScreen(
                 text = "Instructions & Notes (optional)",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -572,10 +573,12 @@ fun SetMedicationReminderScreen(
                 onValueChange = { notes = it },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF8F7FA),
-                    unfocusedContainerColor = Color(0xFFF8F7FA),
+                    focusedTextColor = AppTheme.colors.textPrimary,
+                    unfocusedTextColor = AppTheme.colors.textPrimary,
+                    focusedContainerColor = AppTheme.colors.inputBackground,
+                    unfocusedContainerColor = AppTheme.colors.inputBackground,
                     focusedBorderColor = Color(0xFFBD1E85),
-                    unfocusedBorderColor = Color(0xFFEFECEF),
+                    unfocusedBorderColor = AppTheme.colors.inputBorder,
                 ),
                 modifier = Modifier.fillMaxWidth(),
             )

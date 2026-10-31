@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.meds
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -62,7 +63,7 @@ fun MedicationReminderScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -83,7 +84,7 @@ fun MedicationReminderScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -96,7 +97,7 @@ fun MedicationReminderScreen(
                     text = "Medication reminder",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
             }
 
@@ -105,7 +106,7 @@ fun MedicationReminderScreen(
             Text(
                 text = "$medName • Scheduled reminder",
                 fontSize = 11.sp,
-                color = Color(0xFF811978),
+                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start,
             )
@@ -117,7 +118,7 @@ fun MedicationReminderScreen(
                 modifier = Modifier
                     .size(90.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFDEEF7)),
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(text = "💊", fontSize = 42.sp)
@@ -129,7 +130,7 @@ fun MedicationReminderScreen(
                 text = "A gentle nudge for\nyour daily routine.",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,
                 lineHeight = 28.sp,
             )
@@ -141,8 +142,8 @@ fun MedicationReminderScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                    .background(AppTheme.colors.cardBackground)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                     .padding(18.dp),
             ) {
                 Column {
@@ -154,7 +155,7 @@ fun MedicationReminderScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFFDEEF7))
+                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                                 .padding(horizontal = 8.dp, vertical = 3.dp),
                         ) {
                             Text(
@@ -179,7 +180,7 @@ fun MedicationReminderScreen(
                         text = medName,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -187,13 +188,13 @@ fun MedicationReminderScreen(
                     Text(
                         text = medDose,
                         fontSize = 13.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
 
                     Text(
                         text = "$medTiming • ${activeMed?.frequency ?: "Daily"}",
                         fontSize = 11.sp,
-                        color = Color(0xFF8A8595),
+                        color = AppTheme.colors.textMuted,
                     )
 
                     // Enriched Clinical Dataset Details
@@ -206,7 +207,7 @@ fun MedicationReminderScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFF8F7FA))
+                                .background(AppTheme.colors.secondaryBackground)
                                 .padding(10.dp),
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -232,7 +233,7 @@ fun MedicationReminderScreen(
                                     Text(
                                         text = "🏭 $mfdPack",
                                         fontSize = 10.5.sp,
-                                        color = Color(0xFF6E6877),
+                                        color = AppTheme.colors.textSecondary,
                                     )
                                 }
                             }
@@ -244,7 +245,7 @@ fun MedicationReminderScreen(
                         Text(
                             text = "Note: $medNotes",
                             fontSize = 11.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -265,7 +266,7 @@ fun MedicationReminderScreen(
             Text(
                 text = "Follow your prescribed schedule.\nMark Taken after taking your medication.",
                 fontSize = 12.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
                 textAlign = TextAlign.Center,
                 lineHeight = 17.sp,
             )
@@ -342,7 +343,7 @@ fun MedicationReminderScreen(
             Text(
                 text = "For dose changes or missed dose advice, ask your pharmacist or clinician if you are unsure.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp,
                 modifier = Modifier.padding(bottom = 24.dp),

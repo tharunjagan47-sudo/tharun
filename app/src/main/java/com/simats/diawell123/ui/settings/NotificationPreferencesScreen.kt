@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -68,7 +69,7 @@ fun NotificationPreferencesScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -89,7 +90,7 @@ fun NotificationPreferencesScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -103,12 +104,12 @@ fun NotificationPreferencesScreen(
                         text = "Notification Preferences",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Settings",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -171,7 +172,7 @@ fun NotificationPreferencesScreen(
             Text(
                 text = "Choose the check-ins that assist for you.",
                 fontSize = 12.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -180,7 +181,7 @@ fun NotificationPreferencesScreen(
                 text = "Reminders and updates",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -249,7 +250,7 @@ fun NotificationPreferencesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                     .padding(14.dp),
             ) {
                 Column {
@@ -262,12 +263,12 @@ fun NotificationPreferencesScreen(
                             text = "🌙  Quiet hours",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         )
                         Text(
                             text = "›",
                             fontSize = 18.sp,
-                            color = Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         )
                     }
 
@@ -276,7 +277,7 @@ fun NotificationPreferencesScreen(
                     Text(
                         text = "10:00 PM - 7:00 AM • active",
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -284,7 +285,7 @@ fun NotificationPreferencesScreen(
                     Text(
                         text = "Review scheduled medication reminders with your care team before changing quiet hours.",
                         fontSize = 11.sp,
-                        color = Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         lineHeight = 15.sp,
                     )
                 }
@@ -307,7 +308,7 @@ fun NotificationPreferencesScreen(
             Text(
                 text = "Preferences automatically sync with your DiaWell profile.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -329,8 +330,8 @@ fun NotificationToggleRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .padding(12.dp),
     ) {
         Row(
@@ -349,12 +350,12 @@ fun NotificationToggleRow(
                         text = title,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = subtitle,
                         fontSize = 11.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -365,8 +366,8 @@ fun NotificationToggleRow(
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = Color(0xFFB81D85),
-                    uncheckedThumbColor = Color(0xFF8A8595),
-                    uncheckedTrackColor = Color(0xFFEFECEF),
+                    uncheckedThumbColor = AppTheme.colors.textMuted,
+                    uncheckedTrackColor = AppTheme.colors.border,
                 ),
             )
         }
@@ -383,8 +384,8 @@ fun NotificationOptionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .padding(14.dp),
     ) {
         Row(
@@ -399,7 +400,7 @@ fun NotificationOptionRow(
                     text = title,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                 )
             }
 

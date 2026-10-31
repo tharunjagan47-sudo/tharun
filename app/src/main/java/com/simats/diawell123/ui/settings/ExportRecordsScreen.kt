@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -74,7 +75,7 @@ fun ExportRecordsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -95,7 +96,7 @@ fun ExportRecordsScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -109,12 +110,12 @@ fun ExportRecordsScreen(
                         text = "Export Records",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Download a copy of your health and log data.",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -179,7 +180,7 @@ fun ExportRecordsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -188,7 +189,7 @@ fun ExportRecordsScreen(
                     Text(
                         text = "Export your glucose readings, meal history, and medication records into accessible file formats.",
                         fontSize = 12.sp,
-                        color = Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         lineHeight = 16.sp,
                     )
                 }
@@ -201,7 +202,7 @@ fun ExportRecordsScreen(
                 text = "Time Range",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -216,10 +217,10 @@ fun ExportRecordsScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFFFDEEF7) else Color(0xFFF8F7FA))
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedTimeRange = range }
@@ -230,7 +231,7 @@ fun ExportRecordsScreen(
                             text = range,
                             fontSize = 11.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color(0xFFB81D85) else Color(0xFF6E6877),
+                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
                             textAlign = TextAlign.Center,
                         )
                     }
@@ -244,7 +245,7 @@ fun ExportRecordsScreen(
                 text = "File Format",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -277,7 +278,7 @@ fun ExportRecordsScreen(
                 text = "Include Data",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -332,7 +333,7 @@ fun ExportRecordsScreen(
             Text(
                 text = "Exported files contain personal health data. Store or share them securely.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp,
                 modifier = Modifier
@@ -354,10 +355,10 @@ fun ExportFormatCard(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(if (isSelected) Color(0xFFFDEEF7) else Color.White)
+            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
             .border(
                 width = 1.2.dp,
-                color = if (isSelected) Color(0xFFB81D85) else Color(0xFFEFECEF),
+                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
                 shape = RoundedCornerShape(14.dp),
             )
             .clickable { onClick() }
@@ -368,13 +369,13 @@ fun ExportFormatCard(
                 text = title,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isSelected) Color(0xFFB81D85) else Color(0xFF1E1E22),
+                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = subtitle,
                 fontSize = 10.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
                 lineHeight = 14.sp,
             )
         }
@@ -391,8 +392,8 @@ fun ExportCheckOption(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(12.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
             .clickable { onCheckedChange(!checked) }
             .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
@@ -405,7 +406,7 @@ fun ExportCheckOption(
                 text = label,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Checkbox(
@@ -413,7 +414,7 @@ fun ExportCheckOption(
                 onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(
                     checkedColor = Color(0xFFB81D85),
-                    uncheckedColor = Color(0xFF8A8595),
+                    uncheckedColor = AppTheme.colors.textMuted,
                     checkmarkColor = Color.White,
                 ),
             )

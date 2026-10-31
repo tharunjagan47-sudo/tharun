@@ -43,6 +43,9 @@ import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.profile.ProfileViewModel
+import com.simats.diawell123.ui.theme.AppTheme
+import com.simats.diawell123.ui.theme.ThemeManager
+import com.simats.diawell123.ui.theme.ThemeMode
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -75,7 +78,7 @@ fun SettingsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -103,12 +106,12 @@ fun SettingsScreen(
                                     text = "Settings",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
                                     text = "Make DiaWell feel like you.",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF6E6877),
+                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -120,8 +123,8 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                                .background(AppTheme.colors.cardBackground)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                                 .clickable { onPersonalProfileClick() }
                                 .padding(16.dp),
                         ) {
@@ -135,13 +138,100 @@ fun SettingsScreen(
                                         text = currentName,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1E1E22),
+                                        color = AppTheme.colors.textPrimary,
                                     )
                                     Text(
                                         text = currentEmail,
                                         fontSize = 12.sp,
-                                        color = Color(0xFF6E6877),
+                                        color = AppTheme.colors.textSecondary,
                                     )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Appearance & Theme Card
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(AppTheme.colors.cardBackground)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                                .padding(16.dp),
+                        ) {
+                            Column {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(AppTheme.colors.secondaryBackground),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(text = "🎨", fontSize = 18.sp)
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Text(
+                                                text = "Appearance & Theme",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = AppTheme.colors.textPrimary
+                                            )
+                                            Text(
+                                                text = "Active: ${ThemeManager.themeMode.value.title}",
+                                                fontSize = 11.sp,
+                                                color = AppTheme.colors.textSecondary
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                // Segmented Theme Selector (Light, Dark, System)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(AppTheme.colors.secondaryBackground)
+                                        .padding(4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    listOf(
+                                        ThemeMode.LIGHT to "☀️ Light",
+                                        ThemeMode.DARK to "🌙 Dark",
+                                        ThemeMode.SYSTEM to "⚙️ System"
+                                    ).forEach { (mode, label) ->
+                                        val isSelected = ThemeManager.themeMode.value == mode
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(
+                                                    if (isSelected) {
+                                                        if (AppTheme.colors.isDark) Color(0xFF202C40) else Color.White
+                                                    } else Color.Transparent
+                                                )
+                                                .clickable {
+                                                    ThemeManager.setThemeMode(mode)
+                                                }
+                                                .padding(vertical = 8.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = label,
+                                                fontSize = 12.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textSecondary
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -186,7 +276,7 @@ fun SettingsScreen(
                     Text(
                         text = "DiaWell Version 1.0.0 (Build 123)\nConnected to Local PHP Backend",
                         fontSize = 11.sp,
-                        color = Color(0xFF8A8595),
+                        color = AppTheme.colors.textMuted,
                         textAlign = TextAlign.Center,
                         lineHeight = 16.sp,
                         modifier = Modifier.fillMaxWidth(),
@@ -261,7 +351,7 @@ fun SettingsRow(
                 text = "›",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
             )
         }
     }

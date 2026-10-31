@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.profile
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -77,7 +78,7 @@ fun PatientProfileScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F5F8))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -94,13 +95,13 @@ fun PatientProfileScreen(
                 text = "Make it personal",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Text(
                 text = "Scroll and select your patient profile details below.",
                 fontSize = 13.sp,
-                color = Color(0xFF6E6877),
+                color = AppTheme.colors.textSecondary,
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -119,7 +120,7 @@ fun PatientProfileScreen(
             LinearProgressIndicator(
                 progress = { 0.5f },
                 color = Color(0xFFB81D85),
-                trackColor = Color(0xFFF3E2F0),
+                trackColor = AppTheme.colors.border,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(4.dp)
@@ -133,13 +134,13 @@ fun PatientProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
                     text = "Profile • ${ProfileState.userName}",
                     fontSize = 12.sp,
-                    color = Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                     fontWeight = FontWeight.Medium,
                 )
             }
@@ -251,7 +252,7 @@ fun PatientProfileScreen(
             Text(
                 text = "Our suggestions support your outline, not a diagnosis.\nFollow your healthcare professional's advice.",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp,
                 modifier = Modifier
@@ -282,7 +283,7 @@ fun IosLiquidGlassSlider(
                 text = label,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF232226),
+                color = AppTheme.colors.textPrimary,
             )
             Text(
                 text = selectedItem,
@@ -403,7 +404,7 @@ fun IosLiquidGlassSlider(
                                     text = item,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF232226),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                             }
                         }

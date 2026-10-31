@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.meds
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -156,7 +157,7 @@ fun SearchMedicationScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -177,7 +178,7 @@ fun SearchMedicationScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -191,12 +192,12 @@ fun SearchMedicationScreen(
                         text = "Search Medicine Catalog",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Over 70,000+ common Indian medicines & diabetic therapies.",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -214,7 +215,7 @@ fun SearchMedicationScreen(
                     Text(
                         text = "Search Glycomet, Amaryl, Januvia, Insulin...",
                         fontSize = 13.sp,
-                        color = Color(0xFFA09BAA),
+                        color = AppTheme.colors.textMuted,
                     )
                 },
                 singleLine = true,
@@ -233,10 +234,10 @@ fun SearchMedicationScreen(
                 },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF8F7FA),
-                    unfocusedContainerColor = Color(0xFFF8F7FA),
+                    focusedContainerColor = AppTheme.colors.inputBackground,
+                    unfocusedContainerColor = AppTheme.colors.inputBackground,
                     focusedBorderColor = Color(0xFFBD1E85),
-                    unfocusedBorderColor = Color(0xFFEFECEF),
+                    unfocusedBorderColor = AppTheme.colors.inputBorder,
                 ),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -249,7 +250,7 @@ fun SearchMedicationScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFFDEEF7))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
                         .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(14.dp))
                         .clickable {
                             viewModel.selectMedicineForReminder(searchQuery.trim(), "1 Tablet / Dose")
@@ -272,7 +273,7 @@ fun SearchMedicationScreen(
                             Text(
                                 text = "Use this custom medication name",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877)
+                                color = AppTheme.colors.textSecondary
                             )
                         }
                         Text(
@@ -290,7 +291,7 @@ fun SearchMedicationScreen(
                 text = if (searchQuery.isBlank()) "Popular Medicines & Therapies" else "Search Results (${displayList.size})",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -301,8 +302,8 @@ fun SearchMedicationScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                         .clickable {
                             viewModel.selectMedicineFromDataset(tablet)
                             onSelectMedication(tablet.name, tablet.dose)
@@ -330,7 +331,7 @@ fun SearchMedicationScreen(
                                         text = tablet.name,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1E1E22),
+                                        color = AppTheme.colors.textPrimary,
                                     )
                                     Text(
                                         text = tablet.dose,
@@ -342,7 +343,7 @@ fun SearchMedicationScreen(
                                         Text(
                                             text = "Active: ${tablet.primaryIngredient}",
                                             fontSize = 11.sp,
-                                            color = Color(0xFF6E6877),
+                                            color = AppTheme.colors.textSecondary,
                                         )
                                     }
                                 }
@@ -390,7 +391,7 @@ fun SearchMedicationScreen(
                                     Text(
                                         text = subText,
                                         fontSize = 10.sp,
-                                        color = Color(0xFF8A8595),
+                                        color = AppTheme.colors.textMuted,
                                     )
                                 }
                                 if (tablet.priceInr.isNotBlank()) {

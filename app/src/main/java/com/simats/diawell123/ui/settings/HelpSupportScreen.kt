@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.settings
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -69,7 +70,7 @@ fun HelpSupportScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -90,7 +91,7 @@ fun HelpSupportScreen(
                     text = "←",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onBackClick() }
@@ -104,12 +105,12 @@ fun HelpSupportScreen(
                         text = "Help and Support",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E22),
+                        color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = "Settings",
                         fontSize = 12.sp,
-                        color = Color(0xFF6E6877),
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -158,7 +159,7 @@ fun HelpSupportScreen(
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFDEEF7)),
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(text = "💬", fontSize = 28.sp)
@@ -170,7 +171,7 @@ fun HelpSupportScreen(
                 text = "How can we help?",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -183,16 +184,16 @@ fun HelpSupportScreen(
                     Text(
                         text = "Search questions and guides",
                         fontSize = 13.sp,
-                        color = Color(0xFFA09BAA),
+                        color = AppTheme.colors.textMuted,
                     )
                 },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF8F7FA),
-                    unfocusedContainerColor = Color(0xFFF8F7FA),
+                    focusedContainerColor = AppTheme.colors.inputBackground,
+                    unfocusedContainerColor = AppTheme.colors.inputBackground,
                     focusedBorderColor = Color(0xFFBD1E85),
-                    unfocusedBorderColor = Color(0xFFEFECEF),
+                    unfocusedBorderColor = AppTheme.colors.inputBorder,
                 ),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -204,7 +205,7 @@ fun HelpSupportScreen(
                 text = "Frequently asked questions",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start,
             )
@@ -246,8 +247,8 @@ fun HelpSupportScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+                    .background(AppTheme.colors.cardBackground)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -258,12 +259,12 @@ fun HelpSupportScreen(
                             text = "support@example.com",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E22),
+                            color = AppTheme.colors.textPrimary,
                         )
                         Text(
                             text = "Demo email • placeholder, not a live support service",
                             fontSize = 11.sp,
-                            color = Color(0xFF6E6877),
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -282,7 +283,7 @@ fun HelpSupportScreen(
             Text(
                 text = "App support cannot provide diagnosis or medical advice. Consult a healthcare professional for medical concerns.\nDiaWell • Version 1.0.0",
                 fontSize = 11.sp,
-                color = Color(0xFF8A8595),
+                color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp,
                 modifier = Modifier
@@ -304,8 +305,8 @@ fun FaqAccordionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -319,13 +320,13 @@ fun FaqAccordionItem(
                     text = title,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier.weight(1f),
                 )
                 Text(
                     text = if (isExpanded) "▲" else "▼",
                     fontSize = 10.sp,
-                    color = Color(0xFF8A8595),
+                    color = AppTheme.colors.textMuted,
                 )
             }
 
@@ -334,7 +335,7 @@ fun FaqAccordionItem(
                 Text(
                     text = answer,
                     fontSize = 12.sp,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                     lineHeight = 17.sp,
                 )
             }

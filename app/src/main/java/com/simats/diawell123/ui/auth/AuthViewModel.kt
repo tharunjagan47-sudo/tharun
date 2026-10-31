@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.auth
+import com.simats.diawell123.ui.theme.AppTheme
 
 import android.util.Patterns
 import androidx.lifecycle.ViewModel

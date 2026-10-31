@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.profile
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,8 +23,8 @@ import androidx.compose.ui.unit.sp
 fun ProfileAvatarView(
     modifier: Modifier = Modifier,
     sizeDp: Dp = 48.dp,
-    bgCircleColor: Color = Color(0xFFF3E2F0),
-    textColor: Color = Color(0xFF811978),
+    bgCircleColor: Color = if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else AppTheme.colors.border,
+    textColor: Color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
     fontSizeSp: Int = 16,
 ) {
     val bitmap = ProfileState.profileImageBitmap
@@ -38,7 +39,7 @@ fun ProfileAvatarView(
             .size(sizeDp)
             .clip(CircleShape)
             .background(bgCircleColor)
-            .border(1.5.dp, Color.White, CircleShape),
+            .border(1.5.dp, if (AppTheme.colors.isDark) AppTheme.colors.border else Color.White, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         if (bitmap != null) {

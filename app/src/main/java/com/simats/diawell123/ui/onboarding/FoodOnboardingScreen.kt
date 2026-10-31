@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.onboarding
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -36,7 +37,7 @@ fun FoodOnboardingScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding()
     ) {
         Column(
@@ -70,7 +71,7 @@ fun FoodOnboardingScreen(
                     text = "A little balance.\nA better every day.",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E22),
+                    color = AppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                     lineHeight = 30.sp
                 )
@@ -82,7 +83,7 @@ fun FoodOnboardingScreen(
                     text = "Discover healthy meals and personalized diet suggestions that fit your preferences and daily routine.",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
                     lineHeight = 19.sp
                 )
@@ -119,7 +120,7 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = Color(0xFFFDEEF7),
+                color = if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.20f) else Color(0xFFFDEEF7),
                 radius = bgRadius,
                 center = center
             )
@@ -131,7 +132,7 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
                 center = center
             )
             drawCircle(
-                color = Color(0xFFF2E0EE),
+                color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFF2E0EE),
                 radius = plateRadius,
                 center = center,
                 style = Stroke(width = 3.dp.toPx())

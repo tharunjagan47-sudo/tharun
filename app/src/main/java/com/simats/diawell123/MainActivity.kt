@@ -199,7 +199,6 @@ class MainActivity : ComponentActivity() {
                             onReportsTabClick = { currentScreen = "weekly_report" },
                             onSettingsTabClick = { currentScreen = "settings" },
                             onProfileClick = { currentScreen = "edit_profile" },
-                            onNotificationsClick = { currentScreen = "notifications" },
                         )
 
                         "edit_profile" -> EditProfileScreen(
@@ -242,7 +241,6 @@ class MainActivity : ComponentActivity() {
                             },
                             onFoodLogClick = { currentScreen = "food_log" },
                             onExploreFoodClick = { currentScreen = "explore_food" },
-                            onNutritionSummaryClick = { currentScreen = "nutrition_summary" },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
                             onMedsTabClick = { currentScreen = "medications" },
@@ -272,10 +270,7 @@ class MainActivity : ComponentActivity() {
 
                         "food_log" -> FoodLogScreen(
                             viewModel = dietViewModel,
-                            onBackClick = { currentScreen = "daily_diet_plan" },
-                            onAddFoodClick = { currentScreen = "explore_food" },
-                            onMealDetailsClick = { currentScreen = "explore_food" },
-                            onNutritionSummaryClick = { currentScreen = "nutrition_summary" },
+                            onBackClick = { currentScreen = "home" },
                         )
 
                         "nutrition_summary" -> NutritionSummaryScreen(
@@ -287,7 +282,6 @@ class MainActivity : ComponentActivity() {
                             viewModel = activityViewModel,
                             onBackClick = { currentScreen = "home" },
                             onHistoryClick = { currentScreen = "activity_history" },
-                            onFinishActivityClick = { currentScreen = "activity_history" },
                         )
 
                         "activity_history" -> ActivityHistoryScreen(
@@ -306,7 +300,6 @@ class MainActivity : ComponentActivity() {
                             },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
                             onReportsTabClick = { currentScreen = "weekly_report" },
                             onSettingsTabClick = { currentScreen = "settings" },
                         )

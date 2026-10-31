@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.ai
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -116,7 +117,7 @@ fun AiChatbotScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC))
+            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
@@ -170,7 +171,7 @@ fun AiChatbotScreen(
                                     text = "JARVIS AI ⚡",
                                     fontSize = 17.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E22),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Box(
@@ -183,7 +184,7 @@ fun AiChatbotScreen(
                             Text(
                                 text = "Arc Reactor Health Intelligence",
                                 fontSize = 11.sp,
-                                color = Color(0xFF6E6877),
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -203,14 +204,14 @@ fun AiChatbotScreen(
                         .alpha(contentAlpha)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.elevatedSurface)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                         .padding(12.dp),
                 ) {
                     Text(
                         text = "⚡ JARVIS AI gives personalized wellness guidance, not medical diagnosis. Follow your clinician's advice.",
                         fontSize = 11.sp,
-                        color = Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                         lineHeight = 16.sp,
                     )
                 }
@@ -237,8 +238,8 @@ fun AiChatbotScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(Color(0xFFF8F7FA))
-                                        .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(16.dp))
+                                        .background(AppTheme.colors.cardElevated)
+                                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                                         .padding(14.dp),
                                 ) {
                                     Column {
@@ -246,13 +247,13 @@ fun AiChatbotScreen(
                                             text = "JARVIS AI ⚡🩺",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFB81D85),
+                                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = msg.text,
                                             fontSize = 13.sp,
-                                            color = Color(0xFF1E1E22),
+                                            color = AppTheme.colors.textPrimary,
                                             lineHeight = 18.sp,
                                         )
                                     }
@@ -297,7 +298,7 @@ fun AiChatbotScreen(
                         text = "ASK JARVIS AI",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF8A8595),
+                        color = AppTheme.colors.textMuted,
                         letterSpacing = 0.5.sp,
                     )
 
@@ -308,8 +309,8 @@ fun AiChatbotScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFFDEEF7))
-                                .border(1.dp, Color(0xFFF3E2F0), RoundedCornerShape(12.dp))
+                                .background(AppTheme.colors.elevatedSurface)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                                 .clickable {
                                     messages.add(ChatMessage("user", prompt))
                                     messages.add(ChatMessage("ai", "I suggest a balanced combination of fiber, protein, and healthy fats tailored to your daily goals."))
@@ -320,7 +321,7 @@ fun AiChatbotScreen(
                                 text = prompt,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -335,8 +336,8 @@ fun AiChatbotScreen(
                 .align(Alignment.BottomCenter)
                 .alpha(contentAlpha)
                 .fillMaxWidth()
-                .background(Color.White)
-                .border(width = 1.dp, color = Color(0xFFEFECEF))
+                .background(AppTheme.colors.cardBackground)
+                .border(width = 1.dp, color = AppTheme.colors.border)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
             Row(
@@ -350,16 +351,18 @@ fun AiChatbotScreen(
                         Text(
                             text = "Ask JARVIS about food or meal ideas...",
                             fontSize = 13.sp,
-                            color = Color(0xFFA09BAA),
+                            color = AppTheme.colors.textMuted,
                         )
                     },
                     singleLine = true,
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF8F7FA),
-                        unfocusedContainerColor = Color(0xFFF8F7FA),
+                        focusedTextColor = AppTheme.colors.textPrimary,
+                        unfocusedTextColor = AppTheme.colors.textPrimary,
+                        focusedContainerColor = AppTheme.colors.inputBackground,
+                        unfocusedContainerColor = AppTheme.colors.inputBackground,
                         focusedBorderColor = Color(0xFFBD1E85),
-                        unfocusedBorderColor = Color(0xFFEFECEF),
+                        unfocusedBorderColor = AppTheme.colors.inputBorder,
                     ),
                     modifier = Modifier.weight(1f),
                 )

@@ -1,4 +1,5 @@
 package com.simats.diawell123
+import com.simats.diawell123.ui.theme.AppTheme
 
 import android.content.Context
 import android.media.AudioManager
@@ -183,27 +184,30 @@ fun SplashScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFAFC)),
+            .background(AppTheme.colors.background),
     ) {
         // Ambient background shapes
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
 
+            val ambientPink = if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.20f) else Color(0xFFFDEEF7)
+            val ambientCyan = if (AppTheme.colors.isDark) Color(0xFF0E7490).copy(alpha = 0.20f) else Color(0xFFE0F7FA).copy(alpha = 0.6f)
+
             drawCircle(
-                color = Color(0xFFFDEEF7),
+                color = ambientPink,
                 radius = width * 0.45f,
                 center = Offset(x = width * 0.1f, y = height * 0.08f),
             )
 
             drawCircle(
-                color = Color(0xFFE0F7FA).copy(alpha = 0.6f),
+                color = ambientCyan,
                 radius = width * 0.55f,
                 center = Offset(x = width * 0.85f, y = height * 0.12f),
             )
 
             drawCircle(
-                color = Color(0xFFFDEEF7),
+                color = ambientPink,
                 radius = width * 0.48f,
                 center = Offset(x = width * 0.92f, y = height * 0.85f),
                 style = Stroke(width = 44.dp.toPx()),
@@ -282,7 +286,7 @@ fun SplashScreen(
                     text = "Eat Smart. Track Better. Live Well.",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF232226),
+                    color = AppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                 )
 
@@ -293,7 +297,7 @@ fun SplashScreen(
                     text = "Powered by high-precision glucose intelligence\nand smart health routines.",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF6E6877),
+                    color = AppTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp,
                 )
@@ -320,7 +324,7 @@ fun SplashScreen(
                     text = "Designed around your wellbeing",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                 )
             }
         }

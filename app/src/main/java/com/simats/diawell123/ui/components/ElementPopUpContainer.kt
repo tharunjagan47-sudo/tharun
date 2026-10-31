@@ -1,4 +1,5 @@
 package com.simats.diawell123.ui.components
+import com.simats.diawell123.ui.theme.AppTheme
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
