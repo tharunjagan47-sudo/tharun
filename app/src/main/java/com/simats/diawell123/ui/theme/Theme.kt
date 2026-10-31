@@ -1,13 +1,17 @@
 package com.simats.diawell123.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 data class AppColors(
     val isDark: Boolean,
@@ -25,7 +29,7 @@ data class AppColors(
     val primaryAccent: Color,
     val success: Color,
     val successBg: Color,
-    val successText: Color
+    val successText: Color,
 )
 
 val LightAppColors = AppColors(
@@ -44,7 +48,7 @@ val LightAppColors = AppColors(
     primaryAccent = Color(0xFFB81D85),
     success = Color(0xFF10B981),
     successBg = Color(0xFFECFDF5),
-    successText = Color(0xFF047857)
+    successText = Color(0xFF047857),
 )
 
 val DarkAppColors = AppColors(
@@ -63,7 +67,7 @@ val DarkAppColors = AppColors(
     primaryAccent = Color(0xFFF472B6),
     success = Color(0xFF10B981),
     successBg = Color(0xFF064E3B),
-    successText = Color(0xFF34D399)
+    successText = Color(0xFF34D399),
 )
 
 val LocalAppColors = staticCompositionLocalOf { LightAppColors }
@@ -100,17 +104,29 @@ fun Diawell123Theme(
         ThemeMode.DARK -> true
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     },
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     ThemeManager.isSystemDark = isSystemInDarkTheme()
     val appColors = if (darkTheme) DarkAppColors else LightAppColors
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? Activity)?.window
+            if (window != null) {
+                val insetsController = WindowCompat.getInsetsController(window, view)
+                insetsController.isAppearanceLightStatusBars = !darkTheme
+                insetsController.isAppearanceLightNavigationBars = !darkTheme
+            }
+        }
+    }
+
     CompositionLocalProvider(LocalAppColors provides appColors) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
-            content = content
+            content = content,
         )
     }
 }

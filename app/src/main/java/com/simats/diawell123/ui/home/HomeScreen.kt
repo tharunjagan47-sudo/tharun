@@ -801,15 +801,24 @@ fun IosLiquidGlassBottomNav(
                     close()
                 }
 
-                // Glass Ambient Blue/Purple Shadow Glow
+                // Glass Ambient Shadow Glow
+                val isDarkNav = AppTheme.colors.isDark
                 drawPath(
                     path = fluidPath,
                     brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0x668E24AA),
-                            Color(0x225363FF),
-                            Color.Transparent,
-                        ),
+                        colors = if (isDarkNav) {
+                            listOf(
+                                Color(0x6600E5FF),
+                                Color(0x33B81D85),
+                                Color.Transparent,
+                            )
+                        } else {
+                            listOf(
+                                Color(0x668E24AA),
+                                Color(0x225363FF),
+                                Color.Transparent,
+                            )
+                        },
                         center = Offset(animatedActiveXPx, centerY),
                         radius = bulgeRadiusPx * 1.5f,
                     ),
@@ -819,23 +828,39 @@ fun IosLiquidGlassBottomNav(
                 drawPath(
                     path = fluidPath,
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.92f),
-                            Color(0xFFF2E6F5).copy(alpha = 0.88f),
-                        ),
+                        colors = if (isDarkNav) {
+                            listOf(
+                                Color(0xFF1E293B).copy(alpha = 0.95f),
+                                Color(0xFF0F172A).copy(alpha = 0.92f),
+                            )
+                        } else {
+                            listOf(
+                                Color.White.copy(alpha = 0.92f),
+                                Color(0xFFF2E6F5).copy(alpha = 0.88f),
+                            )
+                        },
                     ),
                 )
 
-                // Luminous White Specular Glass Outline Rim
+                // Luminous Specular Glass Outline Rim
                 drawPath(
                     path = fluidPath,
                     brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.95f),
-                            Color(0xFF00E5FF).copy(alpha = 0.60f),
-                            Color(0xFFB81D85).copy(alpha = 0.60f),
-                            Color.White.copy(alpha = 0.95f),
-                        ),
+                        colors = if (isDarkNav) {
+                            listOf(
+                                Color(0xFF334155),
+                                Color(0xFF00E5FF).copy(alpha = 0.50f),
+                                Color(0xFFF472B6).copy(alpha = 0.50f),
+                                Color(0xFF334155),
+                            )
+                        } else {
+                            listOf(
+                                Color.White.copy(alpha = 0.95f),
+                                Color(0xFF00E5FF).copy(alpha = 0.60f),
+                                Color(0xFFB81D85).copy(alpha = 0.60f),
+                                Color.White.copy(alpha = 0.95f),
+                            )
+                        },
                     ),
                     style = Stroke(width = 1.8.dp.toPx()),
                 )

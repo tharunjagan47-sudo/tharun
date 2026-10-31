@@ -312,12 +312,13 @@ fun SettingsRow(
     isDestructive: Boolean = false,
     onClick: () -> Unit = {},
 ) {
+    val isDark = AppTheme.colors.isDark
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEFECEF), RoundedCornerShape(14.dp))
+            .background(AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -331,7 +332,13 @@ fun SettingsRow(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(if (isDestructive) Color(0xFFFFEBEE) else Color(0xFFFDEEF7)),
+                        .background(
+                            if (isDestructive) {
+                                if (isDark) Color(0xFF7F1D1D) else Color(0xFFFFEBEE)
+                            } else {
+                                AppTheme.colors.secondaryBackground
+                            }
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(text = icon, fontSize = 16.sp)
@@ -343,7 +350,11 @@ fun SettingsRow(
                     text = title,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = if (isDestructive) Color(0xFFD32F2F) else Color(0xFF1E1E22),
+                    color = if (isDestructive) {
+                        if (isDark) Color(0xFFF87171) else Color(0xFFD32F2F)
+                    } else {
+                        AppTheme.colors.textPrimary
+                    },
                 )
             }
 
