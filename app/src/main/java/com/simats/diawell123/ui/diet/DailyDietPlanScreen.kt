@@ -62,7 +62,6 @@ fun DailyDietPlanScreen(
     onMealDetailsClick: (category: String, foodId: Int?, dishName: String?) -> Unit = { _, _, _ -> },
     onFoodLogClick: () -> Unit = {},
     onExploreFoodClick: () -> Unit = {},
-    onNutritionSummaryClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
@@ -166,22 +165,6 @@ fun DailyDietPlanScreen(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF5B1761),
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFE8F5E9))
-                                    .clickable { onNutritionSummaryClick() }
-                                    .padding(vertical = 9.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "📊 Summary",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF2E7D32),
                                 )
                             }
                         }
@@ -744,21 +727,21 @@ fun AdjustHealthInputsDialog(
     onDismiss: () -> Unit,
     onSave: (glucose: Float, diet: String, focus: String) -> Unit,
 ) {
-    var glucoseInput by remember { mutableStateOf(currentGlucose.toInt().toString()) }
+    var glucoseInput by remember(currentGlucose) { mutableStateOf(currentGlucose.toInt().toString()) }
 
     // Multi-select dietary preferences
     val initialDiets = remember(currentDiet) {
         val list = currentDiet.split(",").map { it.trim() }.filter { it.isNotEmpty() }
         if (list.isNotEmpty()) list.toSet() else setOf("Vegetarian")
     }
-    var selectedDiets by remember { mutableStateOf(initialDiets) }
+    var selectedDiets by remember(initialDiets) { mutableStateOf(initialDiets) }
 
     // Multi-select health focuses
     val initialFocuses = remember(currentFocus) {
         val list = currentFocus.split(",").map { it.trim() }.filter { it.isNotEmpty() }
         if (list.isNotEmpty()) list.toSet() else setOf("Glucose Control")
     }
-    var selectedFocuses by remember { mutableStateOf(initialFocuses) }
+    var selectedFocuses by remember(initialFocuses) { mutableStateOf(initialFocuses) }
 
     val dietOptions = listOf("Vegetarian", "Non-Vegetarian", "Vegan", "Low-Carb / Keto", "Eggetarian")
     val focusOptions = listOf("Glucose Control", "Weight Management", "Heart Health", "Active Energy", "Immunity & Wellness")

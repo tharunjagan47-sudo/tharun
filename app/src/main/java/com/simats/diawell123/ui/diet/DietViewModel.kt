@@ -105,11 +105,20 @@ class DietViewModel(
         overrideFocus: String? = null
     ) {
         viewModelScope.launch {
-            _aiRecommendationsState.update { it.copy(isLoading = true, errorMessage = null) }
             val cat = category ?: _dailyDietState.value.selectedCategory
             val g = overrideGlucose ?: _aiRecommendationsState.value.activeGlucose
             val d = overrideDiet ?: _aiRecommendationsState.value.activeDietPreference
             val f = overrideFocus ?: _aiRecommendationsState.value.activeHealthFocus
+
+            _aiRecommendationsState.update {
+                it.copy(
+                    isLoading = true,
+                    activeGlucose = g ?: it.activeGlucose,
+                    activeDietPreference = if (!d.isNullOrBlank()) d else it.activeDietPreference,
+                    activeHealthFocus = if (!f.isNullOrBlank()) f else it.activeHealthFocus,
+                    errorMessage = null
+                )
+            }
 
             val result = dietRepository.getAiFoodRecommendations(
                 limit = 10,
@@ -123,9 +132,9 @@ class DietViewModel(
                     it.copy(
                         isLoading = false,
                         data = data,
-                        activeGlucose = data.patientContext?.currentGlucoseMgDl ?: it.activeGlucose,
-                        activeDietPreference = data.patientContext?.dietaryPreference ?: it.activeDietPreference,
-                        activeHealthFocus = data.patientContext?.healthFocus ?: it.activeHealthFocus
+                        activeGlucose = data.patientContext?.currentGlucoseMgDl ?: g ?: it.activeGlucose,
+                        activeDietPreference = data.patientContext?.dietaryPreference ?: d ?: it.activeDietPreference,
+                        activeHealthFocus = data.patientContext?.healthFocus ?: f ?: it.activeHealthFocus
                     )
                 }
             }.onFailure { error ->
@@ -141,7 +150,15 @@ class DietViewModel(
 
     fun updateHealthInputs(glucose: Float, dietPreference: String, healthFocus: String) {
         viewModelScope.launch {
-            _aiRecommendationsState.update { it.copy(isUpdatingInputs = true, errorMessage = null) }
+            _aiRecommendationsState.update {
+                it.copy(
+                    isUpdatingInputs = true,
+                    activeGlucose = glucose,
+                    activeDietPreference = dietPreference,
+                    activeHealthFocus = healthFocus,
+                    errorMessage = null
+                )
+            }
             val result = dietRepository.updateHealthInputsAndRecommend(
                 glucose = glucose,
                 dietPreference = dietPreference,
