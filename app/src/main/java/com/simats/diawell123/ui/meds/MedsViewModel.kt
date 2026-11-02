@@ -35,19 +35,19 @@ data class SearchMedsUiState(
 )
 
 data class SetReminderUiState(
-    val medicationName: String = "Metformin",
-    val medicationDose: String = "500 mg • 1 Tablet",
-    val primaryIngredient: String = "Metformin",
-    val therapeuticClass: String = "Antidiabetic",
+    val medicationName: String = "",
+    val medicationDose: String = "",
+    val primaryIngredient: String = "",
+    val therapeuticClass: String = "",
     val manufacturer: String = "",
     val packaging: String = "",
-    val dosageForm: String = "Tablet",
+    val dosageForm: String = "",
     val priceInr: String = "",
     val clinicalInfo: String = "",
     val reminderDateText: String = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date()),
     val selectedTime: String = "8:00 AM",
     val selectedTiming: String = "After Meal",
-    val notes: String = "Take with a glass of water after dinner.",
+    val notes: String = "",
     val isSaving: Boolean = false,
     val isSuccess: Boolean = false,
     val errorMessage: String? = null

@@ -546,12 +546,7 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.SpaceAround,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    val routineItems = data?.routine?.takeIf { it.isNotEmpty() } ?: listOf(
-                                        HomeRoutineItem(icon = "🥣", label = "Breakfast", isDone = false),
-                                        HomeRoutineItem(icon = "🩸", label = "Glucose", isDone = true),
-                                        HomeRoutineItem(icon = "🥗", label = "Lunch", isDone = false),
-                                        HomeRoutineItem(icon = "💊", label = "Dinner/Meds", isDone = false)
-                                    )
+                                    val routineItems = data?.routine ?: emptyList()
                                     routineItems.forEach { item ->
                                         RoutineCheckItem(
                                             icon = item.icon.ifBlank { "✓" },

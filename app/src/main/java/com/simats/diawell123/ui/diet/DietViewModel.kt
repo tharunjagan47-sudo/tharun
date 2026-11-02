@@ -61,12 +61,7 @@ data class FoodLogUiState(
     val isLoading: Boolean = false,
     val selectedDateCalendar: Calendar = Calendar.getInstance(),
     val selectedDateLabel: String = "Today",
-    val meals: List<FoodLogItem> = listOf(
-        FoodLogItem(id = 1, category = "BREAKFAST", time = "8:30 AM", title = "Berry & almond oats", portion = "1 bowl • 290 g", calories = "320 kcal", caloriesNum = 320, carbsG = 42f, proteinG = 9f, fatG = 8f, icon = "🥣"),
-        FoodLogItem(id = 2, category = "LUNCH", time = "1:00 PM", title = "Grilled chicken bowl", portion = "1 bowl • 350 g", calories = "450 kcal", caloriesNum = 450, carbsG = 48f, proteinG = 38f, fatG = 12f, icon = "🥗"),
-        FoodLogItem(id = 3, category = "SNACKS", time = "4:30 PM", title = "Greek yogurt & berries", portion = "1 cup • 170 g", calories = "160 kcal", caloriesNum = 160, carbsG = 18f, proteinG = 12f, fatG = 4f, icon = "🫐"),
-        FoodLogItem(id = 4, category = "DINNER", time = "7:30 PM", title = "Salmon & brown rice", portion = "1 plate • 380 g", calories = "480 kcal", caloriesNum = 480, carbsG = 52f, proteinG = 32f, fatG = 14f, icon = "🍱")
-    ),
+    val meals: List<FoodLogItem> = emptyList(),
     val errorMessage: String? = null
 ) {
     val totalCaloriesNum: Int get() = meals.sumOf { it.caloriesNum }
@@ -219,20 +214,24 @@ class DietViewModel(
     fun loadFoodLog(date: String? = null) {
         viewModelScope.launch {
             _foodLogState.update { it.copy(isLoading = true) }
-            val result = dietRepository.getFoodLog(date)
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val targetDate = date ?: sdf.format(_dailyDietState.value.selectedDateCalendar.time)
+            val result = dietRepository.getFoodLog(targetDate)
             result.onSuccess { data ->
-                if (data.meals.isNotEmpty()) {
-                    _foodLogState.update { state ->
-                        state.copy(
-                            isLoading = false,
-                            meals = data.meals
-                        )
-                    }
-                } else {
-                    _foodLogState.update { it.copy(isLoading = false) }
+                _foodLogState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        meals = data.meals
+                    )
                 }
-            }.onFailure {
-                _foodLogState.update { it.copy(isLoading = false) }
+            }.onFailure { error ->
+                _foodLogState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        meals = emptyList(),
+                        errorMessage = error.localizedMessage
+                    )
+                }
             }
         }
     }

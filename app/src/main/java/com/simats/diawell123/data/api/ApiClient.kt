@@ -16,8 +16,7 @@ import java.util.concurrent.TimeUnit
  */
 object ApiClient {
 
-    private const val DEFAULT_BASE_URL = "https://g2rzf6hg-80.inc1.devtunnels.ms/diawell_backend"
-
+    private const val DEFAULT_BASE_URL = "https://bhft6cwn-80.inc1.devtunnels.ms/diawell_backend"
     var baseUrl: String = DEFAULT_BASE_URL
         set(value) {
             // Retrofit requires base URLs to end with a trailing slash
