@@ -1,0 +1,841 @@
+package com.simats.diawell123.ui.ai
+
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
+import com.simats.diawell123.data.model.AlertType
+import com.simats.diawell123.data.model.BadgeType
+import com.simats.diawell123.data.model.ChatMessage
+import com.simats.diawell123.data.model.ChatSender
+import com.simats.diawell123.data.model.NutritionMetric
+import com.simats.diawell123.ui.diet.StyledBackButton
+import com.simats.diawell123.ui.theme.AppTheme
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+/**
+ * Main Dr. Jarvis AI Chat Screen with Diabetes Visual Styling and Speech-to-Text.
+ */
+@Composable
+fun ChatScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ChatViewModel = viewModel(),
+    onBackClick: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val messages by viewModel.messages.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    var inputText by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
+
+    // Auto-scroll to bottom on new messages or loading change
+    LaunchedEffect(messages.size, isLoading) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Voice Input Speech Recognizer Integration
+    // -------------------------------------------------------------------------
+    val speechLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            val spokenMatches = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val spokenText = spokenMatches?.firstOrNull()?.trim()
+            if (!spokenText.isNullOrEmpty()) {
+                inputText = if (inputText.isBlank()) spokenText else "$inputText $spokenText"
+            }
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchSpeechInput(context, speechLauncher)
+        } else {
+            Toast.makeText(
+                context,
+                "Microphone permission is required for voice input.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    fun startVoiceInput() {
+        val permission = android.Manifest.permission.RECORD_AUDIO
+        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+            launchSpeechInput(context, speechLauncher)
+        } else {
+            permissionLauncher.launch(permission)
+        }
+    }
+
+    // Arc Reactor Pulsing Animation for Dr. Jarvis Avatar
+    val infiniteTransition = rememberInfiniteTransition(label = "JarvisPulse")
+    val avatarPulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "avatarScale"
+    )
+
+    val auraAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 0.65f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "auraAlpha"
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppTheme.colors.background)
+            .systemBarsPadding()
+            .imePadding()
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            // -----------------------------------------------------------------
+            // Top Bar: Dr. Jarvis Iron Man Medical Avatar & Status
+            // -----------------------------------------------------------------
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    StyledBackButton(onBackClick = onBackClick)
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // Arc Reactor Avatar with pulsing glow
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .scale(avatarPulseScale)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(46.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00E5FF).copy(alpha = auraAlpha))
+                        )
+                        IronmanDoctorAvatar(sizeDp = 40)
+                    }
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Dr. Jarvis AI ⚡",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.textPrimary
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF4CAF50))
+                            )
+                        }
+                        Text(
+                            text = "Diabetes Intelligence • Qwen 2.5",
+                            fontSize = 11.sp,
+                            color = AppTheme.colors.textSecondary
+                        )
+                    }
+                }
+
+                // Reset Chat Action
+                IconButton(onClick = { viewModel.resetChat() }) {
+                    Text(text = "🔄", fontSize = 18.sp)
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Clinical Safety Disclaimer Notice
+            // -----------------------------------------------------------------
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(AppTheme.colors.elevatedSurface)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "🩺", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Dr. Jarvis provides lifestyle wellness & verified diet guidance. Never alter medications without consulting your doctor.",
+                        fontSize = 11.sp,
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        lineHeight = 15.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // -----------------------------------------------------------------
+            // Messages LazyColumn
+            // -----------------------------------------------------------------
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(messages, key = { it.id }) { message ->
+                    ChatMessageItem(message = message)
+                }
+
+                if (isLoading) {
+                    item(key = "typing_indicator") {
+                        DrJarvisThinkingIndicator(avatarPulseScale)
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Error Banner with Retry
+            // -----------------------------------------------------------------
+            AnimatedVisibility(visible = errorMessage != null) {
+                errorMessage?.let { error ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFFFEBEE))
+                            .border(1.dp, Color(0xFFEF5350), RoundedCornerShape(10.dp))
+                            .padding(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = error,
+                                fontSize = 11.sp,
+                                color = Color(0xFFC62828),
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Retry",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFC62828),
+                                modifier = Modifier
+                                    .clickable { viewModel.retryLastMessage() }
+                                    .padding(4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Quick Prompt Suggestion Chips
+            // -----------------------------------------------------------------
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val suggestions = listOf(
+                    "🌾 3 high-fibre Indian foods",
+                    "🚶 Walking MET value for 30 mins",
+                    "🚨 What to do if glucose < 70 mg/dL?",
+                    "🥗 Low carbohydrate snacks"
+                )
+                suggestions.forEach { prompt ->
+                    val cleanPrompt = prompt.substringAfter(" ")
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(AppTheme.colors.elevatedSurface)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                            .clickable { viewModel.sendMessage(cleanPrompt) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = prompt,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85)
+                        )
+                    }
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Bottom Chat Input Bar with Microphone Voice Action
+            // -----------------------------------------------------------------
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(AppTheme.colors.cardBackground)
+                    .border(width = 1.dp, color = AppTheme.colors.border)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Voice Input Microphone Button
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(AppTheme.colors.elevatedSurface)
+                            .border(1.dp, AppTheme.colors.border, CircleShape)
+                            .clickable { startVoiceInput() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🎙️", fontSize = 18.sp)
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Text Input Field
+                    OutlinedTextField(
+                        value = inputText,
+                        onValueChange = { inputText = it },
+                        placeholder = {
+                            Text(
+                                text = "Ask Dr. Jarvis or tap mic...",
+                                fontSize = 13.sp,
+                                color = AppTheme.colors.textMuted
+                            )
+                        },
+                        singleLine = false,
+                        maxLines = 3,
+                        shape = RoundedCornerShape(24.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = AppTheme.colors.textPrimary,
+                            unfocusedTextColor = AppTheme.colors.textPrimary,
+                            focusedContainerColor = AppTheme.colors.inputBackground,
+                            unfocusedContainerColor = AppTheme.colors.inputBackground,
+                            focusedBorderColor = Color(0xFFBD1E85),
+                            unfocusedBorderColor = AppTheme.colors.inputBorder
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Send Button
+                    val canSend = inputText.isNotBlank() && !isLoading
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(
+                                brush = if (canSend) {
+                                    Brush.linearGradient(
+                                        colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722))
+                                    )
+                                } else {
+                                    Brush.linearGradient(
+                                        colors = listOf(Color.Gray.copy(alpha = 0.4f), Color.Gray.copy(alpha = 0.4f))
+                                    )
+                                }
+                            )
+                            .clickable(enabled = canSend) {
+                                if (inputText.isNotBlank()) {
+                                    val query = inputText.trim()
+                                    inputText = ""
+                                    viewModel.sendMessage(query)
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "↑",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Single Message Bubble with Sender Alignment, Clinical Cards, and Nutrition Chips.
+ */
+@Composable
+fun ChatMessageItem(message: ChatMessage) {
+    val isUser = message.sender == ChatSender.USER
+    val timeFormatted = remember(message.timestamp) {
+        SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.timestamp))
+    }
+
+    if (isUser) {
+        // User Message (Right Aligned)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier.widthIn(max = 280.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(18.dp, 18.dp, 4.dp, 18.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85))
+                            )
+                        )
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = message.text,
+                        fontSize = 13.sp,
+                        color = Color.White,
+                        lineHeight = 18.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = timeFormatted,
+                    fontSize = 10.sp,
+                    color = AppTheme.colors.textMuted
+                )
+            }
+        }
+    } else {
+        // Dr. Jarvis AI Message (Left Aligned)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.Top
+        ) {
+            IronmanDoctorAvatar(sizeDp = 34)
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp, 18.dp, 18.dp, 18.dp))
+                        .background(
+                            if (message.isError) Color(0xFFFFEBEE) else AppTheme.colors.cardElevated
+                        )
+                        .border(
+                            1.dp,
+                            if (message.isError) Color(0xFFEF5350) else AppTheme.colors.border,
+                            RoundedCornerShape(4.dp, 18.dp, 18.dp, 18.dp)
+                        )
+                        .padding(14.dp)
+                ) {
+                    Column {
+                        // Header Title
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Dr. Jarvis AI ⚡🩺",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85)
+                            )
+                            Text(
+                                text = timeFormatted,
+                                fontSize = 10.sp,
+                                color = AppTheme.colors.textMuted
+                            )
+                        }
+
+                        // Clinical Emergency Alert Card
+                        if (message.alertType != AlertType.NONE) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            ClinicalAlertBanner(alertType = message.alertType)
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Formatted Markdown Content
+                        MarkdownFormattedText(
+                            text = message.text,
+                            color = if (message.isError) Color(0xFFC62828) else AppTheme.colors.textPrimary
+                        )
+
+                        // Nutrition / MET Badges
+                        if (message.metrics.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                message.metrics.forEach { metric ->
+                                    NutritionBadgeChip(metric = metric)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Clinical High-Contrast Alert Card for Hypoglycemia, Hyperglycemia, and Ketone Warnings.
+ */
+@Composable
+fun ClinicalAlertBanner(alertType: AlertType) {
+    val (icon, title, borderColor, bgColor, textColor) = when (alertType) {
+        AlertType.HYPOGLYCEMIA_WARNING -> Tuple5(
+            "🚨",
+            "CRITICAL: Hypoglycemia Guidance (<70 mg/dL)",
+            Color(0xFFD32F2F),
+            Color(0xFFFFEBEE),
+            Color(0xFFB71C1C)
+        )
+        AlertType.HYPERGLYCEMIA_WARNING -> Tuple5(
+            "⚠️",
+            "ELEVATED: Hyperglycemia Caution (>250 mg/dL)",
+            Color(0xFFF57C00),
+            Color(0xFFFFF3E0),
+            Color(0xFFE65100)
+        )
+        AlertType.KETONE_WARNING -> Tuple5(
+            "⚠️",
+            "ALERT: Ketone Protocol & Clinical Advisory",
+            Color(0xFFE64A19),
+            Color(0xFFFBE9E7),
+            Color(0xFFBF360C)
+        )
+        AlertType.GENERAL_CLINICAL_ALERT -> Tuple5(
+            "ℹ️",
+            "Clinical Safety & Medication Advisory",
+            Color(0xFF1976D2),
+            Color(0xFFE3F2FD),
+            Color(0xFF0D47A1)
+        )
+        AlertType.NONE -> Tuple5("", "", Color.Transparent, Color.Transparent, Color.Transparent)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(bgColor)
+            .border(1.2.dp, borderColor, RoundedCornerShape(8.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = icon, fontSize = 14.sp)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = title,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = textColor
+            )
+        }
+    }
+}
+
+/**
+ * Structured Metric Chip for High-Fibre, Calories, Carbohydrates, and METs.
+ */
+@Composable
+fun NutritionBadgeChip(metric: NutritionMetric) {
+    val (chipBg, chipBorder, chipText) = when (metric.badgeType) {
+        BadgeType.HIGH_FIBRE -> {
+            if (metric.isHighlight) {
+                Triple(Color(0xFFE8F5E9), Color(0xFF4CAF50), Color(0xFF1B5E20))
+            } else {
+                Triple(Color(0xFFF1F8E9), Color(0xFF8BC34A), Color(0xFF33691E))
+            }
+        }
+        BadgeType.CALORIES -> Triple(Color(0xFFFFF3E0), Color(0xFFFF9800), Color(0xFFE65100))
+        BadgeType.CARBOHYDRATES -> Triple(Color(0xFFE1F5FE), Color(0xFF03A9F4), Color(0xFF01579B))
+        BadgeType.PROTEIN -> Triple(Color(0xFFF3E5F5), Color(0xFFAB47BC), Color(0xFF4A148C))
+        BadgeType.MET_ACTIVITY -> Triple(Color(0xFFEDE7F6), Color(0xFF7E57C2), Color(0xFF311B92))
+        BadgeType.GENERAL -> Triple(Color(0xFFECEFF1), Color(0xFF90A4AE), Color(0xFF263238))
+    }
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(chipBg)
+            .border(1.dp, chipBorder, RoundedCornerShape(12.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = metric.label,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = chipText
+        )
+    }
+}
+
+/**
+ * Animated Dr. Jarvis Thinking Indicator.
+ */
+@Composable
+fun DrJarvisThinkingIndicator(pulseScale: Float) {
+    var statusText by remember { mutableStateOf("Dr. Jarvis is reviewing your query...") }
+
+    LaunchedEffect(Unit) {
+        delay(3500)
+        statusText = "Consulting verified diabetes datasets..."
+        delay(5500)
+        statusText = "Synthesizing clinical & nutritional facts..."
+        delay(7000)
+        statusText = "Formulating Dr. Jarvis AI response..."
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.scale(pulseScale)) {
+            IronmanDoctorAvatar(sizeDp = 30)
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(AppTheme.colors.cardElevated)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(14.dp),
+                    strokeWidth = 2.dp,
+                    color = Color(0xFF00E5FF)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = statusText,
+                    fontSize = 12.sp,
+                    color = AppTheme.colors.textSecondary
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Renders bold Markdown and bullet points cleanly without raw asterisks leaking.
+ */
+@Composable
+fun MarkdownFormattedText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = AppTheme.colors.textPrimary,
+    fontSize: TextUnit = 13.sp,
+    lineHeight: TextUnit = 18.sp
+) {
+    val annotated = remember(text) {
+        buildAnnotatedString {
+            val lines = text.split("\n")
+            lines.forEachIndexed { index, line ->
+                // Clean bullet markers
+                val cleanLine = when {
+                    line.trimStart().startsWith("- ") -> "• " + line.trimStart().removePrefix("- ")
+                    line.trimStart().startsWith("* ") -> "• " + line.trimStart().removePrefix("* ")
+                    else -> line
+                }
+
+                // Parse **bold** markdown segments
+                var cursor = 0
+                val pattern = java.util.regex.Pattern.compile("\\*\\*(.*?)\\*\\*")
+                val matcher = pattern.matcher(cleanLine)
+
+                while (matcher.find()) {
+                    val start = matcher.start()
+                    val end = matcher.end()
+                    val boldText = matcher.group(1) ?: ""
+
+                    // Append regular text before bold
+                    if (start > cursor) {
+                        append(cleanLine.substring(cursor, start))
+                    }
+
+                    // Append bold text
+                    val boldStart = length
+                    append(boldText)
+                    addStyle(
+                        style = SpanStyle(fontWeight = FontWeight.Bold),
+                        start = boldStart,
+                        end = length
+                    )
+                    cursor = end
+                }
+
+                // Append remainder of line
+                if (cursor < cleanLine.length) {
+                    append(cleanLine.substring(cursor))
+                }
+
+                if (index < lines.size - 1) {
+                    append("\n")
+                }
+            }
+        }
+    }
+
+    Text(
+        text = annotated,
+        modifier = modifier,
+        color = color,
+        fontSize = fontSize,
+        lineHeight = lineHeight
+    )
+}
+
+// Helper data holder
+private data class Tuple5<A, B, C, D, E>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E
+)
+
+/**
+ * Trigger Android Native SpeechRecognizer Intent.
+ */
+private fun launchSpeechInput(
+    context: Context,
+    launcher: androidx.activity.result.ActivityResultLauncher<Intent>
+) {
+    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+        )
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+        putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to Dr. Jarvis...")
+    }
+    try {
+        launcher.launch(intent)
+    } catch (e: Exception) {
+        Toast.makeText(
+            context,
+            "Speech recognition is not supported on this device.",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+

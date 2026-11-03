@@ -340,7 +340,7 @@ class MainActivity : ComponentActivity() {
                             onSkipClick = { currentScreen = "medications" },
                         )
 
-                        "ai_chatbot" -> AiChatbotScreen(
+                        "ai_chatbot", "dr_jarvis_chat" -> AiChatbotScreen(
                             onBackClick = { currentScreen = "home" },
                         )
 

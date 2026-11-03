@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  */
 object ApiClient {
 
-    private const val DEFAULT_BASE_URL = "https://bhft6cwn-80.inc1.devtunnels.ms/diawell_backend"
+    private val DEFAULT_BASE_URL = NetworkConstants.BASE_URL
     var baseUrl: String = DEFAULT_BASE_URL
         set(value) {
             // Retrofit requires base URLs to end with a trailing slash
@@ -45,7 +45,20 @@ object ApiClient {
     private val sessionInterceptor = Interceptor { chain ->
         val sessionManager = getSessionManager()
         val originalRequest = chain.request()
-        val requestBuilder = originalRequest.newBuilder()
+        val rawPath = originalRequest.url.encodedPath
+
+        // Seamlessly route local root requests to /DiaWell_backend/ if not already prefixed
+        val effectiveRequest = if (!rawPath.startsWith("/DiaWell_backend", ignoreCase = true) &&
+            !rawPath.startsWith("/diawell_backend", ignoreCase = true)
+        ) {
+            val prefixedPath = "/DiaWell_backend" + (if (rawPath.startsWith("/")) rawPath else "/$rawPath")
+            val newUrl = originalRequest.url.newBuilder().encodedPath(prefixedPath).build()
+            originalRequest.newBuilder().url(newUrl).build()
+        } else {
+            originalRequest
+        }
+
+        val requestBuilder = effectiveRequest.newBuilder()
 
         sessionManager?.let { sm ->
             // Inject cached X-User-Id header for PHP backend authentication
@@ -75,7 +88,7 @@ object ApiClient {
             }
 
             // Automatic logout if backend returns 401 Unauthorized
-            val requestPath = originalRequest.url.encodedPath
+            val requestPath = effectiveRequest.url.encodedPath
             val isAuthEndpoint = requestPath.contains("login.php") || requestPath.contains("signup.php") || requestPath.contains("register.php")
             if (response.code == 401 && !isAuthEndpoint) {
                 sm.clearSession(reason = "Your session expired on the server. Please log in again.")
@@ -95,9 +108,9 @@ object ApiClient {
         OkHttpClient.Builder()
             .addInterceptor(sessionInterceptor)
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(120, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .build()
     }
@@ -147,6 +160,9 @@ object ApiClient {
 
     val settingsApiService: SettingsApiService
         get() = getRetrofit().create(SettingsApiService::class.java)
+
+    val diaWellApiService: DiaWellApiService
+        get() = getRetrofit().create(DiaWellApiService::class.java)
 
     val profileApiService: ProfileApiService
         get() = getRetrofit().create(ProfileApiService::class.java)
