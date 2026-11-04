@@ -8,7 +8,8 @@ import retrofit2.http.POST
 
 /**
  * Retrofit Service Interface for Dr. Jarvis AI Chatbot Endpoint.
- * Communicates directly with the Python FastAPI Microservice Gateway on Port 8000.
+ * Communicates directly with the Python FastAPI Microservice Gateway on Port 8000,
+ * and supports the Port 80 PHP bridge fallback.
  */
 interface DiaWellApiService {
 
@@ -16,6 +17,9 @@ interface DiaWellApiService {
     suspend fun sendMessage(
         @Body request: ChatRequest
     ): Response<ChatResponse>
+
+    @POST(NetworkConstants.PHP_BRIDGE_CHAT_ENDPOINT)
+    suspend fun sendBridgeMessage(
+        @Body request: ChatRequest
+    ): Response<ChatResponse>
 }
-
-
