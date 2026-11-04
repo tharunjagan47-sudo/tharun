@@ -1,24 +1,82 @@
 package com.simats.diawell123
 
+import com.google.gson.Gson
 import com.simats.diawell123.data.api.NetworkConstants
 import com.simats.diawell123.data.model.AlertType
 import com.simats.diawell123.data.model.BadgeType
+import com.simats.diawell123.data.model.ChatRequest
+import com.simats.diawell123.data.model.ChatResponse
 import com.simats.diawell123.ui.ai.ChatViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Unit tests verifying Dr. Jarvis Chat Clinical Highlighting & Macro Extraction Logic.
+ * Unit & Integration tests verifying:
+ * 1. Network configuration for direct FastAPI communication
+ * 2. Gson request serialization (`prompt` field) & response deserialization (`response` field)
+ * 3. Clinical emergency alert detection & macro highlighting
  */
 class ChatViewModelTest {
 
+    private val gson = Gson()
+
     @Test
     fun test_network_constants_defaults() {
-        assertEquals("http://10.0.2.2/", NetworkConstants.EMULATOR_BASE_URL)
+        // PHP Backend for Auth & Profiles
+        assertEquals("http://10.0.2.2/", NetworkConstants.EMULATOR_PHP_BASE_URL)
         assertEquals("http://10.0.2.2/", NetworkConstants.BASE_URL)
-        assertEquals("DiaWell_backend/ai/chat.php", NetworkConstants.CHAT_ENDPOINT)
+
+        // FastAPI Backend for Dr. Jarvis AI Microservice
+        assertEquals("http://10.0.2.2:8000/", NetworkConstants.EMULATOR_AI_BASE_URL)
+        assertEquals("http://10.0.2.2:8000/", NetworkConstants.AI_BASE_URL)
+        assertEquals("http://172.23.176.99:8000/", NetworkConstants.PHYSICAL_DEVICE_AI_LAN_URL)
+        assertEquals("api/v1/chat", NetworkConstants.CHAT_ENDPOINT)
+    }
+
+    @Test
+    fun test_chat_request_serialization() {
+        val request = ChatRequest(
+            prompt = "What are 2 good breakfast options for Type 2 diabetes?",
+            model = "qwen2.5:3b",
+            temperature = 0.7,
+            userId = 8
+        )
+        val json = gson.toJson(request)
+
+        assertTrue(json.contains("prompt"))
+        assertTrue(json.contains("What are 2 good breakfast options"))
+        assertTrue(json.contains("qwen2.5:3b"))
+        assertTrue(json.contains("0.7"))
+        assertTrue(json.contains("8"))
+    }
+
+    @Test
+    fun test_chat_response_deserialization_fastapi() {
+        val rawJson = "{\"success\":true,\"model\":\"qwen2.5:3b\",\"response\":\"Hello! For a balanced breakfast, I recommend steel-cut oats with almonds.\",\"created_at\":\"2026-11-04T05:00:13Z\",\"duration_ms\":12039.84}"
+
+        val parsed = gson.fromJson(rawJson, ChatResponse::class.java)
+        assertTrue(parsed.success)
+        assertEquals("qwen2.5:3b", parsed.model)
+        assertEquals("Hello! For a balanced breakfast, I recommend steel-cut oats with almonds.", parsed.getCleanResponse())
+        assertEquals(12039.84, parsed.durationMs ?: 0.0, 0.01)
+    }
+
+    @Test
+    fun test_chat_response_deserialization_fallback_message() {
+        val rawJson = "{\"success\":true,\"message\":\"AI fallback response message.\"}"
+
+        val parsed = gson.fromJson(rawJson, ChatResponse::class.java)
+        assertTrue(parsed.success)
+        assertEquals("AI fallback response message.", parsed.getCleanResponse())
+    }
+
+    @Test
+    fun test_chat_response_clean_response_empty() {
+        val emptyResp = ChatResponse(success = false, response = null, message = null)
+        assertEquals("", emptyResp.getCleanResponse())
     }
 
     @Test
@@ -54,16 +112,16 @@ class ChatViewModelTest {
         val metrics = ChatViewModel.extractNutritionMetrics(text)
 
         val fibreMetric = metrics.firstOrNull { it.badgeType == BadgeType.HIGH_FIBRE }
-        assertTrue("Fibre metric should be found", fibreMetric != null)
-        assertTrue("Fibre >= 3.0g must be highlighted", fibreMetric!!.isHighlight)
+        assertNotNull(fibreMetric)
+        assertTrue(fibreMetric!!.isHighlight)
         assertEquals("🌾 High-Fibre: 5.1g", fibreMetric.label)
 
         val calMetric = metrics.firstOrNull { it.badgeType == BadgeType.CALORIES }
-        assertTrue("Calories metric should be found", calMetric != null)
+        assertNotNull(calMetric)
         assertEquals("🔥 195 kcal", calMetric!!.label)
 
         val carbMetric = metrics.firstOrNull { it.badgeType == BadgeType.CARBOHYDRATES }
-        assertTrue("Carb metric should be found", carbMetric != null)
+        assertNotNull(carbMetric)
         assertEquals("🍞 Carbs: 30.9g", carbMetric!!.label)
     }
 
@@ -73,8 +131,8 @@ class ChatViewModelTest {
         val metrics = ChatViewModel.extractNutritionMetrics(text)
 
         val fibreMetric = metrics.firstOrNull { it.badgeType == BadgeType.HIGH_FIBRE }
-        assertTrue("Fibre metric should be found", fibreMetric != null)
-        assertFalse("Fibre < 3.0g must NOT be highlighted as high-fibre", fibreMetric!!.isHighlight)
+        assertNotNull(fibreMetric)
+        assertFalse(fibreMetric!!.isHighlight)
         assertEquals("🌾 Fibre: 1.86g", fibreMetric.label)
     }
 
@@ -84,9 +142,8 @@ class ChatViewModelTest {
         val metrics = ChatViewModel.extractNutritionMetrics(text)
 
         val metMetric = metrics.firstOrNull { it.badgeType == BadgeType.MET_ACTIVITY }
-        assertTrue("MET metric should be found", metMetric != null)
+        assertNotNull(metMetric)
         assertTrue(metMetric!!.isHighlight)
         assertEquals("⚡ 4.3 METs", metMetric.label)
     }
 }
-
