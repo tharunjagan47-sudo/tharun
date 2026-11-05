@@ -69,3 +69,34 @@ data class SimpleNotificationResponse(
     val message: String = ""
 )
 
+data class SaveFcmTokenRequest(
+    @SerializedName("fcm_token")
+    val fcmToken: String,
+
+    @SerializedName("user_id")
+    val userId: Int? = null,
+
+    @SerializedName("device_type")
+    val deviceType: String = "Android"
+)
+
+data class SendMedNotificationRequest(
+    @SerializedName("user_id")
+    val userId: Int? = null,
+
+    @SerializedName("fcm_token")
+    val fcmToken: String? = null,
+
+    @SerializedName("title")
+    val title: String = "💊 Medication Reminder",
+
+    @SerializedName("body")
+    val body: String = "",
+
+    @SerializedName("med_name")
+    val medName: String = "",
+
+    @SerializedName("dosage")
+    val dosage: String = ""
+)
+

@@ -1,5 +1,6 @@
 package com.simats.diawell123.ui.meds
 import com.simats.diawell123.ui.theme.AppTheme
+import com.simats.diawell123.util.DiaWellNotificationHelper
 
 import android.app.TimePickerDialog
 import androidx.compose.animation.AnimatedVisibility
@@ -90,6 +91,37 @@ fun SetMedicationReminderScreen(
     val activeDose = reminderState.medicationDose.ifBlank { medicationDose }
 
     // Interactive custom time picker dialog allowing any flexible hour and minute
+    fun calculateScheduledMillis(dateStr: String, timeStr: String): Long {
+        val cal = Calendar.getInstance()
+        try {
+            val dateParser = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
+            val parsedDate = dateParser.parse(dateStr)
+            if (parsedDate != null) {
+                val dateCal = Calendar.getInstance().apply { time = parsedDate }
+                cal.set(Calendar.YEAR, dateCal.get(Calendar.YEAR))
+                cal.set(Calendar.MONTH, dateCal.get(Calendar.MONTH))
+                cal.set(Calendar.DAY_OF_MONTH, dateCal.get(Calendar.DAY_OF_MONTH))
+            }
+
+            val timeParser = SimpleDateFormat("h:mm a", Locale.getDefault())
+            val parsedTime = timeParser.parse(timeStr)
+            if (parsedTime != null) {
+                val timeCal = Calendar.getInstance().apply { time = parsedTime }
+                cal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY))
+                cal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE))
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+            }
+        } catch (_: Exception) {}
+
+        val now = System.currentTimeMillis()
+        return if (cal.timeInMillis <= now) {
+            now + 60_000L
+        } else {
+            cal.timeInMillis
+        }
+    }
+
     fun showCustomTimePicker() {
         val (initHour, initMinute) = try {
             val format = SimpleDateFormat("h:mm a", Locale.getDefault())
@@ -605,6 +637,26 @@ fun SetMedicationReminderScreen(
                         viewModel.updateReminderTime(selectedTime)
                         viewModel.updateReminderTiming(selectedTiming)
                         viewModel.updateReminderNotes(notes)
+
+                        // 1. Schedule Exact Local Alarm via AlarmManager
+                        val triggerMillis = calculateScheduledMillis(reminderDateText, selectedTime)
+                        val medId = (System.currentTimeMillis() % 10000).toInt()
+                        DiaWellNotificationHelper.scheduleExactMedicationAlarm(
+                            context = context,
+                            medId = medId,
+                            medName = activeName,
+                            dose = activeDose,
+                            triggerAtMillis = triggerMillis
+                        )
+
+                        // 2. Trigger Instant Confirmation Notification
+                        DiaWellNotificationHelper.showMedicationNotification(
+                            context = context,
+                            title = "✅ Reminder Scheduled: $activeName",
+                            message = "$activeDose set for $selectedTime ($selectedTiming). DiaWell will alert you on time!",
+                            medId = medId
+                        )
+
                         viewModel.saveMedicationReminder(onSuccess = {
                             showSuccessBanner = true
                         })
@@ -625,6 +677,34 @@ fun SetMedicationReminderScreen(
                         color = Color.White,
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Test Notification Now Button (for instant project review demonstration)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(AppTheme.colors.secondaryBackground)
+                    .border(1.dp, Color(0xFFBD1E85), RoundedCornerShape(14.dp))
+                    .clickable {
+                        DiaWellNotificationHelper.showMedicationNotification(
+                            context = context,
+                            title = "💊 Time for your Medication!",
+                            message = "Please take your prescribed dose of $activeName ($activeDose). Followed by $selectedTiming.",
+                            medId = 9999
+                        )
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🔔 Test Notification Now",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFBD1E85)
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))

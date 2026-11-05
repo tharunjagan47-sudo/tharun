@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "446160951592",
+    "project_id": "diawell-5e46e",
+    "storage_bucket": "diawell-5e46e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446160951592:android:2c9c0452887f3f8bd4581d",
+        "android_client_info": {
+          "package_name": "com.simats.diawell123"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1ajMz9UOFqAuwuuzTkuJAbLEA3uK7yxA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

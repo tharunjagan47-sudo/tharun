@@ -1,5 +1,13 @@
 package com.simats.diawell123
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.firebase.messaging.FirebaseMessaging
+import com.simats.diawell123.service.DiaWellFirebaseMessagingService
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -113,6 +121,40 @@ class MainActivity : ComponentActivity() {
                 // Initialize ProfileState from disk cache & session so avatar and username persist across launches
                 LaunchedEffect(Unit) {
                     ProfileState.init(applicationContext, sessionManager.getUserId())
+                }
+
+                // Request Runtime Notification Permission on Android 13+ (TIRAMISU)
+                val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    Log.d("MainActivity", "POST_NOTIFICATIONS granted: $isGranted")
+                }
+
+                LaunchedEffect(Unit) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                }
+
+                // Fetch and register FCM Token on startup
+                LaunchedEffect(Unit) {
+                    try {
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val token = task.result
+                                Log.d("FCM_TOKEN", "Current FCM Device Token: $token")
+                                token?.let {
+                                    DiaWellFirebaseMessagingService.sendTokenToServer(applicationContext, it)
+                                }
+                            } else {
+                                Log.w("FCM_TOKEN", "Fetching FCM registration token failed: ${task.exception?.message}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("FCM_TOKEN", "FirebaseMessaging error: ${e.message}")
+                    }
                 }
 
                 // Auto-Logout Observer: Listens to 401 Unauthorized or manual logout broadcasts

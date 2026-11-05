@@ -20,5 +20,15 @@ interface NotificationsApiService {
 
     @POST("notifications/clear_all.php")
     suspend fun clearAllNotifications(): Response<SimpleNotificationResponse>
+
+    @POST("notifications/save_fcm_token.php")
+    suspend fun saveFcmToken(
+        @Body request: com.simats.diawell123.data.model.SaveFcmTokenRequest
+    ): Response<SimpleNotificationResponse>
+
+    @POST("notifications/send_med_notification.php")
+    suspend fun sendMedNotification(
+        @Body request: com.simats.diawell123.data.model.SendMedNotificationRequest
+    ): Response<SimpleNotificationResponse>
 }
 
