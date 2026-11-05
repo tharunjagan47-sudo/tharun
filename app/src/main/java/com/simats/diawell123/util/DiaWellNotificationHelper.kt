@@ -484,6 +484,16 @@ object DiaWellNotificationHelper {
 
         checkAndPromptExactAlarmPermission(context)
 
+        // Defensive safety check against past or near-immediate timestamps
+        var finalTrigger = triggerAtMillis
+        val minValidTime = System.currentTimeMillis() + 5000L
+        if (finalTrigger <= minValidTime) {
+            val cal = java.util.Calendar.getInstance().apply { timeInMillis = finalTrigger }
+            cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+            finalTrigger = cal.timeInMillis
+            Log.w("DiaWellNotifications", "triggerAtMillis ($triggerAtMillis) was in past or <= 5s. Rolled forward to tomorrow: $finalTrigger")
+        }
+
         val intent = Intent(context, MedReminderReceiver::class.java).apply {
             action = ACTION_ALARM_TRIGGER
             putExtra("med_id", medId)
@@ -512,35 +522,35 @@ object DiaWellNotificationHelper {
         )
 
         try {
-            val clockInfo = AlarmManager.AlarmClockInfo(triggerAtMillis, showPendingIntent)
+            val clockInfo = AlarmManager.AlarmClockInfo(finalTrigger, showPendingIntent)
             alarmManager.setAlarmClock(clockInfo, pendingIntent)
-            Log.d("DiaWellNotifications", "Scheduled AlarmClock for medId=$medId at $triggerAtMillis")
+            Log.d("DiaWellNotifications", "Scheduled AlarmClock for medId=$medId at $finalTrigger")
         } catch (e: SecurityException) {
             Log.w("DiaWellNotifications", "SecurityException on setAlarmClock: ${e.message}. Falling back.")
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
-                        triggerAtMillis,
+                        finalTrigger,
                         pendingIntent
                     )
                 } else {
                     alarmManager.setExact(
                         AlarmManager.RTC_WAKEUP,
-                        triggerAtMillis,
+                        finalTrigger,
                         pendingIntent
                     )
                 }
             } catch (e2: Exception) {
                 Log.e("DiaWellNotifications", "Fallback exact alarm failed: ${e2.message}", e2)
-                alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                alarmManager.set(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
             }
         } catch (e: Exception) {
             Log.e("DiaWellNotifications", "Failed to schedule alarm: ${e.message}", e)
             try {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
             } catch (_: Exception) {
-                alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                alarmManager.set(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
             }
         }
     }

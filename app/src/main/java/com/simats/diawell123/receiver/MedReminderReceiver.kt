@@ -48,9 +48,12 @@ class MedReminderReceiver : BroadcastReceiver() {
                 Toast.makeText(context, "Medication Skipped", Toast.LENGTH_SHORT).show()
             }
 
-            DiaWellNotificationHelper.ACTION_ALARM_TRIGGER,
-            DiaWellNotificationHelper.ACTION_MED_REMINDER,
             Intent.ACTION_BOOT_COMPLETED -> {
+                Log.d("MedReminderReceiver", "Device rebooted (BOOT_COMPLETED received). Do NOT trigger immediate alarm.")
+            }
+
+            DiaWellNotificationHelper.ACTION_ALARM_TRIGGER,
+            DiaWellNotificationHelper.ACTION_MED_REMINDER -> {
                 Log.d("MedReminderReceiver", "Scheduled alarm time arrived for medId=$medId!")
 
                 // Keep CPU awake for 30s to guarantee screen wake and loud audio playback

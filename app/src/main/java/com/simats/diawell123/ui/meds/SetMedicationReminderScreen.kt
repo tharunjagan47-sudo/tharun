@@ -118,12 +118,11 @@ fun SetMedicationReminderScreen(
             }
         } catch (_: Exception) {}
 
-        val now = System.currentTimeMillis()
-        return if (cal.timeInMillis <= now) {
-            now + 60_000L
-        } else {
-            cal.timeInMillis
+        val minValidTime = System.currentTimeMillis() + 5000L
+        if (cal.timeInMillis <= minValidTime) {
+            cal.add(Calendar.DAY_OF_YEAR, 1)
         }
+        return cal.timeInMillis
     }
 
     fun showCustomTimePicker() {
