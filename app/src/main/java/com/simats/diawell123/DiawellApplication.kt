@@ -8,7 +8,7 @@ class DiawellApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         SessionManager.init(this)
-        DiaWellNotificationHelper.createNotificationChannel(this)
+        DiaWellNotificationHelper.createNotificationChannels(this)
     }
 }
 

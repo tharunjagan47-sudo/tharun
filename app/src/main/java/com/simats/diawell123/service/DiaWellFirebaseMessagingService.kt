@@ -91,12 +91,12 @@ class DiaWellFirebaseMessagingService : FirebaseMessagingService() {
 
         Log.d("DiaWellFCM", "Displaying FCM notification: Title='$rawTitle', Body='$rawBody'")
 
-        // 2. Display high-priority heads-up notification (works in foreground and background)
-        DiaWellNotificationHelper.showMedicationNotification(
+        // 2. Display normal notification (works in foreground and background)
+        DiaWellNotificationHelper.showGeneralNotification(
             context = applicationContext,
             title = rawTitle,
             message = rawBody,
-            medId = medId
+            notifId = medId
         )
     }
 }

@@ -4,10 +4,17 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.messaging.FirebaseMessaging
 import com.simats.diawell123.service.DiaWellFirebaseMessagingService
+import com.simats.diawell123.util.DiaWellNotificationHelper
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -169,6 +176,9 @@ class MainActivity : ComponentActivity() {
                 // Update activity timestamp on screen changes
                 LaunchedEffect(currentScreen) {
                     sessionManager.updateLastActiveTime()
+                    if (currentScreen in listOf("medications", "set_medication_reminder", "medication_reminder")) {
+                        checkExactAlarmPermission()
+                    }
                 }
 
                 // Splash screen initial routing based on saved persistent authentication session
@@ -495,6 +505,41 @@ class MainActivity : ComponentActivity() {
 
                         else -> SplashScreen()
                     }
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        DiaWellNotificationHelper.stopAlarmSound(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkExactAlarmPermission()
+        if (intent?.getStringExtra("target_screen") == "medications") {
+            DiaWellNotificationHelper.stopAlarmSound(this)
+        }
+    }
+
+    private fun checkExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as? AlarmManager
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                Toast.makeText(
+                    this,
+                    "Please allow Alarms & Reminders for DiaWell to ring on time",
+                    Toast.LENGTH_LONG
+                ).show()
+                try {
+                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Failed to launch exact alarm settings: ${e.message}")
                 }
             }
         }

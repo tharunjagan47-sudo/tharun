@@ -71,6 +71,10 @@ fun SetMedicationReminderScreen(
     val context = LocalContext.current
     val reminderState by viewModel.setReminderState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        DiaWellNotificationHelper.checkAndPromptExactAlarmPermission(context)
+    }
+
     var reminderDateText by remember {
         mutableStateOf(SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date()))
     }
@@ -649,12 +653,12 @@ fun SetMedicationReminderScreen(
                             triggerAtMillis = triggerMillis
                         )
 
-                        // 2. Trigger Instant Confirmation Notification
-                        DiaWellNotificationHelper.showMedicationNotification(
+                        // 2. Trigger Standard Confirmation Notification (normal chime, no full-screen alarm)
+                        DiaWellNotificationHelper.showGeneralNotification(
                             context = context,
                             title = "✅ Reminder Scheduled: $activeName",
-                            message = "$activeDose set for $selectedTime ($selectedTiming). DiaWell will alert you on time!",
-                            medId = medId
+                            message = "$activeDose scheduled for $selectedTime ($selectedTiming). DiaWell will alert you on time!",
+                            notifId = medId
                         )
 
                         viewModel.saveMedicationReminder(onSuccess = {
@@ -690,17 +694,18 @@ fun SetMedicationReminderScreen(
                     .background(AppTheme.colors.secondaryBackground)
                     .border(1.dp, Color(0xFFBD1E85), RoundedCornerShape(14.dp))
                     .clickable {
-                        DiaWellNotificationHelper.showMedicationNotification(
+                        DiaWellNotificationHelper.triggerMedicationAlarm(
                             context = context,
-                            title = "💊 Time for your Medication!",
-                            message = "Please take your prescribed dose of $activeName ($activeDose). Followed by $selectedTiming.",
-                            medId = 9999
+                            medId = 9999,
+                            medName = activeName,
+                            dosage = "$activeDose • $selectedTiming",
+                            scheduledTime = selectedTime
                         )
                     },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "🔔 Test Notification Now",
+                    text = "🔔 Test Full-Screen Alarm Now",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFBD1E85)
