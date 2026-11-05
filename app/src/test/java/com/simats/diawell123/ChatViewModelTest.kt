@@ -29,11 +29,9 @@ class ChatViewModelTest {
         assertEquals("http://10.0.2.2/", NetworkConstants.EMULATOR_PHP_BASE_URL)
         assertEquals("http://10.0.2.2/", NetworkConstants.BASE_URL)
 
-        // FastAPI Backend for Dr. Jarvis AI Microservice
-        assertEquals("http://10.0.2.2:8000/", NetworkConstants.EMULATOR_AI_BASE_URL)
-        assertEquals("http://10.0.2.2:8000/", NetworkConstants.AI_BASE_URL)
-        assertEquals("http://172.23.176.99:8000/", NetworkConstants.PHYSICAL_DEVICE_AI_LAN_URL)
-        assertEquals("api/v1/chat", NetworkConstants.CHAT_ENDPOINT)
+        // Dr. Jarvis AI Backend (Port 80 PHP -> Local Ollama)
+        assertEquals("DiaWell_backend/ai/chat.php", NetworkConstants.CHAT_ENDPOINT)
+        assertEquals(NetworkConstants.BASE_URL, NetworkConstants.AI_BASE_URL)
     }
 
     @Test

@@ -7,9 +7,7 @@ package com.simats.diawell123.data.api
  * - PHP Backend (Apache Port 80):
  *     - Emulator: "http://10.0.2.2/"
  *     - Physical Device LAN: "http://172.23.176.99/"
- * - FastAPI AI Microservice (Port 8000):
- *     - Emulator: "http://10.0.2.2:8000/"
- *     - Physical Device LAN: "http://172.23.176.99:8000/"
+ * - Ollama Engine: Port 11434 (via PHP middleware)
  */
 object NetworkConstants {
 
@@ -18,22 +16,18 @@ object NetworkConstants {
     // -------------------------------------------------------------------------
     const val EMULATOR_PHP_BASE_URL = "http://10.0.2.2/"
     const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://172.23.176.99/" // Host PC LAN IPv4 from ipconfig
-    const val DEVTUNNEL_BASE_URL = "https://bhft6cwn-80.inc1.devtunnels.ms/diawell_backend/"
+    const val DEVTUNNEL_BASE_URL = "https://popcorn-clothing-pungent.ngrok-free.dev/diawell_backend/"
 
     // -------------------------------------------------------------------------
-    // Python FastAPI AI Gateway Settings (Port 8000 - Ollama qwen2.5:3b)
+    // Legacy / Microservice Settings (Kept for compatibility)
     // -------------------------------------------------------------------------
     const val EMULATOR_AI_BASE_URL = "http://10.0.2.2:8000/"
     const val PHYSICAL_DEVICE_AI_LAN_URL = "http://172.23.176.99:8000/"
 
     /**
-     * Direct FastAPI AI Chat endpoint path.
+     * Chat endpoint path on Apache Port 80.
      */
-    const val CHAT_ENDPOINT = "api/v1/chat"
-
-    /**
-     * PHP Bridge fallback endpoint (Apache Port 80 -> FastAPI Port 8000).
-     */
+    const val CHAT_ENDPOINT = "DiaWell_backend/ai/chat.php"
     const val PHP_BRIDGE_CHAT_ENDPOINT = "DiaWell_backend/ai/chat.php"
 
     /**
@@ -70,8 +64,8 @@ object NetworkConstants {
 
     /**
      * Active Base URL used by Retrofit for Dr. Jarvis AI Chatbot.
-     * Automatically routes to emulator loopback or physical device host IP.
+     * Points directly to Apache Port 80 (where chat.php connects to local Ollama).
      */
     val AI_BASE_URL: String
-        get() = if (isEmulator) EMULATOR_AI_BASE_URL else PHYSICAL_DEVICE_AI_LAN_URL
+        get() = BASE_URL
 }

@@ -5,7 +5,6 @@ import com.simats.diawell123.data.api.DiaWellApiService
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.ChatRequest
 import com.simats.diawell123.data.model.ChatResponse
-import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -18,13 +17,10 @@ interface ChatRepository {
 }
 
 /**
- * Implementation of ChatRepository communicating with DiaWell AI backend.
- * Provides resilient primary routing to FastAPI (Port 8000) with automatic
- * seamless fallback to Port 80 PHP bridge for physical LAN devices.
+ * Implementation of ChatRepository communicating with DiaWell PHP -> Local Ollama architecture on Port 80.
  */
 class ChatRepositoryImpl(
-    private val apiService: DiaWellApiService = ApiClient.diaWellApiService,
-    private val bridgeService: DiaWellApiService = ApiClient.diaWellBridgeApiService
+    private val apiService: DiaWellApiService = ApiClient.diaWellApiService
 ) : ChatRepository {
 
     override suspend fun sendMessage(message: String): Result<ChatResponse> {
@@ -41,39 +37,15 @@ class ChatRepositoryImpl(
 
         val request = ChatRequest(
             prompt = trimmed,
-            model = "qwen2.5:3b",
-            temperature = 0.5,
+            model = "qwen2.5:0.5b",
+            temperature = 0.7,
             userId = userId
         )
 
-        // ---------------------------------------------------------------------
-        // Step 1: Attempt direct FastAPI microservice gateway (Port 8000)
-        // ---------------------------------------------------------------------
-        var directException: Throwable? = null
-        try {
+        return try {
             val response = apiService.sendMessage(request)
             if (response.isSuccessful) {
                 val body = response.body()
-                val cleanText = body?.getCleanResponse()
-                if (body != null && !cleanText.isNullOrBlank()) {
-                    return Result.success(body)
-                }
-            } else {
-                // If 404 or other server error, record and allow bridge fallback
-                directException = Exception("FastAPI gateway returned HTTP ${response.code()}")
-            }
-        } catch (e: Throwable) {
-            // Port 8000 might be inaccessible from physical device due to firewall or routing
-            directException = e
-        }
-
-        // ---------------------------------------------------------------------
-        // Step 2: Resilient fallback to Port 80 PHP Bridge (Apache -> 127.0.0.1:8000)
-        // ---------------------------------------------------------------------
-        return try {
-            val bridgeResponse = bridgeService.sendBridgeMessage(request)
-            if (bridgeResponse.isSuccessful) {
-                val body = bridgeResponse.body()
                 val cleanText = body?.getCleanResponse()
                 if (body != null && !cleanText.isNullOrBlank()) {
                     Result.success(body)
@@ -82,13 +54,13 @@ class ChatRepositoryImpl(
                     Result.failure(Exception(serverMsg))
                 }
             } else {
-                val errorBody = bridgeResponse.errorBody()?.string()
-                val code = bridgeResponse.code()
+                val errorBody = response.errorBody()?.string()
+                val code = response.code()
                 val errorMsg = when (code) {
                     404 -> "Chat endpoint not found (HTTP 404). Check backend deployment at ${ApiClient.baseUrl}."
                     500 -> "Internal error in Dr. Jarvis AI backend (HTTP 500): ${errorBody ?: ""}"
                     503 -> "Local Ollama service is unavailable. Please verify 'ollama' is running on Port 11434."
-                    else -> "Network request failed with HTTP $code: ${errorBody ?: bridgeResponse.message()}"
+                    else -> "Network request failed with HTTP $code: ${errorBody ?: response.message()}"
                 }
                 Result.failure(Exception(errorMsg))
             }
@@ -98,7 +70,7 @@ class ChatRepositoryImpl(
             )
         } catch (e: ConnectException) {
             Result.failure(
-                Exception("Cannot connect to DiaWell server at ${ApiClient.baseUrl}. Please verify your device Wi-Fi/network connection.")
+                Exception("Cannot connect to DiaWell server at ${ApiClient.baseUrl}. Please verify your network connection.")
             )
         } catch (e: UnknownHostException) {
             Result.failure(
@@ -106,7 +78,7 @@ class ChatRepositoryImpl(
             )
         } catch (e: Exception) {
             Result.failure(
-                Exception(e.localizedMessage ?: directException?.localizedMessage ?: "An unexpected error occurred while communicating with Dr. Jarvis.")
+                Exception(e.localizedMessage ?: "An unexpected error occurred while communicating with Dr. Jarvis.")
             )
         }
     }

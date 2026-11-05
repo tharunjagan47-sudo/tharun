@@ -408,7 +408,7 @@ object ApiClient {
 
     val diaWellApiService: DiaWellApiService
 
-        get() = getAiRetrofit().create(DiaWellApiService::class.java)
+        get() = getRetrofit().create(DiaWellApiService::class.java)
 
     val diaWellBridgeApiService: DiaWellApiService
 
