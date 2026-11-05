@@ -244,9 +244,9 @@ object ApiClient {
 
             .addInterceptor(loggingInterceptor)
 
-            .connectTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS)
 
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
 
             .writeTimeout(30, TimeUnit.SECONDS)
 
@@ -358,7 +358,7 @@ object ApiClient {
 
             .connectTimeout(5, TimeUnit.SECONDS)
 
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
 
             .writeTimeout(15, TimeUnit.SECONDS)
 
