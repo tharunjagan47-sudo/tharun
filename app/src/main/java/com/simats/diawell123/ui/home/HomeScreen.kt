@@ -539,19 +539,34 @@ fun HomeScreen(
                                     .clip(RoundedCornerShape(16.dp))
                                     .background(AppTheme.colors.cardBackground)
                                     .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                                    .padding(14.dp),
+                                    .padding(horizontal = 10.dp, vertical = 14.dp),
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceAround,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    val routineItems = data?.routine ?: emptyList()
+                                    val defaultRoutine = remember {
+                                        listOf(
+                                            HomeRoutineItem(icon = "🥣", label = "Breakfast", isDone = true),
+                                            HomeRoutineItem(icon = "🩸", label = "Glucose", isDone = true),
+                                            HomeRoutineItem(icon = "🥗", label = "Lunch", isDone = false),
+                                            HomeRoutineItem(icon = "💊", label = "Dinner/Meds", isDone = false),
+                                        )
+                                    }
+                                    val routineItems = data?.routine?.takeIf { it.isNotEmpty() } ?: defaultRoutine
                                     routineItems.forEach { item ->
+                                        val onRoutineClick: () -> Unit = when {
+                                            item.label.contains("Glucose", ignoreCase = true) -> onLogGlucoseClick
+                                            item.label.contains("Lunch", ignoreCase = true) || item.label.contains("Breakfast", ignoreCase = true) -> onTrackFoodClick
+                                            item.label.contains("Med", ignoreCase = true) -> onMedsTabClick
+                                            else -> onTrackFoodClick
+                                        }
                                         RoutineCheckItem(
                                             icon = item.icon.ifBlank { "✓" },
                                             label = item.label,
-                                            isDone = item.isDone
+                                            isDone = item.isDone,
+                                            onClick = onRoutineClick,
                                         )
                                     }
                                 }
@@ -574,41 +589,32 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            FloatingBubbleContainer(
-                                phaseOffsetMs = 150,
-                                modifier = Modifier.weight(1f),
+                        FloatingBubbleContainer(phaseOffsetMs = 250) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 VibrantQuickActionButton(
                                     title = "Log Glucose",
                                     icon = "🩸",
                                     gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
                                     onClick = onLogGlucoseClick,
+                                    modifier = Modifier.weight(1f),
                                 )
-                            }
-                            FloatingBubbleContainer(
-                                phaseOffsetMs = 350,
-                                modifier = Modifier.weight(1f),
-                            ) {
                                 VibrantQuickActionButton(
-                                    title = "Activity & Workout",
+                                    title = "Activity",
                                     icon = "🏃‍♂️",
                                     gradientColors = listOf(Color(0xFF00E5FF), Color(0xFF00838F)),
                                     onClick = onActivityTrackingClick,
+                                    modifier = Modifier.weight(1f),
                                 )
-                            }
-                            FloatingBubbleContainer(
-                                phaseOffsetMs = 550,
-                                modifier = Modifier.weight(1f),
-                            ) {
                                 VibrantQuickActionButton(
                                     title = "JARVIS AI",
                                     icon = "💬",
                                     gradientColors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
                                     onClick = onDietChatbotClick,
+                                    modifier = Modifier.weight(1f),
                                 )
                             }
                         }
@@ -1092,9 +1098,14 @@ fun RoutineCheckItem(
     icon: String,
     label: String,
     isDone: Boolean,
+    onClick: () -> Unit = {},
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 4.dp, vertical = 2.dp),
     ) {
         Box(
             modifier = Modifier
@@ -1108,14 +1119,18 @@ fun RoutineCheckItem(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = if (isDone) "✓" else icon, fontSize = 16.sp, color = if (isDone) AppTheme.colors.successText else AppTheme.colors.textPrimary)
+            Text(
+                text = if (isDone) "✓" else icon,
+                fontSize = 16.sp,
+                color = if (isDone) AppTheme.colors.successText else AppTheme.colors.textPrimary,
+            )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = label,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
             fontWeight = if (isDone) FontWeight.Bold else FontWeight.Medium,
             color = if (isDone) AppTheme.colors.successText else AppTheme.colors.textSecondary,
         )
@@ -1132,14 +1147,19 @@ fun VibrantQuickActionButton(
 ) {
     Box(
         modifier = modifier
+            .fillMaxWidth()
+            .height(96.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(AppTheme.colors.cardBackground)
             .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
-            .padding(12.dp),
+            .padding(horizontal = 6.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
             Box(
                 modifier = Modifier
                     .size(38.dp)
@@ -1156,8 +1176,11 @@ fun VibrantQuickActionButton(
                 text = title,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E22),
+                color = AppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 13.sp,
             )
         }
     }
