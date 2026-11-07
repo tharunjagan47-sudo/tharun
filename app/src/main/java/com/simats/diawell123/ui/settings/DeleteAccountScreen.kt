@@ -1,6 +1,9 @@
 package com.simats.diawell123.ui.settings
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,10 +54,17 @@ fun DeleteAccountScreen(
     onConfirmDeleteClick: () -> Unit = {},
 ) {
     val deleteState by viewModel.deleteState.collectAsState()
+    val context = LocalContext.current
 
     var confirmText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
     var selectedReason by remember { mutableStateOf("I no longer need the app") }
+
+    LaunchedEffect(deleteState.errorMessage) {
+        deleteState.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -193,7 +203,10 @@ fun DeleteAccountScreen(
                         .clip(RoundedCornerShape(10.dp))
                         .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
                         .border(1.dp, if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border, RoundedCornerShape(10.dp))
-                        .clickable { selectedReason = reason }
+                        .clickable {
+                            selectedReason = reason
+                            Toast.makeText(context, "Reason: $reason", Toast.LENGTH_SHORT).show()
+                        }
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                 ) {
                     Text(
@@ -284,12 +297,19 @@ fun DeleteAccountScreen(
                     .height(48.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(if (isConfirmed && !deleteState.isDeleting) Color(0xFFD32F2F) else Color(0xFFE57373).copy(alpha = 0.5f))
-                    .clickable(enabled = isConfirmed && !deleteState.isDeleting) {
-                        viewModel.deleteAccount(
-                            password = passwordText,
-                            reason = selectedReason,
-                            onSuccess = onConfirmDeleteClick
-                        )
+                    .clickable(enabled = !deleteState.isDeleting) {
+                        if (!isConfirmed) {
+                            Toast.makeText(context, "Please enter your password and type 'DELETE' to confirm.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            viewModel.deleteAccount(
+                                password = passwordText,
+                                reason = selectedReason,
+                                onSuccess = {
+                                    Toast.makeText(context, "Account permanently deleted. We're sorry to see you go.", Toast.LENGTH_LONG).show()
+                                    onConfirmDeleteClick()
+                                }
+                            )
+                        }
                     },
                 contentAlignment = Alignment.Center,
             ) {

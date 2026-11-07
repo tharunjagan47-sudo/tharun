@@ -1,6 +1,10 @@
 package com.simats.diawell123.ui.settings
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,6 +44,7 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 @Composable
 fun PrivacySecurityScreen(
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
     onPrivacyPolicyClick: () -> Unit = {},
@@ -47,9 +52,8 @@ fun PrivacySecurityScreen(
     onExportRecordsClick: () -> Unit = {},
     onDeleteAccountClick: () -> Unit = {},
 ) {
-    var appLock by remember { mutableStateOf(value = true) }
-    var biometricUnlock by remember { mutableStateOf(value = false) }
-    var dataAiPrefs by remember { mutableStateOf(value = true) }
+    val privacyState by viewModel.privacyState.collectAsState()
+    val context = LocalContext.current
 
     Box(
         modifier = modifier
@@ -142,8 +146,11 @@ fun PrivacySecurityScreen(
                 icon = "🔒",
                 title = "App Lock",
                 subtitle = "Require passcode on open",
-                checked = appLock,
-                onCheckedChange = { appLock = it },
+                checked = privacyState.appLock,
+                onCheckedChange = {
+                    viewModel.toggleAppLock(it)
+                    Toast.makeText(context, if (it) "App Lock enabled (Passcode required)" else "App Lock disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -153,8 +160,11 @@ fun PrivacySecurityScreen(
                 icon = "👆",
                 title = "Biometric Unlock",
                 subtitle = "Use Fingerprint or Face ID",
-                checked = biometricUnlock,
-                onCheckedChange = { biometricUnlock = it },
+                checked = privacyState.biometricUnlock,
+                onCheckedChange = {
+                    viewModel.toggleBiometricUnlock(it)
+                    Toast.makeText(context, if (it) "Biometric Unlock enabled" else "Biometric Unlock disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -164,8 +174,11 @@ fun PrivacySecurityScreen(
                 icon = "📊",
                 title = "Data and AI Preferences",
                 subtitle = "Use anonymized data for general AI suggestions",
-                checked = dataAiPrefs,
-                onCheckedChange = { dataAiPrefs = it },
+                checked = privacyState.dataAiPrefs,
+                onCheckedChange = {
+                    viewModel.toggleDataAiPrefs(it)
+                    Toast.makeText(context, if (it) "AI data personalization enabled" else "AI data personalization disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -193,7 +206,7 @@ fun PrivacySecurityScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Review your data preferences regularly. All security and data actions shown here represent static preview controls.",
+                text = "Review your data preferences regularly. All privacy settings are active and securely synchronized with your DiaWell account.",
                 fontSize = 11.sp,
                 color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,

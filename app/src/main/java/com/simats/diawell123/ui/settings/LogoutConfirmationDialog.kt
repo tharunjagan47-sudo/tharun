@@ -1,6 +1,8 @@
 package com.simats.diawell123.ui.settings
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,6 +37,7 @@ fun LogoutConfirmationDialog(
     onCancelClick: () -> Unit = {},
     onConfirmLogoutClick: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -99,7 +102,10 @@ fun LogoutConfirmationDialog(
                                 colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85), Color(0xFFFF5722)),
                             ),
                         )
-                        .clickable { onConfirmLogoutClick() },
+                        .clickable {
+                            Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                            onConfirmLogoutClick()
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(

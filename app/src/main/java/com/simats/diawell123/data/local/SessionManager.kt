@@ -41,6 +41,12 @@ class SessionManager private constructor(context: Context) {
         private const val KEY_LAST_ACTIVE_TIMESTAMP = "last_active_timestamp"
         private const val KEY_HAS_COMPLETED_ONBOARDING = "has_completed_onboarding"
         private const val KEY_EXPIRED_REASON = "session_expired_reason"
+        private const val KEY_APP_LOCK_ENABLED = "app_lock_enabled"
+        private const val KEY_BIOMETRIC_UNLOCK_ENABLED = "biometric_unlock_enabled"
+        private const val KEY_DATA_AI_PREFS_ENABLED = "data_ai_prefs_enabled"
+        private const val KEY_REMINDER_SOUND = "reminder_sound"
+        private const val KEY_VIBRATION_ENABLED = "vibration_enabled"
+        private const val KEY_QUIET_HOURS = "quiet_hours"
 
         @Volatile
         private var instance: SessionManager? = null
@@ -240,4 +246,22 @@ class SessionManager private constructor(context: Context) {
         }
         return reason
     }
+
+    fun isAppLockEnabled(): Boolean = prefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
+    fun setAppLockEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_APP_LOCK_ENABLED, enabled).apply()
+
+    fun isBiometricUnlockEnabled(): Boolean = prefs.getBoolean(KEY_BIOMETRIC_UNLOCK_ENABLED, false)
+    fun setBiometricUnlockEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_BIOMETRIC_UNLOCK_ENABLED, enabled).apply()
+
+    fun isDataAiPrefsEnabled(): Boolean = prefs.getBoolean(KEY_DATA_AI_PREFS_ENABLED, true)
+    fun setDataAiPrefsEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_DATA_AI_PREFS_ENABLED, enabled).apply()
+
+    fun getReminderSound(): String = prefs.getString(KEY_REMINDER_SOUND, "Gentle Chime") ?: "Gentle Chime"
+    fun setReminderSound(sound: String) = prefs.edit().putString(KEY_REMINDER_SOUND, sound).apply()
+
+    fun isVibrationEnabled(): Boolean = prefs.getBoolean(KEY_VIBRATION_ENABLED, true)
+    fun setVibrationEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
+
+    fun getQuietHours(): String = prefs.getString(KEY_QUIET_HOURS, "10:00 PM - 7:00 AM") ?: "10:00 PM - 7:00 AM"
+    fun setQuietHours(hours: String) = prefs.edit().putString(KEY_QUIET_HOURS, hours).apply()
 }

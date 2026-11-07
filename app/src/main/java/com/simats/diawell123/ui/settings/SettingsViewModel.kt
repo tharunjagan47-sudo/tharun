@@ -21,8 +21,17 @@ data class NotificationPrefsUiState(
     val mealLoggingReminders: Boolean = true,
     val glucoseCheckins: Boolean = true,
     val weeklyReportAlerts: Boolean = true,
+    val reminderSound: String = "Gentle Chime",
+    val vibration: Boolean = true,
+    val quietHours: String = "10:00 PM - 7:00 AM",
     val isSuccess: Boolean = false,
     val errorMessage: String? = null
+)
+
+data class PrivacySecurityUiState(
+    val appLock: Boolean = false,
+    val biometricUnlock: Boolean = false,
+    val dataAiPrefs: Boolean = true,
 )
 
 data class ChangePasswordUiState(
@@ -51,8 +60,23 @@ class SettingsViewModel(
     private val sessionManager: SessionManager = SessionManager.getInstance()
 ) : ViewModel() {
 
-    private val _prefsState = MutableStateFlow(NotificationPrefsUiState())
+    private val _prefsState = MutableStateFlow(
+        NotificationPrefsUiState(
+            reminderSound = sessionManager.getReminderSound(),
+            vibration = sessionManager.isVibrationEnabled(),
+            quietHours = sessionManager.getQuietHours()
+        )
+    )
     val prefsState: StateFlow<NotificationPrefsUiState> = _prefsState.asStateFlow()
+
+    private val _privacyState = MutableStateFlow(
+        PrivacySecurityUiState(
+            appLock = sessionManager.isAppLockEnabled(),
+            biometricUnlock = sessionManager.isBiometricUnlockEnabled(),
+            dataAiPrefs = sessionManager.isDataAiPrefsEnabled()
+        )
+    )
+    val privacyState: StateFlow<PrivacySecurityUiState> = _privacyState.asStateFlow()
 
     private val _passwordState = MutableStateFlow(ChangePasswordUiState())
     val passwordState: StateFlow<ChangePasswordUiState> = _passwordState.asStateFlow()
@@ -65,6 +89,36 @@ class SettingsViewModel(
 
     init {
         loadNotificationPreferences()
+    }
+
+    fun toggleAppLock(enabled: Boolean) {
+        sessionManager.setAppLockEnabled(enabled)
+        _privacyState.update { it.copy(appLock = enabled) }
+    }
+
+    fun toggleBiometricUnlock(enabled: Boolean) {
+        sessionManager.setBiometricUnlockEnabled(enabled)
+        _privacyState.update { it.copy(biometricUnlock = enabled) }
+    }
+
+    fun toggleDataAiPrefs(enabled: Boolean) {
+        sessionManager.setDataAiPrefsEnabled(enabled)
+        _privacyState.update { it.copy(dataAiPrefs = enabled) }
+    }
+
+    fun setReminderSound(sound: String) {
+        sessionManager.setReminderSound(sound)
+        _prefsState.update { it.copy(reminderSound = sound) }
+    }
+
+    fun toggleVibration(enabled: Boolean) {
+        sessionManager.setVibrationEnabled(enabled)
+        _prefsState.update { it.copy(vibration = enabled) }
+    }
+
+    fun setQuietHours(hours: String) {
+        sessionManager.setQuietHours(hours)
+        _prefsState.update { it.copy(quietHours = hours) }
     }
 
     fun loadNotificationPreferences() {

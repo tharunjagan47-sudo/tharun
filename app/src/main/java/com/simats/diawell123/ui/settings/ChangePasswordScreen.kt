@@ -1,6 +1,8 @@
 package com.simats.diawell123.ui.settings
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -62,6 +64,7 @@ fun ChangePasswordScreen(
     onSavePasswordClick: () -> Unit = {},
 ) {
     val passwordState by viewModel.passwordState.collectAsState()
+    val context = LocalContext.current
 
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -73,6 +76,12 @@ fun ChangePasswordScreen(
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
 
     var showSuccessBanner by remember { mutableStateOf(false) }
+
+    LaunchedEffect(passwordState.errorMessage) {
+        passwordState.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
@@ -289,12 +298,15 @@ fun ChangePasswordScreen(
                     when {
                         currentPassword.isBlank() -> {
                             localValidationErr = "Please enter your current password."
+                            Toast.makeText(context, "Please enter your current password.", Toast.LENGTH_SHORT).show()
                         }
                         newPassword.length < 8 -> {
                             localValidationErr = "New password must be at least 8 characters long."
+                            Toast.makeText(context, "New password must be at least 8 characters long.", Toast.LENGTH_SHORT).show()
                         }
                         newPassword != confirmPassword -> {
                             localValidationErr = "New password and confirmation do not match."
+                            Toast.makeText(context, "New password and confirmation do not match.", Toast.LENGTH_SHORT).show()
                         }
                         else -> {
                             localValidationErr = null
@@ -304,6 +316,7 @@ fun ChangePasswordScreen(
                                 confirmPassword = confirmPassword,
                                 onSuccess = {
                                     showSuccessBanner = true
+                                    Toast.makeText(context, "Password updated successfully!", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         }

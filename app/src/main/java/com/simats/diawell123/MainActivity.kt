@@ -429,6 +429,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "privacy_security" -> PrivacySecurityScreen(
+                            viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "settings" },
                             onChangePasswordClick = { currentScreen = "change_password" },
                             onPrivacyPolicyClick = { currentScreen = "privacy_policy" },

@@ -1,6 +1,8 @@
 package com.simats.diawell123.ui.settings
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -55,6 +57,7 @@ fun ExportRecordsScreen(
     onExportClick: () -> Unit = {},
 ) {
     val exportState by viewModel.exportState.collectAsState()
+    val context = LocalContext.current
 
     var selectedTimeRange by remember { mutableStateOf("Last 30 Days") }
     var selectedFormat by remember { mutableStateOf("PDF") }
@@ -63,6 +66,12 @@ fun ExportRecordsScreen(
     var includeMeals by remember { mutableStateOf(true) }
     var includeMedications by remember { mutableStateOf(true) }
     var showSuccessBanner by remember { mutableStateOf(false) }
+
+    LaunchedEffect(exportState.errorMessage) {
+        exportState.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
@@ -223,7 +232,10 @@ fun ExportRecordsScreen(
                                 color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
-                            .clickable { selectedTimeRange = range }
+                            .clickable {
+                                selectedTimeRange = range
+                                Toast.makeText(context, "Time range: $range", Toast.LENGTH_SHORT).show()
+                            }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -258,7 +270,10 @@ fun ExportRecordsScreen(
                     title = "PDF Report",
                     subtitle = "📄 Printable summary for doctor",
                     isSelected = selectedFormat == "PDF",
-                    onClick = { selectedFormat = "PDF" },
+                    onClick = {
+                        selectedFormat = "PDF"
+                        Toast.makeText(context, "Format: PDF Report", Toast.LENGTH_SHORT).show()
+                    },
                     modifier = Modifier.weight(1f),
                 )
 
@@ -266,7 +281,10 @@ fun ExportRecordsScreen(
                     title = "CSV Data",
                     subtitle = "📊 Raw spreadsheet format",
                     isSelected = selectedFormat == "CSV",
-                    onClick = { selectedFormat = "CSV" },
+                    onClick = {
+                        selectedFormat = "CSV"
+                        Toast.makeText(context, "Format: CSV Spreadsheet", Toast.LENGTH_SHORT).show()
+                    },
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -318,11 +336,13 @@ fun ExportRecordsScreen(
             IosLiquidGlassButton(
                 text = if (exportState.isLoading) "Exporting Data..." else "Export & Share Report",
                 onClick = {
+                    Toast.makeText(context, "Exporting $selectedFormat records...", Toast.LENGTH_SHORT).show()
                     viewModel.exportRecords(
                         range = backendRange,
                         format = backendFormat,
                         onSuccess = {
                             showSuccessBanner = true
+                            Toast.makeText(context, "Health records exported successfully ($selectedFormat)!", Toast.LENGTH_SHORT).show()
                         }
                     )
                 },

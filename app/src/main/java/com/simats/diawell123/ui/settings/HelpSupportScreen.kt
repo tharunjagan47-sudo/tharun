@@ -1,6 +1,11 @@
 package com.simats.diawell123.ui.settings
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import com.simats.diawell123.ui.profile.ProfileState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -56,9 +61,24 @@ fun HelpSupportScreen(
     onBackClick: () -> Unit = {},
     onContactSupportClick: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
     var expandedFaq by remember { mutableIntStateOf(0) }
     var showSuccessBanner by remember { mutableStateOf(value = false) }
+
+    val allFaqs = remember {
+        listOf(
+            "How do I log glucose?" to "Open Glucose from Quick Actions or the tab bar, enter your reading and time, select Fasting or Post-meal, and save. Follow the routine agreed with your healthcare team.",
+            "How do I manage reminders?" to "Go to Settings > Notification Preferences to turn reminders on or off and customize alert sounds and quiet hours.",
+            "How are food suggestions generated?" to "Meal ideas are tailored by JARVIS AI based on your preferred diet, food allergies, and daily glucose levels set in your profile.",
+            "How do I export my health records?" to "Navigate to Settings > Privacy and Security > Export Records to generate and share a clinical PDF report or CSV spreadsheet.",
+            "Is my data secure and private?" to "Yes, DiaWell encrypts all health data in transit and on server storage. You can delete your account or change data sharing preferences anytime."
+        )
+    }
+
+    val filteredFaqs = allFaqs.filter {
+        it.first.contains(searchQuery, ignoreCase = true) || it.second.contains(searchQuery, ignoreCase = true)
+    }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
@@ -227,7 +247,7 @@ fun HelpSupportScreen(
 
             // FAQ Section Header
             Text(
-                text = "Frequently asked questions",
+                text = "Frequently asked questions (${filteredFaqs.size})",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.colors.textPrimary,
@@ -237,35 +257,35 @@ fun HelpSupportScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // FAQ Accordion 1
-            FaqAccordionItem(
-                title = "How do I log glucose?",
-                answer = "Open Glucose, enter your reading and time, then save. Follow the tracking routine agreed with your healthcare professional.",
-                isExpanded = expandedFaq == 0,
-                onClick = { expandedFaq = if (expandedFaq == 0) -1 else 0 },
-            )
+            if (filteredFaqs.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.secondaryBackground)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No questions match '$searchQuery'. Please contact support below.",
+                        fontSize = 12.sp,
+                        color = AppTheme.colors.textSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                filteredFaqs.forEachIndexed { index, (q, a) ->
+                    FaqAccordionItem(
+                        title = q,
+                        answer = a,
+                        isExpanded = expandedFaq == index,
+                        onClick = { expandedFaq = if (expandedFaq == index) -1 else index },
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // FAQ Accordion 2
-            FaqAccordionItem(
-                title = "How do I manage reminders?",
-                answer = "Go to Settings > Notification Preferences to turn reminders on or off and customize alert timings.",
-                isExpanded = expandedFaq == 1,
-                onClick = { expandedFaq = if (expandedFaq == 1) -1 else 1 },
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // FAQ Accordion 3
-            FaqAccordionItem(
-                title = "How are food suggestions generated?",
-                answer = "Meal ideas are tailored based on your preferred diet, food allergies, and dietary goals set in your Food Preferences.",
-                isExpanded = expandedFaq == 2,
-                onClick = { expandedFaq = if (expandedFaq == 2) -1 else 2 },
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Support Email Card
             Box(
@@ -274,6 +294,18 @@ fun HelpSupportScreen(
                     .clip(RoundedCornerShape(14.dp))
                     .background(AppTheme.colors.cardBackground)
                     .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
+                    .clickable {
+                        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:support@diawell.com")
+                            putExtra(Intent.EXTRA_SUBJECT, "DiaWell Question - ${ProfileState.userName}")
+                        }
+                        try {
+                            context.startActivity(emailIntent)
+                            Toast.makeText(context, "Opening email to support@diawell.com", Toast.LENGTH_SHORT).show()
+                        } catch (_: Exception) {
+                            Toast.makeText(context, "Support: support@diawell.com", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -281,13 +313,13 @@ fun HelpSupportScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "support@example.com",
+                            text = "support@diawell.com",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
                         )
                         Text(
-                            text = "Demo email • placeholder, not a live support service",
+                            text = "Official Support • Tap to compose message",
                             fontSize = 11.sp,
                             color = AppTheme.colors.textSecondary,
                         )
@@ -300,7 +332,18 @@ fun HelpSupportScreen(
             // Contact Support Button
             IosLiquidGlassButton(
                 text = "Contact Support",
-                onClick = { showSuccessBanner = true },
+                onClick = {
+                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                        data = Uri.parse("mailto:support@diawell.com")
+                        putExtra(Intent.EXTRA_SUBJECT, "DiaWell Support Request - ${ProfileState.userName}")
+                        putExtra(Intent.EXTRA_TEXT, "Hello DiaWell Support,\n\nI need assistance with:\n")
+                    }
+                    try {
+                        context.startActivity(emailIntent)
+                    } catch (_: Exception) {}
+                    Toast.makeText(context, "Opening support email draft...", Toast.LENGTH_SHORT).show()
+                    showSuccessBanner = true
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))

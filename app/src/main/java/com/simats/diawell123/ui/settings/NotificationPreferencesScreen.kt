@@ -1,6 +1,10 @@
 package com.simats.diawell123.ui.settings
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -55,8 +59,10 @@ fun NotificationPreferencesScreen(
     onSavePreferencesClick: () -> Unit = {},
 ) {
     val prefsState by viewModel.prefsState.collectAsState()
-    var vibration by remember { mutableStateOf(true) }
+    val context = LocalContext.current
     var showSuccessBanner by remember { mutableStateOf(false) }
+    var showSoundDialog by remember { mutableStateOf(false) }
+    var showQuietHoursDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
@@ -191,7 +197,10 @@ fun NotificationPreferencesScreen(
                 subtitle = "For the dose schedule you set.",
                 icon = "💊",
                 checked = prefsState.medicationReminders,
-                onCheckedChange = { viewModel.toggleMedicationReminders(it) },
+                onCheckedChange = {
+                    viewModel.toggleMedicationReminders(it)
+                    Toast.makeText(context, if (it) "Medication reminders enabled" else "Medication reminders disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -201,7 +210,10 @@ fun NotificationPreferencesScreen(
                 subtitle = "A nudge to record meals and portions.",
                 icon = "🥗",
                 checked = prefsState.mealLoggingReminders,
-                onCheckedChange = { viewModel.toggleMealLoggingReminders(it) },
+                onCheckedChange = {
+                    viewModel.toggleMealLoggingReminders(it)
+                    Toast.makeText(context, if (it) "Meal logging reminders enabled" else "Meal logging reminders disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -211,7 +223,10 @@ fun NotificationPreferencesScreen(
                 subtitle = "Follow your agreed care routine.",
                 icon = "🩸",
                 checked = prefsState.glucoseCheckins,
-                onCheckedChange = { viewModel.toggleGlucoseCheckins(it) },
+                onCheckedChange = {
+                    viewModel.toggleGlucoseCheckins(it)
+                    Toast.makeText(context, if (it) "Glucose logging reminders enabled" else "Glucose logging reminders disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -221,7 +236,10 @@ fun NotificationPreferencesScreen(
                 subtitle = "Know when your weekly summary is ready.",
                 icon = "📊",
                 checked = prefsState.weeklyReportAlerts,
-                onCheckedChange = { viewModel.toggleWeeklyReportAlerts(it) },
+                onCheckedChange = {
+                    viewModel.toggleWeeklyReportAlerts(it)
+                    Toast.makeText(context, if (it) "Weekly report alerts enabled" else "Weekly report alerts disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -230,7 +248,8 @@ fun NotificationPreferencesScreen(
             NotificationOptionRow(
                 icon = "🔔",
                 title = "Reminder Sound",
-                value = "Gentle Chime ›",
+                value = "${prefsState.reminderSound} ›",
+                onClick = { showSoundDialog = true },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -239,8 +258,11 @@ fun NotificationPreferencesScreen(
                 title = "Vibration",
                 subtitle = "With reminder alerts",
                 icon = "📳",
-                checked = vibration,
-                onCheckedChange = { vibration = it },
+                checked = prefsState.vibration,
+                onCheckedChange = {
+                    viewModel.toggleVibration(it)
+                    Toast.makeText(context, if (it) "Vibration alerts enabled" else "Vibration alerts disabled", Toast.LENGTH_SHORT).show()
+                },
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -251,6 +273,7 @@ fun NotificationPreferencesScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
                     .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .clickable { showQuietHoursDialog = true }
                     .padding(14.dp),
             ) {
                 Column {
@@ -275,7 +298,7 @@ fun NotificationPreferencesScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "10:00 PM - 7:00 AM • active",
+                        text = "${prefsState.quietHours} • active",
                         fontSize = 11.sp,
                         color = AppTheme.colors.textSecondary,
                     )
@@ -299,6 +322,7 @@ fun NotificationPreferencesScreen(
                 onClick = {
                     viewModel.saveNotificationPreferences(onSuccess = {
                         showSuccessBanner = true
+                        Toast.makeText(context, "Notification preferences saved successfully!", Toast.LENGTH_SHORT).show()
                     })
                 },
             )
@@ -314,6 +338,105 @@ fun NotificationPreferencesScreen(
                     .fillMaxWidth()
                     .padding(bottom = 24.dp),
             )
+
+            // Reminder Sound Selection Dialog
+            if (showSoundDialog) {
+                AlertDialog(
+                    onDismissRequest = { showSoundDialog = false },
+                    title = {
+                        Text(
+                            text = "Select Reminder Sound",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp,
+                            color = AppTheme.colors.textPrimary
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("Gentle Chime", "Soft Bell", "Radar Chime", "Standard Alert").forEach { sound ->
+                                val isSelected = prefsState.reminderSound == sound
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.Transparent)
+                                        .clickable {
+                                            viewModel.setReminderSound(sound)
+                                            showSoundDialog = false
+                                            Toast.makeText(context, "Reminder sound set to $sound", Toast.LENGTH_SHORT).show()
+                                        }
+                                        .padding(12.dp)
+                                ) {
+                                    Text(
+                                        text = if (isSelected) "✓  $sound" else sound,
+                                        fontSize = 14.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showSoundDialog = false }) {
+                            Text("Done", color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    containerColor = AppTheme.colors.cardBackground
+                )
+            }
+
+            // Quiet Hours Selection Dialog
+            if (showQuietHoursDialog) {
+                AlertDialog(
+                    onDismissRequest = { showQuietHoursDialog = false },
+                    title = {
+                        Text(
+                            text = "Select Quiet Hours",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp,
+                            color = AppTheme.colors.textPrimary
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(
+                                "10:00 PM - 7:00 AM",
+                                "11:00 PM - 6:00 AM",
+                                "10:00 PM - 6:00 AM",
+                                "Disabled"
+                            ).forEach { schedule ->
+                                val isSelected = prefsState.quietHours == schedule
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.Transparent)
+                                        .clickable {
+                                            viewModel.setQuietHours(schedule)
+                                            showQuietHoursDialog = false
+                                            Toast.makeText(context, "Quiet hours updated: $schedule", Toast.LENGTH_SHORT).show()
+                                        }
+                                        .padding(12.dp)
+                                ) {
+                                    Text(
+                                        text = if (isSelected) "✓  $schedule" else schedule,
+                                        fontSize = 14.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showQuietHoursDialog = false }) {
+                            Text("Done", color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    containerColor = AppTheme.colors.cardBackground
+                )
+            }
         }
     }
 }
@@ -379,6 +502,7 @@ fun NotificationOptionRow(
     icon: String,
     title: String,
     value: String,
+    onClick: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -386,6 +510,7 @@ fun NotificationOptionRow(
             .clip(RoundedCornerShape(14.dp))
             .background(AppTheme.colors.cardBackground)
             .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
+            .clickable { onClick() }
             .padding(14.dp),
     ) {
         Row(

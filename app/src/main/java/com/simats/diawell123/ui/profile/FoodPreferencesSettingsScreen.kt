@@ -1,6 +1,10 @@
 package com.simats.diawell123.ui.profile
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -59,10 +63,13 @@ fun FoodPreferencesSettingsScreen(
     onSaveFoodPreferencesClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     var selectedDiet by remember { mutableStateOf("Non-Vegetarian") }
     var foodsToAvoid by remember { mutableStateOf("") }
     var showSuccessBanner by remember { mutableStateOf(false) }
+    var showAddAllergyDialog by remember { mutableStateOf(false) }
+    var customAllergyInput by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.loadFoodPreferences()
@@ -221,21 +228,30 @@ fun FoodPreferencesSettingsScreen(
                     title = "Vegetarian",
                     iconText = "🥦",
                     isSelected = selectedDiet == "Vegetarian",
-                    onClick = { selectedDiet = "Vegetarian" },
+                    onClick = {
+                        selectedDiet = "Vegetarian"
+                        Toast.makeText(context, "Preferred diet set to Vegetarian", Toast.LENGTH_SHORT).show()
+                    },
                     modifier = Modifier.weight(1f),
                 )
                 DietTypeOptionCard(
                     title = "Non-Vegetarian",
                     iconText = "🍗",
                     isSelected = selectedDiet == "Non-Vegetarian",
-                    onClick = { selectedDiet = "Non-Vegetarian" },
+                    onClick = {
+                        selectedDiet = "Non-Vegetarian"
+                        Toast.makeText(context, "Preferred diet set to Non-Vegetarian", Toast.LENGTH_SHORT).show()
+                    },
                     modifier = Modifier.weight(1f),
                 )
                 DietTypeOptionCard(
                     title = "Vegan",
                     iconText = "🌱",
                     isSelected = selectedDiet == "Vegan",
-                    onClick = { selectedDiet = "Vegan" },
+                    onClick = {
+                        selectedDiet = "Vegan"
+                        Toast.makeText(context, "Preferred diet set to Vegan", Toast.LENGTH_SHORT).show()
+                    },
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -260,6 +276,10 @@ fun FoodPreferencesSettingsScreen(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFB81D85),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable { showAddAllergyDialog = true }
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
                 )
             }
 
@@ -412,12 +432,69 @@ fun FoodPreferencesSettingsScreen(
                         foodsToAvoid = foodsToAvoid,
                         onSuccess = {
                             showSuccessBanner = true
+                            Toast.makeText(context, "Food preferences updated successfully!", Toast.LENGTH_SHORT).show()
                         }
                     )
                 },
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            // Add Common Allergies Dialog
+            if (showAddAllergyDialog) {
+                AlertDialog(
+                    onDismissRequest = { showAddAllergyDialog = false },
+                    title = {
+                        Text(
+                            text = "Add Allergies",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp,
+                            color = AppTheme.colors.textPrimary
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "Select common allergen to add:",
+                                fontSize = 12.sp,
+                                color = AppTheme.colors.textSecondary
+                            )
+                            listOf("Peanuts", "Shellfish", "Fish", "Sesame", "Wheat", "Mustard").forEach { item ->
+                                val alreadyExists = allergies.any { it.first.equals(item, ignoreCase = true) }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (alreadyExists) AppTheme.colors.secondaryBackground else Color.Transparent)
+                                        .clickable {
+                                            if (!alreadyExists) {
+                                                allergies.add(item to true)
+                                                Toast.makeText(context, "$item added to allergies", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "$item is already listed", Toast.LENGTH_SHORT).show()
+                                            }
+                                            showAddAllergyDialog = false
+                                        }
+                                        .padding(10.dp)
+                                ) {
+                                    Text(
+                                        text = if (alreadyExists) "✓ $item (Already added)" else "+ $item",
+                                        fontSize = 13.sp,
+                                        color = if (alreadyExists) AppTheme.colors.textMuted else Color(0xFFB81D85),
+                                        fontWeight = if (alreadyExists) FontWeight.Normal else FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showAddAllergyDialog = false }) {
+                            Text("Close", color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    containerColor = AppTheme.colors.cardBackground
+                )
+            }
         }
     }
 }

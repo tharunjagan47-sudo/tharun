@@ -1,5 +1,7 @@
 package com.simats.diawell123.ui.settings
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -67,6 +69,7 @@ fun SettingsScreen(
 ) {
     var selectedTab by remember { mutableStateOf("Settings") }
     val profileUiState by profileViewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
@@ -220,6 +223,7 @@ fun SettingsScreen(
                                                 )
                                                 .clickable {
                                                     ThemeManager.setThemeMode(mode)
+                                                    Toast.makeText(context, "Theme set to ${mode.title}", Toast.LENGTH_SHORT).show()
                                                 }
                                                 .padding(vertical = 8.dp),
                                             contentAlignment = Alignment.Center
@@ -279,7 +283,13 @@ fun SettingsScreen(
                         color = AppTheme.colors.textMuted,
                         textAlign = TextAlign.Center,
                         lineHeight = 16.sp,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                Toast.makeText(context, "DiaWell v1.0.0 (Build 123) is up to date.", Toast.LENGTH_SHORT).show()
+                            }
+                            .padding(vertical = 4.dp),
                     )
                 }
 
