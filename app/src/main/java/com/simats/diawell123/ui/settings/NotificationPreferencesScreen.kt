@@ -328,52 +328,7 @@ fun NotificationPreferencesScreen(
                     .padding(bottom = 24.dp),
             )
 
-            // Reminder Sound Selection Dialog
-            if (showSoundDialog) {
-                AlertDialog(
-                    onDismissRequest = { showSoundDialog = false },
-                    title = {
-                        Text(
-                            text = "Select Reminder Sound",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp,
-                            color = AppTheme.colors.textPrimary
-                        )
-                    },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("Gentle Chime", "Soft Bell", "Radar Chime", "Standard Alert").forEach { sound ->
-                                val isSelected = prefsState.reminderSound == sound
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.Transparent)
-                                        .clickable {
-                                            viewModel.setReminderSound(sound)
-                                            showSoundDialog = false
-                                            Toast.makeText(context, "Reminder sound set to $sound", Toast.LENGTH_SHORT).show()
-                                        }
-                                        .padding(12.dp)
-                                ) {
-                                    Text(
-                                        text = if (isSelected) "✓  $sound" else sound,
-                                        fontSize = 14.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary
-                                    )
-                                }
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showSoundDialog = false }) {
-                            Text("Done", color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
-                        }
-                    },
-                    containerColor = AppTheme.colors.cardBackground
-                )
-            }
+
 
             // Quiet Hours Selection Dialog
             if (showQuietHoursDialog) {
@@ -486,47 +441,7 @@ fun NotificationToggleRow(
     }
 }
 
-@Composable
-fun NotificationOptionRow(
-    icon: String,
-    title: String,
-    value: String,
-    onClick: () -> Unit = {},
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
-            .clickable { onClick() }
-            .padding(14.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = icon, fontSize = 18.sp)
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = title,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.textPrimary,
-                )
-            }
 
-            Text(
-                text = value,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFFB81D85),
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

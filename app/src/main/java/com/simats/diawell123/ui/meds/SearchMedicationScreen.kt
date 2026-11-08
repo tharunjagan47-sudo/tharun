@@ -87,7 +87,7 @@ fun SearchMedicationScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Search Medicine Catalog",
                         fontSize = 20.sp,
@@ -239,7 +239,7 @@ fun SearchMedicationScreen(
                             verticalAlignment = Alignment.Top,
                         ) {
                             Row(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).padding(end = 8.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
                                 Text(
@@ -248,24 +248,28 @@ fun SearchMedicationScreen(
                                     modifier = Modifier.padding(top = 2.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Column {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = tablet.name,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = AppTheme.colors.textPrimary,
+                                        softWrap = true,
+                                        lineHeight = 18.sp,
                                     )
                                     Text(
                                         text = tablet.dose,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = Color(0xFFB81D85),
+                                        softWrap = true,
                                     )
                                     if (tablet.primaryIngredient.isNotBlank()) {
                                         Text(
                                             text = "Active: ${tablet.primaryIngredient}",
                                             fontSize = 11.sp,
                                             color = AppTheme.colors.textSecondary,
+                                            softWrap = true,
                                         )
                                     }
                                 }
@@ -338,7 +342,7 @@ fun SearchMedicationScreen(
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 }

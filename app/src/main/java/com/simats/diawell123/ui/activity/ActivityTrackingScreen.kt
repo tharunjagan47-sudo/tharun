@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -131,12 +132,15 @@ fun ActivityTrackingScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.weight(1f).padding(end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         StyledBackButton(onBackClick = onBackClick)
 
                         Spacer(modifier = Modifier.width(14.dp))
 
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = "AI Activity Coach",
@@ -256,7 +260,7 @@ fun ActivityTrackingScreen(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(46.dp)
+                                .heightIn(min = 46.dp)
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(
                                     if (isSelected) {
@@ -278,7 +282,8 @@ fun ActivityTrackingScreen(
                                     if (!isTrackingActive) {
                                         viewModel.selectActivity(type)
                                     }
-                                },
+                                }
+                                .padding(vertical = 4.dp, horizontal = 4.dp),
                             contentAlignment = Alignment.Center,
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -563,7 +568,7 @@ fun ActivityTrackingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 }

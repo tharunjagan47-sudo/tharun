@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -54,7 +55,7 @@ fun FoodLogScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -78,7 +79,7 @@ fun FoodLogScreen(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Your food log",
                             fontSize = 20.sp,
@@ -214,7 +215,7 @@ fun FoodLogScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp)
+                        .heightIn(min = 52.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .background(
                             brush = Brush.horizontalGradient(
@@ -225,7 +226,8 @@ fun FoodLogScreen(
                                 ),
                             ),
                         )
-                        .clickable { onAddFoodClick() },
+                        .clickable { onAddFoodClick() }
+                        .padding(vertical = 14.dp, horizontal = 16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -266,10 +268,13 @@ fun FoodLogItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f).padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(text = icon, fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(12.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = category,
@@ -290,11 +295,14 @@ fun FoodLogItem(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
+                        softWrap = true,
+                        lineHeight = 18.sp,
                     )
                     Text(
                         text = portion,
                         fontSize = 11.sp,
                         color = AppTheme.colors.textSecondary,
+                        softWrap = true,
                     )
                 }
             }

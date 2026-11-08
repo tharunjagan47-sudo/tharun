@@ -26,12 +26,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -180,7 +183,9 @@ fun MedAlarmScreen(
             .padding(24.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -264,7 +269,9 @@ fun MedAlarmScreen(
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        lineHeight = 34.sp,
+                        softWrap = true,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -306,7 +313,7 @@ fun MedAlarmScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(58.dp)
+                        .heightIn(min = 54.dp)
                         .clip(RoundedCornerShape(18.dp))
                         .background(
                             brush = Brush.horizontalGradient(
@@ -316,7 +323,8 @@ fun MedAlarmScreen(
                                 )
                             )
                         )
-                        .clickable { onTaken() },
+                        .clickable { onTaken() }
+                        .padding(vertical = 12.dp, horizontal = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
@@ -339,11 +347,12 @@ fun MedAlarmScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
+                        .heightIn(min = 48.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color(0xFF2563EB).copy(alpha = 0.85f))
                         .border(1.dp, Color(0xFF3B82F6), RoundedCornerShape(16.dp))
-                        .clickable { onSnooze() },
+                        .clickable { onSnooze() }
+                        .padding(vertical = 10.dp, horizontal = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
@@ -365,11 +374,12 @@ fun MedAlarmScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(44.dp)
+                        .heightIn(min = 44.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .background(Color.Transparent)
                         .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.8f), RoundedCornerShape(14.dp))
-                        .clickable { onSkip() },
+                        .clickable { onSkip() }
+                        .padding(vertical = 8.dp, horizontal = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

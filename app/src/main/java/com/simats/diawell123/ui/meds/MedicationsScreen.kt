@@ -74,7 +74,7 @@ fun MedicationsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 70.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -91,7 +91,7 @@ fun MedicationsScreen(
 
                             Spacer(modifier = Modifier.width(14.dp))
 
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Your medications",
                                     fontSize = 20.sp,
@@ -340,12 +340,12 @@ fun MedicationScheduleCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).padding(end = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = iconChar, fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(14.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = time,
@@ -366,11 +366,14 @@ fun MedicationScheduleCard(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
+                        softWrap = true,
+                        lineHeight = 18.sp,
                     )
                     Text(
                         text = dose,
                         fontSize = 12.sp,
                         color = AppTheme.colors.textSecondary,
+                        softWrap = true,
                     )
                     if (primaryIngredient.isNotBlank() || category.isNotBlank()) {
                         val subInfo = listOf(
@@ -381,6 +384,7 @@ fun MedicationScheduleCard(
                             text = subInfo,
                             fontSize = 10.5.sp,
                             color = Color(0xFF7A1C7D),
+                            softWrap = true,
                         )
                     }
                 }

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -48,6 +49,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -376,7 +378,7 @@ fun FoodDetailsScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 }
@@ -519,7 +521,7 @@ fun IosLiquidGlassButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(54.dp)
+            .heightIn(min = 54.dp)
             .shadow(
                 elevation = 14.dp,
                 shape = RoundedCornerShape(27.dp),
@@ -577,6 +579,10 @@ fun IosLiquidGlassButton(
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            lineHeight = 20.sp,
+            softWrap = true,
         )
     }
 }

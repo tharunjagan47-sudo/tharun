@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -78,7 +79,8 @@ fun LogGlucoseScreen(
         modifier = modifier
             .fillMaxSize()
             .background(AppTheme.colors.background)
-            .systemBarsPadding(),
+            .systemBarsPadding()
+            .imePadding(),
     ) {
         Column(
             modifier = Modifier
@@ -99,7 +101,7 @@ fun LogGlucoseScreen(
 
                     Spacer(modifier = Modifier.width(14.dp))
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Log Glucose",
                             fontSize = 20.sp,

@@ -87,7 +87,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 70.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -104,7 +104,7 @@ fun SettingsScreen(
 
                             Spacer(modifier = Modifier.width(14.dp))
 
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Settings",
                                     fontSize = 20.sp,
@@ -131,22 +131,28 @@ fun SettingsScreen(
                                 .clickable { onPersonalProfileClick() }
                                 .padding(16.dp),
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 ProfileAvatarView(sizeDp = 48.dp, fontSizeSp = 16)
 
                                 Spacer(modifier = Modifier.width(14.dp))
 
-                                Column {
+                                Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                                     Text(
                                         text = currentName,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = AppTheme.colors.textPrimary,
+                                        softWrap = true,
+                                        lineHeight = 20.sp,
                                     )
                                     Text(
                                         text = currentEmail,
                                         fontSize = 12.sp,
                                         color = AppTheme.colors.textSecondary,
+                                        softWrap = true,
                                     )
                                 }
                             }

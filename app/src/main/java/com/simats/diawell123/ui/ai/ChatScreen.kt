@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -376,6 +377,7 @@ fun ChatScreen(
                     .fillMaxWidth()
                     .background(AppTheme.colors.cardBackground)
                     .border(width = 1.dp, color = AppTheme.colors.border)
+                    .navigationBarsPadding()
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Row(
@@ -481,7 +483,7 @@ fun ChatMessageItem(message: ChatMessage) {
         ) {
             Column(
                 horizontalAlignment = Alignment.End,
-                modifier = Modifier.widthIn(max = 280.dp)
+                modifier = Modifier.fillMaxWidth(0.82f)
             ) {
                 Box(
                     modifier = Modifier
@@ -497,7 +499,8 @@ fun ChatMessageItem(message: ChatMessage) {
                         text = message.text,
                         fontSize = 13.sp,
                         color = Color.White,
-                        lineHeight = 18.sp
+                        lineHeight = 18.sp,
+                        softWrap = true,
                     )
                 }
                 Spacer(modifier = Modifier.height(2.dp))

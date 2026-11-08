@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -168,7 +169,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 70.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -1024,6 +1025,7 @@ fun MetricCard(
     val actualActionColor = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85)
     Box(
         modifier = modifier
+            .heightIn(min = 140.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(actualCardBg)
             .border(1.dp, actualBorder, RoundedCornerShape(16.dp))
@@ -1148,7 +1150,7 @@ fun VibrantQuickActionButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(96.dp)
+            .heightIn(min = 96.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(AppTheme.colors.cardBackground)
             .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
@@ -1180,7 +1182,8 @@ fun VibrantQuickActionButton(
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                lineHeight = 13.sp,
+                lineHeight = 14.sp,
+                softWrap = true,
             )
         }
     }

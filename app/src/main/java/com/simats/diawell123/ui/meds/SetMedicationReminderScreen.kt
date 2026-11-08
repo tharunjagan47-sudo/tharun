@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -624,7 +625,7 @@ fun SetMedicationReminderScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .heightIn(min = 52.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(
                         brush = Brush.horizontalGradient(
@@ -663,7 +664,8 @@ fun SetMedicationReminderScreen(
                         viewModel.saveMedicationReminder(onSuccess = {
                             showSuccessBanner = true
                         })
-                    },
+                    }
+                    .padding(vertical = 12.dp, horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 if (reminderState.isSaving) {
@@ -688,7 +690,7 @@ fun SetMedicationReminderScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(AppTheme.colors.secondaryBackground)
                     .border(1.dp, Color(0xFFBD1E85), RoundedCornerShape(14.dp))
@@ -700,7 +702,8 @@ fun SetMedicationReminderScreen(
                             dosage = "$activeDose • $selectedTiming",
                             scheduledTime = selectedTime
                         )
-                    },
+                    }
+                    .padding(vertical = 10.dp, horizontal = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -711,7 +714,7 @@ fun SetMedicationReminderScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(48.dp))
         }
 
         // Calendar Date Picker Modal Dialog

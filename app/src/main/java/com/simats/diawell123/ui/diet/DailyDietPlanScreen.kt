@@ -96,7 +96,7 @@ fun DailyDietPlanScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 90.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
