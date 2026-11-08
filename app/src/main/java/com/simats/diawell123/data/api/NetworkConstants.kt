@@ -6,7 +6,7 @@ package com.simats.diawell123.data.api
  * Configurable endpoints:
  * - PHP Backend (Apache Port 80):
  *     - Emulator: "http://10.0.2.2/"
- *     - Physical Device LAN: "http://172.23.176.99/"
+ *     - Physical Device (ADB Reverse): "http://127.0.0.1/"
  * - Ollama Engine: Port 11434 (via PHP middleware)
  */
 object NetworkConstants {
@@ -15,20 +15,20 @@ object NetworkConstants {
     // PHP Backend Settings (Port 80 - Apache/MySQL)
     // -------------------------------------------------------------------------
     const val EMULATOR_PHP_BASE_URL = "http://10.0.2.2/"
-    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://172.23.176.99/" // Host PC LAN IPv4 from ipconfig
-    const val DEVTUNNEL_BASE_URL = "https://popcorn-clothing-pungent.ngrok-free.dev/diawell_backend/"
+    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://192.168.1.9/" // Host PC LAN IPv4 from ipconfig (Laptop Wi-Fi)
+    const val DEVTUNNEL_BASE_URL = " https://surcharge-blot-expenses.ngrok-free.dev/diawell_backend/"
 
     // -------------------------------------------------------------------------
     // Legacy / Microservice Settings (Kept for compatibility)
     // -------------------------------------------------------------------------
-    const val EMULATOR_AI_BASE_URL = "http://10.0.2.2:8000/"
-    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://172.23.176.99:8000/"
+    const val EMULATOR_AI_BASE_URL = "http://10.0.2.2/"
+    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://192.168.1.9/"
 
     /**
      * Chat endpoint path on Apache Port 80.
      */
-    const val CHAT_ENDPOINT = "DiaWell_backend/ai/chat.php"
-    const val PHP_BRIDGE_CHAT_ENDPOINT = "DiaWell_backend/ai/chat.php"
+    const val CHAT_ENDPOINT = "diawell_backend/ai/chat.php"
+    const val PHP_BRIDGE_CHAT_ENDPOINT = "diawell_backend/ai/chat.php"
 
     /**
      * Auto-detect if currently running on Android Studio Emulator or Physical Device.

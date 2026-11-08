@@ -61,7 +61,6 @@ fun NotificationPreferencesScreen(
     val prefsState by viewModel.prefsState.collectAsState()
     val context = LocalContext.current
     var showSuccessBanner by remember { mutableStateOf(false) }
-    var showSoundDialog by remember { mutableStateOf(false) }
     var showQuietHoursDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(showSuccessBanner) {
@@ -240,16 +239,6 @@ fun NotificationPreferencesScreen(
                     viewModel.toggleWeeklyReportAlerts(it)
                     Toast.makeText(context, if (it) "Weekly report alerts enabled" else "Weekly report alerts disabled", Toast.LENGTH_SHORT).show()
                 },
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sound & Vibration Settings
-            NotificationOptionRow(
-                icon = "🔔",
-                title = "Reminder Sound",
-                value = "${prefsState.reminderSound} ›",
-                onClick = { showSoundDialog = true },
             )
 
             Spacer(modifier = Modifier.height(10.dp))

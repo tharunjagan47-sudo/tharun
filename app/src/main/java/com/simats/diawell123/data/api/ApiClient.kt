@@ -178,7 +178,23 @@ object ApiClient {
 
 
 
-        val response: Response = chain.proceed(requestBuilder.build())
+        val finalRequest = requestBuilder.build()
+        val response: Response = try {
+            chain.proceed(finalRequest)
+        } catch (e: java.io.IOException) {
+            val host = finalRequest.url.host
+            val alternateHost = when (host) {
+                "127.0.0.1", "localhost" -> "192.168.1.9"
+                "192.168.1.9" -> "127.0.0.1"
+                else -> null
+            }
+            if (alternateHost != null) {
+                val altUrl = finalRequest.url.newBuilder().host(alternateHost).build()
+                chain.proceed(finalRequest.newBuilder().url(altUrl).build())
+            } else {
+                throw e
+            }
+        }
 
 
 
