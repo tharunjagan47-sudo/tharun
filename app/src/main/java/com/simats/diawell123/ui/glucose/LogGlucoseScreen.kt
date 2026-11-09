@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -52,6 +53,7 @@ import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import com.simats.diawell123.util.DiaWellNotificationHelper
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -63,9 +65,35 @@ fun LogGlucoseScreen(
     onSaveReadingClick: () -> Unit = {},
 ) {
     val uiState by viewModel.logState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
+            val vFloat = uiState.readingValue.toFloatOrNull() ?: 0f
+            val valInt = vFloat.toInt()
+            when {
+                valInt < 70 -> {
+                    DiaWellNotificationHelper.showCriticalHealthAlert(
+                        context = context,
+                        title = "⚠️ Low Blood Sugar Alert ($valInt mg/dL)",
+                        message = "Your glucose is low. Take 15g of fast-acting carbs (juice/glucose) and recheck in 15 mins."
+                    )
+                }
+                valInt > 180 -> {
+                    DiaWellNotificationHelper.showCriticalHealthAlert(
+                        context = context,
+                        title = "⚠️ High Blood Sugar Alert ($valInt mg/dL)",
+                        message = "Your glucose is elevated. Drink water, take a light 15-min walk, and monitor closely."
+                    )
+                }
+                else -> {
+                    DiaWellNotificationHelper.showGeneralNotification(
+                        context = context,
+                        title = "✅ Blood Sugar Logged ($valInt mg/dL)",
+                        message = "Great job! Your glucose level is within a healthy target range."
+                    )
+                }
+            }
             delay(1000)
             viewModel.resetLogState()
             onSaveReadingClick()

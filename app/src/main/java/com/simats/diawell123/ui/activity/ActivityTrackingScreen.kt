@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,7 @@ import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import com.simats.diawell123.util.DiaWellNotificationHelper
 import kotlinx.coroutines.delay
 
 @Composable
@@ -65,6 +67,7 @@ fun ActivityTrackingScreen(
     onFinishActivityClick: () -> Unit = {},
 ) {
     val trackingState by viewModel.trackingState.collectAsState()
+    val context = LocalContext.current
 
     var isTrackingActive by remember { mutableStateOf(false) }
     var elapsedSeconds by remember { mutableIntStateOf(0) }
@@ -545,14 +548,22 @@ fun ActivityTrackingScreen(
                             text = if (trackingState.isLoggingWorkout) "Saving..." else "✓ Complete",
                             onClick = {
                                 isTrackingActive = false
+                                val actName = trackingState.selectedActivity
+                                val dur = maxOf(1, elapsedMins)
+                                val cal = caloriesBurned
                                 viewModel.logCompletedWorkout(
-                                    activityType = trackingState.selectedActivity,
-                                    durationMins = maxOf(1, elapsedMins),
+                                    activityType = actName,
+                                    durationMins = dur,
                                     distanceKm = distanceCoveredKm,
-                                    caloriesKcal = caloriesBurned,
+                                    caloriesKcal = cal,
                                     glucoseBefore = effectiveGlucose.toFloat(),
                                     notes = "Completed $intensity workout ($metValue MET)"
                                 ) {
+                                    DiaWellNotificationHelper.showGeneralNotification(
+                                        context = context,
+                                        title = "🏃 Activity Logged!",
+                                        message = "Awesome effort! You completed $dur mins of $actName ($cal kcal burned)."
+                                    )
                                     showCompletedBanner = true
                                 }
                             },

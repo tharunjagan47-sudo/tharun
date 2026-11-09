@@ -29,6 +29,11 @@ class MedReminderReceiver : BroadcastReceiver() {
                 Log.d("MedReminderReceiver", "Action TAKEN received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
+                DiaWellNotificationHelper.showGeneralNotification(
+                    context = context,
+                    title = "✅ Dose Completed",
+                    message = "Great job taking $medName on time!"
+                )
                 Toast.makeText(context, "Marked as Taken ✅", Toast.LENGTH_SHORT).show()
             }
 
@@ -37,6 +42,11 @@ class MedReminderReceiver : BroadcastReceiver() {
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
                 DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5)
+                DiaWellNotificationHelper.showGeneralNotification(
+                    context = context,
+                    title = "⏰ Medication Snoozed",
+                    message = "We will remind you to take $medName again in 5 minutes."
+                )
                 Toast.makeText(context, "Snoozed for 5 minutes ⏰", Toast.LENGTH_SHORT).show()
             }
 
@@ -49,7 +59,22 @@ class MedReminderReceiver : BroadcastReceiver() {
             }
 
             Intent.ACTION_BOOT_COMPLETED -> {
-                Log.d("MedReminderReceiver", "Device rebooted (BOOT_COMPLETED received). Do NOT trigger immediate alarm.")
+                Log.d("MedReminderReceiver", "Device rebooted (BOOT_COMPLETED received). Rescheduling daily routine reminders.")
+                DiaWellNotificationHelper.scheduleDailyHealthReminders(context)
+            }
+
+            DiaWellNotificationHelper.ACTION_DAILY_ROUTINE_REMINDER -> {
+                val notifId = intent.getIntExtra("reminder_id", 8001)
+                val title = intent.getStringExtra("reminder_title") ?: "Health Routine Check"
+                val message = intent.getStringExtra("reminder_message") ?: "Time for your routine health check-in."
+                val hour = intent.getIntExtra("hour", 8)
+                val minute = intent.getIntExtra("minute", 0)
+
+                Log.d("MedReminderReceiver", "Daily routine reminder triggered: $title")
+                DiaWellNotificationHelper.showGeneralNotification(context, title, message, notifId)
+
+                // Reschedule for next day at the same time
+                DiaWellNotificationHelper.scheduleSingleRoutineReminder(context, notifId, hour, minute, title, message)
             }
 
             DiaWellNotificationHelper.ACTION_ALARM_TRIGGER,

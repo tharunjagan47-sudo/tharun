@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import com.simats.diawell123.util.DiaWellNotificationHelper
 
 @Composable
 fun FoodDetailsScreen(
@@ -68,6 +70,7 @@ fun FoodDetailsScreen(
     onAddToFoodLogClick: () -> Unit = {},
 ) {
     val uiState by viewModel.detailsState.collectAsState()
+    val context = LocalContext.current
     val fallbackDetails = rememberMealDetailsForCategory(mealCategory)
 
     LaunchedEffect(mealCategory, foodId, dishName) {
@@ -372,7 +375,14 @@ fun FoodDetailsScreen(
                             proteinFallback = proteinFloat,
                             fatFallback = fatFloat,
                             iconFallback = displayDetails?.icon ?: "🥗",
-                            onSuccess = onAddToFoodLogClick,
+                            onSuccess = {
+                                DiaWellNotificationHelper.showGeneralNotification(
+                                    context = context,
+                                    title = "🥗 Meal Logged Successfully",
+                                    message = "Recorded $title ($calInt kcal). Remember to take a 10-min walk after meals to control glucose spikes!"
+                                )
+                                onAddToFoodLogClick()
+                            },
                         )
                     }
                 },

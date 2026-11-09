@@ -656,8 +656,8 @@ fun SetMedicationReminderScreen(
                         // 2. Trigger Standard Confirmation Notification (normal chime, no full-screen alarm)
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = context,
-                            title = "✅ Reminder Scheduled: $activeName",
-                            message = "$activeDose scheduled for $selectedTime ($selectedTiming). DiaWell will alert you on time!",
+                            title = "💊 Medication Reminder Scheduled",
+                            message = "Reminder set for $activeName ($activeDose) at $selectedTime.",
                             notifId = medId
                         )
 

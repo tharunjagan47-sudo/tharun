@@ -102,6 +102,11 @@ class MedAlarmActivity : ComponentActivity() {
                     onTaken = {
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
+                        DiaWellNotificationHelper.showGeneralNotification(
+                            context = this,
+                            title = "✅ Dose Completed",
+                            message = "Great job taking $medName on time!"
+                        )
                         Toast.makeText(this, "Marked as Taken ✅", Toast.LENGTH_SHORT).show()
                         finish()
                     },
@@ -109,6 +114,11 @@ class MedAlarmActivity : ComponentActivity() {
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
                         DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5)
+                        DiaWellNotificationHelper.showGeneralNotification(
+                            context = this,
+                            title = "⏰ Medication Snoozed",
+                            message = "We will remind you to take $medName again in 5 minutes."
+                        )
                         Toast.makeText(this, "Snoozed for 5 minutes ⏰", Toast.LENGTH_SHORT).show()
                         finish()
                     },

@@ -65,6 +65,7 @@
                 <action android:name="com.simats.diawell123.ACTION_TAKEN" />
                 <action android:name="com.simats.diawell123.ACTION_SNOOZE" />
                 <action android:name="com.simats.diawell123.ACTION_SKIP" />
+                <action android:name="com.simats.diawell123.ACTION_DAILY_ROUTINE_REMINDER" />
             </intent-filter>
         </receiver>
     </application>

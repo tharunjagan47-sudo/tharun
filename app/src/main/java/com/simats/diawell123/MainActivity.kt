@@ -138,6 +138,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                 LaunchedEffect(Unit) {
+                    DiaWellNotificationHelper.createNotificationChannels(applicationContext)
+                    DiaWellNotificationHelper.scheduleDailyHealthReminders(applicationContext)
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)

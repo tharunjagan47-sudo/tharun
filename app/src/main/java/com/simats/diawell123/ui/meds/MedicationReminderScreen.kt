@@ -35,9 +35,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
+import com.simats.diawell123.util.DiaWellNotificationHelper
 
 @Composable
 fun MedicationReminderScreen(
@@ -50,6 +52,7 @@ fun MedicationReminderScreen(
     onSkipClick: () -> Unit = {},
 ) {
     val detailState by viewModel.detailState.collectAsState()
+    val context = LocalContext.current
     val activeMed = medication ?: detailState.medication
 
     val medId = activeMed?.id ?: 0
@@ -284,6 +287,12 @@ fun MedicationReminderScreen(
                 IosLiquidGlassButton(
                     text = "✓  Taken",
                     onClick = {
+                        val medNameStr = activeMed?.name ?: "Medication"
+                        DiaWellNotificationHelper.showGeneralNotification(
+                            context = context,
+                            title = "✅ Dose Completed",
+                            message = "Great job taking $medNameStr on time!"
+                        )
                         if (medId > 0) {
                             viewModel.updateStatus(medId, "Taken", onSuccess = onTakenClick)
                         } else {
@@ -297,7 +306,15 @@ fun MedicationReminderScreen(
                 // Snooze Button
                 IosLiquidGlassButton(
                     text = "⏰  Snooze - 15 minutes",
-                    onClick = onSnoozeClick,
+                    onClick = {
+                        val medNameStr = activeMed?.name ?: "Medication"
+                        DiaWellNotificationHelper.showGeneralNotification(
+                            context = context,
+                            title = "⏰ Medication Snoozed",
+                            message = "Reminder snoozed for 15 minutes for $medNameStr."
+                        )
+                        onSnoozeClick()
+                    },
                     gradientColors = listOf(Color(0xFF26A69A), Color(0xFF00897B)),
                 )
 
