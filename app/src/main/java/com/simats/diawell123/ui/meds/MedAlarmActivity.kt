@@ -126,6 +126,10 @@ class MedAlarmActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         DiaWellNotificationHelper.stopAlarmSound(this)
+        try {
+            val medId = intent.getIntExtra("med_id", 1001)
+            NotificationManagerCompat.from(this).cancel(medId)
+        } catch (_: Exception) {}
     }
 }
 

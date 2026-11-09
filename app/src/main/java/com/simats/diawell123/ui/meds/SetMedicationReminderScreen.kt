@@ -642,9 +642,9 @@ fun SetMedicationReminderScreen(
                         viewModel.updateReminderTiming(selectedTiming)
                         viewModel.updateReminderNotes(notes)
 
-                        // 1. Schedule Exact Local Alarm via AlarmManager
+                        // 1. Schedule Exact Local Alarm via AlarmManager (Deterministic ID per medicine prevents duplicate stacked alarms)
                         val triggerMillis = calculateScheduledMillis(reminderDateText, selectedTime)
-                        val medId = (System.currentTimeMillis() % 10000).toInt()
+                        val medId = (activeName.trim().lowercase().hashCode() and 0x7FFFFFFF) % 10000 + 1000
                         DiaWellNotificationHelper.scheduleExactMedicationAlarm(
                             context = context,
                             medId = medId,

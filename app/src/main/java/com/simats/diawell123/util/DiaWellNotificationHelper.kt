@@ -41,11 +41,12 @@ object DiaWellNotificationHelper {
 
     // Notification Channel IDs
     const val GENERAL_CHANNEL_ID = "diawell_general_channel"
-    const val ALARM_CHANNEL_ID = "diawell_med_alarm_fullscreen_v3"
+    const val ALARM_CHANNEL_ID = "diawell_med_alarm_v4"
 
     private const val LEGACY_CHANNEL_1 = "diawell_meds_channel"
     private const val LEGACY_CHANNEL_2 = "diawell_meds_channel_v2"
     private const val LEGACY_CHANNEL_3 = "diawell_meds_alarm_v2"
+    private const val LEGACY_CHANNEL_4 = "diawell_med_alarm_fullscreen_v3"
 
     // Broadcast Intent Actions
     const val ACTION_ALARM_TRIGGER = "com.simats.diawell123.ACTION_ALARM_TRIGGER"
@@ -61,6 +62,10 @@ object DiaWellNotificationHelper {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var stopAlarmRunnable: Runnable? = null
 
+    // Debounce state to prevent duplicate alarm/notification triggers within 5 seconds
+    private var lastAlarmTriggerTime: Long = 0L
+    private var lastAlarmMedName: String = ""
+
     /**
      * Initializes notification channels for both general alerts and full-screen medication alarms.
      */
@@ -73,6 +78,7 @@ object DiaWellNotificationHelper {
                 manager.deleteNotificationChannel(LEGACY_CHANNEL_1)
                 manager.deleteNotificationChannel(LEGACY_CHANNEL_2)
                 manager.deleteNotificationChannel(LEGACY_CHANNEL_3)
+                manager.deleteNotificationChannel(LEGACY_CHANNEL_4)
             } catch (_: Exception) {}
 
             // 2. Channel 1: Normal Notifications (IMPORTANCE_DEFAULT, plays notification sound once)
@@ -95,27 +101,16 @@ object DiaWellNotificationHelper {
             }
             manager.createNotificationChannel(generalChannel)
 
-            // 3. Channel 2: Full-Screen Medication Alarms (IMPORTANCE_HIGH, alarm stream, bypass DND)
-            val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-                ?: notifSound
-
+            // 3. Channel 2: Full-Screen Medication Alarms (IMPORTANCE_HIGH, silent channel so audio is exclusively controlled by MediaPlayer USAGE_ALARM stream)
             val alarmChannel = NotificationChannel(
                 ALARM_CHANNEL_ID,
                 "Medication Alarms",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Loud audio and vibration alarms for scheduled diabetes medications."
+                description = "Full-screen medication alarms and reminders."
                 enableLights(true)
-                enableVibration(true)
-                vibrationPattern = longArrayOf(0, 1000, 500, 1000, 500, 1000)
-                setSound(
-                    alarmSound,
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .build()
-                )
+                enableVibration(false) // Continuous vibration is managed by startAlarmSound()
+                setSound(null, null)  // Loud looping audio is managed by startAlarmSound() MediaPlayer on USAGE_ALARM
                 setBypassDnd(true)
                 lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
             }
@@ -224,6 +219,15 @@ object DiaWellNotificationHelper {
         dosage: String,
         scheduledTime: String = ""
     ) {
+        // Prevent duplicate alarms firing within 5 seconds for the same medication
+        val now = System.currentTimeMillis()
+        if (now - lastAlarmTriggerTime < 5000L && lastAlarmMedName.equals(medName, ignoreCase = true)) {
+            Log.w("DiaWellNotifications", "Duplicate triggerMedicationAlarm suppressed for $medName within 5s")
+            return
+        }
+        lastAlarmTriggerTime = now
+        lastAlarmMedName = medName
+
         createNotificationChannels(context)
 
         // 1. Start loud looping MediaPlayer on USAGE_ALARM stream + continuous vibration
@@ -287,15 +291,13 @@ object DiaWellNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-
         val largeIcon = try {
             BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
         } catch (_: Exception) {
             null
         }
 
+        // Clean, non-looping single alert notification (audio & continuous vibration are driven by startAlarmSound)
         val notification = NotificationCompat.Builder(context, ALARM_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .apply {
@@ -313,8 +315,8 @@ object DiaWellNotificationHelper {
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setContentIntent(fullScreenPendingIntent)
             .setDeleteIntent(skipPendingIntent) // Swiping away stops the alarm
-            .setSound(alarmUri)
-            .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000))
+            .setSound(null) // Audio is exclusively and cleanly handled by the MediaPlayer engine
+            .setOnlyAlertOnce(true) // Alerts only once — never re-triggers or creates repeated noise
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
             .addAction(android.R.drawable.checkbox_on_background, "Taken", takenPendingIntent)
@@ -322,11 +324,11 @@ object DiaWellNotificationHelper {
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Skip", skipPendingIntent)
             .build()
 
-        notification.flags = notification.flags or Notification.FLAG_INSISTENT
-
         try {
+            // Cancel any prior notification for this medId before posting to prevent notification stacking
+            NotificationManagerCompat.from(context).cancel(medId)
             NotificationManagerCompat.from(context).notify(medId, notification)
-            Log.d("DiaWellNotifications", "Full-screen alarm notification posted for id=$medId")
+            Log.d("DiaWellNotifications", "Full-screen alarm notification posted once for id=$medId")
         } catch (e: Exception) {
             Log.e("DiaWellNotifications", "Failed to post alarm notification: ${e.message}", e)
         }
@@ -483,6 +485,9 @@ object DiaWellNotificationHelper {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
         checkAndPromptExactAlarmPermission(context)
+
+        // Cancel any existing alarm for this medId to prevent duplicate triggers
+        cancelMedicationAlarm(context, medId)
 
         // Defensive safety check against past or near-immediate timestamps
         var finalTrigger = triggerAtMillis
