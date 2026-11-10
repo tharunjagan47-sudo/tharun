@@ -50,6 +50,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -102,6 +103,46 @@ fun ChatScreen(
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
+    val voiceManager = remember { JarvisVoiceManager(context) }
+    val voiceState by voiceManager.voiceState.collectAsState()
+    val rmsLevel by voiceManager.rmsLevel.collectAsState()
+    val partialTranscript by voiceManager.partialTranscript.collectAsState()
+    val voiceError by voiceManager.voiceError.collectAsState()
+    val localeLabel by voiceManager.activeLocaleLabel.collectAsState()
+
+    var isVoiceOverlayOpen by remember { mutableStateOf(false) }
+    var autoSpeakEnabled by remember { mutableStateOf(true) }
+
+    val latestAiResponse = remember(messages) {
+        messages.lastOrNull { it.sender == ChatSender.AI }?.text ?: ""
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            voiceManager.release()
+        }
+    }
+
+    fun submitQuery(query: String, fromVoice: Boolean = false) {
+        if (fromVoice || isVoiceOverlayOpen) {
+            voiceManager.setThinkingState()
+        }
+        viewModel.sendMessage(
+            query = query,
+            context = context,
+            onSpokenResponseReady = { reply ->
+                if (autoSpeakEnabled || fromVoice) {
+                    voiceManager.speak(reply)
+                } else {
+                    voiceManager.setIdleState()
+                }
+            },
+            onErrorCallback = {
+                voiceManager.setIdleState()
+            }
+        )
+    }
+
     // Auto-scroll to bottom on new messages or loading change
     LaunchedEffect(messages.size, isLoading) {
         if (messages.isNotEmpty()) {
@@ -110,7 +151,7 @@ fun ChatScreen(
     }
 
     // -------------------------------------------------------------------------
-    // Voice Input Speech Recognizer Integration
+    // Voice Input Speech Recognizer & Siri-Style Live Voice Session Integration
     // -------------------------------------------------------------------------
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -119,16 +160,33 @@ fun ChatScreen(
             val spokenMatches = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             val spokenText = spokenMatches?.firstOrNull()?.trim()
             if (!spokenText.isNullOrEmpty()) {
-                inputText = if (inputText.isBlank()) spokenText else "$inputText $spokenText"
+                submitQuery(spokenText, fromVoice = true)
+            } else {
+                voiceManager.setIdleState()
             }
+        } else {
+            voiceManager.setIdleState()
         }
+    }
+
+    fun beginLiveVoiceSession() {
+        voiceManager.stopSpeaking()
+        isVoiceOverlayOpen = true
+        voiceManager.startListening(
+            onFinalResult = { spokenText ->
+                submitQuery(spokenText, fromVoice = true)
+            },
+            onFallbackIntentNeeded = {
+                launchSpeechInput(context, speechLauncher)
+            }
+        )
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            launchSpeechInput(context, speechLauncher)
+            beginLiveVoiceSession()
         } else {
             Toast.makeText(
                 context,
@@ -141,7 +199,7 @@ fun ChatScreen(
     fun startVoiceInput() {
         val permission = android.Manifest.permission.RECORD_AUDIO
         if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            launchSpeechInput(context, speechLauncher)
+            beginLiveVoiceSession()
         } else {
             permissionLauncher.launch(permission)
         }
@@ -188,7 +246,12 @@ fun ChatScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     StyledBackButton(onBackClick = onBackClick)
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -235,9 +298,53 @@ fun ChatScreen(
                     }
                 }
 
-                // Reset Chat Action
-                IconButton(onClick = { viewModel.resetChat() }) {
-                    Text(text = "🔄", fontSize = 18.sp)
+                // Right Controls: Auto-Speak Toggle, Siri Voice Mode Pill & Reset Chat
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    IconButton(
+                        onClick = {
+                            autoSpeakEnabled = !autoSpeakEnabled
+                            if (!autoSpeakEnabled) {
+                                voiceManager.stopSpeaking()
+                            }
+                        }
+                    ) {
+                        Text(
+                            text = if (autoSpeakEnabled) "🔊" else "🔇",
+                            fontSize = 17.sp
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722))
+                                )
+                            )
+                            .clickable { startVoiceInput() }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🎙️ Voice",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            voiceManager.stopSpeaking()
+                            viewModel.resetChat()
+                        }
+                    ) {
+                        Text(text = "🔄", fontSize = 18.sp)
+                    }
                 }
             }
 
@@ -279,7 +386,10 @@ fun ChatScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(messages, key = { it.id }) { message ->
-                    ChatMessageItem(message = message)
+                    ChatMessageItem(
+                        message = message,
+                        onSpeakClick = { textToSpeak -> voiceManager.speak(textToSpeak) }
+                    )
                 }
 
                 if (isLoading) {
@@ -325,7 +435,18 @@ fun ChatScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFC62828),
                                 modifier = Modifier
-                                    .clickable { viewModel.retryLastMessage() }
+                                    .clickable {
+                                        viewModel.retryLastMessage(
+                                            context = context,
+                                            onSpokenResponseReady = { reply ->
+                                                if (autoSpeakEnabled || isVoiceOverlayOpen) {
+                                                    voiceManager.speak(reply)
+                                                } else {
+                                                    voiceManager.setIdleState()
+                                                }
+                                            }
+                                        )
+                                    }
                                     .padding(4.dp)
                             )
                         }
@@ -356,7 +477,7 @@ fun ChatScreen(
                             .clip(RoundedCornerShape(16.dp))
                             .background(AppTheme.colors.elevatedSurface)
                             .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                            .clickable { viewModel.sendMessage(cleanPrompt) }
+                            .clickable { submitQuery(cleanPrompt, fromVoice = false) }
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
                         Text(
@@ -447,7 +568,7 @@ fun ChatScreen(
                                 if (inputText.isNotBlank()) {
                                     val query = inputText.trim()
                                     inputText = ""
-                                    viewModel.sendMessage(query)
+                                    submitQuery(query, fromVoice = false)
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -462,6 +583,43 @@ fun ChatScreen(
                 }
             }
         }
+
+        // Interactive Siri-Style Voice Assistant Overlay
+        SiriVoiceOverlay(
+            visible = isVoiceOverlayOpen,
+            voiceState = voiceState,
+            rmsLevel = rmsLevel,
+            partialTranscript = partialTranscript,
+            latestAiResponse = latestAiResponse,
+            voiceError = voiceError,
+            localeLabel = localeLabel,
+            isAutoSpeakEnabled = autoSpeakEnabled,
+            onOrbTap = {
+                when (voiceState) {
+                    JarvisVoiceState.LISTENING -> voiceManager.stopListening()
+                    JarvisVoiceState.SPEAKING -> beginLiveVoiceSession()
+                    else -> beginLiveVoiceSession()
+                }
+            },
+            onQuickVoiceCommand = { cmd ->
+                voiceManager.stopSpeaking()
+                submitQuery(cmd, fromVoice = true)
+            },
+            onToggleAutoSpeak = {
+                autoSpeakEnabled = !autoSpeakEnabled
+                if (!autoSpeakEnabled) {
+                    voiceManager.stopSpeaking()
+                }
+            },
+            onStopAudio = {
+                voiceManager.stopSpeaking()
+            },
+            onClose = {
+                isVoiceOverlayOpen = false
+                voiceManager.cancelListening()
+                voiceManager.stopSpeaking()
+            }
+        )
     }
 }
 
@@ -469,7 +627,10 @@ fun ChatScreen(
  * Single Message Bubble with Sender Alignment, Clinical Cards, and Nutrition Chips.
  */
 @Composable
-fun ChatMessageItem(message: ChatMessage) {
+fun ChatMessageItem(
+    message: ChatMessage,
+    onSpeakClick: (String) -> Unit = {}
+) {
     val isUser = message.sender == ChatSender.USER
     val timeFormatted = remember(message.timestamp) {
         SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.timestamp))
@@ -551,13 +712,29 @@ fun ChatMessageItem(message: ChatMessage) {
                                 text = "Dr. Jarvis AI ⚡🩺",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85)
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
                             )
-                            Text(
-                                text = timeFormatted,
-                                fontSize = 10.sp,
-                                color = AppTheme.colors.textMuted
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "🔊",
+                                    fontSize = 13.sp,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable { onSpeakClick(message.text) }
+                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                )
+                                Text(
+                                    text = timeFormatted,
+                                    fontSize = 10.sp,
+                                    color = AppTheme.colors.textMuted
+                                )
+                            }
                         }
 
                         // Clinical Emergency Alert Card
@@ -828,8 +1005,9 @@ private fun launchSpeechInput(
             RecognizerIntent.EXTRA_LANGUAGE_MODEL,
             RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
         )
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-        putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to Dr. Jarvis...")
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-IN")
+        putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to Dr. Jarvis (English / Tanglish)...")
     }
     try {
         launcher.launch(intent)
