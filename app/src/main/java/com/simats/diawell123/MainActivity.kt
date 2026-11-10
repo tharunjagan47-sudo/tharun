@@ -482,6 +482,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "export_report_viewer" -> ExportReportViewerScreen(
+                            viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "export_records" },
                             onDoneClick = { currentScreen = "privacy_security" },
                         )

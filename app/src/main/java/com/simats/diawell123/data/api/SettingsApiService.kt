@@ -28,9 +28,17 @@ interface SettingsApiService {
         @Body request: ChangePasswordRequest
     ): Response<ChangePasswordResponse>
 
+    @GET("export_patient_report.php")
+    suspend fun exportPatientReport(
+        @Query("days") days: String = "30",
+        @Query("range") range: String = "30",
+        @Query("format") format: String = "json"
+    ): Response<ExportRecordsResponse>
+
     @GET("settings/export_records.php")
     suspend fun exportRecords(
         @Query("range") range: String = "all",
+        @Query("days") days: String = "all",
         @Query("format") format: String = "json"
     ): Response<ExportRecordsResponse>
 

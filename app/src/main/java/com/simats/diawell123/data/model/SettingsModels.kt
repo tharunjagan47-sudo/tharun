@@ -86,6 +86,16 @@ data class ExportRecordsResponse(
     val data: ExportRecordsData? = null
 )
 
+data class ExportReportOptions(
+    val timeRangeLabel: String = "Last 30 Days",
+    val daysParam: String = "30",
+    val format: String = "PDF",
+    val includeGlucose: Boolean = true,
+    val includeMeals: Boolean = true,
+    val includeMedications: Boolean = true,
+    val includeActivity: Boolean = true
+)
+
 data class ExportRecordsData(
     @SerializedName("user_id")
     val userId: Int = 0,
@@ -95,6 +105,9 @@ data class ExportRecordsData(
 
     @SerializedName("range")
     val range: String = "all",
+
+    @SerializedName("days")
+    val days: String = "all",
 
     @SerializedName("patient")
     val patient: ExportPatientProfile = ExportPatientProfile(),
@@ -125,6 +138,15 @@ data class ExportPatientProfile(
     @SerializedName("email")
     val email: String = "",
 
+    @SerializedName("phone")
+    val phone: String = "",
+
+    @SerializedName("gender")
+    val gender: String = "",
+
+    @SerializedName("blood_group")
+    val bloodGroup: String = "",
+
     @SerializedName("diabetes_type")
     val diabetesType: String = "",
 
@@ -145,20 +167,65 @@ data class ExportPatientProfile(
 )
 
 data class ExportSummary(
+    @SerializedName("period_label")
+    val periodLabel: String = "",
+
+    @SerializedName("start_date")
+    val startDate: String = "",
+
+    @SerializedName("end_date")
+    val endDate: String = "",
+
     @SerializedName("total_glucose_readings")
     val totalGlucoseReadings: Int = 0,
 
     @SerializedName("average_glucose")
     val averageGlucose: Float = 0f,
 
+    @SerializedName("min_glucose")
+    val minGlucose: Float = 0f,
+
+    @SerializedName("max_glucose")
+    val maxGlucose: Float = 0f,
+
+    @SerializedName("in_target_percent")
+    val inTargetPercent: Int = 0,
+
+    @SerializedName("estimated_hba1c")
+    val estimatedHba1c: Float = 0f,
+
     @SerializedName("total_meals_logged")
     val totalMealsLogged: Int = 0,
+
+    @SerializedName("total_calories")
+    val totalCalories: Int = 0,
+
+    @SerializedName("average_daily_calories")
+    val averageDailyCalories: Int = 0,
+
+    @SerializedName("total_carbs_g")
+    val totalCarbsG: Float = 0f,
 
     @SerializedName("total_medications")
     val totalMedications: Int = 0,
 
+    @SerializedName("taken_medications")
+    val takenMedications: Int = 0,
+
+    @SerializedName("adherence_percent")
+    val adherencePercent: Int = 0,
+
     @SerializedName("total_workouts")
-    val totalWorkouts: Int = 0
+    val totalWorkouts: Int = 0,
+
+    @SerializedName("total_activity_mins")
+    val totalActivityMins: Int = 0,
+
+    @SerializedName("total_activity_calories")
+    val totalActivityCalories: Int = 0,
+
+    @SerializedName("care_status")
+    val careStatus: String = ""
 )
 
 /**

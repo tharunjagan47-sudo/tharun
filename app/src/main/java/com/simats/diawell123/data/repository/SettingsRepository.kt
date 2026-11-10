@@ -125,7 +125,11 @@ class SettingsRepositoryImpl(
 
     override suspend fun exportRecords(range: String, format: String): Result<ExportRecordsData> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.exportRecords(range = range, format = format)
+            // Always request structured JSON from backend; Android renders real PDF or CSV files locally
+            var response = apiService.exportPatientReport(days = range, range = range, format = "json")
+            if (!response.isSuccessful && response.code() == 404) {
+                response = apiService.exportRecords(range = range, days = range, format = "json")
+            }
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
