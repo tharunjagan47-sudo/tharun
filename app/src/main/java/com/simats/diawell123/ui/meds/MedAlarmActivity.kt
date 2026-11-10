@@ -55,9 +55,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.lifecycleScope
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.util.DiaWellNotificationHelper
+import com.simats.diawell123.util.MedicationStatusUpdater
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -91,6 +94,9 @@ class MedAlarmActivity : ComponentActivity() {
         val medName = intent.getStringExtra("med_name") ?: "Medication"
         val medDosage = intent.getStringExtra("med_dosage") ?: "500 mg • 1 Tablet"
         val scheduledTime = intent.getStringExtra("scheduled_time") ?: SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
+        val userId = intent.getIntExtra("user_id", -1)
+
+        var isHandlingAction = false
 
         setContent {
             Diawell123Theme(darkTheme = true) {
@@ -100,33 +106,77 @@ class MedAlarmActivity : ComponentActivity() {
                     medDosage = medDosage,
                     scheduledTime = scheduledTime,
                     onTaken = {
+                        if (isHandlingAction) return@MedAlarmScreen
+                        isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
+                        DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
                             title = "✅ Dose Completed",
                             message = "Great job taking $medName on time!"
                         )
                         Toast.makeText(this, "Marked as Taken ✅", Toast.LENGTH_SHORT).show()
-                        finish()
+
+                        lifecycleScope.launch {
+                            MedicationStatusUpdater.updateStatusAndNotify(
+                                context = applicationContext,
+                                medId = medId,
+                                medName = medName,
+                                status = "Taken",
+                                explicitUserId = userId
+                            )
+                            finish()
+                        }
                     },
                     onSnooze = {
+                        if (isHandlingAction) return@MedAlarmScreen
+                        isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
-                        DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5)
+                        DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5, userId)
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
                             title = "⏰ Medication Snoozed",
                             message = "We will remind you to take $medName again in 5 minutes."
                         )
                         Toast.makeText(this, "Snoozed for 5 minutes ⏰", Toast.LENGTH_SHORT).show()
-                        finish()
+
+                        lifecycleScope.launch {
+                            MedicationStatusUpdater.updateStatusAndNotify(
+                                context = applicationContext,
+                                medId = medId,
+                                medName = medName,
+                                status = "Snoozed",
+                                explicitUserId = userId,
+                                snoozeMinutes = 5
+                            )
+                            finish()
+                        }
                     },
                     onSkip = {
+                        if (isHandlingAction) return@MedAlarmScreen
+                        isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
+                        DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
+                        DiaWellNotificationHelper.showGeneralNotification(
+                            context = this,
+                            title = "⏭️ Dose Skipped",
+                            message = "Marked $medName as skipped for this schedule."
+                        )
                         Toast.makeText(this, "Medication Skipped", Toast.LENGTH_SHORT).show()
-                        finish()
+
+                        lifecycleScope.launch {
+                            MedicationStatusUpdater.updateStatusAndNotify(
+                                context = applicationContext,
+                                medId = medId,
+                                medName = medName,
+                                status = "Skipped",
+                                explicitUserId = userId
+                            )
+                            finish()
+                        }
                     }
                 )
             }

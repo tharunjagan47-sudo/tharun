@@ -8,6 +8,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
 import com.simats.diawell123.util.DiaWellNotificationHelper
+import com.simats.diawell123.util.MedicationStatusUpdater
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * BroadcastReceiver triggered when an AlarmManager clock event fires
@@ -21,41 +25,100 @@ class MedReminderReceiver : BroadcastReceiver() {
         val medName = intent.getStringExtra("med_name") ?: "Medication"
         val medDose = intent.getStringExtra("med_dose") ?: intent.getStringExtra("med_dosage") ?: ""
         val scheduledTime = intent.getStringExtra("scheduled_time") ?: ""
+        val userId = intent.getIntExtra("user_id", -1)
 
-        Log.d("MedReminderReceiver", "Broadcast received: action=$action, medId=$medId, medName=$medName")
+        Log.d("MedReminderReceiver", "Broadcast received: action=$action, medId=$medId, medName=$medName, userId=$userId")
 
         when (action) {
             DiaWellNotificationHelper.ACTION_TAKEN -> {
                 Log.d("MedReminderReceiver", "Action TAKEN received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
+                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "✅ Dose Completed",
                     message = "Great job taking $medName on time!"
                 )
                 Toast.makeText(context, "Marked as Taken ✅", Toast.LENGTH_SHORT).show()
+
+                val pendingResult = goAsync()
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        MedicationStatusUpdater.updateStatusAndNotify(
+                            context = context.applicationContext,
+                            medId = medId,
+                            medName = medName,
+                            status = "Taken",
+                            explicitUserId = userId
+                        )
+                    } finally {
+                        pendingResult.finish()
+                    }
+                }
             }
 
             DiaWellNotificationHelper.ACTION_SNOOZE -> {
                 Log.d("MedReminderReceiver", "Action SNOOZE received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
-                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5)
+                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId)
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "⏰ Medication Snoozed",
                     message = "We will remind you to take $medName again in 5 minutes."
                 )
                 Toast.makeText(context, "Snoozed for 5 minutes ⏰", Toast.LENGTH_SHORT).show()
+
+                val pendingResult = goAsync()
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        MedicationStatusUpdater.updateStatusAndNotify(
+                            context = context.applicationContext,
+                            medId = medId,
+                            medName = medName,
+                            status = "Snoozed",
+                            explicitUserId = userId,
+                            snoozeMinutes = 5
+                        )
+                    } finally {
+                        pendingResult.finish()
+                    }
+                }
             }
 
-            DiaWellNotificationHelper.ACTION_SKIP,
-            DiaWellNotificationHelper.ACTION_DISMISS_ALARM -> {
-                Log.d("MedReminderReceiver", "Action SKIP/DISMISS received for medId=$medId")
+            DiaWellNotificationHelper.ACTION_SKIP -> {
+                Log.d("MedReminderReceiver", "Action SKIP received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
+                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                DiaWellNotificationHelper.showGeneralNotification(
+                    context = context,
+                    title = "⏭️ Dose Skipped",
+                    message = "Marked $medName as skipped for this schedule."
+                )
                 Toast.makeText(context, "Medication Skipped", Toast.LENGTH_SHORT).show()
+
+                val pendingResult = goAsync()
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        MedicationStatusUpdater.updateStatusAndNotify(
+                            context = context.applicationContext,
+                            medId = medId,
+                            medName = medName,
+                            status = "Skipped",
+                            explicitUserId = userId
+                        )
+                    } finally {
+                        pendingResult.finish()
+                    }
+                }
+            }
+
+            DiaWellNotificationHelper.ACTION_DISMISS_ALARM -> {
+                Log.d("MedReminderReceiver", "Action DISMISS received for medId=$medId")
+                DiaWellNotificationHelper.stopAlarmSound(context)
+                NotificationManagerCompat.from(context).cancel(medId)
             }
 
             Intent.ACTION_BOOT_COMPLETED -> {
@@ -99,7 +162,8 @@ class MedReminderReceiver : BroadcastReceiver() {
                     medId = medId,
                     medName = medName,
                     dosage = medDose,
-                    scheduledTime = scheduledTime
+                    scheduledTime = scheduledTime,
+                    userId = userId
                 )
             }
 

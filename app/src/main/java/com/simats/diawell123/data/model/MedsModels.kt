@@ -166,7 +166,19 @@ data class UpdateMedicationStatusRequest(
     val medicationId: Int,
 
     @SerializedName("status")
-    val status: String
+    val status: String,
+
+    @SerializedName("user_id")
+    val userId: Int? = null,
+
+    @SerializedName("medication_name")
+    val medicationName: String? = null,
+
+    @SerializedName("snooze_minutes")
+    val snoozeMinutes: Int? = null,
+
+    @SerializedName("new_reminder_time")
+    val newReminderTime: String? = null
 )
 
 data class UpdateMedicationStatusResponse(

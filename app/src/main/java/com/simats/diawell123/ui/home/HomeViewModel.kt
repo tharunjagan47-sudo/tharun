@@ -7,6 +7,7 @@ import com.simats.diawell123.data.model.DashboardData
 import com.simats.diawell123.data.repository.HomeRepository
 import com.simats.diawell123.data.repository.HomeRepositoryImpl
 import com.simats.diawell123.ui.profile.ProfileState
+import com.simats.diawell123.util.MedicationStatusUpdater
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +30,11 @@ class HomeViewModel(
 
     init {
         loadDashboard(isPullToRefresh = false)
+        viewModelScope.launch {
+            MedicationStatusUpdater.events.collect {
+                loadDashboard(isPullToRefresh = true)
+            }
+        }
     }
 
     /**

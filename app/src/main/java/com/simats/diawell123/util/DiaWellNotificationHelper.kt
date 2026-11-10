@@ -28,6 +28,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.simats.diawell123.MainActivity
 import com.simats.diawell123.R
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.receiver.MedReminderReceiver
 import com.simats.diawell123.ui.meds.MedAlarmActivity
 
@@ -331,7 +332,8 @@ object DiaWellNotificationHelper {
         medId: Int,
         medName: String,
         dosage: String,
-        scheduledTime: String = ""
+        scheduledTime: String = "",
+        userId: Int = -1
     ) {
         // Prevent duplicate alarms firing within 5 seconds for the same medication
         val now = System.currentTimeMillis()
@@ -341,6 +343,13 @@ object DiaWellNotificationHelper {
         }
         lastAlarmTriggerTime = now
         lastAlarmMedName = medName
+
+        val resolvedUserId = userId.takeIf { it > 0 } ?: try {
+            SessionManager.init(context.applicationContext)
+            SessionManager.getInstance().getUserId() ?: -1
+        } catch (_: Exception) {
+            -1
+        }
 
         createNotificationChannels(context)
 
@@ -356,6 +365,7 @@ object DiaWellNotificationHelper {
             putExtra("med_name", medName)
             putExtra("med_dosage", dosage)
             putExtra("scheduled_time", scheduledTime)
+            putExtra("user_id", resolvedUserId)
         }
 
         val fullScreenPendingIntent = PendingIntent.getActivity(
@@ -371,6 +381,7 @@ object DiaWellNotificationHelper {
             putExtra("med_id", medId)
             putExtra("med_name", medName)
             putExtra("med_dosage", dosage)
+            putExtra("user_id", resolvedUserId)
         }
         val takenPendingIntent = PendingIntent.getBroadcast(
             context,
@@ -384,6 +395,7 @@ object DiaWellNotificationHelper {
             putExtra("med_id", medId)
             putExtra("med_name", medName)
             putExtra("med_dosage", dosage)
+            putExtra("user_id", resolvedUserId)
         }
         val snoozePendingIntent = PendingIntent.getBroadcast(
             context,
@@ -397,11 +409,25 @@ object DiaWellNotificationHelper {
             putExtra("med_id", medId)
             putExtra("med_name", medName)
             putExtra("med_dosage", dosage)
+            putExtra("user_id", resolvedUserId)
         }
         val skipPendingIntent = PendingIntent.getBroadcast(
             context,
             medId + 30000,
             skipIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val dismissIntent = Intent(context, MedReminderReceiver::class.java).apply {
+            action = ACTION_DISMISS_ALARM
+            putExtra("med_id", medId)
+            putExtra("med_name", medName)
+            putExtra("user_id", resolvedUserId)
+        }
+        val dismissPendingIntent = PendingIntent.getBroadcast(
+            context,
+            medId + 40000,
+            dismissIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -428,7 +454,7 @@ object DiaWellNotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setContentIntent(fullScreenPendingIntent)
-            .setDeleteIntent(skipPendingIntent) // Swiping away stops the alarm
+            .setDeleteIntent(dismissPendingIntent) // Swiping away stops the alarm without altering status
             .setSound(null) // Audio is exclusively and cleanly handled by the MediaPlayer engine
             .setOnlyAlertOnce(true) // Alerts only once — never re-triggers or creates repeated noise
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -594,7 +620,8 @@ object DiaWellNotificationHelper {
         medId: Int,
         medName: String,
         dose: String,
-        triggerAtMillis: Long
+        triggerAtMillis: Long,
+        userId: Int = -1
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
@@ -613,11 +640,22 @@ object DiaWellNotificationHelper {
             Log.w("DiaWellNotifications", "triggerAtMillis ($triggerAtMillis) was in past or <= 5s. Rolled forward to tomorrow: $finalTrigger")
         }
 
+        val resolvedUserId = userId.takeIf { it > 0 } ?: try {
+            SessionManager.init(context.applicationContext)
+            SessionManager.getInstance().getUserId() ?: -1
+        } catch (_: Exception) {
+            -1
+        }
+        val scheduledTimeLabel = java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
+            .format(java.util.Date(finalTrigger))
+
         val intent = Intent(context, MedReminderReceiver::class.java).apply {
             action = ACTION_ALARM_TRIGGER
             putExtra("med_id", medId)
             putExtra("med_name", medName)
             putExtra("med_dose", dose)
+            putExtra("scheduled_time", scheduledTimeLabel)
+            putExtra("user_id", resolvedUserId)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -682,10 +720,11 @@ object DiaWellNotificationHelper {
         medId: Int,
         medName: String,
         dose: String,
-        snoozeMinutes: Int = 5
+        snoozeMinutes: Int = 5,
+        userId: Int = -1
     ) {
         val triggerTime = System.currentTimeMillis() + (snoozeMinutes * 60 * 1000L)
-        scheduleExactMedicationAlarm(context, medId, medName, dose, triggerTime)
+        scheduleExactMedicationAlarm(context, medId, medName, dose, triggerTime, userId)
         Log.d("DiaWellNotifications", "Snoozed medId=$medId for $snoozeMinutes minutes (trigger=$triggerTime)")
     }
 

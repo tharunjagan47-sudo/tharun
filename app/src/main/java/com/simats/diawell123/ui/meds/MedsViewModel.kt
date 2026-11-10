@@ -8,6 +8,8 @@ import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.data.model.MedicationsData
 import com.simats.diawell123.data.repository.MedsRepository
 import com.simats.diawell123.data.repository.MedsRepositoryImpl
+import com.simats.diawell123.util.MedStatusChangedEvent
+import com.simats.diawell123.util.MedicationStatusUpdater
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,6 +84,88 @@ class MedsViewModel(
     init {
         loadMedications()
         searchMedications("")
+        observeStatusChanges()
+    }
+
+    private fun observeStatusChanges() {
+        viewModelScope.launch {
+            MedicationStatusUpdater.events.collect { event ->
+                applyOptimisticStatusEvent(event)
+                loadMedications(isPullToRefresh = true)
+            }
+        }
+    }
+
+    private fun statusStyleFor(status: String): Pair<String, String> {
+        return when (status.lowercase(Locale.getDefault())) {
+            "taken" -> "#2E7D32" to "#E8F5E9"
+            "snoozed" -> "#1565C0" to "#E3F2FD"
+            "skipped", "missed" -> "#C62828" to "#FFEBEE"
+            else -> "#B81D85" to "#FDEEF7"
+        }
+    }
+
+    private fun applyOptimisticStatusEvent(event: MedStatusChangedEvent) {
+        val (sColor, sBg) = statusStyleFor(event.status)
+        _listState.update { state ->
+            val currentData = state.data ?: return@update state
+            val meds = currentData.medications
+            if (meds.isEmpty()) return@update state
+
+            var matchedIndex = meds.indexOfFirst { it.id == event.medId }
+            if (matchedIndex < 0 && event.medName.isNotBlank()) {
+                matchedIndex = meds.indexOfLast { it.name.equals(event.medName.trim(), ignoreCase = true) }
+            }
+            if (matchedIndex < 0) return@update state
+
+            val updatedList = meds.mapIndexed { idx, item ->
+                if (idx == matchedIndex) {
+                    item.copy(
+                        status = event.status,
+                        statusColor = sColor,
+                        statusBg = sBg,
+                        reminderTime = event.newTimeLabel ?: item.reminderTime
+                    )
+                } else {
+                    item
+                }
+            }
+            val takenCount = updatedList.count { it.status.equals("Taken", ignoreCase = true) }
+            val upcomingCount = updatedList.count {
+                it.status.equals("Upcoming", ignoreCase = true) ||
+                    it.status.equals("Snoozed", ignoreCase = true)
+            }
+            val adherence = if (updatedList.isNotEmpty()) {
+                kotlin.math.round((takenCount.toDouble() / updatedList.size) * 100).toInt()
+            } else 0
+
+            state.copy(
+                data = currentData.copy(
+                    stats = currentData.stats.copy(
+                        total = updatedList.size,
+                        taken = takenCount,
+                        upcoming = upcomingCount,
+                        adherencePercent = adherence
+                    ),
+                    medications = updatedList
+                )
+            )
+        }
+
+        _detailState.update { detail ->
+            val med = detail.medication ?: return@update detail
+            val matches = med.id == event.medId ||
+                (event.medName.isNotBlank() && med.name.equals(event.medName.trim(), ignoreCase = true))
+            if (!matches) return@update detail
+            detail.copy(
+                medication = med.copy(
+                    status = event.status,
+                    statusColor = sColor,
+                    statusBg = sBg,
+                    reminderTime = event.newTimeLabel ?: med.reminderTime
+                )
+            )
+        }
     }
 
     /**
@@ -217,7 +301,7 @@ class MedsViewModel(
     /**
      * Save newly configured medication reminder with dataset attributes to backend.
      */
-    fun saveMedicationReminder(onSuccess: () -> Unit = {}) {
+    fun saveMedicationReminder(onSuccess: (MedicationItem) -> Unit = {}) {
         viewModelScope.launch {
             val state = _setReminderState.value
             _setReminderState.update { it.copy(isSaving = true, errorMessage = null) }
@@ -237,10 +321,11 @@ class MedsViewModel(
             )
 
             result.fold(
-                onSuccess = {
+                onSuccess = { savedMed ->
                     _setReminderState.update { it.copy(isSaving = false, isSuccess = true) }
-                    loadMedications() // Refresh list
-                    onSuccess()
+                    loadMedications(isPullToRefresh = true) // Refresh list
+                    MedicationStatusUpdater.emitLocalChange(savedMed.id, savedMed.name, savedMed.status)
+                    onSuccess(savedMed)
                 },
                 onFailure = { error ->
                     _setReminderState.update {
@@ -271,22 +356,46 @@ class MedsViewModel(
     }
 
     /**
-     * Update status (e.g. "Taken", "Missed", "Upcoming")
+     * Update status (e.g. "Taken", "Skipped", "Snoozed", "Missed", "Upcoming")
      */
-    fun updateStatus(medicationId: Int, newStatus: String, onSuccess: () -> Unit = {}) {
+    fun updateStatus(
+        medicationId: Int,
+        newStatus: String,
+        snoozeMinutes: Int = 0,
+        newReminderTime: String? = null,
+        medicationName: String? = null,
+        onSuccess: () -> Unit = {}
+    ) {
         viewModelScope.launch {
             _detailState.update { it.copy(isUpdating = true, errorMessage = null) }
-            val result = repository.updateMedicationStatus(medicationId = medicationId, status = newStatus)
+            val result = repository.updateMedicationStatus(
+                medicationId = medicationId,
+                status = newStatus,
+                medicationName = medicationName ?: _detailState.value.medication?.name,
+                snoozeMinutes = snoozeMinutes.takeIf { it > 0 },
+                newReminderTime = newReminderTime
+            )
             result.fold(
                 onSuccess = {
+                    val (sColor, sBg) = statusStyleFor(newStatus)
+                    val newTimeLabel = if (newStatus.equals("Snoozed", ignoreCase = true) && snoozeMinutes > 0) {
+                        MedicationStatusUpdater.computeSnoozeTimeStrings(snoozeMinutes).second
+                    } else null
+                    val medNameStr = medicationName ?: _detailState.value.medication?.name ?: ""
                     _detailState.update {
                         it.copy(
                             isUpdating = false,
                             isStatusUpdated = true,
-                            medication = it.medication?.copy(status = newStatus)
+                            medication = it.medication?.copy(
+                                status = newStatus,
+                                statusColor = sColor,
+                                statusBg = sBg,
+                                reminderTime = newTimeLabel ?: it.medication.reminderTime
+                            )
                         )
                     }
-                    loadMedications() // Refresh list
+                    MedicationStatusUpdater.emitLocalChange(medicationId, medNameStr, newStatus, newTimeLabel)
+                    loadMedications(isPullToRefresh = true) // Refresh list
                     onSuccess()
                 },
                 onFailure = { error ->
@@ -310,8 +419,10 @@ class MedsViewModel(
             val result = repository.deleteMedication(medicationId = medicationId)
             result.fold(
                 onSuccess = {
+                    val deletedName = _detailState.value.medication?.name ?: ""
                     _detailState.update { it.copy(isUpdating = false, isDeleted = true) }
-                    loadMedications() // Refresh list
+                    MedicationStatusUpdater.emitLocalChange(medicationId, deletedName, "Deleted")
+                    loadMedications(isPullToRefresh = true) // Refresh list
                     onSuccess()
                 },
                 onFailure = { error ->

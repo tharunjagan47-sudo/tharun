@@ -23,23 +23,27 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.platform.LocalContext
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.util.DiaWellNotificationHelper
+import com.simats.diawell123.util.MedicationStatusUpdater
 
 @Composable
 fun MedicationReminderScreen(
@@ -53,7 +57,14 @@ fun MedicationReminderScreen(
 ) {
     val detailState by viewModel.detailState.collectAsState()
     val context = LocalContext.current
-    val activeMed = medication ?: detailState.medication
+
+    LaunchedEffect(medication) {
+        if (medication != null && detailState.medication?.id != medication.id) {
+            viewModel.setSelectedMedication(medication)
+        }
+    }
+
+    val activeMed = detailState.medication ?: medication
 
     val medId = activeMed?.id ?: 0
     val medName = activeMed?.name?.ifBlank { "Metformin" } ?: "Metformin"
@@ -61,6 +72,7 @@ fun MedicationReminderScreen(
     val medTime = activeMed?.reminderTime?.ifBlank { "8:00 PM" } ?: "8:00 PM"
     val medTiming = activeMed?.timing?.ifBlank { "After Meal" } ?: "After Meal"
     val medDate = activeMed?.reminderDate?.ifBlank { "Today" } ?: "Today"
+    val medStatus = activeMed?.status?.ifBlank { "Upcoming" } ?: "Upcoming"
     val medNotes = activeMed?.notes?.ifBlank { "Follow prescribed routine and drink water." } ?: "Follow prescribed routine and drink water."
 
     Box(
@@ -155,25 +167,45 @@ fun MedicationReminderScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
-                                .padding(horizontal = 8.dp, vertical = 3.dp),
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = medDate,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                            ) {
+                                Text(
+                                    text = medDate,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB81D85),
+                                )
+                            }
+
+                            val (statusTextColor, statusBgColor) = resolveMedsStatusColors(medStatus)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (AppTheme.colors.isDark) statusTextColor.copy(alpha = 0.2f) else statusBgColor)
+                                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                            ) {
+                                Text(
+                                    text = formatMedsStatusLabel(medStatus),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = statusTextColor,
+                                )
+                            }
                         }
 
                         Text(
                             text = medTime,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF7A1C7D),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
                         )
                     }
 
@@ -288,14 +320,29 @@ fun MedicationReminderScreen(
                     text = "✓  Taken",
                     onClick = {
                         val medNameStr = activeMed?.name ?: "Medication"
-                        DiaWellNotificationHelper.showGeneralNotification(
-                            context = context,
-                            title = "✅ Dose Completed",
-                            message = "Great job taking $medNameStr on time!"
-                        )
+                        DiaWellNotificationHelper.stopAlarmSound(context)
                         if (medId > 0) {
-                            viewModel.updateStatus(medId, "Taken", onSuccess = onTakenClick)
+                            NotificationManagerCompat.from(context).cancel(medId)
+                            DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                            viewModel.updateStatus(
+                                medicationId = medId,
+                                newStatus = "Taken",
+                                medicationName = medNameStr,
+                                onSuccess = {
+                                    DiaWellNotificationHelper.showGeneralNotification(
+                                        context = context,
+                                        title = "✅ Dose Completed",
+                                        message = "Great job taking $medNameStr on time!"
+                                    )
+                                    onTakenClick()
+                                }
+                            )
                         } else {
+                            DiaWellNotificationHelper.showGeneralNotification(
+                                context = context,
+                                title = "✅ Dose Completed",
+                                message = "Great job taking $medNameStr on time!"
+                            )
                             onTakenClick()
                         }
                     },
@@ -308,12 +355,39 @@ fun MedicationReminderScreen(
                     text = "⏰  Snooze - 15 minutes",
                     onClick = {
                         val medNameStr = activeMed?.name ?: "Medication"
-                        DiaWellNotificationHelper.showGeneralNotification(
-                            context = context,
-                            title = "⏰ Medication Snoozed",
-                            message = "Reminder snoozed for 15 minutes for $medNameStr."
-                        )
-                        onSnoozeClick()
+                        val resolvedUserId = try {
+                            SessionManager.init(context.applicationContext)
+                            SessionManager.getInstance().getUserId() ?: -1
+                        } catch (_: Exception) { -1 }
+
+                        DiaWellNotificationHelper.stopAlarmSound(context)
+                        if (medId > 0) {
+                            NotificationManagerCompat.from(context).cancel(medId)
+                            DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medNameStr, medDose, 15, resolvedUserId)
+                            val newDbTime = MedicationStatusUpdater.computeSnoozeTimeStrings(15).first
+                            viewModel.updateStatus(
+                                medicationId = medId,
+                                newStatus = "Snoozed",
+                                snoozeMinutes = 15,
+                                newReminderTime = newDbTime,
+                                medicationName = medNameStr,
+                                onSuccess = {
+                                    DiaWellNotificationHelper.showGeneralNotification(
+                                        context = context,
+                                        title = "⏰ Medication Snoozed",
+                                        message = "Reminder snoozed for 15 minutes for $medNameStr."
+                                    )
+                                    onSnoozeClick()
+                                }
+                            )
+                        } else {
+                            DiaWellNotificationHelper.showGeneralNotification(
+                                context = context,
+                                title = "⏰ Medication Snoozed",
+                                message = "Reminder snoozed for 15 minutes for $medNameStr."
+                            )
+                            onSnoozeClick()
+                        }
                     },
                     gradientColors = listOf(Color(0xFF26A69A), Color(0xFF00897B)),
                 )
@@ -329,8 +403,24 @@ fun MedicationReminderScreen(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {
+                            val medNameStr = activeMed?.name ?: "Medication"
+                            DiaWellNotificationHelper.stopAlarmSound(context)
                             if (medId > 0) {
-                                viewModel.updateStatus(medId, "Missed", onSuccess = onSkipClick)
+                                NotificationManagerCompat.from(context).cancel(medId)
+                                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                                viewModel.updateStatus(
+                                    medicationId = medId,
+                                    newStatus = "Skipped",
+                                    medicationName = medNameStr,
+                                    onSuccess = {
+                                        DiaWellNotificationHelper.showGeneralNotification(
+                                            context = context,
+                                            title = "⏭️ Dose Skipped",
+                                            message = "Marked $medNameStr as skipped."
+                                        )
+                                        onSkipClick()
+                                    }
+                                )
                             } else {
                                 onSkipClick()
                             }
@@ -348,6 +438,8 @@ fun MedicationReminderScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .clickable {
+                                NotificationManagerCompat.from(context).cancel(medId)
+                                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
                                 viewModel.deleteMedication(medId, onSuccess = onBackClick)
                             }
                             .padding(horizontal = 12.dp, vertical = 6.dp),

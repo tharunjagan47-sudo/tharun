@@ -31,7 +31,14 @@ interface MedsRepository {
         dosageForm: String? = null
     ): Result<MedicationItem>
 
-    suspend fun updateMedicationStatus(medicationId: Int, status: String): Result<Boolean>
+    suspend fun updateMedicationStatus(
+        medicationId: Int,
+        status: String,
+        userId: Int? = null,
+        medicationName: String? = null,
+        snoozeMinutes: Int? = null,
+        newReminderTime: String? = null
+    ): Result<Boolean>
 
     suspend fun deleteMedication(medicationId: Int): Result<Boolean>
 
@@ -114,9 +121,23 @@ class MedsRepositoryImpl(
         }
     }
 
-    override suspend fun updateMedicationStatus(medicationId: Int, status: String): Result<Boolean> = withContext(Dispatchers.IO) {
+    override suspend fun updateMedicationStatus(
+        medicationId: Int,
+        status: String,
+        userId: Int?,
+        medicationName: String?,
+        snoozeMinutes: Int?,
+        newReminderTime: String?
+    ): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
-            val request = UpdateMedicationStatusRequest(medicationId = medicationId, status = status)
+            val request = UpdateMedicationStatusRequest(
+                medicationId = medicationId,
+                status = status,
+                userId = userId,
+                medicationName = medicationName,
+                snoozeMinutes = snoozeMinutes,
+                newReminderTime = newReminderTime
+            )
             val response = apiService.updateMedicationStatus(request)
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!

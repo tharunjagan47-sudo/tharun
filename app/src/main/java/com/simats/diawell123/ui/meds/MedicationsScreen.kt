@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,11 +33,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.ui.components.ElementPopUpContainer
@@ -60,9 +65,24 @@ fun MedicationsScreen(
     var selectedTab by remember { mutableStateOf("Meds") }
     val uiState by viewModel.listState.collectAsState()
     val medsData = uiState.data
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.loadMedications()
+        viewModel.loadMedications(isPullToRefresh = true)
+    }
+
+    val lifecycleOwner = context as? LifecycleOwner
+    DisposableEffect(lifecycleOwner) {
+        val lifecycle = lifecycleOwner?.lifecycle
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadMedications(isPullToRefresh = true)
+            }
+        }
+        lifecycle?.addObserver(observer)
+        onDispose {
+            lifecycle?.removeObserver(observer)
+        }
     }
 
     Box(
@@ -250,14 +270,19 @@ fun MedicationsScreen(
                     }
                 } else {
                     medications.forEachIndexed { index, item ->
+                        val (resolvedColor, resolvedBg) = resolveMedsStatusColors(
+                            status = item.status,
+                            hexColor = item.statusColor,
+                            hexBg = item.statusBg
+                        )
                         ElementPopUpContainer(delayMillis = 80 * (index + 1)) {
                             MedicationScheduleCard(
                                 time = item.reminderTime,
                                 name = item.name,
                                 dose = item.dose,
                                 status = item.status,
-                                statusColor = parseMedsHexColor(item.statusColor, Color(0xFFB81D85)),
-                                statusBg = parseMedsHexColor(item.statusBg, Color(0xFFFDEEF7)),
+                                statusColor = resolvedColor,
+                                statusBg = resolvedBg,
                                 dosageForm = item.dosageForm,
                                 category = item.category.ifBlank { item.therapeuticClass },
                                 primaryIngredient = item.primaryIngredient,
@@ -390,20 +415,45 @@ fun MedicationScheduleCard(
                 }
             }
 
+            val badgeBg = if (AppTheme.colors.isDark) statusColor.copy(alpha = 0.22f) else statusBg
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
-                    .background(statusBg)
+                    .background(badgeBg)
                     .padding(horizontal = 10.dp, vertical = 4.dp),
             ) {
                 Text(
-                    text = status,
+                    text = formatMedsStatusLabel(status),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = statusColor,
                 )
             }
         }
+    }
+}
+
+fun formatMedsStatusLabel(status: String): String {
+    return when (status.trim().lowercase()) {
+        "taken" -> "✓ Taken"
+        "snoozed" -> "⏰ Snoozed"
+        "skipped" -> "⏭ Skipped"
+        "missed" -> "✕ Missed"
+        else -> "Upcoming"
+    }
+}
+
+fun resolveMedsStatusColors(
+    status: String,
+    hexColor: String? = null,
+    hexBg: String? = null
+): Pair<Color, Color> {
+    return when (status.trim().lowercase()) {
+        "taken" -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
+        "snoozed" -> Color(0xFF1565C0) to Color(0xFFE3F2FD)
+        "skipped", "missed" -> Color(0xFFC62828) to Color(0xFFFFEBEE)
+        "upcoming" -> Color(0xFFB81D85) to Color(0xFFFDEEF7)
+        else -> parseMedsHexColor(hexColor, Color(0xFFB81D85)) to parseMedsHexColor(hexBg, Color(0xFFFDEEF7))
     }
 }
 

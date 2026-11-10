@@ -51,6 +51,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.ui.diet.CalendarDatePickerDialog
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
@@ -71,6 +72,7 @@ fun SetMedicationReminderScreen(
 ) {
     val context = LocalContext.current
     val reminderState by viewModel.setReminderState.collectAsState()
+    val listState by viewModel.listState.collectAsState()
 
     LaunchedEffect(Unit) {
         DiaWellNotificationHelper.checkAndPromptExactAlarmPermission(context)
@@ -642,26 +644,38 @@ fun SetMedicationReminderScreen(
                         viewModel.updateReminderTiming(selectedTiming)
                         viewModel.updateReminderNotes(notes)
 
-                        // 1. Schedule Exact Local Alarm via AlarmManager (Deterministic ID per medicine prevents duplicate stacked alarms)
                         val triggerMillis = calculateScheduledMillis(reminderDateText, selectedTime)
-                        val medId = (activeName.trim().lowercase().hashCode() and 0x7FFFFFFF) % 10000 + 1000
-                        DiaWellNotificationHelper.scheduleExactMedicationAlarm(
-                            context = context,
-                            medId = medId,
-                            medName = activeName,
-                            dose = activeDose,
-                            triggerAtMillis = triggerMillis
-                        )
+                        val resolvedUserId = try {
+                            SessionManager.init(context.applicationContext)
+                            SessionManager.getInstance().getUserId() ?: -1
+                        } catch (_: Exception) { -1 }
 
-                        // 2. Trigger Standard Confirmation Notification (normal chime, no full-screen alarm)
-                        DiaWellNotificationHelper.showGeneralNotification(
-                            context = context,
-                            title = "💊 Medication Reminder Scheduled",
-                            message = "Reminder set for $activeName ($activeDose) at $selectedTime.",
-                            notifId = medId
-                        )
+                        // Save to backend first so AlarmManager uses the exact MySQL medication ID
+                        viewModel.saveMedicationReminder(onSuccess = { savedMed ->
+                            val realMedId = if (savedMed.id > 0) {
+                                savedMed.id
+                            } else {
+                                (activeName.trim().lowercase().hashCode() and 0x7FFFFFFF) % 10000 + 1000
+                            }
+                            val medLabel = savedMed.name.ifBlank { activeName }
+                            val doseLabel = savedMed.dose.ifBlank { activeDose }
 
-                        viewModel.saveMedicationReminder(onSuccess = {
+                            DiaWellNotificationHelper.scheduleExactMedicationAlarm(
+                                context = context,
+                                medId = realMedId,
+                                medName = medLabel,
+                                dose = doseLabel,
+                                triggerAtMillis = triggerMillis,
+                                userId = resolvedUserId
+                            )
+
+                            DiaWellNotificationHelper.showGeneralNotification(
+                                context = context,
+                                title = "💊 Medication Reminder Scheduled",
+                                message = "Reminder set for $medLabel ($doseLabel) at $selectedTime.",
+                                notifId = realMedId
+                            )
+
                             showSuccessBanner = true
                         })
                     }
@@ -695,12 +709,22 @@ fun SetMedicationReminderScreen(
                     .background(AppTheme.colors.secondaryBackground)
                     .border(1.dp, Color(0xFFBD1E85), RoundedCornerShape(14.dp))
                     .clickable {
+                        val existingMed = listState.data?.medications?.lastOrNull {
+                            it.name.equals(activeName.trim(), ignoreCase = true)
+                        }
+                        val testMedId = existingMed?.id?.takeIf { it > 0 } ?: 9999
+                        val resolvedUserId = try {
+                            SessionManager.init(context.applicationContext)
+                            SessionManager.getInstance().getUserId() ?: -1
+                        } catch (_: Exception) { -1 }
+
                         DiaWellNotificationHelper.triggerMedicationAlarm(
                             context = context,
-                            medId = 9999,
-                            medName = activeName,
+                            medId = testMedId,
+                            medName = existingMed?.name?.ifBlank { activeName } ?: activeName,
                             dosage = "$activeDose • $selectedTiming",
-                            scheduledTime = selectedTime
+                            scheduledTime = existingMed?.reminderTime?.ifBlank { selectedTime } ?: selectedTime,
+                            userId = resolvedUserId
                         )
                     }
                     .padding(vertical = 10.dp, horizontal = 16.dp),

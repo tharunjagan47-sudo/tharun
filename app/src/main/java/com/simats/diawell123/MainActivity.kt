@@ -91,8 +91,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private var externalNavTarget by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        externalNavTarget = intent?.getStringExtra("target_screen")
         enableEdgeToEdge()
         setContent {
             Diawell123Theme {
@@ -176,11 +179,28 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                // Handle deep-link screen navigation from notifications or alarm screen
+                LaunchedEffect(externalNavTarget, currentScreen) {
+                    val target = externalNavTarget
+                    if (!target.isNullOrBlank() && currentScreen != "splash" && sessionManager.isLoggedIn()) {
+                        if (target == "medications") {
+                            medsViewModel.loadMedications(isPullToRefresh = true)
+                            currentScreen = "medications"
+                        }
+                        externalNavTarget = null
+                    }
+                }
+
                 // Update activity timestamp on screen changes
                 LaunchedEffect(currentScreen) {
                     sessionManager.updateLastActiveTime()
                     if (currentScreen in listOf("medications", "set_medication_reminder", "medication_reminder")) {
                         checkExactAlarmPermission()
+                    }
+                    if (currentScreen == "medications") {
+                        medsViewModel.loadMedications(isPullToRefresh = true)
+                    } else if (currentScreen == "home") {
+                        homeViewModel.loadDashboard(isPullToRefresh = true)
                     }
                 }
 
@@ -517,6 +537,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        externalNavTarget = intent.getStringExtra("target_screen")
         DiaWellNotificationHelper.stopAlarmSound(this)
     }
 
