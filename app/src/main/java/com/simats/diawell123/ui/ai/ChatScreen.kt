@@ -18,6 +18,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,18 +26,18 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -44,7 +45,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -63,11 +64,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -231,13 +237,16 @@ fun ChatScreen(
         modifier = modifier
             .fillMaxSize()
             .background(AppTheme.colors.background)
-            .systemBarsPadding()
-            .imePadding()
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .imePadding()
+        ) {
 
             // -----------------------------------------------------------------
-            // Top Bar: Dr. Jarvis Iron Man Medical Avatar & Status
+            // Top Bar: Dr. Jarvis Iron Man Medical Avatar & Compact Actions
             // -----------------------------------------------------------------
             Row(
                 modifier = Modifier
@@ -254,33 +263,36 @@ fun ChatScreen(
                 ) {
                     StyledBackButton(onBackClick = onBackClick)
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     // Arc Reactor Avatar with pulsing glow
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(46.dp)
+                            .size(40.dp)
                             .scale(avatarPulseScale)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(46.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(Color(0xFF00E5FF).copy(alpha = auraAlpha))
                         )
-                        IronmanDoctorAvatar(sizeDp = 40)
+                        IronmanDoctorAvatar(sizeDp = 36)
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Dr. Jarvis AI ⚡",
-                                fontSize = 17.sp,
+                                text = "Dr. Jarvis AI",
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = AppTheme.colors.textPrimary
+                                color = AppTheme.colors.textPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Box(
@@ -291,35 +303,88 @@ fun ChatScreen(
                             )
                         }
                         Text(
-                            text = "Diabetes Intelligence • Qwen 2.5",
+                            text = "Diabetes Care • Qwen 2.5",
                             fontSize = 11.sp,
-                            color = AppTheme.colors.textSecondary
+                            lineHeight = 14.sp,
+                            color = AppTheme.colors.textSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
 
-                // Right Controls: Auto-Speak Toggle, Siri Voice Mode Pill & Reset Chat
+                // Right Controls: Uniform Circular Auto-Speak & Reset Buttons
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    IconButton(
-                        onClick = {
-                            autoSpeakEnabled = !autoSpeakEnabled
-                            if (!autoSpeakEnabled) {
-                                voiceManager.stopSpeaking()
-                            }
-                        }
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(AppTheme.colors.elevatedSurface)
+                            .border(1.dp, AppTheme.colors.border, CircleShape)
+                            .clickable {
+                                autoSpeakEnabled = !autoSpeakEnabled
+                                if (!autoSpeakEnabled) {
+                                    voiceManager.stopSpeaking()
+                                }
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = if (autoSpeakEnabled) "🔊" else "🔇",
-                            fontSize = 17.sp
+                            fontSize = 15.sp
                         )
                     }
 
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(18.dp))
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(AppTheme.colors.elevatedSurface)
+                            .border(1.dp, AppTheme.colors.border, CircleShape)
+                            .clickable {
+                                voiceManager.stopSpeaking()
+                                viewModel.resetChat()
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🔄", fontSize = 15.sp)
+                    }
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Clinical Safety Disclaimer + Siri Voice Mode Action Strip
+            // -----------------------------------------------------------------
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(AppTheme.colors.elevatedSurface)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "🩺", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Wellness & diet guidance. Consult your doctor for med edits.",
+                        fontSize = 11.sp,
+                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        lineHeight = 15.sp,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
                             .background(
                                 brush = Brush.linearGradient(
                                     colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722))
@@ -331,48 +396,17 @@ fun ChatScreen(
                     ) {
                         Text(
                             text = "🎙️ Voice",
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.White,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
-
-                    IconButton(
-                        onClick = {
-                            voiceManager.stopSpeaking()
-                            viewModel.resetChat()
-                        }
-                    ) {
-                        Text(text = "🔄", fontSize = 18.sp)
-                    }
                 }
             }
 
-            // -----------------------------------------------------------------
-            // Clinical Safety Disclaimer Notice
-            // -----------------------------------------------------------------
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(AppTheme.colors.elevatedSurface)
-                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "🩺", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Dr. Jarvis provides lifestyle wellness & verified diet guidance. Never alter medications without consulting your doctor.",
-                        fontSize = 11.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
-                        lineHeight = 15.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // -----------------------------------------------------------------
             // Messages LazyColumn
@@ -381,8 +415,8 @@ fun ChatScreen(
                 state = listState,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(messages, key = { it.id }) { message ->
@@ -396,10 +430,6 @@ fun ChatScreen(
                     item(key = "typing_indicator") {
                         DrJarvisThinkingIndicator(avatarPulseScale)
                     }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
@@ -461,8 +491,9 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 val suggestions = listOf(
                     "🌾 3 high-fibre Indian foods",
@@ -478,13 +509,16 @@ fun ChatScreen(
                             .background(AppTheme.colors.elevatedSurface)
                             .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                             .clickable { submitQuery(cleanPrompt, fromVoice = false) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = prompt,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85)
+                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }
@@ -493,32 +527,37 @@ fun ChatScreen(
             // -----------------------------------------------------------------
             // Bottom Chat Input Bar with Microphone Voice Action
             // -----------------------------------------------------------------
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(AppTheme.colors.cardBackground)
-                    .border(width = 1.dp, color = AppTheme.colors.border)
-                    .navigationBarsPadding()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
+                HorizontalDivider(thickness = 1.dp, color = AppTheme.colors.border)
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Voice Input Microphone Button
                     Box(
                         modifier = Modifier
-                            .size(42.dp)
+                            .size(44.dp)
                             .clip(CircleShape)
                             .background(AppTheme.colors.elevatedSurface)
-                            .border(1.dp, AppTheme.colors.border, CircleShape)
+                            .border(
+                                width = 1.2.dp,
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85))
+                                ),
+                                shape = CircleShape
+                            )
                             .clickable { startVoiceInput() },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = "🎙️", fontSize = 18.sp)
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
 
                     // Text Input Field
                     OutlinedTextField(
@@ -528,7 +567,9 @@ fun ChatScreen(
                             Text(
                                 text = "Ask Dr. Jarvis or tap mic...",
                                 fontSize = 13.sp,
-                                color = AppTheme.colors.textMuted
+                                color = AppTheme.colors.textMuted,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         },
                         singleLine = false,
@@ -542,16 +583,16 @@ fun ChatScreen(
                             focusedBorderColor = Color(0xFFBD1E85),
                             unfocusedBorderColor = AppTheme.colors.inputBorder
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 46.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    // Send Button
+                    // Send Button with Crisp Centered Vector Arrow
                     val canSend = inputText.isNotBlank() && !isLoading
                     Box(
                         modifier = Modifier
-                            .size(42.dp)
+                            .size(44.dp)
                             .clip(CircleShape)
                             .background(
                                 brush = if (canSend) {
@@ -573,12 +614,26 @@ fun ChatScreen(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "↑",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Canvas(modifier = Modifier.size(18.dp)) {
+                            val w = size.width
+                            val h = size.height
+                            val arrowPath = Path().apply {
+                                moveTo(w * 0.5f, h * 0.85f)
+                                lineTo(w * 0.5f, h * 0.18f)
+                                moveTo(w * 0.22f, h * 0.44f)
+                                lineTo(w * 0.5f, h * 0.16f)
+                                lineTo(w * 0.78f, h * 0.44f)
+                            }
+                            drawPath(
+                                path = arrowPath,
+                                color = Color.White,
+                                style = Stroke(
+                                    width = 2.4.dp.toPx(),
+                                    cap = StrokeCap.Round,
+                                    join = StrokeJoin.Round
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -644,7 +699,9 @@ fun ChatMessageItem(
         ) {
             Column(
                 horizontalAlignment = Alignment.End,
-                modifier = Modifier.fillMaxWidth(0.82f)
+                modifier = Modifier
+                    .fillMaxWidth(0.84f)
+                    .padding(start = 16.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -664,11 +721,12 @@ fun ChatMessageItem(
                         softWrap = true,
                     )
                 }
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = timeFormatted,
                     fontSize = 10.sp,
-                    color = AppTheme.colors.textMuted
+                    color = AppTheme.colors.textMuted,
+                    modifier = Modifier.padding(end = 4.dp)
                 )
             }
         }
@@ -685,7 +743,9 @@ fun ChatMessageItem(
 
             Column(
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 14.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -710,29 +770,38 @@ fun ChatMessageItem(
                         ) {
                             Text(
                                 text = "Dr. Jarvis AI ⚡🩺",
-                                fontSize = 11.sp,
+                                fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(end = 8.dp)
                             )
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Text(
-                                    text = "🔊",
-                                    fontSize = 13.sp,
+                                Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(8.dp))
+                                        .background(AppTheme.colors.elevatedSurface)
+                                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(8.dp))
                                         .clickable { onSpeakClick(message.text) }
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "🔊",
+                                        fontSize = 12.sp
+                                    )
+                                }
                                 Text(
                                     text = timeFormatted,
                                     fontSize = 10.sp,
-                                    color = AppTheme.colors.textMuted
+                                    color = AppTheme.colors.textMuted,
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -824,7 +893,9 @@ fun ClinicalAlertBanner(alertType: AlertType) {
                 text = title,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = textColor
+                color = textColor,
+                lineHeight = 15.sp,
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -883,20 +954,23 @@ fun DrJarvisThinkingIndicator(pulseScale: Float) {
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 14.dp),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.scale(pulseScale)) {
-            IronmanDoctorAvatar(sizeDp = 30)
+            IronmanDoctorAvatar(sizeDp = 34)
         }
         Spacer(modifier = Modifier.width(8.dp))
         Box(
             modifier = Modifier
+                .weight(1f, fill = false)
                 .clip(RoundedCornerShape(16.dp))
                 .background(AppTheme.colors.cardElevated)
                 .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                .padding(horizontal = 14.dp, vertical = 8.dp)
+                .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(
@@ -908,6 +982,7 @@ fun DrJarvisThinkingIndicator(pulseScale: Float) {
                 Text(
                     text = statusText,
                     fontSize = 12.sp,
+                    lineHeight = 16.sp,
                     color = AppTheme.colors.textSecondary
                 )
             }
