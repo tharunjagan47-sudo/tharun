@@ -119,6 +119,7 @@ class MainActivity : ComponentActivity() {
 
                 var selectedTabletName by remember { mutableStateOf("Metformin") }
                 var selectedTabletDose by remember { mutableStateOf("500 mg • 1 Tablet") }
+                var exportReturnScreen by remember { mutableStateOf("privacy_security") }
 
                 val sessionManager = remember {
                     try {
@@ -426,6 +427,10 @@ class MainActivity : ComponentActivity() {
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
                             onMedsTabClick = { currentScreen = "medications" },
                             onSettingsTabClick = { currentScreen = "settings" },
+                            onExportReportClick = {
+                                exportReturnScreen = "weekly_report"
+                                currentScreen = "export_records"
+                            },
                         )
 
                         "notifications" -> NotificationsScreen(
@@ -457,7 +462,10 @@ class MainActivity : ComponentActivity() {
                             onChangePasswordClick = { currentScreen = "change_password" },
                             onPrivacyPolicyClick = { currentScreen = "privacy_policy" },
                             onTermsOfUseClick = { currentScreen = "terms_of_use" },
-                            onExportRecordsClick = { currentScreen = "export_records" },
+                            onExportRecordsClick = {
+                                exportReturnScreen = "privacy_security"
+                                currentScreen = "export_records"
+                            },
                             onDeleteAccountClick = { currentScreen = "delete_account" },
                         )
 
@@ -477,14 +485,14 @@ class MainActivity : ComponentActivity() {
 
                         "export_records" -> ExportRecordsScreen(
                             viewModel = settingsViewModel,
-                            onBackClick = { currentScreen = "privacy_security" },
+                            onBackClick = { currentScreen = exportReturnScreen },
                             onExportClick = { currentScreen = "export_report_viewer" },
                         )
 
                         "export_report_viewer" -> ExportReportViewerScreen(
                             viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "export_records" },
-                            onDoneClick = { currentScreen = "privacy_security" },
+                            onDoneClick = { currentScreen = exportReturnScreen },
                         )
 
                         "delete_account" -> DeleteAccountScreen(

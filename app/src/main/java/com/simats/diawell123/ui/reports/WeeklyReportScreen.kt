@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.profile.ProfileState
@@ -70,6 +71,7 @@ fun WeeklyReportScreen(
     onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
     onSettingsTabClick: () -> Unit = {},
+    onExportReportClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Reports") }
     var selectedWeekText by remember { mutableStateOf("8–15 Oct 2026") }
@@ -129,7 +131,7 @@ fun WeeklyReportScreen(
 
                             Spacer(modifier = Modifier.width(14.dp))
 
-                            Column {
+                            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                                 Text(
                                     text = "Your weekly report",
                                     fontSize = 20.sp,
@@ -140,6 +142,23 @@ fun WeeklyReportScreen(
                                     text = "A clearer view of your everyday habits.",
                                     fontSize = 12.sp,
                                     color = AppTheme.colors.textSecondary,
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7))
+                                    .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                                    .clickable { onExportReportClick() }
+                                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = "📤 Export",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
                                 )
                             }
                         }
@@ -497,7 +516,14 @@ fun WeeklyReportScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(88.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                IosLiquidGlassButton(
+                    text = "📄  Export Clinical Report (PDF / CSV)",
+                    onClick = onExportReportClick,
+                )
+
+                Spacer(modifier = Modifier.height(92.dp))
             }
         }
 
