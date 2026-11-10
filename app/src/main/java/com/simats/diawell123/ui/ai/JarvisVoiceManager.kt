@@ -10,6 +10,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,7 @@ class JarvisVoiceManager(context: Context) {
     private var speechRecognizer: SpeechRecognizer? = null
     private var textToSpeech: TextToSpeech? = null
     private var isTtsInitialized = false
+    private var selectedMaleVoice: Voice? = null
     private var pendingSpeechText: String? = null
     private var pendingOnDone: (() -> Unit)? = null
 
@@ -67,28 +69,7 @@ class JarvisVoiceManager(context: Context) {
             textToSpeech = TextToSpeech(appContext) { status ->
                 if (status == TextToSpeech.SUCCESS) {
                     val tts = textToSpeech ?: return@TextToSpeech
-                    val indianLocale = Locale("en", "IN")
-                    val langResult = tts.setLanguage(indianLocale)
-                    if (langResult == TextToSpeech.LANG_MISSING_DATA ||
-                        langResult == TextToSpeech.LANG_NOT_SUPPORTED
-                    ) {
-                        val fallbackResult = tts.setLanguage(Locale.ENGLISH)
-                        _activeLocaleLabel.value = if (fallbackResult >= 0) "en-US" else "default"
-                    } else {
-                        _activeLocaleLabel.value = "en-IN"
-                        // Select a crisp en-IN offline/network voice if present
-                        try {
-                            val preferredVoice = tts.voices
-                                ?.filter { it.locale.language == "en" && it.locale.country == "IN" }
-                                ?.minByOrNull { if (it.isNetworkConnectionRequired) 1 else 0 }
-                            if (preferredVoice != null) {
-                                tts.voice = preferredVoice
-                            }
-                        } catch (_: Exception) {}
-                    }
-
-                    tts.setSpeechRate(1.0f)
-                    tts.setPitch(1.02f)
+                    applyJarvisMaleVoice(tts)
 
                     tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                         override fun onStart(utteranceId: String?) {
@@ -145,6 +126,101 @@ class JarvisVoiceManager(context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "TextToSpeech setup error: ${e.message}", e)
         }
+    }
+
+    /**
+     * Selects a deep J.A.R.V.I.S.-style male English voice (British J.A.R.V.I.S. / Indian Male / US Male),
+     * strictly avoiding female voices and adjusting pitch/cadence to a calm baritone.
+     */
+    private fun applyJarvisMaleVoice(tts: TextToSpeech) {
+        try {
+            val bestMaleVoice = selectBestJarvisMaleVoice(tts.voices)
+            if (bestMaleVoice != null) {
+                selectedMaleVoice = bestMaleVoice
+                tts.language = bestMaleVoice.locale
+                tts.voice = bestMaleVoice
+                tts.setSpeechRate(0.95f)
+                tts.setPitch(0.88f)
+                _activeLocaleLabel.value = "Jarvis Male • ${bestMaleVoice.locale.toLanguageTag()}"
+                Log.d(TAG, "Selected Jarvis male voice: ${bestMaleVoice.name} (${bestMaleVoice.locale})")
+                return
+            }
+
+            // No named male pack detected on device — fall back to deeper baritone tuning
+            val indianLocale = Locale.Builder().setLanguage("en").setRegion("IN").build()
+            val ukResult = tts.setLanguage(Locale.UK)
+            if (ukResult >= 0) {
+                _activeLocaleLabel.value = "Jarvis Male • en-GB"
+            } else {
+                val inResult = tts.setLanguage(indianLocale)
+                _activeLocaleLabel.value = if (inResult >= 0) {
+                    "Jarvis Male • en-IN"
+                } else {
+                    tts.setLanguage(Locale.ENGLISH)
+                    "Jarvis Male • en-US"
+                }
+            }
+            tts.setSpeechRate(0.94f)
+            tts.setPitch(0.76f)
+        } catch (e: Exception) {
+            Log.w(TAG, "Jarvis male voice selection fallback: ${e.message}")
+            tts.setSpeechRate(0.94f)
+            tts.setPitch(0.78f)
+        }
+    }
+
+    private fun selectBestJarvisMaleVoice(voices: Set<Voice>?): Voice? {
+        if (voices.isNullOrEmpty()) return null
+
+        val femaleTokens = listOf(
+            "female", "woman", "samantha", "karen", "moira", "veena", "lekha", "neerja",
+            "en-in-x-ena", "en-in-x-enc", "en-gb-x-gba", "en-gb-x-gbc", "en-gb-x-fis",
+            "en-us-x-tpf", "en-us-x-tpc", "en-us-x-sfg", "en-us-x-iog", "en-us-x-sfh",
+            "en-au-x-aua", "en-au-x-auc"
+        )
+        val jarvisBritishMaleIds = listOf("en-gb-x-rjs", "en-gb-x-gbd", "en-gb-x-gbb")
+        val indianMaleIds = listOf("en-in-x-end", "en-in-x-ene")
+        val otherEnglishMaleIds = listOf("en-us-x-iom", "en-us-x-iol", "en-us-x-tpd", "en-au-x-aub", "en-au-x-aud")
+        val genericMaleTokens = listOf(
+            "male", "david", "george", "daniel", "oliver", "arthur", "james",
+            "ryan", "guy", "mark", "rishi", "prabhat", "neeraj"
+        )
+
+        return voices
+            .asSequence()
+            .filter { voice ->
+                val isNotInstalled = voice.features?.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED) == true
+                voice.locale.language.equals("en", ignoreCase = true) && !isNotInstalled
+            }
+            .mapNotNull { voice ->
+                val nameLower = voice.name.lowercase(Locale.ROOT)
+                val featureStr = voice.features?.joinToString(" ")?.lowercase(Locale.ROOT).orEmpty()
+                val combined = "$nameLower $featureStr"
+
+                if (femaleTokens.any { token -> combined.contains(token) }) {
+                    return@mapNotNull null
+                }
+
+                val genderBaseScore = when {
+                    jarvisBritishMaleIds.any { nameLower.contains(it) } -> 1200
+                    indianMaleIds.any { nameLower.contains(it) } -> 1150
+                    otherEnglishMaleIds.any { nameLower.contains(it) } -> 1000
+                    genericMaleTokens.any { token ->
+                        Regex("(?:^|[^a-z])${Regex.escape(token)}(?:[^a-z]|$)").containsMatchIn(combined)
+                    } -> when {
+                        voice.locale.country.equals("GB", ignoreCase = true) -> 980
+                        voice.locale.country.equals("IN", ignoreCase = true) -> 950
+                        else -> 900
+                    }
+                    else -> return@mapNotNull null
+                }
+
+                val offlineBonus = if (!voice.isNetworkConnectionRequired) 500 else 0
+                val totalScore = genderBaseScore + offlineBonus + voice.quality
+                voice to totalScore
+            }
+            .maxByOrNull { it.second }
+            ?.first
     }
 
     fun isLiveRecognitionAvailable(): Boolean {
@@ -324,6 +400,13 @@ class JarvisVoiceManager(context: Context) {
 
             try {
                 val tts = textToSpeech ?: return@post
+                if (selectedMaleVoice == null) {
+                    applyJarvisMaleVoice(tts)
+                } else {
+                    tts.voice = selectedMaleVoice
+                    tts.setSpeechRate(0.95f)
+                    tts.setPitch(0.88f)
+                }
                 pendingOnDone = onDone
                 _voiceState.value = JarvisVoiceState.SPEAKING
 
