@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.MedicationStatusUpdater
@@ -95,16 +96,7 @@ fun MedicationReminderScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "←",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.textPrimary,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onBackClick() }
-                        .padding(4.dp),
-                )
+                StyledBackButton(onBackClick = onBackClick)
 
                 Spacer(modifier = Modifier.width(12.dp))
 
@@ -113,6 +105,7 @@ fun MedicationReminderScreen(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f),
                 )
             }
 

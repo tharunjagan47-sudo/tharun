@@ -66,16 +66,7 @@ fun FoodLogScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = "←",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onBackClick() }
-                            .padding(4.dp),
-                    )
+                    StyledBackButton(onBackClick = onBackClick)
 
                     Spacer(modifier = Modifier.width(12.dp))
 

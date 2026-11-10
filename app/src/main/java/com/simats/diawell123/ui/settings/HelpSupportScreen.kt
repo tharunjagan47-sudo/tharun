@@ -52,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 
@@ -108,20 +109,11 @@ fun HelpSupportScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "←",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.textPrimary,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onBackClick() }
-                        .padding(4.dp),
-                )
+                StyledBackButton(onBackClick = onBackClick)
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Help and Support",
                         fontSize = 20.sp,

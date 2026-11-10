@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
@@ -74,16 +75,7 @@ fun NotificationsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = "←",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onBackClick() }
-                            .padding(4.dp),
-                    )
+                    StyledBackButton(onBackClick = onBackClick)
 
                     Spacer(modifier = Modifier.width(12.dp))
 
