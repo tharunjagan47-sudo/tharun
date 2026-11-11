@@ -30,6 +30,7 @@ import com.simats.diawell123.MainActivity
 import com.simats.diawell123.R
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.receiver.MedReminderReceiver
+import com.simats.diawell123.receiver.NudgeActionReceiver
 import com.simats.diawell123.ui.meds.MedAlarmActivity
 
 /**
@@ -43,7 +44,14 @@ object DiaWellNotificationHelper {
     // Notification Channel IDs
     const val CRITICAL_CHANNEL_ID = "diawell_critical_alerts_v1"
     const val GENERAL_CHANNEL_ID = "diawell_general_updates_v1"
+    const val SMART_NUDGE_CHANNEL_ID = "diawell_smart_nudges_v1"
     const val ALARM_CHANNEL_ID = "diawell_med_alarm_fullscreen_v3"
+
+    // Smart Nudge navigation action types
+    const val NUDGE_ACTION_OPEN_DIET = "OPEN_DIET"
+    const val NUDGE_ACTION_OPEN_AI_CHAT = "OPEN_AI_CHAT"
+    const val NUDGE_ACTION_OPEN_GLUCOSE = "OPEN_GLUCOSE"
+    const val NUDGE_ACTION_OPEN_ACTIVITY = "OPEN_ACTIVITY"
 
     private const val LEGACY_CHANNEL_1 = "diawell_meds_channel"
     private const val LEGACY_CHANNEL_2 = "diawell_meds_channel_v2"
@@ -144,7 +152,27 @@ object DiaWellNotificationHelper {
             }
             manager.createNotificationChannel(alarmChannel)
 
-            Log.d("DiaWellNotifications", "Notification channels initialized: $CRITICAL_CHANNEL_ID, $GENERAL_CHANNEL_ID, and $ALARM_CHANNEL_ID")
+            // 5. Channel 4: Smart Health Nudges (IMPORTANCE_HIGH banner + chime, never full-screen)
+            val nudgeChannel = NotificationChannel(
+                SMART_NUDGE_CHANNEL_ID,
+                "Smart Health Nudges",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Friendly lifestyle tips and 1-tap hydration, meal, walk, and glucose nudges."
+                enableLights(true)
+                lightColor = 0xFF0D9488.toInt()
+                enableVibration(true)
+                setSound(
+                    notifSound,
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .build()
+                )
+            }
+            manager.createNotificationChannel(nudgeChannel)
+
+            Log.d("DiaWellNotifications", "Notification channels initialized: $CRITICAL_CHANNEL_ID, $GENERAL_CHANNEL_ID, $SMART_NUDGE_CHANNEL_ID, and $ALARM_CHANNEL_ID")
         }
     }
 
@@ -298,6 +326,136 @@ object DiaWellNotificationHelper {
             title = "💧 Hydration Update",
             message = "Water intake updated! Staying hydrated helps your kidneys flush excess sugar.",
             notifId = 8801
+        )
+    }
+
+    /**
+     * Dispatches an expandable BigTextStyle interactive Smart Health Nudge banner
+     * with 1-tap notification action buttons (strictly standard banner, never MedAlarmActivity).
+     */
+    fun sendInteractiveNudge(
+        context: Context,
+        nudgeId: Int,
+        title: String,
+        body: String,
+        primaryActionLabel: String,
+        primaryActionType: String,
+        secondaryActionLabel: String? = null,
+        secondaryActionType: String? = null,
+        targetScreen: String = "home"
+    ) {
+        createNotificationChannels(context)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.w("DiaWellNotifications", "POST_NOTIFICATIONS not granted. Suppressed smart nudge.")
+                Toast.makeText(
+                    context,
+                    "Please allow notification permission to see Smart Nudges.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
+        }
+
+        val tapIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("target_screen", targetScreen)
+            putExtra("cancel_notif_id", nudgeId)
+        }
+        val tapPendingIntent = PendingIntent.getActivity(
+            context,
+            nudgeId,
+            tapIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val largeIcon = try {
+            BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+        } catch (_: Exception) {
+            null
+        }
+
+        val notifSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+        val builder = NotificationCompat.Builder(context, SMART_NUDGE_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setColor(0xFF0D9488.toInt())
+            .apply {
+                if (largeIcon != null) setLargeIcon(largeIcon)
+            }
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(body)
+                    .setBigContentTitle(title)
+            )
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .setSound(notifSound)
+            .setAutoCancel(true)
+            .setContentIntent(tapPendingIntent)
+
+        val primaryPendingIntent = buildNudgeActionPendingIntent(context, nudgeId, primaryActionType, 100)
+        builder.addAction(0, primaryActionLabel, primaryPendingIntent)
+
+        if (!secondaryActionLabel.isNullOrBlank() && !secondaryActionType.isNullOrBlank()) {
+            val secondaryPendingIntent = buildNudgeActionPendingIntent(context, nudgeId, secondaryActionType, 200)
+            builder.addAction(0, secondaryActionLabel, secondaryPendingIntent)
+        }
+
+        try {
+            val manager = NotificationManagerCompat.from(context)
+            manager.cancel(nudgeId)
+            manager.notify(nudgeId, builder.build())
+            Log.d("DiaWellNotifications", "Smart Nudge dispatched id=$nudgeId: $title")
+        } catch (e: Exception) {
+            Log.e("DiaWellNotifications", "Failed to show smart nudge: ${e.message}", e)
+        }
+    }
+
+    private fun buildNudgeActionPendingIntent(
+        context: Context,
+        nudgeId: Int,
+        actionType: String,
+        offset: Int
+    ): PendingIntent {
+        val navTarget = when (actionType) {
+            NUDGE_ACTION_OPEN_DIET -> "daily_diet_plan"
+            NUDGE_ACTION_OPEN_AI_CHAT -> "ai_chatbot"
+            NUDGE_ACTION_OPEN_GLUCOSE -> "log_glucose"
+            NUDGE_ACTION_OPEN_ACTIVITY -> "activity_tracking"
+            else -> null
+        }
+
+        if (navTarget != null) {
+            val navIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("target_screen", navTarget)
+                putExtra("cancel_notif_id", nudgeId)
+            }
+            return PendingIntent.getActivity(
+                context,
+                nudgeId + offset,
+                navIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
+        val actionIntent = Intent(context, NudgeActionReceiver::class.java).apply {
+            action = actionType
+            putExtra("nudge_id", nudgeId)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            nudgeId + offset,
+            actionIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
 

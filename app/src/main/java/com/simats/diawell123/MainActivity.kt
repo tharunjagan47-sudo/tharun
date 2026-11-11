@@ -15,6 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.messaging.FirebaseMessaging
 import com.simats.diawell123.service.DiaWellFirebaseMessagingService
 import com.simats.diawell123.util.DiaWellNotificationHelper
+import com.simats.diawell123.util.SmartNudgeEngine
+import androidx.core.app.NotificationManagerCompat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -95,7 +97,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        externalNavTarget = intent?.getStringExtra("target_screen")
+        handleIncomingIntentExtras(intent)
         enableEdgeToEdge()
         setContent {
             Diawell123Theme {
@@ -144,6 +146,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     DiaWellNotificationHelper.createNotificationChannels(applicationContext)
                     DiaWellNotificationHelper.scheduleDailyHealthReminders(applicationContext)
+                    SmartNudgeEngine.scheduleDailyNudges(applicationContext)
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -180,13 +183,20 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Handle deep-link screen navigation from notifications or alarm screen
+                // Handle deep-link screen navigation from notifications, smart nudges, or alarm screen
                 LaunchedEffect(externalNavTarget, currentScreen) {
                     val target = externalNavTarget
                     if (!target.isNullOrBlank() && currentScreen != "splash" && sessionManager.isLoggedIn()) {
-                        if (target == "medications") {
-                            medsViewModel.loadMedications(isPullToRefresh = true)
-                            currentScreen = "medications"
+                        when (target) {
+                            "medications" -> {
+                                medsViewModel.loadMedications(isPullToRefresh = true)
+                                currentScreen = "medications"
+                            }
+                            "daily_diet_plan", "diet" -> currentScreen = "daily_diet_plan"
+                            "ai_chatbot", "dr_jarvis_chat" -> currentScreen = "ai_chatbot"
+                            "activity_tracking", "activity" -> currentScreen = "activity_tracking"
+                            "log_glucose", "glucose" -> currentScreen = "log_glucose"
+                            "home" -> currentScreen = "home"
                         }
                         externalNavTarget = null
                     }
@@ -546,8 +556,18 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        externalNavTarget = intent.getStringExtra("target_screen")
+        handleIncomingIntentExtras(intent)
         DiaWellNotificationHelper.stopAlarmSound(this)
+    }
+
+    private fun handleIncomingIntentExtras(incomingIntent: Intent?) {
+        externalNavTarget = incomingIntent?.getStringExtra("target_screen")
+        val cancelNotifId = incomingIntent?.getIntExtra("cancel_notif_id", -1) ?: -1
+        if (cancelNotifId > 0) {
+            try {
+                NotificationManagerCompat.from(this).cancel(cancelNotifId)
+            } catch (_: Exception) {}
+        }
     }
 
     override fun onResume() {
