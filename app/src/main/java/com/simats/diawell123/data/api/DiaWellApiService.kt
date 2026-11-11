@@ -5,6 +5,7 @@ import com.simats.diawell123.data.model.ChatResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.Url
 
 /**
  * Retrofit Service Interface for Dr. Jarvis AI Chatbot Endpoint.
@@ -20,6 +21,12 @@ interface DiaWellApiService {
 
     @POST(NetworkConstants.PHP_BRIDGE_CHAT_ENDPOINT)
     suspend fun sendBridgeMessage(
+        @Body request: ChatRequest
+    ): Response<ChatResponse>
+
+    @POST
+    suspend fun sendMessageToUrl(
+        @Url url: String,
         @Body request: ChatRequest
     ): Response<ChatResponse>
 }

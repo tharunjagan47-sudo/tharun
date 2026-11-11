@@ -104,6 +104,39 @@ object ApiClient {
 
 
 
+    @Volatile
+    private var stickyWorkingHostPort: Pair<String, Int>? = null
+
+    private val localBackendHostPorts: List<Pair<String, Int>>
+        get() = if (NetworkConstants.isEmulator) {
+            listOf(
+                "10.0.2.2" to 80,
+                "127.0.0.1" to 80,
+                "127.0.0.1" to 8000,
+                "192.168.1.7" to 80
+            )
+        } else {
+            listOf(
+                "127.0.0.1" to 80,
+                "127.0.0.1" to 8000,
+                "192.168.1.7" to 80,
+                "10.0.2.2" to 80
+            )
+        }
+
+    private fun buildEndpointRequest(
+        request: okhttp3.Request,
+        host: String,
+        port: Int
+    ): okhttp3.Request {
+        val updatedUrl = request.url.newBuilder()
+            .scheme("http")
+            .host(host)
+            .port(port)
+            .build()
+        return request.newBuilder().url(updatedUrl).build()
+    }
+
     /**
 
      * Interceptor to inject session cookies and X-User-Id into requests,
@@ -178,22 +211,36 @@ object ApiClient {
 
 
 
-        val finalRequest = requestBuilder.build()
+        val builtRequest = requestBuilder.build()
+        val cachedHostPort = stickyWorkingHostPort
+        val initialIsLocalHost = builtRequest.url.host in setOf("127.0.0.1", "localhost", "10.0.2.2", "192.168.1.7", "192.168.1.9")
+        val finalRequest = if (initialIsLocalHost && cachedHostPort != null) {
+            buildEndpointRequest(builtRequest, cachedHostPort.first, cachedHostPort.second)
+        } else {
+            builtRequest
+        }
+
         val response: Response = try {
-            chain.proceed(finalRequest)
-        } catch (e: java.io.IOException) {
-            val host = finalRequest.url.host
-            val alternateHost = when (host) {
-                "127.0.0.1", "localhost" -> "192.168.1.9"
-                "192.168.1.9" -> "127.0.0.1"
-                else -> null
+            chain.withConnectTimeout(4, TimeUnit.SECONDS).proceed(finalRequest)
+        } catch (primaryError: java.io.IOException) {
+            stickyWorkingHostPort = null
+            val currentPair = finalRequest.url.host to finalRequest.url.port
+            val candidates = localBackendHostPorts.filter { it != currentPair }
+
+            var resolvedResponse: Response? = null
+            var lastError: java.io.IOException = primaryError
+            for ((altHost, altPort) in candidates) {
+                try {
+                    val altRequest = buildEndpointRequest(builtRequest, altHost, altPort)
+                    val attempt = chain.withConnectTimeout(3, TimeUnit.SECONDS).proceed(altRequest)
+                    stickyWorkingHostPort = altHost to altPort
+                    resolvedResponse = attempt
+                    break
+                } catch (attemptError: java.io.IOException) {
+                    lastError = attemptError
+                }
             }
-            if (alternateHost != null) {
-                val altUrl = finalRequest.url.newBuilder().host(alternateHost).build()
-                chain.proceed(finalRequest.newBuilder().url(altUrl).build())
-            } else {
-                throw e
-            }
+            resolvedResponse ?: throw lastError
         }
 
 
@@ -260,7 +307,7 @@ object ApiClient {
 
             .addInterceptor(loggingInterceptor)
 
-            .connectTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(4, TimeUnit.SECONDS)
 
             .readTimeout(60, TimeUnit.SECONDS)
 

@@ -12,23 +12,36 @@ package com.simats.diawell123.data.api
 object NetworkConstants {
 
     // -------------------------------------------------------------------------
-    // PHP Backend Settings (Port 80 - Apache/MySQL)
+    // PHP Backend Settings (Apache Port 80 / ADB Reverse Port 8000 -> 80)
     // -------------------------------------------------------------------------
-    const val EMULATOR_PHP_BASE_URL = "http://10.0.2.2/"
-    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://192.168.1.9/" // Host PC LAN IPv4 from ipconfig (Laptop Wi-Fi)
-    const val DEVTUNNEL_BASE_URL = " https://surcharge-blot-expenses.ngrok-free.dev/diawell_backend/"
+    const val LOCAL_PHP_BASE_URL = "http://127.0.0.1/diawell_backend/"
+    const val ADB_REVERSE_PHP_BASE_URL = "http://127.0.0.1:8000/diawell_backend/"
+    const val EMULATOR_PHP_BASE_URL = "http://10.0.2.2/diawell_backend/"
+    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://192.168.1.7/diawell_backend/" // Host PC LAN IPv4 from ipconfig
+    const val DEVTUNNEL_BASE_URL = "https://surcharge-blot-expenses.ngrok-free.dev/diawell_backend/"
 
     // -------------------------------------------------------------------------
     // Legacy / Microservice Settings (Kept for compatibility)
     // -------------------------------------------------------------------------
-    const val EMULATOR_AI_BASE_URL = "http://10.0.2.2/"
-    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://192.168.1.9/"
+    const val EMULATOR_AI_BASE_URL = "http://10.0.2.2/diawell_backend/"
+    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://192.168.1.7/diawell_backend/"
 
     /**
-     * Chat endpoint path on Apache Port 80.
+     * Standardized relative chat endpoint path appended to BASE_URL (http://127.0.0.1/diawell_backend/).
      */
-    const val CHAT_ENDPOINT = "diawell_backend/ai/chat.php"
-    const val PHP_BRIDGE_CHAT_ENDPOINT = "diawell_backend/ai/chat.php"
+    const val CHAT_ENDPOINT = "ai/chat.php"
+    const val PHP_BRIDGE_CHAT_ENDPOINT = "ai/chat.php"
+
+    /**
+     * Ordered fallback endpoints for Dr. Jarvis AI if primary connection fails.
+     */
+    val AI_CHAT_FALLBACK_URLS: List<String> = listOf(
+        "http://127.0.0.1/diawell_backend/ai/chat.php",
+        "http://127.0.0.1:8000/diawell_backend/ai/chat.php",
+        "http://192.168.1.7/diawell_backend/ai/chat.php",
+        "http://10.0.2.2/diawell_backend/ai/chat.php",
+        "http://127.0.0.1/diawell_backend/diawell_backend/ai/chat.php"
+    )
 
     /**
      * Auto-detect if currently running on Android Studio Emulator or Physical Device.
@@ -56,15 +69,15 @@ object NetworkConstants {
     }
 
     /**
-     * Active Base URL used by Retrofit for PHP authentication, profiles & logs.
-     * Automatically routes to emulator loopback or physical device host IP.
+     * Standardized primary Base URL used by Retrofit across all DiaWell modules & Dr. Jarvis AI.
+     * Automatic connection fallback in ApiClient/ChatRepository seamlessly probes ADB reverse (8000),
+     * LAN Wi-Fi, and Emulator (10.0.2.2) endpoints if 127.0.0.1:80 is unavailable.
      */
     val BASE_URL: String
-        get() = if (isEmulator) EMULATOR_PHP_BASE_URL else PHYSICAL_DEVICE_PHP_LAN_URL
+        get() = LOCAL_PHP_BASE_URL
 
     /**
      * Active Base URL used by Retrofit for Dr. Jarvis AI Chatbot.
-     * Points directly to Apache Port 80 (where chat.php connects to local Ollama).
      */
     val AI_BASE_URL: String
         get() = BASE_URL
