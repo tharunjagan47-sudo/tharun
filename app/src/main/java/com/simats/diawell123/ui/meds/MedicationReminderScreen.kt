@@ -72,7 +72,8 @@ fun MedicationReminderScreen(
     val medDose = activeMed?.dose?.ifBlank { "500 mg • 1 Tablet" } ?: "500 mg • 1 Tablet"
     val medTime = activeMed?.reminderTime?.ifBlank { "8:00 PM" } ?: "8:00 PM"
     val medTiming = activeMed?.timing?.ifBlank { "After Meal" } ?: "After Meal"
-    val medDate = activeMed?.reminderDate?.ifBlank { "Today" } ?: "Today"
+    val isDailySchedule = activeMed?.frequency?.trim().equals("Daily", ignoreCase = true)
+    val medDate = formatMedicationScheduleLabel(activeMed?.reminderDate, activeMed?.frequency)
     val medStatus = activeMed?.status?.ifBlank { "Upcoming" } ?: "Upcoming"
     val medNotes = activeMed?.notes?.ifBlank { "Follow prescribed routine and drink water." } ?: "Follow prescribed routine and drink water."
 
@@ -220,7 +221,7 @@ fun MedicationReminderScreen(
                     )
 
                     Text(
-                        text = "$medTiming • ${activeMed?.frequency ?: "Daily"}",
+                        text = "$medTiming • ${if (isDailySchedule) "Daily Repeating" else "Single Alarm"}",
                         fontSize = 11.sp,
                         color = AppTheme.colors.textMuted,
                     )
@@ -316,7 +317,9 @@ fun MedicationReminderScreen(
                         DiaWellNotificationHelper.stopAlarmSound(context)
                         if (medId > 0) {
                             NotificationManagerCompat.from(context).cancel(medId)
-                            DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                            if (!isDailySchedule) {
+                                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                            }
                             viewModel.updateStatus(
                                 medicationId = medId,
                                 newStatus = "Taken",
@@ -356,7 +359,7 @@ fun MedicationReminderScreen(
                         DiaWellNotificationHelper.stopAlarmSound(context)
                         if (medId > 0) {
                             NotificationManagerCompat.from(context).cancel(medId)
-                            DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medNameStr, medDose, 15, resolvedUserId)
+                            DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medNameStr, medDose, 15, resolvedUserId, isDailySchedule)
                             val newDbTime = MedicationStatusUpdater.computeSnoozeTimeStrings(15).first
                             viewModel.updateStatus(
                                 medicationId = medId,
@@ -400,7 +403,9 @@ fun MedicationReminderScreen(
                             DiaWellNotificationHelper.stopAlarmSound(context)
                             if (medId > 0) {
                                 NotificationManagerCompat.from(context).cancel(medId)
-                                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                                if (!isDailySchedule) {
+                                    DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                                }
                                 viewModel.updateStatus(
                                     medicationId = medId,
                                     newStatus = "Skipped",

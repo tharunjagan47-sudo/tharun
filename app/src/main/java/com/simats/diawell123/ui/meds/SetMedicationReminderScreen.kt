@@ -2,6 +2,7 @@ package com.simats.diawell123.ui.meds
 import com.simats.diawell123.ui.theme.AppTheme
 import com.simats.diawell123.util.DiaWellNotificationHelper
 
+import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -47,12 +48,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.local.SessionManager
-import com.simats.diawell123.ui.diet.CalendarDatePickerDialog
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
@@ -79,9 +81,15 @@ fun SetMedicationReminderScreen(
         DiaWellNotificationHelper.checkAndPromptExactAlarmPermission(context)
     }
 
-    var reminderDateText by remember {
-        mutableStateOf(SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date()))
+    val dateFormatter = remember { SimpleDateFormat("d MMM yyyy", Locale.getDefault()) }
+    val todayDateText = remember { dateFormatter.format(Date()) }
+    val tomorrowDateText = remember {
+        val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
+        dateFormatter.format(cal.time)
     }
+
+    var isDailySchedule by remember { mutableStateOf(false) }
+    var reminderDateText by remember { mutableStateOf(todayDateText) }
     var selectedTime by remember(reminderState.selectedTime) {
         mutableStateOf(reminderState.selectedTime.ifBlank { "8:00 PM" })
     }
@@ -98,25 +106,31 @@ fun SetMedicationReminderScreen(
     val activeName = reminderState.medicationName.ifBlank { medicationName }
     val activeDose = reminderState.medicationDose.ifBlank { medicationDose }
 
-    // Interactive custom time picker dialog allowing any flexible hour and minute
-    fun calculateScheduledMillis(dateStr: String, timeStr: String): Long {
+    // Interactive schedule calculator returning (triggerAtMillis, hourOfDay, minuteOfHour)
+    fun calculateScheduledAlarm(dateStr: String, timeStr: String, daily: Boolean): Triple<Long, Int, Int> {
         val cal = Calendar.getInstance()
+        var parsedHour = 20
+        var parsedMinute = 0
         try {
-            val dateParser = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
-            val parsedDate = dateParser.parse(dateStr)
-            if (parsedDate != null) {
-                val dateCal = Calendar.getInstance().apply { time = parsedDate }
-                cal.set(Calendar.YEAR, dateCal.get(Calendar.YEAR))
-                cal.set(Calendar.MONTH, dateCal.get(Calendar.MONTH))
-                cal.set(Calendar.DAY_OF_MONTH, dateCal.get(Calendar.DAY_OF_MONTH))
+            if (!daily) {
+                val dateParser = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
+                val parsedDate = dateParser.parse(dateStr)
+                if (parsedDate != null) {
+                    val dateCal = Calendar.getInstance().apply { time = parsedDate }
+                    cal.set(Calendar.YEAR, dateCal.get(Calendar.YEAR))
+                    cal.set(Calendar.MONTH, dateCal.get(Calendar.MONTH))
+                    cal.set(Calendar.DAY_OF_MONTH, dateCal.get(Calendar.DAY_OF_MONTH))
+                }
             }
 
             val timeParser = SimpleDateFormat("h:mm a", Locale.getDefault())
             val parsedTime = timeParser.parse(timeStr)
             if (parsedTime != null) {
                 val timeCal = Calendar.getInstance().apply { time = parsedTime }
-                cal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY))
-                cal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE))
+                parsedHour = timeCal.get(Calendar.HOUR_OF_DAY)
+                parsedMinute = timeCal.get(Calendar.MINUTE)
+                cal.set(Calendar.HOUR_OF_DAY, parsedHour)
+                cal.set(Calendar.MINUTE, parsedMinute)
                 cal.set(Calendar.SECOND, 0)
                 cal.set(Calendar.MILLISECOND, 0)
             }
@@ -126,7 +140,32 @@ fun SetMedicationReminderScreen(
         if (cal.timeInMillis <= minValidTime) {
             cal.add(Calendar.DAY_OF_YEAR, 1)
         }
-        return cal.timeInMillis
+        return Triple(cal.timeInMillis, parsedHour, parsedMinute)
+    }
+
+    fun openFutureCalendarPicker() {
+        val cal = Calendar.getInstance()
+        try {
+            val parsed = dateFormatter.parse(reminderDateText)
+            if (parsed != null && parsed.time >= cal.timeInMillis - 86_400_000L) {
+                cal.time = parsed
+            }
+        } catch (_: Exception) {}
+
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val picked = Calendar.getInstance().apply { set(year, month, dayOfMonth) }
+                isDailySchedule = false
+                reminderDateText = dateFormatter.format(picked.time)
+            },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            // Only allow Today onwards (Yesterday / past dates disabled)
+            datePicker.minDate = System.currentTimeMillis() - 1000L
+        }.show()
     }
 
     fun showCustomTimePicker() {
@@ -230,7 +269,11 @@ fun SetMedicationReminderScreen(
                                 color = Color(0xFF2E7D32),
                             )
                             Text(
-                                text = "Reminder active for $activeName at $selectedTime ($selectedTiming).",
+                                text = if (isDailySchedule) {
+                                    "Daily alarm active for $activeName at $selectedTime ($selectedTiming)."
+                                } else {
+                                    "Single alarm set for $activeName on $reminderDateText at $selectedTime ($selectedTiming)."
+                                },
                                 fontSize = 11.sp,
                                 color = Color(0xFF1B5E20),
                             )
@@ -364,13 +407,26 @@ fun SetMedicationReminderScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Date Selector Bar
-            Text(
-                text = "Reminder Date",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.textPrimary,
-            )
+            // Reminder Date & Schedule Section (Daily / Today / Tomorrow — no Yesterday)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Reminder Date",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                )
+
+                Text(
+                    text = if (isDailySchedule) "🔁 Daily Repeating" else "🔔 Single Alarm",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFFB81D85),
+                )
+            }
 
             Spacer(modifier = Modifier.height(6.dp))
 
@@ -389,10 +445,15 @@ fun SetMedicationReminderScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "📅  $reminderDateText",
+                        text = if (isDailySchedule) "📅  Daily (Every Day)" else "📅  $reminderDateText",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
                     )
 
                     Text(
@@ -401,6 +462,63 @@ fun SetMedicationReminderScreen(
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFB81D85),
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Quick Schedule Pills: Daily | Today | Tomorrow
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val scheduleChips = listOf(
+                    Triple("Daily", isDailySchedule, {
+                        isDailySchedule = true
+                        reminderDateText = todayDateText
+                    }),
+                    Triple("Today", !isDailySchedule && reminderDateText == todayDateText, {
+                        isDailySchedule = false
+                        reminderDateText = todayDateText
+                    }),
+                    Triple("Tomorrow", !isDailySchedule && reminderDateText == tomorrowDateText, {
+                        isDailySchedule = false
+                        reminderDateText = tomorrowDateText
+                    }),
+                )
+
+                scheduleChips.forEach { (label, selected, onSelect) ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                if (selected) {
+                                    if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f)
+                                    else Color(0xFFFDEEF7)
+                                } else {
+                                    AppTheme.colors.secondaryBackground
+                                }
+                            )
+                            .border(
+                                width = if (selected) 1.5.dp else 1.dp,
+                                color = if (selected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                shape = RoundedCornerShape(20.dp),
+                            )
+                            .clickable { onSelect() }
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 12.sp,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    }
                 }
             }
 
@@ -631,12 +749,20 @@ fun SetMedicationReminderScreen(
                         ),
                     )
                     .clickable(enabled = !reminderState.isSaving) {
-                        viewModel.updateReminderDate(reminderDateText)
+                        val effectiveDateText = if (isDailySchedule) todayDateText else reminderDateText
+                        val frequencyValue = if (isDailySchedule) "Daily" else "Once"
+
+                        viewModel.updateReminderDate(effectiveDateText)
                         viewModel.updateReminderTime(selectedTime)
                         viewModel.updateReminderTiming(selectedTiming)
+                        viewModel.updateReminderFrequency(frequencyValue)
                         viewModel.updateReminderNotes(notes)
 
-                        val triggerMillis = calculateScheduledMillis(reminderDateText, selectedTime)
+                        val (triggerMillis, alarmHour, alarmMinute) = calculateScheduledAlarm(
+                            dateStr = effectiveDateText,
+                            timeStr = selectedTime,
+                            daily = isDailySchedule
+                        )
                         val resolvedUserId = try {
                             SessionManager.init(context.applicationContext)
                             SessionManager.getInstance().getUserId() ?: -1
@@ -658,13 +784,20 @@ fun SetMedicationReminderScreen(
                                 medName = medLabel,
                                 dose = doseLabel,
                                 triggerAtMillis = triggerMillis,
-                                userId = resolvedUserId
+                                userId = resolvedUserId,
+                                isDaily = isDailySchedule,
+                                alarmHour = alarmHour,
+                                alarmMinute = alarmMinute
                             )
 
                             DiaWellNotificationHelper.showGeneralNotification(
                                 context = context,
                                 title = "💊 Medication Reminder Scheduled",
-                                message = "Reminder set for $medLabel ($doseLabel) at $selectedTime.",
+                                message = if (isDailySchedule) {
+                                    "Daily alarm set for $medLabel ($doseLabel) at $selectedTime."
+                                } else {
+                                    "Single alarm set for $medLabel ($doseLabel) on $effectiveDateText at $selectedTime."
+                                },
                                 notifId = realMedId
                             )
 
@@ -716,7 +849,8 @@ fun SetMedicationReminderScreen(
                             medName = existingMed?.name?.ifBlank { activeName } ?: activeName,
                             dosage = "$activeDose • $selectedTiming",
                             scheduledTime = existingMed?.reminderTime?.ifBlank { selectedTime } ?: selectedTime,
-                            userId = resolvedUserId
+                            userId = resolvedUserId,
+                            isDaily = isDailySchedule
                         )
                     }
                     .padding(vertical = 10.dp, horizontal = 16.dp),
@@ -733,16 +867,151 @@ fun SetMedicationReminderScreen(
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-        // Calendar Date Picker Modal Dialog
+        // Medication Schedule Date Picker Modal Dialog (Daily / Today / Tomorrow)
         if (showDatePickerDialog) {
-            CalendarDatePickerDialog(
+            MedicationDatePickerDialog(
+                isDailySelected = isDailySchedule,
                 selectedDateText = reminderDateText,
-                onDateSelected = { year, month, day ->
-                    val cal = Calendar.getInstance().apply { set(year, month, day) }
-                    reminderDateText = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(cal.time)
+                onSelectDaily = {
+                    isDailySchedule = true
+                    reminderDateText = todayDateText
+                },
+                onSelectToday = {
+                    isDailySchedule = false
+                    reminderDateText = todayDateText
+                },
+                onSelectTomorrow = {
+                    isDailySchedule = false
+                    reminderDateText = tomorrowDateText
+                },
+                onPickFutureDate = {
+                    openFutureCalendarPicker()
                 },
                 onDismissRequest = { showDatePickerDialog = false },
             )
+        }
+    }
+}
+
+@Composable
+fun MedicationDatePickerDialog(
+    isDailySelected: Boolean,
+    selectedDateText: String,
+    onSelectDaily: () -> Unit,
+    onSelectToday: () -> Unit,
+    onSelectTomorrow: () -> Unit,
+    onPickFutureDate: () -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(AppTheme.colors.cardBackground)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Select Reminder Schedule",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (isDailySelected) {
+                        "Currently set to Daily (Every Day)"
+                    } else {
+                        "Single alarm on $selectedDateText"
+                    },
+                    fontSize = 12.sp,
+                    color = AppTheme.colors.textSecondary,
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val options = listOf(
+                        "Daily" to onSelectDaily,
+                        "Today" to onSelectToday,
+                        "Tomorrow" to onSelectTomorrow,
+                    )
+                    options.forEach { (label, action) ->
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface
+                                    else Color(0xFFFDEEF7)
+                                )
+                                .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                                .clickable {
+                                    action()
+                                    onDismissRequest()
+                                }
+                                .padding(horizontal = 8.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(AppTheme.colors.elevatedSurface)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(10.dp))
+                        .clickable {
+                            onDismissRequest()
+                            onPickFutureDate()
+                        }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "📅 Pick Specific Future Date",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(AppTheme.colors.secondaryBackground)
+                        .clickable { onDismissRequest() }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Close",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textSecondary,
+                    )
+                }
+            }
         }
     }
 }

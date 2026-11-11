@@ -95,6 +95,7 @@ class MedAlarmActivity : ComponentActivity() {
         val medDosage = intent.getStringExtra("med_dosage") ?: "500 mg • 1 Tablet"
         val scheduledTime = intent.getStringExtra("scheduled_time") ?: SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
         val userId = intent.getIntExtra("user_id", -1)
+        val isDaily = intent.getBooleanExtra("is_daily", false)
 
         var isHandlingAction = false
 
@@ -110,7 +111,9 @@ class MedAlarmActivity : ComponentActivity() {
                         isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
-                        DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
+                        if (!isDaily) {
+                            DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
+                        }
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
                             title = "✅ Dose Completed",
@@ -134,7 +137,7 @@ class MedAlarmActivity : ComponentActivity() {
                         isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
-                        DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5, userId)
+                        DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5, userId, isDaily)
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
                             title = "⏰ Medication Snoozed",
@@ -159,7 +162,9 @@ class MedAlarmActivity : ComponentActivity() {
                         isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
-                        DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
+                        if (!isDaily) {
+                            DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
+                        }
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
                             title = "⏭️ Dose Skipped",

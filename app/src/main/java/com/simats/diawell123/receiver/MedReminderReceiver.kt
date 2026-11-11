@@ -26,15 +26,20 @@ class MedReminderReceiver : BroadcastReceiver() {
         val medDose = intent.getStringExtra("med_dose") ?: intent.getStringExtra("med_dosage") ?: ""
         val scheduledTime = intent.getStringExtra("scheduled_time") ?: ""
         val userId = intent.getIntExtra("user_id", -1)
+        val isDaily = intent.getBooleanExtra("is_daily", false)
+        val alarmHour = intent.getIntExtra("hour", -1)
+        val alarmMinute = intent.getIntExtra("minute", -1)
 
-        Log.d("MedReminderReceiver", "Broadcast received: action=$action, medId=$medId, medName=$medName, userId=$userId")
+        Log.d("MedReminderReceiver", "Broadcast received: action=$action, medId=$medId, medName=$medName, userId=$userId, isDaily=$isDaily")
 
         when (action) {
             DiaWellNotificationHelper.ACTION_TAKEN -> {
                 Log.d("MedReminderReceiver", "Action TAKEN received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
-                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                if (!isDaily) {
+                    DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                }
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "✅ Dose Completed",
@@ -62,7 +67,7 @@ class MedReminderReceiver : BroadcastReceiver() {
                 Log.d("MedReminderReceiver", "Action SNOOZE received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
-                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId)
+                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId, isDaily)
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "⏰ Medication Snoozed",
@@ -91,7 +96,9 @@ class MedReminderReceiver : BroadcastReceiver() {
                 Log.d("MedReminderReceiver", "Action SKIP received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
-                DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                if (!isDaily) {
+                    DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
+                }
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "⏭️ Dose Skipped",
@@ -163,8 +170,22 @@ class MedReminderReceiver : BroadcastReceiver() {
                     medName = medName,
                     dosage = medDose,
                     scheduledTime = scheduledTime,
-                    userId = userId
+                    userId = userId,
+                    isDaily = isDaily
                 )
+
+                // Automatically reschedule tomorrow ONLY when frequency is Daily
+                if (isDaily && alarmHour in 0..23 && alarmMinute in 0..59) {
+                    DiaWellNotificationHelper.scheduleNextDailyMedicationAlarm(
+                        context = context,
+                        medId = medId,
+                        medName = medName,
+                        dose = medDose,
+                        hour = alarmHour,
+                        minute = alarmMinute,
+                        userId = userId
+                    )
+                }
             }
 
             else -> {

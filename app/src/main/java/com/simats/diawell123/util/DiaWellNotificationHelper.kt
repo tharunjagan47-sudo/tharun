@@ -333,7 +333,8 @@ object DiaWellNotificationHelper {
         medName: String,
         dosage: String,
         scheduledTime: String = "",
-        userId: Int = -1
+        userId: Int = -1,
+        isDaily: Boolean = false
     ) {
         // Prevent duplicate alarms firing within 5 seconds for the same medication
         val now = System.currentTimeMillis()
@@ -366,6 +367,7 @@ object DiaWellNotificationHelper {
             putExtra("med_dosage", dosage)
             putExtra("scheduled_time", scheduledTime)
             putExtra("user_id", resolvedUserId)
+            putExtra("is_daily", isDaily)
         }
 
         val fullScreenPendingIntent = PendingIntent.getActivity(
@@ -382,6 +384,7 @@ object DiaWellNotificationHelper {
             putExtra("med_name", medName)
             putExtra("med_dosage", dosage)
             putExtra("user_id", resolvedUserId)
+            putExtra("is_daily", isDaily)
         }
         val takenPendingIntent = PendingIntent.getBroadcast(
             context,
@@ -396,6 +399,7 @@ object DiaWellNotificationHelper {
             putExtra("med_name", medName)
             putExtra("med_dosage", dosage)
             putExtra("user_id", resolvedUserId)
+            putExtra("is_daily", isDaily)
         }
         val snoozePendingIntent = PendingIntent.getBroadcast(
             context,
@@ -410,6 +414,7 @@ object DiaWellNotificationHelper {
             putExtra("med_name", medName)
             putExtra("med_dosage", dosage)
             putExtra("user_id", resolvedUserId)
+            putExtra("is_daily", isDaily)
         }
         val skipPendingIntent = PendingIntent.getBroadcast(
             context,
@@ -621,14 +626,24 @@ object DiaWellNotificationHelper {
         medName: String,
         dose: String,
         triggerAtMillis: Long,
-        userId: Int = -1
+        userId: Int = -1,
+        isDaily: Boolean = false,
+        alarmHour: Int = -1,
+        alarmMinute: Int = -1,
+        requestCodeOverride: Int = -1
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
         checkAndPromptExactAlarmPermission(context)
 
-        // Cancel any existing alarm for this medId to prevent duplicate triggers
-        cancelMedicationAlarm(context, medId)
+        val broadcastReqCode = if (requestCodeOverride > 0) requestCodeOverride else medId
+
+        // Only clear matching requestCode so daily snoozes don't wipe tomorrow's recurring alarm
+        if (requestCodeOverride > 0) {
+            cancelAlarmRequestCode(context, broadcastReqCode)
+        } else {
+            cancelMedicationAlarm(context, medId)
+        }
 
         // Defensive safety check against past or near-immediate timestamps
         var finalTrigger = triggerAtMillis
@@ -639,6 +654,10 @@ object DiaWellNotificationHelper {
             finalTrigger = cal.timeInMillis
             Log.w("DiaWellNotifications", "triggerAtMillis ($triggerAtMillis) was in past or <= 5s. Rolled forward to tomorrow: $finalTrigger")
         }
+
+        val triggerCal = java.util.Calendar.getInstance().apply { timeInMillis = finalTrigger }
+        val resolvedHour = if (alarmHour in 0..23) alarmHour else triggerCal.get(java.util.Calendar.HOUR_OF_DAY)
+        val resolvedMinute = if (alarmMinute in 0..59) alarmMinute else triggerCal.get(java.util.Calendar.MINUTE)
 
         val resolvedUserId = userId.takeIf { it > 0 } ?: try {
             SessionManager.init(context.applicationContext)
@@ -656,11 +675,14 @@ object DiaWellNotificationHelper {
             putExtra("med_dose", dose)
             putExtra("scheduled_time", scheduledTimeLabel)
             putExtra("user_id", resolvedUserId)
+            putExtra("is_daily", isDaily)
+            putExtra("hour", resolvedHour)
+            putExtra("minute", resolvedMinute)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            medId,
+            broadcastReqCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -713,7 +735,41 @@ object DiaWellNotificationHelper {
     }
 
     /**
-     * Snooze medication alarm by scheduling a new exact alarm X minutes later.
+     * Reschedules tomorrow's exact daily alarm after today's daily alarm fires.
+     */
+    fun scheduleNextDailyMedicationAlarm(
+        context: Context,
+        medId: Int,
+        medName: String,
+        dose: String,
+        hour: Int,
+        minute: Int,
+        userId: Int = -1
+    ) {
+        val nextCal = java.util.Calendar.getInstance().apply {
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+            add(java.util.Calendar.DAY_OF_YEAR, 1)
+        }
+        scheduleExactMedicationAlarm(
+            context = context,
+            medId = medId,
+            medName = medName,
+            dose = dose,
+            triggerAtMillis = nextCal.timeInMillis,
+            userId = userId,
+            isDaily = true,
+            alarmHour = hour,
+            alarmMinute = minute
+        )
+        Log.d("DiaWellNotifications", "Rescheduled Daily alarm for medId=$medId at tomorrow $hour:$minute")
+    }
+
+    /**
+     * Snooze medication alarm by scheduling a one-time alarm X minutes later.
+     * Uses a separate request code when recurring daily so tomorrow's daily alarm remains intact.
      */
     fun snoozeMedicationAlarm(
         context: Context,
@@ -721,28 +777,45 @@ object DiaWellNotificationHelper {
         medName: String,
         dose: String,
         snoozeMinutes: Int = 5,
-        userId: Int = -1
+        userId: Int = -1,
+        isDaily: Boolean = false
     ) {
         val triggerTime = System.currentTimeMillis() + (snoozeMinutes * 60 * 1000L)
-        scheduleExactMedicationAlarm(context, medId, medName, dose, triggerTime, userId)
-        Log.d("DiaWellNotifications", "Snoozed medId=$medId for $snoozeMinutes minutes (trigger=$triggerTime)")
+        val requestCodeId = if (isDaily) medId + 50000 else medId
+        scheduleExactMedicationAlarm(
+            context = context,
+            medId = medId,
+            medName = medName,
+            dose = dose,
+            triggerAtMillis = triggerTime,
+            userId = userId,
+            isDaily = false,
+            requestCodeOverride = requestCodeId
+        )
+        Log.d("DiaWellNotifications", "Snoozed medId=$medId (req=$requestCodeId) for $snoozeMinutes minutes")
     }
 
-    fun cancelMedicationAlarm(context: Context, medId: Int) {
+    private fun cancelAlarmRequestCode(context: Context, reqId: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
         val intent = Intent(context, MedReminderReceiver::class.java).apply {
             action = ACTION_ALARM_TRIGGER
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            medId,
+            reqId,
             intent,
             PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         )
         if (pendingIntent != null) {
             alarmManager.cancel(pendingIntent)
             pendingIntent.cancel()
-            Log.d("DiaWellNotifications", "Cancelled alarm for medId=$medId")
+            Log.d("DiaWellNotifications", "Cancelled alarm for reqId=$reqId")
+        }
+    }
+
+    fun cancelMedicationAlarm(context: Context, medId: Int) {
+        listOf(medId, medId + 50000).forEach { reqId ->
+            cancelAlarmRequestCode(context, reqId)
         }
     }
 

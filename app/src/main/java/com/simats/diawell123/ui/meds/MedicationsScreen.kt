@@ -287,6 +287,7 @@ fun MedicationsScreen(
                                 category = item.category.ifBlank { item.therapeuticClass },
                                 primaryIngredient = item.primaryIngredient,
                                 timing = item.timing,
+                                scheduleTag = formatMedicationScheduleLabel(item.reminderDate, item.frequency),
                                 onClick = {
                                     viewModel.setSelectedMedication(item)
                                     onReminderClick(item)
@@ -340,6 +341,7 @@ fun MedicationScheduleCard(
     category: String = "",
     primaryIngredient: String = "",
     timing: String = "",
+    scheduleTag: String = "",
     onClick: () -> Unit = {},
 ) {
     val iconChar = when {
@@ -378,9 +380,12 @@ fun MedicationScheduleCard(
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFB81D85),
                         )
-                        if (timing.isNotBlank()) {
+                        val meta = listOf(timing, scheduleTag)
+                            .filter { it.isNotBlank() }
+                            .joinToString(" • ")
+                        if (meta.isNotBlank()) {
                             Text(
-                                text = " • $timing",
+                                text = " • $meta",
                                 fontSize = 11.sp,
                                 color = AppTheme.colors.textMuted,
                             )
@@ -428,6 +433,39 @@ fun MedicationScheduleCard(
                     fontWeight = FontWeight.Bold,
                     color = statusColor,
                 )
+            }
+        }
+    }
+}
+
+fun formatMedicationScheduleLabel(rawDate: String?, frequency: String?): String {
+    if (frequency?.trim().equals("Daily", ignoreCase = true) ||
+        rawDate?.trim().equals("Daily", ignoreCase = true)
+    ) {
+        return "Daily"
+    }
+    val dateStr = rawDate?.trim().orEmpty()
+    if (dateStr.isBlank()) return "Single Alarm"
+
+    val todayStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        .format(java.util.Date())
+    val tomorrowCal = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, 1) }
+    val tomorrowStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        .format(tomorrowCal.time)
+
+    return when (dateStr) {
+        todayStr -> "Today"
+        tomorrowStr -> "Tomorrow"
+        else -> {
+            try {
+                val parsed = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(dateStr)
+                if (parsed != null) {
+                    java.text.SimpleDateFormat("d MMM", java.util.Locale.getDefault()).format(parsed)
+                } else {
+                    dateStr
+                }
+            } catch (_: Exception) {
+                dateStr
             }
         }
     }

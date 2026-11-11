@@ -49,6 +49,7 @@ data class SetReminderUiState(
     val reminderDateText: String = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date()),
     val selectedTime: String = "8:00 AM",
     val selectedTiming: String = "After Meal",
+    val selectedFrequency: String = "Once",
     val notes: String = "",
     val isSaving: Boolean = false,
     val isSuccess: Boolean = false,
@@ -294,6 +295,10 @@ class MedsViewModel(
         _setReminderState.update { it.copy(selectedTiming = timing) }
     }
 
+    fun updateReminderFrequency(frequency: String) {
+        _setReminderState.update { it.copy(selectedFrequency = frequency) }
+    }
+
     fun updateReminderNotes(notes: String) {
         _setReminderState.update { it.copy(notes = notes) }
     }
@@ -312,6 +317,7 @@ class MedsViewModel(
                 reminderTime = state.selectedTime,
                 reminderDate = state.reminderDateText,
                 timing = state.selectedTiming,
+                frequency = state.selectedFrequency,
                 notes = state.notes,
                 therapeuticClass = state.therapeuticClass,
                 manufacturer = state.manufacturer,
