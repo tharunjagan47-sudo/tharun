@@ -4,195 +4,334 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import com.simats.diawell123.receiver.NudgeActionReceiver
 import java.util.Calendar
 
-/**
- * Swiggy/Zomato-style Smart Contextual Health Nudge Engine.
- * Dispatches engaging, time-aware English & Tanglish nudges strictly on the standard
- * interactive notification channel (never triggering MedAlarmActivity).
- */
+data class SmartNudgeVariant(
+    val title: String,
+    val body: String,
+)
+
+data class SmartNudgeSlot(
+    val slotId: Int,
+    val hour: Int,
+    val minute: Int,
+    val variants: List<SmartNudgeVariant>,
+    val primaryActionLabel: String,
+    val primaryActionType: String,
+    val secondaryActionLabel: String? = null,
+    val secondaryActionType: String? = null,
+    val targetScreen: String = "home",
+)
+
 object SmartNudgeEngine {
 
     private const val TAG = "SmartNudgeEngine"
-    private const val KEY_DEMO_INDEX = "demo_nudge_cycle_index"
+    private const val PREFS_NAME = "diawell_smart_nudges_prefs"
+    private const val KEY_ROTATION_INDEX = "nudge_rotation_index"
+    private const val KEY_PERIODIC_INDEX = "periodic_pulse_index"
 
-    enum class NudgeCategory {
-        HYDRATION,
-        LOW_GI_MEAL,
-        EVENING_SNACK,
-        POST_MEAL_WALK,
-        SUGAR_CHECK
-    }
+    const val PERIODIC_PULSE_REQUEST_CODE = 2099
+    private const val PERIODIC_INTERVAL_MS = 30 * 60 * 1000L
 
-    data class SmartNudgeTemplate(
-        val id: Int,
-        val category: NudgeCategory,
-        val title: String,
-        val body: String,
-        val primaryActionLabel: String,
-        val primaryActionType: String,
-        val secondaryActionLabel: String? = null,
-        val secondaryActionType: String? = null,
-        val targetScreen: String = "home"
-    )
-
-    private data class ScheduledNudgeSlot(
-        val slotIndex: Int,
-        val hour: Int,
-        val minute: Int,
-        val category: NudgeCategory
-    )
-
-    val demoTemplates: List<SmartNudgeTemplate> = listOf(
-        SmartNudgeTemplate(
-            id = 9101,
-            category = NudgeCategory.HYDRATION,
-            title = "💧 Thirsty? Your kidneys called!",
-            body = "One glass of water right now helps flush out excess glucose naturally. Kudichacha?",
+    private val dailySlots = listOf(
+        // 2001: 8:00 AM — Morning Sugar Check Nudge
+        SmartNudgeSlot(
+            slotId = 2001,
+            hour = 8,
+            minute = 0,
+            variants = listOf(
+                SmartNudgeVariant(
+                    title = "🩸 Morning Sugar Check-In!",
+                    body = "🩸 Morning check-in! Fasting sugar check pannacha? Log it before breakfast!",
+                ),
+                SmartNudgeVariant(
+                    title = "☀️ Rise & Shine, Glucose Check!",
+                    body = "☀️ Good morning! A quick 10-second fasting glucose check sets your day right.",
+                ),
+            ),
+            primaryActionLabel = "🩸 Log Sugar Now",
+            primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_GLUCOSE,
+            targetScreen = "log_glucose",
+        ),
+        // 2002: 10:30 AM — Morning Hydration Nudge
+        SmartNudgeSlot(
+            slotId = 2002,
+            hour = 10,
+            minute = 30,
+            variants = listOf(
+                SmartNudgeVariant(
+                    title = "💧 Thirsty? Your kidneys called!",
+                    body = "💧 Thirsty? Your kidneys called! One glass of water right now flushes excess glucose. Kudichacha?",
+                ),
+                SmartNudgeVariant(
+                    title = "🥤 Mid-Morning Hydration Check!",
+                    body = "🥤 Mid-morning hydration check! Drink 250ml of water to keep your energy and sugar steady.",
+                ),
+            ),
             primaryActionLabel = "✅ Drank 1 Glass (+250ml)",
             primaryActionType = NudgeActionReceiver.ACTION_QUICK_LOG_WATER,
-            targetScreen = "home"
+            targetScreen = "home",
         ),
-        SmartNudgeTemplate(
-            id = 9102,
-            category = NudgeCategory.LOW_GI_MEAL,
-            title = "🍽️ Hungry? Skip the white rice spike!",
-            body = "Craving a heavy meal? Pair your lunch with extra poriyal, greens & buttermilk to keep post-meal sugar steady.",
+        // 2003: 1:15 PM — Low-GI Lunch Nudge
+        SmartNudgeSlot(
+            slotId = 2003,
+            hour = 13,
+            minute = 15,
+            variants = listOf(
+                SmartNudgeVariant(
+                    title = "🍽️ Hungry? Skip the white rice spike!",
+                    body = "🍽️ Hungry? Skip the white rice spike! Pair your lunch with extra poriyal, greens & buttermilk.",
+                ),
+                SmartNudgeVariant(
+                    title = "🥗 Smart Lunch Tip for Steady Sugar!",
+                    body = "🥗 Lunch time! Start with fiber & vegetables first before carbs to reduce your glucose spike by 30%.",
+                ),
+            ),
             primaryActionLabel = "🥗 Log My Meal",
             primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_DIET,
             secondaryActionLabel = "🤖 Ask Dr. Jarvis",
             secondaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_AI_CHAT,
-            targetScreen = "daily_diet_plan"
+            targetScreen = "daily_diet_plan",
         ),
-        SmartNudgeTemplate(
-            id = 9103,
-            category = NudgeCategory.EVENING_SNACK,
-            title = "☕ Tea time cravings hitting hard?",
-            body = "Say no to bajji & biscuits! Grab a handful of roasted chana, almonds, or sundal instead.",
+        // 2004: 4:30 PM — Evening Tea/Snack Nudge
+        SmartNudgeSlot(
+            slotId = 2004,
+            hour = 16,
+            minute = 30,
+            variants = listOf(
+                SmartNudgeVariant(
+                    title = "☕ Tea time cravings hitting hard?",
+                    body = "☕ Tea time cravings hitting hard? Skip the bajji & biscuits — grab roasted chana, almonds, or sundal instead.",
+                ),
+                SmartNudgeVariant(
+                    title = "🥜 Smart Evening Snack Hour!",
+                    body = "🥜 Healthy snack hour! Pick fiber-rich roasted snacks instead of sugary tea biscuits today.",
+                ),
+            ),
             primaryActionLabel = "👍 Got It, Staying Healthy!",
             primaryActionType = NudgeActionReceiver.ACTION_DISMISS_NUDGE,
-            targetScreen = "daily_diet_plan"
+            targetScreen = "home",
         ),
-        SmartNudgeTemplate(
-            id = 9104,
-            category = NudgeCategory.POST_MEAL_WALK,
-            title = "👟 Couch vs. 15-Min Walk — Who wins today?",
-            body = "Just a 15-minute brisk walk after meals drops your glucose spike by up to 25 mg/dL. Polama?",
+        // 2005: 6:30 PM — Evening Walk / Activity Nudge
+        SmartNudgeSlot(
+            slotId = 2005,
+            hour = 18,
+            minute = 30,
+            variants = listOf(
+                SmartNudgeVariant(
+                    title = "👟 Couch vs. 15-Min Walk — Who wins?",
+                    body = "👟 Couch vs. 15-Min Walk — Who wins today? A brisk walk drops glucose spikes by up to 25 mg/dL. Polama?",
+                ),
+                SmartNudgeVariant(
+                    title = "🏃 Evening Movement Boost!",
+                    body = "🏃 Evening movement boost! Just 15 minutes of walking makes insulin work better all night.",
+                ),
+            ),
             primaryActionLabel = "🏃 Start 15m Walk",
             primaryActionType = NudgeActionReceiver.ACTION_QUICK_LOG_WALK,
-            targetScreen = "activity_tracking"
+            targetScreen = "activity_tracking",
         ),
-        SmartNudgeTemplate(
-            id = 9105,
-            category = NudgeCategory.SUGAR_CHECK,
-            title = "🩸 Quick 10-second check-in?",
-            body = "Curious what your numbers look like today? Log your blood sugar now so Dr. Jarvis can track your streak!",
-            primaryActionLabel = "🩸 Log Sugar Now",
-            primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_GLUCOSE,
-            targetScreen = "log_glucose"
-        )
-    )
-
-    private val dailySlots: List<ScheduledNudgeSlot> = listOf(
-        ScheduledNudgeSlot(slotIndex = 0, hour = 8, minute = 0, category = NudgeCategory.SUGAR_CHECK),
-        ScheduledNudgeSlot(slotIndex = 1, hour = 10, minute = 30, category = NudgeCategory.HYDRATION),
-        ScheduledNudgeSlot(slotIndex = 2, hour = 13, minute = 0, category = NudgeCategory.LOW_GI_MEAL),
-        ScheduledNudgeSlot(slotIndex = 3, hour = 15, minute = 0, category = NudgeCategory.SUGAR_CHECK),
-        ScheduledNudgeSlot(slotIndex = 4, hour = 15, minute = 30, category = NudgeCategory.HYDRATION),
-        ScheduledNudgeSlot(slotIndex = 5, hour = 16, minute = 30, category = NudgeCategory.EVENING_SNACK),
-        ScheduledNudgeSlot(slotIndex = 6, hour = 18, minute = 15, category = NudgeCategory.POST_MEAL_WALK),
-        ScheduledNudgeSlot(slotIndex = 7, hour = 20, minute = 0, category = NudgeCategory.LOW_GI_MEAL),
-        ScheduledNudgeSlot(slotIndex = 8, hour = 21, minute = 0, category = NudgeCategory.POST_MEAL_WALK)
+        // 2006: 8:30 PM — Dinner & Post-Meal Nudge
+        SmartNudgeSlot(
+            slotId = 2006,
+            hour = 20,
+            minute = 30,
+            variants = listOf(
+                SmartNudgeVariant(
+                    title = "🌙 Dinner light-ah edukalama?",
+                    body = "🌙 Dinner light-ah edukalama? Keep dinner carbs moderate & take a 10-min stroll after eating!",
+                ),
+                SmartNudgeVariant(
+                    title = "🍲 Smart Dinner Check!",
+                    body = "🍲 Night meal check! Pair your chapati/millet with protein & veggies for steady overnight sugar.",
+                ),
+            ),
+            primaryActionLabel = "🥗 Log My Meal",
+            primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_DIET,
+            secondaryActionLabel = "🏃 Start 15m Walk",
+            secondaryActionType = NudgeActionReceiver.ACTION_QUICK_LOG_WALK,
+            targetScreen = "daily_diet_plan",
+        ),
     )
 
     /**
-     * Cycles through the 5 catchy nudge templates (Water -> Meal -> Tea Snack -> Walk -> Sugar Check)
-     * and dispatches an interactive notification banner immediately for live demo / review.
+     * Silently schedules all 6 daily exact health nudge alarms (2001..2006) plus the
+     * rolling 30-minute contextual engagement pulse (2099). Never fires immediately on launch.
      */
-    fun triggerNextDemoNudge(context: Context): SmartNudgeTemplate {
-        val prefs = context.getSharedPreferences(NudgeActionReceiver.PREFS_NAME, Context.MODE_PRIVATE)
-        val currentIdx = prefs.getInt(KEY_DEMO_INDEX, 0).coerceAtLeast(0) % demoTemplates.size
-        val nextIdx = (currentIdx + 1) % demoTemplates.size
-        prefs.edit().putInt(KEY_DEMO_INDEX, nextIdx).apply()
-
-        val template = demoTemplates[currentIdx]
-        dispatchTemplate(context, template, uniqueTagId = template.id)
-        return template
-    }
-
-    /**
-     * Schedules all 9 daily time-window nudges via AlarmManager.setWindow().
-     * Past times strictly roll over to tomorrow so nothing fires uninvited on startup.
-     */
-    fun scheduleDailyNudges(context: Context) {
-        for (slot in dailySlots) {
-            scheduleSlot(context, slot, forceTomorrow = false)
+    fun scheduleAllDailyNudges(context: Context) {
+        DiaWellNotificationHelper.createNotificationChannels(context)
+        dailySlots.forEach { slot ->
+            scheduleSlotAlarm(context, slot)
         }
+        schedulePeriodicEngagementPulse(context)
     }
 
-    /**
-     * Called by NudgeActionReceiver when a scheduled window fires; displays the matching nudge
-     * and schedules tomorrow's window for the same slot.
-     */
-    fun triggerScheduledSlotAndReschedule(context: Context, slotIndex: Int) {
-        val slot = dailySlots.firstOrNull { it.slotIndex == slotIndex } ?: return
-        val template = demoTemplates.firstOrNull { it.category == slot.category } ?: return
-        dispatchTemplate(context, template, uniqueTagId = 9200 + slot.slotIndex)
-        scheduleSlot(context, slot, forceTomorrow = true)
+    fun triggerDailySlotAndReschedule(context: Context, slotId: Int) {
+        val slot = dailySlots.firstOrNull { it.slotId == slotId } ?: return
+        DiaWellNotificationHelper.createNotificationChannels(context)
+
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val daySeed = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+        val storedOffset = prefs.getInt("${KEY_ROTATION_INDEX}_$slotId", 0)
+        val variantIndex = (daySeed + storedOffset) % slot.variants.size
+        prefs.edit().putInt("${KEY_ROTATION_INDEX}_$slotId", storedOffset + 1).apply()
+
+        val variant = slot.variants[variantIndex]
+        DiaWellNotificationHelper.sendInteractiveNudge(
+            context = context,
+            nudgeId = slot.slotId,
+            title = variant.title,
+            body = variant.body,
+            primaryActionLabel = slot.primaryActionLabel,
+            primaryActionType = slot.primaryActionType,
+            secondaryActionLabel = slot.secondaryActionLabel,
+            secondaryActionType = slot.secondaryActionType,
+            targetScreen = slot.targetScreen,
+        )
+
+        // Schedule exact tomorrow occurrence at the same clock time
+        scheduleSlotAlarm(context, slot, forceTomorrow = true)
     }
 
-    private fun scheduleSlot(context: Context, slot: ScheduledNudgeSlot, forceTomorrow: Boolean) {
+    fun schedulePeriodicEngagementPulse(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        val nextTriggerAt = computeNextDaytimePulseMillis()
+        val pendingIntent = buildPeriodicPendingIntent(context)
+        scheduleExactCompat(alarmManager, nextTriggerAt, pendingIntent)
+    }
 
+    fun triggerPeriodicEngagementPulseAndReschedule(context: Context) {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val minute = Calendar.getInstance().get(Calendar.MINUTE)
+        val isQuietHours = hour < 7 || (hour == 22 && minute >= 30) || hour >= 23
+
+        if (!isQuietHours) {
+            DiaWellNotificationHelper.createNotificationChannels(context)
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val pulseIdx = prefs.getInt(KEY_PERIODIC_INDEX, 0)
+            prefs.edit().putInt(KEY_PERIODIC_INDEX, pulseIdx + 1).apply()
+
+            val contextualSlot = pickContextualSlotForHour(hour)
+            val variant = contextualSlot.variants[pulseIdx % contextualSlot.variants.size]
+            DiaWellNotificationHelper.sendInteractiveNudge(
+                context = context,
+                nudgeId = PERIODIC_PULSE_REQUEST_CODE,
+                title = variant.title,
+                body = variant.body,
+                primaryActionLabel = contextualSlot.primaryActionLabel,
+                primaryActionType = contextualSlot.primaryActionType,
+                secondaryActionLabel = contextualSlot.secondaryActionLabel,
+                secondaryActionType = contextualSlot.secondaryActionType,
+                targetScreen = contextualSlot.targetScreen,
+            )
+        }
+
+        schedulePeriodicEngagementPulse(context)
+    }
+
+    private fun pickContextualSlotForHour(hour: Int): SmartNudgeSlot {
+        val targetSlotId = when {
+            hour in 7..9 -> 2001
+            hour in 10..11 -> 2002
+            hour in 12..14 -> 2003
+            hour in 15..16 -> 2004
+            hour in 17..19 -> 2005
+            else -> 2006
+        }
+        return dailySlots.first { it.slotId == targetSlotId }
+    }
+
+    private fun computeNextDaytimePulseMillis(): Long {
+        val candidate = Calendar.getInstance().apply {
+            timeInMillis = System.currentTimeMillis() + PERIODIC_INTERVAL_MS
+        }
+        val hour = candidate.get(Calendar.HOUR_OF_DAY)
+        val minute = candidate.get(Calendar.MINUTE)
+        if (hour < 7 || (hour == 22 && minute >= 30) || hour >= 23) {
+            if (hour >= 22) {
+                candidate.add(Calendar.DAY_OF_YEAR, 1)
+            }
+            candidate.set(Calendar.HOUR_OF_DAY, 7)
+            candidate.set(Calendar.MINUTE, 30)
+            candidate.set(Calendar.SECOND, 0)
+            candidate.set(Calendar.MILLISECOND, 0)
+        }
+        return candidate.timeInMillis
+    }
+
+    private fun scheduleSlotAlarm(
+        context: Context,
+        slot: SmartNudgeSlot,
+        forceTomorrow: Boolean = false,
+    ) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
         val cal = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, slot.hour)
             set(Calendar.MINUTE, slot.minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
+            if (forceTomorrow || timeInMillis <= System.currentTimeMillis()) {
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
         }
-        val minTrigger = System.currentTimeMillis() + 10_000L
-        if (forceTomorrow || cal.timeInMillis <= minTrigger) {
-            cal.add(Calendar.DAY_OF_YEAR, 1)
-        }
+        scheduleExactCompat(alarmManager, cal.timeInMillis, buildSlotPendingIntent(context, slot.slotId))
+    }
 
-        val intent = Intent(context, NudgeActionReceiver::class.java).apply {
-            action = NudgeActionReceiver.ACTION_TRIGGER_SCHEDULED_NUDGE
-            putExtra("nudge_slot_index", slot.slotIndex)
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            9200 + slot.slotIndex,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
+    private fun scheduleExactCompat(
+        alarmManager: AlarmManager,
+        triggerAtMillis: Long,
+        pendingIntent: PendingIntent,
+    ) {
         try {
-            alarmManager.setWindow(
+            val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
+            if (canExact) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAtMillis,
+                    pendingIntent,
+                )
+            } else {
+                alarmManager.setAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAtMillis,
+                    pendingIntent,
+                )
+            }
+        } catch (se: SecurityException) {
+            Log.w(TAG, "Exact alarm permission unavailable, falling back to inexact idle alarm", se)
+            alarmManager.setAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                cal.timeInMillis,
-                15 * 60 * 1000L, // 15-min battery-friendly window
-                pendingIntent
+                triggerAtMillis,
+                pendingIntent,
             )
-            Log.d(TAG, "Scheduled nudge slot ${slot.slotIndex} (${slot.category}) for ${cal.time}")
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to schedule nudge slot ${slot.slotIndex}: ${e.message}")
         }
     }
 
-    private fun dispatchTemplate(context: Context, template: SmartNudgeTemplate, uniqueTagId: Int) {
-        DiaWellNotificationHelper.sendInteractiveNudge(
-            context = context,
-            nudgeId = uniqueTagId,
-            title = template.title,
-            body = template.body,
-            primaryActionLabel = template.primaryActionLabel,
-            primaryActionType = template.primaryActionType,
-            secondaryActionLabel = template.secondaryActionLabel,
-            secondaryActionType = template.secondaryActionType,
-            targetScreen = template.targetScreen
+    private fun buildSlotPendingIntent(context: Context, slotId: Int): PendingIntent {
+        val intent = Intent(context, NudgeActionReceiver::class.java).apply {
+            action = NudgeActionReceiver.ACTION_TRIGGER_SCHEDULED_NUDGE
+            putExtra(NudgeActionReceiver.EXTRA_SLOT_ID, slotId)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            slotId,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    private fun buildPeriodicPendingIntent(context: Context): PendingIntent {
+        val intent = Intent(context, NudgeActionReceiver::class.java).apply {
+            action = NudgeActionReceiver.ACTION_TRIGGER_PERIODIC_NUDGE
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            PERIODIC_PULSE_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
 }
-

@@ -79,7 +79,6 @@ import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.AppTheme
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.ui.theme.ThemeManager
-import com.simats.diawell123.util.SmartNudgeEngine
 import kotlin.math.abs
 import kotlin.math.exp
 
@@ -369,43 +368,14 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Section Title + Interactive Smart Nudge Demo Trigger
-                Row(
+                // Section Title
+                Text(
+                    text = "Key Health Metrics",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Key Health Metrics",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp),
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(Color(0xFF0D9488).copy(alpha = 0.14f))
-                            .border(1.dp, Color(0xFF0D9488), RoundedCornerShape(18.dp))
-                            .clickable { SmartNudgeEngine.triggerNextDemoNudge(context) }
-                            .padding(horizontal = 11.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = "🔔 Demo Nudge",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFF2DD4BF) else Color(0xFF0F766E),
-                            maxLines = 1,
-                            softWrap = false,
-                        )
-                    }
-                }
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 

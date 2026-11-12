@@ -83,10 +83,12 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="com.simats.diawell123.ACTION_QUICK_LOG_WATER" />
                 <action android:name="com.simats.diawell123.ACTION_QUICK_LOG_WALK" />
                 <action android:name="com.simats.diawell123.ACTION_DISMISS_NUDGE" />
                 <action android:name="com.simats.diawell123.ACTION_TRIGGER_SCHEDULED_NUDGE" />
+                <action android:name="com.simats.diawell123.ACTION_TRIGGER_PERIODIC_NUDGE" />
             </intent-filter>
         </receiver>
 
