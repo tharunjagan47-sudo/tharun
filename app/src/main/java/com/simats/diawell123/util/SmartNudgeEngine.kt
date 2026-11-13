@@ -104,11 +104,11 @@ object SmartNudgeEngine {
             variants = listOf(
                 SmartNudgeVariant(
                     title = "☕ Tea time cravings hitting hard?",
-                    body = "☕ Tea time cravings hitting hard? Skip the bajji & biscuits — grab roasted chana, almonds, or sundal instead.",
+                    body = "☕ Tea time cravings hitting hard? Skip the bajji & biscuits — grab roasted chana or sundal instead!",
                 ),
                 SmartNudgeVariant(
-                    title = "🥜 Smart Evening Snack Hour!",
-                    body = "🥜 Healthy snack hour! Pick fiber-rich roasted snacks instead of sugary tea biscuits today.",
+                    title = "🥜 4:30 PM hunger pang?",
+                    body = "🥜 4:30 PM hunger pang? A handful of almonds, walnuts, or cucumber slices keeps sugar flat!",
                 ),
             ),
             primaryActionLabel = "👍 Got It, Staying Healthy!",
@@ -122,12 +122,12 @@ object SmartNudgeEngine {
             minute = 30,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "👟 Couch vs. 15-Min Walk — Who wins?",
-                    body = "👟 Couch vs. 15-Min Walk — Who wins today? A brisk walk drops glucose spikes by up to 25 mg/dL. Polama?",
+                    title = "👟 Couch vs. 15-Min Walk — Who wins today?",
+                    body = "👟 Couch vs. 15-Min Walk — Who wins today? A brisk walk right now drops glucose naturally. Polama?",
                 ),
                 SmartNudgeVariant(
-                    title = "🏃 Evening Movement Boost!",
-                    body = "🏃 Evening movement boost! Just 15 minutes of walking makes insulin work better all night.",
+                    title = "🚶 Evening step goal calling!",
+                    body = "🚶 Evening step goal calling! 20 minutes of walking boosts your insulin sensitivity all night.",
                 ),
             ),
             primaryActionLabel = "🏃 Start 15m Walk",
@@ -141,12 +141,12 @@ object SmartNudgeEngine {
             minute = 30,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "🌙 Dinner light-ah edukalama?",
-                    body = "🌙 Dinner light-ah edukalama? Keep dinner carbs moderate & take a 10-min stroll after eating!",
+                    title = "🍲 Dinner time! Keep it light & low-GI",
+                    body = "🍲 Dinner time! Keep it light and low-GI (chapati, millet dosa, or soup) at least 2 hours before sleep.",
                 ),
                 SmartNudgeVariant(
-                    title = "🍲 Smart Dinner Check!",
-                    body = "🍲 Night meal check! Pair your chapati/millet with protein & veggies for steady overnight sugar.",
+                    title = "🌙 Done with dinner?",
+                    body = "🌙 Done with dinner? A gentle 10-minute stroll around the house prevents morning fasting spikes!",
                 ),
             ),
             primaryActionLabel = "🥗 Log My Meal",
