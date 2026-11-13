@@ -27,7 +27,11 @@ interface ProfileRepository {
         diabetesType: String,
         age: Int?,
         heightCm: Float?,
-        weightKg: Float?
+        weightKg: Float?,
+        phone: String? = null,
+        gender: String? = null,
+        targetFastingGlucose: Int? = null,
+        targetPostmealGlucose: Int? = null
     ): Result<ProfileData>
 
     suspend fun savePatientDetails(
@@ -90,16 +94,24 @@ class ProfileRepositoryImpl(
         diabetesType: String,
         age: Int?,
         heightCm: Float?,
-        weightKg: Float?
+        weightKg: Float?,
+        phone: String?,
+        gender: String?,
+        targetFastingGlucose: Int?,
+        targetPostmealGlucose: Int?
     ): Result<ProfileData> = withContext(Dispatchers.IO) {
         try {
             val request = UpdateProfileRequest(
                 fullName = fullName,
                 email = email,
+                phone = phone,
+                gender = gender,
                 diabetesType = diabetesType,
                 age = age,
                 heightCm = heightCm,
-                weightKg = weightKg
+                weightKg = weightKg,
+                targetFastingGlucose = targetFastingGlucose,
+                targetPostmealGlucose = targetPostmealGlucose
             )
             val response = apiService.updateProfile(request)
             if (response.isSuccessful && response.body() != null) {

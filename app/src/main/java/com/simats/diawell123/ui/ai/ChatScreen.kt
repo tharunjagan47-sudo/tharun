@@ -116,8 +116,12 @@ fun ChatScreen(
     val voiceError by voiceManager.voiceError.collectAsState()
     val localeLabel by voiceManager.activeLocaleLabel.collectAsState()
 
+    val sessionManager = remember {
+        try { com.simats.diawell123.data.local.SessionManager.getInstance() }
+        catch (_: Exception) { com.simats.diawell123.data.local.SessionManager.init(context) }
+    }
     var isVoiceOverlayOpen by remember { mutableStateOf(false) }
-    var autoSpeakEnabled by remember { mutableStateOf(true) }
+    var autoSpeakEnabled by remember { mutableStateOf(sessionManager.isDrJarvisVoiceEnabled()) }
 
     val latestAiResponse = remember(messages) {
         messages.lastOrNull { it.sender == ChatSender.AI }?.text ?: ""
@@ -326,6 +330,7 @@ fun ChatScreen(
                             .border(1.dp, AppTheme.colors.border, CircleShape)
                             .clickable {
                                 autoSpeakEnabled = !autoSpeakEnabled
+                                sessionManager.setDrJarvisVoiceEnabled(autoSpeakEnabled)
                                 if (!autoSpeakEnabled) {
                                     voiceManager.stopSpeaking()
                                 }
@@ -662,6 +667,7 @@ fun ChatScreen(
             },
             onToggleAutoSpeak = {
                 autoSpeakEnabled = !autoSpeakEnabled
+                sessionManager.setDrJarvisVoiceEnabled(autoSpeakEnabled)
                 if (!autoSpeakEnabled) {
                     voiceManager.stopSpeaking()
                 }

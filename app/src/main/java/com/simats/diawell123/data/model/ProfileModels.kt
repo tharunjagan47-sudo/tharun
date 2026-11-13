@@ -26,6 +26,12 @@ data class ProfileData(
     @SerializedName("email")
     val email: String = "",
 
+    @SerializedName("phone")
+    val phone: String? = null,
+
+    @SerializedName("gender")
+    val gender: String? = null,
+
     @SerializedName("diabetes_type")
     val diabetesType: String = "Type 2",
 
@@ -37,6 +43,12 @@ data class ProfileData(
 
     @SerializedName("weight_kg")
     val weightKg: Float? = null,
+
+    @SerializedName("target_fasting_glucose")
+    val targetFastingGlucose: Int? = 100,
+
+    @SerializedName("target_postmeal_glucose")
+    val targetPostmealGlucose: Int? = 140,
 
     @SerializedName("profile_photo")
     val profilePhoto: String? = null,
@@ -61,6 +73,12 @@ data class UpdateProfileRequest(
     @SerializedName("email")
     val email: String,
 
+    @SerializedName("phone")
+    val phone: String? = null,
+
+    @SerializedName("gender")
+    val gender: String? = null,
+
     @SerializedName("diabetes_type")
     val diabetesType: String,
 
@@ -71,7 +89,13 @@ data class UpdateProfileRequest(
     val heightCm: Float?,
 
     @SerializedName("weight_kg")
-    val weightKg: Float?
+    val weightKg: Float?,
+
+    @SerializedName("target_fasting_glucose")
+    val targetFastingGlucose: Int? = null,
+
+    @SerializedName("target_postmeal_glucose")
+    val targetPostmealGlucose: Int? = null
 )
 
 data class UpdateProfileResponse(

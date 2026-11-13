@@ -294,6 +294,10 @@ class MainActivity : ComponentActivity() {
                             onReportsTabClick = { currentScreen = "weekly_report" },
                             onSettingsTabClick = { currentScreen = "settings" },
                             onProfileClick = { currentScreen = "edit_profile" },
+                            onExportReportClick = {
+                                exportReturnScreen = "home"
+                                currentScreen = "export_records"
+                            },
                         )
 
                         "edit_profile" -> EditProfileScreen(
@@ -514,6 +518,7 @@ class MainActivity : ComponentActivity() {
                         "help_support" -> HelpSupportScreen(
                             onBackClick = { currentScreen = "settings" },
                             onContactSupportClick = { currentScreen = "settings" },
+                            onAiChatbotClick = { currentScreen = "ai_chatbot" },
                         )
 
                         "settings" -> SettingsScreen(
@@ -524,6 +529,10 @@ class MainActivity : ComponentActivity() {
                             onFoodPrefsClick = { currentScreen = "food_preferences_settings" },
                             onPrivacySecurityClick = { currentScreen = "privacy_security" },
                             onHelpSupportClick = { currentScreen = "help_support" },
+                            onExportRecordsClick = {
+                                exportReturnScreen = "settings"
+                                currentScreen = "export_records"
+                            },
                             onAiChatbotClick = { currentScreen = "ai_chatbot" },
                             onLogoutClick = { currentScreen = "logout_dialog" },
                             onHomeTabClick = { currentScreen = "home" },

@@ -47,6 +47,12 @@ class SessionManager private constructor(context: Context) {
         private const val KEY_REMINDER_SOUND = "reminder_sound"
         private const val KEY_VIBRATION_ENABLED = "vibration_enabled"
         private const val KEY_QUIET_HOURS = "quiet_hours"
+        private const val KEY_MED_ALARMS_ENABLED = "pref_med_alarms_enabled"
+        private const val KEY_SMART_NUDGES_ENABLED = "pref_smart_nudges_enabled"
+        private const val KEY_DR_JARVIS_VOICE_ENABLED = "pref_dr_jarvis_voice_enabled"
+        private const val KEY_GLUCOSE_UNIT = "pref_glucose_unit"
+        private const val KEY_PHONE = "phone"
+        private const val KEY_GENDER = "gender"
 
         @Volatile
         private var instance: SessionManager? = null
@@ -264,4 +270,22 @@ class SessionManager private constructor(context: Context) {
 
     fun getQuietHours(): String = prefs.getString(KEY_QUIET_HOURS, "10:00 PM - 7:00 AM") ?: "10:00 PM - 7:00 AM"
     fun setQuietHours(hours: String) = prefs.edit().putString(KEY_QUIET_HOURS, hours).apply()
+
+    fun isMedAlarmsEnabled(): Boolean = prefs.getBoolean(KEY_MED_ALARMS_ENABLED, true)
+    fun setMedAlarmsEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_MED_ALARMS_ENABLED, enabled).apply()
+
+    fun isSmartNudgesEnabled(): Boolean = prefs.getBoolean(KEY_SMART_NUDGES_ENABLED, true)
+    fun setSmartNudgesEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_SMART_NUDGES_ENABLED, enabled).apply()
+
+    fun isDrJarvisVoiceEnabled(): Boolean = prefs.getBoolean(KEY_DR_JARVIS_VOICE_ENABLED, true)
+    fun setDrJarvisVoiceEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_DR_JARVIS_VOICE_ENABLED, enabled).apply()
+
+    fun getGlucoseUnit(): String = prefs.getString(KEY_GLUCOSE_UNIT, "mg/dL") ?: "mg/dL"
+    fun setGlucoseUnit(unit: String) = prefs.edit().putString(KEY_GLUCOSE_UNIT, unit).apply()
+
+    fun getPhone(): String = prefs.getString(KEY_PHONE, "") ?: ""
+    fun setPhone(phone: String) = prefs.edit().putString(KEY_PHONE, phone).apply()
+
+    fun getGender(): String = prefs.getString(KEY_GENDER, "Male") ?: "Male"
+    fun setGender(gender: String) = prefs.edit().putString(KEY_GENDER, gender).apply()
 }

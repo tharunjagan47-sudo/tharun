@@ -79,6 +79,9 @@ import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.AppTheme
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.ui.theme.ThemeManager
+import android.widget.Toast
+import com.simats.diawell123.data.local.HealthMetricsStore
+import com.simats.diawell123.util.DiaWellNotificationHelper
 import kotlin.math.abs
 import kotlin.math.exp
 
@@ -156,6 +159,7 @@ fun HomeScreen(
     onSettingsTabClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    onExportReportClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
     val uiState by viewModel.uiState.collectAsState()
@@ -599,7 +603,161 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 5. Vibrant Quick Actions (Floating Bubble Effect)
+                // 5. Daily Water Intake Tracking Card (Interactive + / - buttons)
+                val healthStore = remember { HealthMetricsStore(context) }
+                var currentWaterLiters by remember { mutableFloatStateOf(healthStore.getWaterLiters()) }
+                val glassesCount = (currentWaterLiters / 0.25f).toInt()
+                val targetGlasses = 8
+                val waterProgress = (glassesCount / targetGlasses.toFloat()).coerceIn(0f, 1f)
+
+                ElementPopUpContainer(delayMillis = 230) {
+                    FloatingBubbleContainer(phaseOffsetMs = 400) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Daily Hydration Tracker",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AppTheme.colors.textPrimary,
+                                )
+                                Text(
+                                    text = "$glassesCount / $targetGlasses glasses (${(currentWaterLiters * 1000).toInt()} ml)",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF0284C7)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(if (AppTheme.colors.isDark) Color(0xFF0C4A6E).copy(alpha = 0.25f) else Color(0xFFF0F9FF))
+                                    .border(1.dp, Color(0xFFBAE6FD), RoundedCornerShape(16.dp))
+                                    .padding(14.dp),
+                            ) {
+                                Column {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                            Text(text = "💧", fontSize = 24.sp)
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            Column {
+                                                Text(
+                                                    text = if (glassesCount >= targetGlasses) "Hydration Goal Reached! 🎉" else "Stay Hydrated, Flush Glucose",
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = AppTheme.colors.textPrimary
+                                                )
+                                                Text(
+                                                    text = "250ml per glass • Recommended 2,000ml / day",
+                                                    fontSize = 11.sp,
+                                                    color = AppTheme.colors.textSecondary
+                                                )
+                                            }
+                                        }
+
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            // Minus 1 Glass Button
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(34.dp)
+                                                    .clip(CircleShape)
+                                                    .background(if (glassesCount > 0) Color(0xFFE0F2FE) else Color(0xFFF1F5F9))
+                                                    .clickable(enabled = glassesCount > 0) {
+                                                        if (currentWaterLiters >= 0.25f) {
+                                                            currentWaterLiters -= 0.25f
+                                                            healthStore.setWaterLiters(currentWaterLiters)
+                                                            Toast.makeText(context, "💧 -250ml (${(currentWaterLiters / 0.25f).toInt()}/$targetGlasses glasses)", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = "−",
+                                                    fontSize = 18.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (glassesCount > 0) Color(0xFF0369A1) else Color(0xFF94A3B8)
+                                                )
+                                            }
+
+                                            // Plus 1 Glass Button
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(34.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color(0xFF0284C7))
+                                                    .clickable {
+                                                        currentWaterLiters += 0.25f
+                                                        healthStore.setWaterLiters(currentWaterLiters)
+                                                        val updatedG = (currentWaterLiters / 0.25f).toInt()
+                                                        if (updatedG == targetGlasses) {
+                                                            Toast.makeText(context, "🎉 Daily Hydration Goal Reached! (2,000ml)", Toast.LENGTH_LONG).show()
+                                                            DiaWellNotificationHelper.showGeneralNotification(
+                                                                context = context,
+                                                                title = "💧 Hydration Goal Reached!",
+                                                                message = "Awesome job! You've drunk 8 glasses of water today, naturally stabilizing glucose levels.",
+                                                                notifId = 1099
+                                                            )
+                                                        } else {
+                                                            Toast.makeText(context, "💧 +250ml Logged ($updatedG/$targetGlasses glasses)", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = "+",
+                                                    fontSize = 18.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(10.dp))
+
+                                    // Smooth Animated Progress Bar
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(8.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(Color(0xFFE2E8F0))
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth(waterProgress)
+                                                .height(8.dp)
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(
+                                                    brush = Brush.horizontalGradient(
+                                                        listOf(Color(0xFF38BDF8), Color(0xFF0284C7))
+                                                    )
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 6. Vibrant Quick Actions (6 Interactive Buttons in 2 Rows)
                 ElementPopUpContainer(delayMillis = 260) {
                     Column {
                         Text(
@@ -612,32 +770,64 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         FloatingBubbleContainer(phaseOffsetMs = 250) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                VibrantQuickActionButton(
-                                    title = "Log Glucose",
-                                    icon = "🩸",
-                                    gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
-                                    onClick = onLogGlucoseClick,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                VibrantQuickActionButton(
-                                    title = "Activity",
-                                    icon = "🏃‍♂️",
-                                    gradientColors = listOf(Color(0xFF00E5FF), Color(0xFF00838F)),
-                                    onClick = onActivityTrackingClick,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                VibrantQuickActionButton(
-                                    title = "JARVIS AI",
-                                    icon = "💬",
-                                    gradientColors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
-                                    onClick = onDietChatbotClick,
-                                    modifier = Modifier.weight(1f),
-                                )
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                // Row 1: Sugar, Food, Meds
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    VibrantQuickActionButton(
+                                        title = "Log Sugar",
+                                        icon = "🩸",
+                                        gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
+                                        onClick = onLogGlucoseClick,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    VibrantQuickActionButton(
+                                        title = "Log Meal",
+                                        icon = "🥗",
+                                        gradientColors = listOf(Color(0xFF2E7D32), Color(0xFF4CAF50)),
+                                        onClick = onTrackFoodClick,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    VibrantQuickActionButton(
+                                        title = "Add Meds",
+                                        icon = "💊",
+                                        gradientColors = listOf(Color(0xFFF57C00), Color(0xFFFFB74D)),
+                                        onClick = onMedsTabClick,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+
+                                // Row 2: Activity, AI Chatbot, Export Report
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    VibrantQuickActionButton(
+                                        title = "Activity/MET",
+                                        icon = "🏃‍♂️",
+                                        gradientColors = listOf(Color(0xFF00E5FF), Color(0xFF00838F)),
+                                        onClick = onActivityTrackingClick,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    VibrantQuickActionButton(
+                                        title = "Dr. Jarvis",
+                                        icon = "🤖",
+                                        gradientColors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                        onClick = onDietChatbotClick,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    VibrantQuickActionButton(
+                                        title = "Export PDF",
+                                        icon = "📄",
+                                        gradientColors = listOf(Color(0xFF1565C0), Color(0xFF42A5F5)),
+                                        onClick = onExportReportClick,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
                             }
                         }
                     }

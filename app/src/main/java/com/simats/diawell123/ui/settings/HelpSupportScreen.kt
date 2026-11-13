@@ -61,6 +61,7 @@ fun HelpSupportScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onContactSupportClick: () -> Unit = {},
+    onAiChatbotClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
@@ -278,6 +279,99 @@ fun HelpSupportScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Emergency Medical Helpline Card (1-Tap Dialer to 108)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFFFFEBEE))
+                    .border(1.5.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                    .clickable {
+                        val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:108"))
+                        try {
+                            context.startActivity(dialIntent)
+                        } catch (_: Exception) {
+                            Toast.makeText(context, "Call Emergency Services: 108", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                    .padding(14.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "🚨", fontSize = 24.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Emergency Medical Helpline (108)",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFC62828),
+                            )
+                            Text(
+                                text = "Tap to call 108 Ambulance & Emergency Support",
+                                fontSize = 11.sp,
+                                color = Color(0xFFB71C1C),
+                            )
+                        }
+                    }
+                    Text(
+                        text = "CALL",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFC62828)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Dr. Jarvis AI Assistant Shortcut Card
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (AppTheme.colors.isDark) Color(0xFF1E293B) else Color(0xFFF3E8FF))
+                    .border(1.5.dp, Color(0xFF9333EA), RoundedCornerShape(14.dp))
+                    .clickable { onAiChatbotClick() }
+                    .padding(14.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "🤖", fontSize = 24.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Ask Dr. Jarvis AI Assistant",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (AppTheme.colors.isDark) Color(0xFFC084FC) else Color(0xFF7E22CE),
+                            )
+                            Text(
+                                text = "Instant 24/7 answers to diabetes & lifestyle queries",
+                                fontSize = 11.sp,
+                                color = if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF581C87),
+                            )
+                        }
+                    }
+                    Text(
+                        text = "CHAT ›",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (AppTheme.colors.isDark) Color(0xFFC084FC) else Color(0xFF7E22CE)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Support Email Card
             Box(

@@ -80,6 +80,10 @@ class ProfileViewModel(
         age: Int?,
         heightCm: Float?,
         weightKg: Float?,
+        phone: String? = null,
+        gender: String? = null,
+        targetFastingGlucose: Int? = null,
+        targetPostmealGlucose: Int? = null,
         onSuccess: () -> Unit = {}
     ) {
         viewModelScope.launch {
@@ -90,7 +94,11 @@ class ProfileViewModel(
                 diabetesType = diabetesType,
                 age = age,
                 heightCm = heightCm,
-                weightKg = weightKg
+                weightKg = weightKg,
+                phone = phone,
+                gender = gender,
+                targetFastingGlucose = targetFastingGlucose,
+                targetPostmealGlucose = targetPostmealGlucose
             )
             result.fold(
                 onSuccess = { updated ->

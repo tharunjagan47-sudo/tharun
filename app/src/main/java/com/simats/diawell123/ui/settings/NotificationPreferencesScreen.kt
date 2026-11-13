@@ -61,6 +61,12 @@ fun NotificationPreferencesScreen(
 ) {
     val prefsState by viewModel.prefsState.collectAsState()
     val context = LocalContext.current
+    val sessionManager = remember {
+        try { com.simats.diawell123.data.local.SessionManager.getInstance() }
+        catch (_: Exception) { com.simats.diawell123.data.local.SessionManager.init(context) }
+    }
+    var smartNudgesEnabled by remember { mutableStateOf(sessionManager.isSmartNudgesEnabled()) }
+    var drJarvisVoiceEnabled by remember { mutableStateOf(sessionManager.isDrJarvisVoiceEnabled()) }
     var showSuccessBanner by remember { mutableStateOf(false) }
     var showQuietHoursDialog by remember { mutableStateOf(false) }
 
@@ -189,8 +195,42 @@ fun NotificationPreferencesScreen(
                 icon = "💊",
                 checked = prefsState.medicationReminders,
                 onCheckedChange = {
+                    sessionManager.setMedAlarmsEnabled(it)
                     viewModel.toggleMedicationReminders(it)
                     Toast.makeText(context, if (it) "Medication reminders enabled" else "Medication reminders disabled", Toast.LENGTH_SHORT).show()
+                },
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            NotificationToggleRow(
+                title = "Smart Health Nudges",
+                subtitle = "Swiggy/Zomato-style daily contextual health tips.",
+                icon = "🔔",
+                checked = smartNudgesEnabled,
+                onCheckedChange = {
+                    smartNudgesEnabled = it
+                    sessionManager.setSmartNudgesEnabled(it)
+                    if (it) {
+                        com.simats.diawell123.util.SmartNudgeEngine.scheduleAllDailyNudges(context)
+                    } else {
+                        com.simats.diawell123.util.SmartNudgeEngine.cancelAllNudges(context)
+                    }
+                    Toast.makeText(context, if (it) "Smart Health Nudges enabled" else "Smart Health Nudges disabled", Toast.LENGTH_SHORT).show()
+                },
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            NotificationToggleRow(
+                title = "Dr. Jarvis Voice Assistant",
+                subtitle = "Automatic two-way voice reading & audio speech.",
+                icon = "🤖",
+                checked = drJarvisVoiceEnabled,
+                onCheckedChange = {
+                    drJarvisVoiceEnabled = it
+                    sessionManager.setDrJarvisVoiceEnabled(it)
+                    Toast.makeText(context, if (it) "Dr. Jarvis Voice Assistant enabled" else "Dr. Jarvis Voice Assistant muted", Toast.LENGTH_SHORT).show()
                 },
             )
 

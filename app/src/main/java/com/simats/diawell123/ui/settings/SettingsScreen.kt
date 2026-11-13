@@ -60,6 +60,7 @@ fun SettingsScreen(
     onFoodPrefsClick: () -> Unit = {},
     onPrivacySecurityClick: () -> Unit = {},
     onHelpSupportClick: () -> Unit = {},
+    onExportRecordsClick: () -> Unit = {},
     onAiChatbotClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onHomeTabClick: () -> Unit = {},
@@ -245,6 +246,97 @@ fun SettingsScreen(
                                 }
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Glucose Measurement Unit Card (mg/dL vs mmol/L)
+                        val sessionManager = remember {
+                            try { com.simats.diawell123.data.local.SessionManager.getInstance() }
+                            catch (_: Exception) { com.simats.diawell123.data.local.SessionManager.init(context) }
+                        }
+                        var selectedGlucoseUnit by remember { mutableStateOf(sessionManager.getGlucoseUnit()) }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(AppTheme.colors.cardBackground)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                                .padding(16.dp),
+                        ) {
+                            Column {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(AppTheme.colors.secondaryBackground),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(text = "🩸", fontSize = 18.sp)
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Text(
+                                                text = "Glucose Unit",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = AppTheme.colors.textPrimary
+                                            )
+                                            Text(
+                                                text = "Active: $selectedGlucoseUnit (Standard)",
+                                                fontSize = 11.sp,
+                                                color = AppTheme.colors.textSecondary
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(AppTheme.colors.secondaryBackground)
+                                        .padding(4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    listOf("mg/dL", "mmol/L").forEach { unit ->
+                                        val isSelected = selectedGlucoseUnit == unit
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(
+                                                    if (isSelected) {
+                                                        if (AppTheme.colors.isDark) Color(0xFF202C40) else Color.White
+                                                    } else Color.Transparent
+                                                )
+                                                .clickable {
+                                                    selectedGlucoseUnit = unit
+                                                    sessionManager.setGlucoseUnit(unit)
+                                                    Toast.makeText(context, "Clinical unit set to $unit", Toast.LENGTH_SHORT).show()
+                                                }
+                                                .padding(vertical = 8.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = unit,
+                                                fontSize = 13.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -271,8 +363,42 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                ElementPopUpContainer(delayMillis = 200) {
+                    Column {
+                        SettingsRow(icon = "📥", title = "Export Medical Records", onClick = onExportRecordsClick)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        SettingsRow(
+                            icon = "🚨",
+                            title = "Emergency Medical Hotline (108)",
+                            onClick = {
+                                val dialIntent = android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:108"))
+                                try {
+                                    context.startActivity(dialIntent)
+                                } catch (_: Exception) {
+                                    Toast.makeText(context, "Emergency Helpline: 108", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 ElementPopUpContainer(delayMillis = 240) {
                     Column {
+                        SettingsRow(
+                            icon = "🧹",
+                            title = "Clear App Cache",
+                            onClick = {
+                                try {
+                                    context.cacheDir.deleteRecursively()
+                                    Toast.makeText(context, "✅ App cache cleared successfully.", Toast.LENGTH_SHORT).show()
+                                } catch (_: Exception) {
+                                    Toast.makeText(context, "Cache already clean.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
                         Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(icon = "🚪", title = "Log Out", isDestructive = true, onClick = onLogoutClick)

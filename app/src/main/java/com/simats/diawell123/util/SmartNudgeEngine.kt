@@ -310,6 +310,16 @@ object SmartNudgeEngine {
         }
     }
 
+    fun cancelAllNudges(context: Context) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        dailySlots.forEach { slot ->
+            val pi = buildSlotPendingIntent(context, slot.slotId)
+            alarmManager.cancel(pi)
+        }
+        val pulsePi = buildPeriodicPendingIntent(context)
+        alarmManager.cancel(pulsePi)
+    }
+
     private fun buildSlotPendingIntent(context: Context, slotId: Int): PendingIntent {
         val intent = Intent(context, NudgeActionReceiver::class.java).apply {
             action = NudgeActionReceiver.ACTION_TRIGGER_SCHEDULED_NUDGE

@@ -80,10 +80,14 @@ fun EditProfileScreen(
 
     var fullName by remember { mutableStateOf(ProfileState.userName) }
     var email by remember { mutableStateOf(ProfileState.userEmail) }
+    var phone by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("Male") }
     var age by remember { mutableStateOf("30 years") }
     var diabetesType by remember { mutableStateOf("Type 2") }
     var height by remember { mutableStateOf("165 cm") }
     var weight by remember { mutableStateOf("68 kg") }
+    var targetFasting by remember { mutableStateOf("100") }
+    var targetPostmeal by remember { mutableStateOf("140") }
 
     var showSuccessBanner by remember { mutableStateOf(false) }
 
@@ -92,10 +96,14 @@ fun EditProfileScreen(
         uiState.profile?.let { p ->
             fullName = p.fullName
             email = p.email
+            p.phone?.let { if (it.isNotBlank()) phone = it }
+            p.gender?.let { if (it.isNotBlank()) gender = it }
             p.diabetesType?.let { diabetesType = it }
             p.age?.let { age = "$it years" }
             p.heightCm?.let { height = "${it.toInt()} cm" }
             p.weightKg?.let { weight = "${it.toInt()} kg" }
+            p.targetFastingGlucose?.let { targetFasting = it.toString() }
+            p.targetPostmealGlucose?.let { targetPostmeal = it.toString() }
         }
     }
 
@@ -327,6 +335,25 @@ fun EditProfileScreen(
                 trailingIconRes = R.drawable.ic_email,
             )
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Phone Number
+            ProfileDetailInputField(
+                label = "Phone Number",
+                value = phone,
+                onValueChange = { phone = it },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Gender Segmented Picker
+            VerticalScrollAndSelectPicker(
+                label = "Gender",
+                items = listOf("Male", "Female", "Other"),
+                selectedItem = gender,
+                onItemSelected = { gender = it },
+            )
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // 1. Diabetes Type Vertical Scroll Picker
@@ -367,6 +394,34 @@ fun EditProfileScreen(
                 onItemSelected = { weight = it },
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Clinical Target Glucose Range
+            Text(
+                text = "Clinical Target Glucose Ranges",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.textPrimary,
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ProfileDetailInputField(
+                    label = "Fasting Target (80-130 mg/dL)",
+                    value = targetFasting,
+                    onValueChange = { targetFasting = it },
+                    modifier = Modifier.weight(1f)
+                )
+                ProfileDetailInputField(
+                    label = "Post-Meal Target (<180 mg/dL)",
+                    value = targetPostmeal,
+                    onValueChange = { targetPostmeal = it },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
@@ -384,6 +439,8 @@ fun EditProfileScreen(
                     val ageNum = age.replace(Regex("[^0-9]"), "").toIntOrNull()
                     val heightNum = height.replace(Regex("[^0-9.]"), "").toFloatOrNull()
                     val weightNum = weight.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+                    val fastingNum = targetFasting.replace(Regex("[^0-9]"), "").toIntOrNull()
+                    val postmealNum = targetPostmeal.replace(Regex("[^0-9]"), "").toIntOrNull()
 
                     viewModel.updateProfile(
                         fullName = fullName,
@@ -392,6 +449,10 @@ fun EditProfileScreen(
                         age = ageNum,
                         heightCm = heightNum,
                         weightKg = weightNum,
+                        phone = phone,
+                        gender = gender,
+                        targetFastingGlucose = fastingNum,
+                        targetPostmealGlucose = postmealNum,
                         onSuccess = {
                             showSuccessBanner = true
                         }
