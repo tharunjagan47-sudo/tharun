@@ -113,13 +113,15 @@ object ApiClient {
                 "10.0.2.2" to 80,
                 "127.0.0.1" to 80,
                 "127.0.0.1" to 8000,
+                "192.168.1.3" to 80,
                 "192.168.1.7" to 80
             )
         } else {
             listOf(
-                "127.0.0.1" to 80,
+                "192.168.1.3" to 80,
                 "127.0.0.1" to 8000,
                 "192.168.1.7" to 80,
+                "127.0.0.1" to 80,
                 "10.0.2.2" to 80
             )
         }
@@ -213,7 +215,7 @@ object ApiClient {
 
         val builtRequest = requestBuilder.build()
         val cachedHostPort = stickyWorkingHostPort
-        val initialIsLocalHost = builtRequest.url.host in setOf("127.0.0.1", "localhost", "10.0.2.2", "192.168.1.7", "192.168.1.9")
+        val initialIsLocalHost = builtRequest.url.host in setOf("127.0.0.1", "localhost", "10.0.2.2", "192.168.1.3", "192.168.1.7", "192.168.1.9")
         val finalRequest = if (initialIsLocalHost && cachedHostPort != null) {
             buildEndpointRequest(builtRequest, cachedHostPort.first, cachedHostPort.second)
         } else {
@@ -221,7 +223,7 @@ object ApiClient {
         }
 
         val response: Response = try {
-            chain.withConnectTimeout(4, TimeUnit.SECONDS).proceed(finalRequest)
+            chain.withConnectTimeout(3, TimeUnit.SECONDS).proceed(finalRequest)
         } catch (primaryError: java.io.IOException) {
             stickyWorkingHostPort = null
             val currentPair = finalRequest.url.host to finalRequest.url.port
@@ -232,7 +234,7 @@ object ApiClient {
             for ((altHost, altPort) in candidates) {
                 try {
                     val altRequest = buildEndpointRequest(builtRequest, altHost, altPort)
-                    val attempt = chain.withConnectTimeout(3, TimeUnit.SECONDS).proceed(altRequest)
+                    val attempt = chain.withConnectTimeout(2, TimeUnit.SECONDS).proceed(altRequest)
                     stickyWorkingHostPort = altHost to altPort
                     resolvedResponse = attempt
                     break

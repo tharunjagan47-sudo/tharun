@@ -17,14 +17,14 @@ object NetworkConstants {
     const val LOCAL_PHP_BASE_URL = "http://127.0.0.1/diawell_backend/"
     const val ADB_REVERSE_PHP_BASE_URL = "http://127.0.0.1:8000/diawell_backend/"
     const val EMULATOR_PHP_BASE_URL = "http://10.0.2.2/diawell_backend/"
-    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://192.168.1.7/diawell_backend/" // Host PC LAN IPv4 from ipconfig
+    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://192.168.1.3/diawell_backend/" // Current Host PC LAN IPv4 from ipconfig
     const val DEVTUNNEL_BASE_URL = "https://surcharge-blot-expenses.ngrok-free.dev/diawell_backend/"
 
     // -------------------------------------------------------------------------
     // Legacy / Microservice Settings (Kept for compatibility)
     // -------------------------------------------------------------------------
     const val EMULATOR_AI_BASE_URL = "http://10.0.2.2/diawell_backend/"
-    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://192.168.1.7/diawell_backend/"
+    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://192.168.1.3/diawell_backend/"
 
     /**
      * Standardized relative chat endpoint path appended to BASE_URL (http://127.0.0.1/diawell_backend/).
@@ -36,10 +36,11 @@ object NetworkConstants {
      * Ordered fallback endpoints for Dr. Jarvis AI if primary connection fails.
      */
     val AI_CHAT_FALLBACK_URLS: List<String> = listOf(
-        "http://127.0.0.1/diawell_backend/ai/chat.php",
+        "http://192.168.1.3/diawell_backend/ai/chat.php",
         "http://127.0.0.1:8000/diawell_backend/ai/chat.php",
         "http://192.168.1.7/diawell_backend/ai/chat.php",
         "http://10.0.2.2/diawell_backend/ai/chat.php",
+        "http://127.0.0.1/diawell_backend/ai/chat.php",
         "http://127.0.0.1/diawell_backend/diawell_backend/ai/chat.php"
     )
 
@@ -74,7 +75,7 @@ object NetworkConstants {
      * LAN Wi-Fi, and Emulator (10.0.2.2) endpoints if 127.0.0.1:80 is unavailable.
      */
     val BASE_URL: String
-        get() = LOCAL_PHP_BASE_URL
+        get() = if (isEmulator) EMULATOR_PHP_BASE_URL else PHYSICAL_DEVICE_PHP_LAN_URL
 
     /**
      * Active Base URL used by Retrofit for Dr. Jarvis AI Chatbot.
