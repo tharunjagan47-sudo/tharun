@@ -1,6 +1,8 @@
 package com.simats.diawell123.data.model
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import com.simats.diawell123.util.FlexibleStringListAdapter
 
 /**
  * Profile Details (editprofile.php GET)
@@ -150,9 +152,11 @@ data class HealthPreferencesRequest(
     @SerializedName("health_focus")
     val healthFocus: String? = null,
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("dietary_preferences")
     val dietaryPreferences: List<String> = emptyList(),
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("allergies")
     val allergies: List<String> = emptyList(),
 
@@ -189,12 +193,23 @@ data class FoodPreferencesData(
     @SerializedName("preferred_diet")
     val preferredDiet: String = "Non-Vegetarian",
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("allergies")
     val allergies: List<String> = emptyList(),
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
+    @SerializedName("food_allergies")
+    val foodAllergies: List<String> = emptyList(),
+
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("preferred_styles")
     val preferredStyles: List<String> = emptyList(),
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
+    @SerializedName("preferred_foods")
+    val preferredFoods: List<String> = emptyList(),
+
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("foods_to_avoid")
     val foodsToAvoid: List<String> = emptyList()
 )
@@ -203,12 +218,15 @@ data class UpdateFoodPreferencesRequest(
     @SerializedName("preferred_diet")
     val preferredDiet: String,
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("allergies")
     val allergies: List<String> = emptyList(),
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("preferred_styles")
     val preferredStyles: List<String> = emptyList(),
 
+    @JsonAdapter(FlexibleStringListAdapter::class)
     @SerializedName("foods_to_avoid")
     val foodsToAvoid: List<String> = emptyList()
 )

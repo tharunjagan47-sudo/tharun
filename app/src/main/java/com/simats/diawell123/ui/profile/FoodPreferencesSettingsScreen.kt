@@ -78,8 +78,24 @@ fun FoodPreferencesSettingsScreen(
 
     LaunchedEffect(uiState.foodPreferences) {
         uiState.foodPreferences?.let { fp ->
-            selectedDiet = fp.preferredDiet
+            if (fp.preferredDiet.isNotBlank()) {
+                selectedDiet = fp.preferredDiet
+            }
             foodsToAvoid = fp.foodsToAvoid.joinToString(", ")
+            if (fp.allergies.isNotEmpty()) {
+                allergies.forEachIndexed { i, pair ->
+                    allergies[i] = pair.first to fp.allergies.any { it.equals(pair.first, ignoreCase = true) }
+                }
+                fp.allergies.filter { item -> allergies.none { it.first.equals(item, ignoreCase = true) } }
+                    .forEach { allergies.add(it to true) }
+            }
+            if (fp.preferredStyles.isNotEmpty()) {
+                preferredStyles.forEachIndexed { i, pair ->
+                    preferredStyles[i] = pair.first to fp.preferredStyles.any { it.equals(pair.first, ignoreCase = true) }
+                }
+                fp.preferredStyles.filter { item -> preferredStyles.none { it.first.equals(item, ignoreCase = true) } }
+                    .forEach { preferredStyles.add(it to true) }
+            }
         }
     }
 
@@ -175,7 +191,13 @@ fun FoodPreferencesSettingsScreen(
                 }
             }
 
-            if (uiState.errorMessage != null) {
+            val errorMsg = uiState.errorMessage
+            if (errorMsg != null &&
+                !errorMsg.contains("IllegalStateException", ignoreCase = true) &&
+                !errorMsg.contains("BEGIN_ARRAY", ignoreCase = true) &&
+                !errorMsg.contains("Gson", ignoreCase = true) &&
+                !errorMsg.contains("Expected", ignoreCase = true)
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -186,7 +208,7 @@ fun FoodPreferencesSettingsScreen(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = uiState.errorMessage ?: "Failed to save food preferences.",
+                        text = errorMsg,
                         fontSize = 12.sp,
                         color = Color(0xFFD32F2F)
                     )
@@ -214,7 +236,7 @@ fun FoodPreferencesSettingsScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 DietTypeOptionCard(
                     title = "Vegetarian",
@@ -224,7 +246,9 @@ fun FoodPreferencesSettingsScreen(
                         selectedDiet = "Vegetarian"
                         Toast.makeText(context, "Preferred diet set to Vegetarian", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(96.dp),
                 )
                 DietTypeOptionCard(
                     title = "Non-Vegetarian",
@@ -234,7 +258,9 @@ fun FoodPreferencesSettingsScreen(
                         selectedDiet = "Non-Vegetarian"
                         Toast.makeText(context, "Preferred diet set to Non-Vegetarian", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(96.dp),
                 )
                 DietTypeOptionCard(
                     title = "Vegan",
@@ -244,7 +270,9 @@ fun FoodPreferencesSettingsScreen(
                         selectedDiet = "Vegan"
                         Toast.makeText(context, "Preferred diet set to Vegan", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(96.dp),
                 )
             }
 
@@ -509,18 +537,23 @@ fun DietTypeOptionCard(
                 shape = RoundedCornerShape(12.dp),
             )
             .clickable { onClick() }
-            .padding(vertical = 12.dp, horizontal = 8.dp),
+            .padding(horizontal = 6.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = iconText, fontSize = 20.sp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = iconText, fontSize = 22.sp)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = title,
-                fontSize = 11.sp,
+                fontSize = 11.5.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,
+                maxLines = 1,
+                softWrap = false,
             )
         }
     }

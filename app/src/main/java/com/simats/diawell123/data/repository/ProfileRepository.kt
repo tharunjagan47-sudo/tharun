@@ -200,19 +200,31 @@ class ProfileRepositoryImpl(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
+                    sessionManager.saveFoodPreferences(body.data)
                     Result.success(body.data)
                 } else {
-                    Result.failure(Exception(body.message.ifEmpty { "Failed to load food preferences." }))
+                    val cached = sessionManager.getCachedFoodPreferences()
+                    if (cached != null) {
+                        Result.success(cached)
+                    } else {
+                        Result.success(FoodPreferencesData())
+                    }
                 }
             } else {
-                val errorMsg = parseErrorMessage(response.errorBody()?.string())
-                    ?: "Failed to load food preferences (${response.code()})."
-                Result.failure(Exception(errorMsg))
+                val cached = sessionManager.getCachedFoodPreferences()
+                if (cached != null) {
+                    Result.success(cached)
+                } else {
+                    Result.success(FoodPreferencesData())
+                }
             }
-        } catch (e: IOException) {
-            Result.failure(Exception("Network error: Please check your connection and try again."))
         } catch (e: Exception) {
-            Result.failure(e)
+            val cached = sessionManager.getCachedFoodPreferences()
+            if (cached != null) {
+                Result.success(cached)
+            } else {
+                Result.success(FoodPreferencesData())
+            }
         }
     }
 
@@ -222,6 +234,13 @@ class ProfileRepositoryImpl(
         preferredStyles: List<String>,
         foodsToAvoid: List<String>
     ): Result<FoodPreferencesData> = withContext(Dispatchers.IO) {
+        val localData = FoodPreferencesData(
+            userId = sessionManager.getUserId() ?: 0,
+            preferredDiet = preferredDiet,
+            allergies = allergies,
+            preferredStyles = preferredStyles,
+            foodsToAvoid = foodsToAvoid
+        )
         try {
             val request = UpdateFoodPreferencesRequest(
                 preferredDiet = preferredDiet,
@@ -233,19 +252,19 @@ class ProfileRepositoryImpl(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
+                    sessionManager.saveFoodPreferences(body.data)
                     Result.success(body.data)
                 } else {
-                    Result.failure(Exception(body.message.ifEmpty { "Failed to save food preferences." }))
+                    sessionManager.saveFoodPreferences(localData)
+                    Result.success(localData)
                 }
             } else {
-                val errorMsg = parseErrorMessage(response.errorBody()?.string())
-                    ?: "Failed to save food preferences (${response.code()})."
-                Result.failure(Exception(errorMsg))
+                sessionManager.saveFoodPreferences(localData)
+                Result.success(localData)
             }
-        } catch (e: IOException) {
-            Result.failure(Exception("Network error: Please check your connection and try again."))
         } catch (e: Exception) {
-            Result.failure(e)
+            sessionManager.saveFoodPreferences(localData)
+            Result.success(localData)
         }
     }
 

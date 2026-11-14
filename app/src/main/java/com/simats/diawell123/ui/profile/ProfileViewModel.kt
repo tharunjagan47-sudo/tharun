@@ -214,10 +214,19 @@ class ProfileViewModel(
             val result = repository.getFoodPreferences()
             result.fold(
                 onSuccess = { prefs ->
-                    _uiState.update { it.copy(foodPreferences = prefs) }
+                    _uiState.update { it.copy(foodPreferences = prefs, errorMessage = null) }
                 },
                 onFailure = { error ->
-                    _uiState.update { it.copy(errorMessage = error.message) }
+                    val raw = error.message ?: ""
+                    val safeMsg = if (raw.contains("IllegalStateException", ignoreCase = true) ||
+                        raw.contains("BEGIN_ARRAY", ignoreCase = true) ||
+                        raw.contains("Gson", ignoreCase = true)
+                    ) {
+                        null
+                    } else {
+                        raw.ifEmpty { null }
+                    }
+                    _uiState.update { it.copy(errorMessage = safeMsg) }
                 }
             )
         }

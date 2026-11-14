@@ -2,6 +2,7 @@ package com.simats.diawell123.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.simats.diawell123.data.model.FoodPreferencesData
 import com.simats.diawell123.data.model.UserData
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -288,4 +289,31 @@ class SessionManager private constructor(context: Context) {
 
     fun getGender(): String = prefs.getString(KEY_GENDER, "Male") ?: "Male"
     fun setGender(gender: String) = prefs.edit().putString(KEY_GENDER, gender).apply()
+
+    fun saveFoodPreferences(data: FoodPreferencesData) {
+        prefs.edit().apply {
+            putString("pref_food_preferred_diet", data.preferredDiet)
+            putString("pref_food_allergies", data.allergies.joinToString(","))
+            putString("pref_food_preferred_styles", data.preferredStyles.joinToString(","))
+            putString("pref_food_foods_to_avoid", data.foodsToAvoid.joinToString(","))
+            apply()
+        }
+    }
+
+    fun getCachedFoodPreferences(): FoodPreferencesData? {
+        val diet = prefs.getString("pref_food_preferred_diet", null) ?: return null
+        val allergies = prefs.getString("pref_food_allergies", "")
+            ?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+        val styles = prefs.getString("pref_food_preferred_styles", "")
+            ?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+        val avoid = prefs.getString("pref_food_foods_to_avoid", "")
+            ?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+        return FoodPreferencesData(
+            userId = getUserId() ?: 0,
+            preferredDiet = diet,
+            allergies = allergies,
+            preferredStyles = styles,
+            foodsToAvoid = avoid
+        )
+    }
 }
