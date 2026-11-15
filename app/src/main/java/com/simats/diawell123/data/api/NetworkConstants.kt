@@ -83,3 +83,4 @@ object NetworkConstants {
     val AI_BASE_URL: String
         get() = BASE_URL
 }
+
