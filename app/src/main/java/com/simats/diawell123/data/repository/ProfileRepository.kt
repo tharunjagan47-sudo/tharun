@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.simats.diawell123.data.api.ApiClient
 import com.simats.diawell123.data.api.ProfileApiService
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.FoodPreferencesData
 import com.simats.diawell123.data.model.HealthPreferencesRequest
 import com.simats.diawell123.data.model.PatientDetailsRequest
@@ -65,6 +66,14 @@ interface ProfileRepository {
 class ProfileRepositoryImpl(
     private val apiService: ProfileApiService = ApiClient.profileApiService
 ) : ProfileRepository {
+
+    private fun getSessionManager(): SessionManager? {
+        return try {
+            SessionManager.getInstance()
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     override suspend fun getProfile(): Result<ProfileData> = withContext(Dispatchers.IO) {
         try {
@@ -195,15 +204,16 @@ class ProfileRepositoryImpl(
     }
 
     override suspend fun getFoodPreferences(): Result<FoodPreferencesData> = withContext(Dispatchers.IO) {
+        val sm = getSessionManager()
         try {
             val response = apiService.getFoodPreferences()
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
-                    sessionManager.saveFoodPreferences(body.data)
+                    sm?.saveFoodPreferences(body.data)
                     Result.success(body.data)
                 } else {
-                    val cached = sessionManager.getCachedFoodPreferences()
+                    val cached = sm?.getCachedFoodPreferences()
                     if (cached != null) {
                         Result.success(cached)
                     } else {
@@ -211,7 +221,7 @@ class ProfileRepositoryImpl(
                     }
                 }
             } else {
-                val cached = sessionManager.getCachedFoodPreferences()
+                val cached = sm?.getCachedFoodPreferences()
                 if (cached != null) {
                     Result.success(cached)
                 } else {
@@ -219,7 +229,7 @@ class ProfileRepositoryImpl(
                 }
             }
         } catch (e: Exception) {
-            val cached = sessionManager.getCachedFoodPreferences()
+            val cached = sm?.getCachedFoodPreferences()
             if (cached != null) {
                 Result.success(cached)
             } else {
@@ -234,8 +244,9 @@ class ProfileRepositoryImpl(
         preferredStyles: List<String>,
         foodsToAvoid: List<String>
     ): Result<FoodPreferencesData> = withContext(Dispatchers.IO) {
+        val sm = getSessionManager()
         val localData = FoodPreferencesData(
-            userId = sessionManager.getUserId() ?: 0,
+            userId = sm?.getUserId() ?: 0,
             preferredDiet = preferredDiet,
             allergies = allergies,
             preferredStyles = preferredStyles,
@@ -252,18 +263,18 @@ class ProfileRepositoryImpl(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
-                    sessionManager.saveFoodPreferences(body.data)
+                    sm?.saveFoodPreferences(body.data)
                     Result.success(body.data)
                 } else {
-                    sessionManager.saveFoodPreferences(localData)
+                    sm?.saveFoodPreferences(localData)
                     Result.success(localData)
                 }
             } else {
-                sessionManager.saveFoodPreferences(localData)
+                sm?.saveFoodPreferences(localData)
                 Result.success(localData)
             }
         } catch (e: Exception) {
-            sessionManager.saveFoodPreferences(localData)
+            sm?.saveFoodPreferences(localData)
             Result.success(localData)
         }
     }

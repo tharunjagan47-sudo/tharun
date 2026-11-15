@@ -72,6 +72,14 @@ fun FoodPreferencesSettingsScreen(
     var showAddAllergyDialog by remember { mutableStateOf(false) }
     var customAllergyInput by remember { mutableStateOf("") }
 
+    val allergies = remember {
+        mutableStateListOf("Nuts" to true, "Milk" to false, "Dairy" to false, "Gluten" to false, "Eggs" to false, "Soy" to false)
+    }
+
+    val preferredStyles = remember {
+        mutableStateListOf("Whole grains" to true, "Vegetables" to true, "Fish" to true, "Poultry" to true)
+    }
+
     LaunchedEffect(Unit) {
         viewModel.loadFoodPreferences()
     }
@@ -105,14 +113,6 @@ fun FoodPreferencesSettingsScreen(
             showSuccessBanner = false
             onSaveFoodPreferencesClick()
         }
-    }
-
-    val allergies = remember {
-        mutableStateListOf("Nuts" to true, "Milk" to false, "Dairy" to false, "Gluten" to false, "Eggs" to false, "Soy" to false)
-    }
-
-    val preferredStyles = remember {
-        mutableStateListOf("Whole grains" to true, "Vegetables" to true, "Fish" to true, "Poultry" to true)
     }
 
     Box(

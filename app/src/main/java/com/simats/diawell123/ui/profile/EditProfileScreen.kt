@@ -3,6 +3,7 @@ import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.ui.theme.AppTheme
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -10,6 +11,7 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.window.Dialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -90,6 +92,8 @@ fun EditProfileScreen(
     var targetPostmeal by remember { mutableStateOf("140") }
 
     var showSuccessBanner by remember { mutableStateOf(false) }
+    var showPhotoOptionsDialog by remember { mutableStateOf(false) }
+    var showViewPictureDialog by remember { mutableStateOf(false) }
 
     // Sync from profile data when loaded from backend
     LaunchedEffect(uiState.profile) {
@@ -141,6 +145,29 @@ fun EditProfileScreen(
         }
     }
 
+    // Android Camera Photo Capture Launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+    ) { bitmap: Bitmap? ->
+        if (bitmap != null) {
+            try {
+                val sessionManager = try {
+                    SessionManager.getInstance()
+                } catch (_: Exception) {
+                    SessionManager.init(context)
+                }
+                ProfileState.saveProfileBitmap(context, bitmap, sessionManager.getUserId())
+
+                val tempFile = bitmapToFile(context, bitmap)
+                if (tempFile != null) {
+                    viewModel.uploadProfilePhoto(tempFile)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     LaunchedEffect(showSuccessBanner) {
         if (showSuccessBanner) {
             ProfileState.userName = fullName
@@ -149,6 +176,36 @@ fun EditProfileScreen(
             showSuccessBanner = false
             onSaveChangesClick()
         }
+    }
+
+    if (showPhotoOptionsDialog) {
+        ProfilePhotoOptionsDialog(
+            onDismissRequest = { showPhotoOptionsDialog = false },
+            onViewPictureClick = { showViewPictureDialog = true },
+            onChooseGalleryClick = {
+                galleryLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
+            },
+            onTakePhotoClick = {
+                cameraLauncher.launch(null)
+            }
+        )
+    }
+
+    if (showViewPictureDialog) {
+        ViewProfilePictureDialog(
+            userName = fullName,
+            onDismissRequest = { showViewPictureDialog = false },
+            onChooseGalleryClick = {
+                galleryLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
+            },
+            onTakePhotoClick = {
+                cameraLauncher.launch(null)
+            }
+        )
     }
 
     Box(
@@ -245,7 +302,7 @@ fun EditProfileScreen(
                 }
             }
 
-            // Profile Avatar & Gallery Camera Picker
+            // Profile Avatar & Photo Action Picker
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -253,17 +310,15 @@ fun EditProfileScreen(
                 Box(
                     contentAlignment = Alignment.BottomEnd,
                     modifier = Modifier.clickable {
-                        galleryLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                        )
+                        showPhotoOptionsDialog = true
                     },
                 ) {
-                    ProfileAvatarView(sizeDp = 72.dp, fontSizeSp = 24)
+                    ProfileAvatarView(sizeDp = 80.dp, fontSizeSp = 28)
 
-                    // Gallery Picker Camera Badge
+                    // Camera / Options Badge
                     Box(
                         modifier = Modifier
-                            .size(26.dp)
+                            .size(28.dp)
                             .clip(CircleShape)
                             .background(Color(0xFFB81D85))
                             .border(1.5.dp, Color.White, CircleShape),
@@ -276,26 +331,76 @@ fun EditProfileScreen(
                                 modifier = Modifier.size(14.dp)
                             )
                         } else {
-                            Text(text = "📷", fontSize = 12.sp)
+                            Text(text = "📷", fontSize = 13.sp)
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                Text(
-                    text = "📷 Choose Profile Photo from Gallery",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
-                    modifier = Modifier.clickable {
-                        galleryLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                // Profile Photo Action Chips (View, Gallery, Camera)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // View Photo Chip
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                            .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                            .clickable { showViewPictureDialog = true }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = "👁️ View Photo",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFB81D85)
                         )
-                    },
-                )
+                    }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                    // Gallery Chip
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                            .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                            .clickable {
+                                galleryLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                                )
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = "🖼️ Gallery",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFB81D85)
+                        )
+                    }
+
+                    // Camera Chip
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFB81D85))
+                            .clickable {
+                                cameraLauncher.launch(null)
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = "📷 Take Photo",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = fullName,
@@ -595,6 +700,288 @@ fun VerticalScrollAndSelectPicker(
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun bitmapToFile(context: Context, bitmap: Bitmap): File? {
+    return try {
+        val tempFile = File.createTempFile("profile_cam_", ".jpg", context.cacheDir)
+        tempFile.outputStream().use { output ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 92, output)
+            output.flush()
+        }
+        tempFile
+    } catch (e: Exception) {
+        null
+    }
+}
+
+@Composable
+fun ProfilePhotoOptionsDialog(
+    onDismissRequest: () -> Unit,
+    onViewPictureClick: () -> Unit,
+    onChooseGalleryClick: () -> Unit,
+    onTakePhotoClick: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .clip(RoundedCornerShape(22.dp))
+                .background(AppTheme.colors.cardBackground)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(22.dp))
+                .padding(20.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Profile Picture Options",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "View or update your profile picture",
+                    fontSize = 12.sp,
+                    color = AppTheme.colors.textSecondary,
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Option 1: View Picture
+                PhotoOptionItem(
+                    icon = "👁️",
+                    title = "View Profile Picture",
+                    subtitle = "Open photo viewer in full size",
+                    onClick = {
+                        onDismissRequest()
+                        onViewPictureClick()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Option 2: Gallery
+                PhotoOptionItem(
+                    icon = "🖼️",
+                    title = "Choose from Gallery",
+                    subtitle = "Select a picture from your device photos",
+                    onClick = {
+                        onDismissRequest()
+                        onChooseGalleryClick()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Option 3: Take Photo
+                PhotoOptionItem(
+                    icon = "📷",
+                    title = "Take Photo",
+                    subtitle = "Capture a new picture with camera",
+                    onClick = {
+                        onDismissRequest()
+                        onTakePhotoClick()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // Cancel Button
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF3F4F6))
+                        .clickable { onDismissRequest() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cancel",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhotoOptionItem(
+    icon: String,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7).copy(alpha = 0.6f))
+            .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.25f), RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFB81D85).copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = icon, fontSize = 20.sp)
+        }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.textPrimary
+            )
+            Text(
+                text = subtitle,
+                fontSize = 11.sp,
+                color = AppTheme.colors.textSecondary
+            )
+        }
+    }
+}
+
+@Composable
+fun ViewProfilePictureDialog(
+    userName: String,
+    onDismissRequest: () -> Unit,
+    onChooseGalleryClick: () -> Unit,
+    onTakePhotoClick: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .clip(RoundedCornerShape(24.dp))
+                .background(AppTheme.colors.cardBackground)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(24.dp))
+                .padding(20.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Header with title and close button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Profile Picture",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.textPrimary
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF3F4F6))
+                            .clickable { onDismissRequest() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✕", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Full Profile Avatar Display
+                ProfileAvatarView(sizeDp = 180.dp, fontSizeSp = 60)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = userName,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary
+                )
+
+                Text(
+                    text = "DiaWell Patient Profile Picture",
+                    fontSize = 12.sp,
+                    color = Color(0xFFB81D85)
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Action Buttons: Take Photo & Gallery
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFB81D85))
+                            .clickable {
+                                onDismissRequest()
+                                onTakePhotoClick()
+                            }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "📷", fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Take Photo",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7))
+                            .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                            .clickable {
+                                onDismissRequest()
+                                onChooseGalleryClick()
+                            }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "🖼️", fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Gallery",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFB81D85)
+                            )
+                        }
                     }
                 }
             }
