@@ -281,8 +281,8 @@ class SessionManager private constructor(context: Context) {
     fun isDrJarvisVoiceEnabled(): Boolean = prefs.getBoolean(KEY_DR_JARVIS_VOICE_ENABLED, true)
     fun setDrJarvisVoiceEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_DR_JARVIS_VOICE_ENABLED, enabled).apply()
 
-    fun getGlucoseUnit(): String = prefs.getString(KEY_GLUCOSE_UNIT, "mg/dL") ?: "mg/dL"
-    fun setGlucoseUnit(unit: String) = prefs.edit().putString(KEY_GLUCOSE_UNIT, unit).apply()
+    fun getGlucoseUnit(): String = "mg/dL"
+    fun setGlucoseUnit(unit: String) = prefs.edit().putString(KEY_GLUCOSE_UNIT, "mg/dL").apply()
 
     fun getPhone(): String = prefs.getString(KEY_PHONE, "") ?: ""
     fun setPhone(phone: String) = prefs.edit().putString(KEY_PHONE, phone).apply()

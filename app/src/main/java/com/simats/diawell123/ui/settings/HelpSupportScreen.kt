@@ -43,7 +43,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -101,7 +100,7 @@ fun HelpSupportScreen(
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start,
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -121,6 +120,7 @@ fun HelpSupportScreen(
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "Settings",
                         fontSize = 12.sp,
@@ -129,7 +129,7 @@ fun HelpSupportScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 1-Second Success Confirmation Banner
             AnimatedVisibility(
@@ -146,16 +146,20 @@ fun HelpSupportScreen(
                         .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(10.dp))
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "Support Message Sent Successfully!",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF2E7D32),
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Our team will reply to your registered email shortly.",
                                 fontSize = 11.sp,
@@ -166,29 +170,42 @@ fun HelpSupportScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Help Icon Graphic
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
-                contentAlignment = Alignment.Center,
+            // Help Header Banner (Centered visuals & text)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "💬", fontSize = 28.sp)
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(text = "💬", fontSize = 28.sp)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "How can we help?",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Search common topics or reach our care team",
+                    fontSize = 12.sp,
+                    color = AppTheme.colors.textSecondary,
+                    textAlign = TextAlign.Center,
+                )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "How can we help?",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.textPrimary,
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Search Bar
             OutlinedTextField(
@@ -299,36 +316,51 @@ fun HelpSupportScreen(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "🚨", fontSize = 24.sp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Emergency Medical Helpline (108)",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC62828),
-                            )
-                            Text(
-                                text = "Tap to call 108 Ambulance & Emergency Support",
-                                fontSize = 11.sp,
-                                color = Color(0xFFB71C1C),
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFCDD2)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🚨", fontSize = 22.sp)
                     }
-                    Text(
-                        text = "CALL",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFC62828)
-                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Emergency Medical Helpline",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFC62828),
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Tap to call 108 Ambulance & Emergency Support",
+                            fontSize = 11.sp,
+                            color = Color(0xFFB71C1C),
+                            lineHeight = 15.sp,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFD32F2F))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = "108",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Dr. Jarvis AI Assistant Shortcut Card
             Box(
@@ -342,36 +374,51 @@ fun HelpSupportScreen(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "🤖", fontSize = 24.sp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Ask Dr. Jarvis AI Assistant",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFC084FC) else Color(0xFF7E22CE),
-                            )
-                            Text(
-                                text = "Instant 24/7 answers to diabetes & lifestyle queries",
-                                fontSize = 11.sp,
-                                color = if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF581C87),
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(if (AppTheme.colors.isDark) Color(0xFF332050) else Color(0xFFE9D5FF)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🤖", fontSize = 22.sp)
                     }
-                    Text(
-                        text = "CHAT ›",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (AppTheme.colors.isDark) Color(0xFFC084FC) else Color(0xFF7E22CE)
-                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Ask Dr. Jarvis AI Assistant",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (AppTheme.colors.isDark) Color(0xFFC084FC) else Color(0xFF7E22CE),
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Instant 24/7 answers to diabetes & lifestyle queries",
+                            fontSize = 11.sp,
+                            color = if (AppTheme.colors.isDark) Color(0xFFCBD5E1) else Color(0xFF581C87),
+                            lineHeight = 15.sp,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (AppTheme.colors.isDark) Color(0xFF7E22CE) else Color(0xFF9333EA))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = "CHAT ›",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Support Email Card
             Box(
@@ -394,20 +441,33 @@ fun HelpSupportScreen(
                     }
                     .padding(14.dp),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "✉️", fontSize = 20.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(AppTheme.colors.secondaryBackground),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✉️", fontSize = 20.sp)
+                    }
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "support@diawell.com",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Official Support • Tap to compose message",
                             fontSize = 11.sp,
                             color = AppTheme.colors.textSecondary,
+                            lineHeight = 15.sp,
                         )
                     }
                 }
@@ -464,10 +524,9 @@ fun FaqAccordionItem(
             .clickable { onClick() }
             .padding(14.dp),
     ) {
-        Column {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -476,10 +535,12 @@ fun FaqAccordionItem(
                     fontWeight = FontWeight.Bold,
                     color = AppTheme.colors.textPrimary,
                     modifier = Modifier.weight(1f),
+                    lineHeight = 18.sp,
                 )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = if (isExpanded) "▲" else "▼",
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     color = AppTheme.colors.textMuted,
                 )
             }
@@ -490,7 +551,9 @@ fun FaqAccordionItem(
                     text = answer,
                     fontSize = 12.sp,
                     color = AppTheme.colors.textSecondary,
-                    lineHeight = 17.sp,
+                    lineHeight = 18.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start,
                 )
             }
         }

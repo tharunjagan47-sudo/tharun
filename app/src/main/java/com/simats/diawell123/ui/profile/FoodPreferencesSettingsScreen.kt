@@ -91,18 +91,28 @@ fun FoodPreferencesSettingsScreen(
             }
             foodsToAvoid = fp.foodsToAvoid.joinToString(", ")
             if (fp.allergies.isNotEmpty()) {
-                allergies.forEachIndexed { i, pair ->
-                    allergies[i] = pair.first to fp.allergies.any { it.equals(pair.first, ignoreCase = true) }
+                for (i in 0 until allergies.size) {
+                    val name = allergies[i].first
+                    val isSelected = fp.allergies.any { it.equals(name, ignoreCase = true) }
+                    allergies[i] = Pair(name, isSelected)
                 }
-                fp.allergies.filter { item -> allergies.none { it.first.equals(item, ignoreCase = true) } }
-                    .forEach { allergies.add(it to true) }
+                for (item in fp.allergies) {
+                    if (allergies.none { it.first.equals(item, ignoreCase = true) }) {
+                        allergies.add(Pair(item, true))
+                    }
+                }
             }
             if (fp.preferredStyles.isNotEmpty()) {
-                preferredStyles.forEachIndexed { i, pair ->
-                    preferredStyles[i] = pair.first to fp.preferredStyles.any { it.equals(pair.first, ignoreCase = true) }
+                for (i in 0 until preferredStyles.size) {
+                    val name = preferredStyles[i].first
+                    val isSelected = fp.preferredStyles.any { it.equals(name, ignoreCase = true) }
+                    preferredStyles[i] = Pair(name, isSelected)
                 }
-                fp.preferredStyles.filter { item -> preferredStyles.none { it.first.equals(item, ignoreCase = true) } }
-                    .forEach { preferredStyles.add(it to true) }
+                for (item in fp.preferredStyles) {
+                    if (preferredStyles.none { it.first.equals(item, ignoreCase = true) }) {
+                        preferredStyles.add(Pair(item, true))
+                    }
+                }
             }
         }
     }

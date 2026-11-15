@@ -211,24 +211,16 @@ class ProfileRepositoryImpl(
                 val body = response.body()!!
                 if (body.success && body.data != null) {
                     sm?.saveFoodPreferences(body.data)
-                    Result.success(body.data)
-                } else {
-                    val cached = sm?.getCachedFoodPreferences()
-                    if (cached != null) {
-                        Result.success(cached)
-                    } else {
-                        Result.success(FoodPreferencesData())
-                    }
-                }
-            } else {
-                val cached = sm?.getCachedFoodPreferences()
-                if (cached != null) {
-                    Result.success(cached)
-                } else {
-                    Result.success(FoodPreferencesData())
+                    return@withContext Result.success(body.data)
                 }
             }
-        } catch (e: Exception) {
+            val cached = sm?.getCachedFoodPreferences()
+            if (cached != null) {
+                Result.success(cached)
+            } else {
+                Result.success(FoodPreferencesData())
+            }
+        } catch (_: Exception) {
             val cached = sm?.getCachedFoodPreferences()
             if (cached != null) {
                 Result.success(cached)
@@ -264,16 +256,12 @@ class ProfileRepositoryImpl(
                 val body = response.body()!!
                 if (body.success && body.data != null) {
                     sm?.saveFoodPreferences(body.data)
-                    Result.success(body.data)
-                } else {
-                    sm?.saveFoodPreferences(localData)
-                    Result.success(localData)
+                    return@withContext Result.success(body.data)
                 }
-            } else {
-                sm?.saveFoodPreferences(localData)
-                Result.success(localData)
             }
-        } catch (e: Exception) {
+            sm?.saveFoodPreferences(localData)
+            Result.success(localData)
+        } catch (_: Exception) {
             sm?.saveFoodPreferences(localData)
             Result.success(localData)
         }
