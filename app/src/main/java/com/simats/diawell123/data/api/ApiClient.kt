@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Singleton Retrofit Client configured for backend communication.
  * Automatically handles trailing slash formatting, session cookie persistence,
- * X-User-Id injection, multi-host/multi-port retries, and HTTP 401 auto-logout enforcement.
+ * X-User-Id injection, multi-host/multi-port retries (prioritizing port 8080), and HTTP 401 auto-logout enforcement.
  */
 object ApiClient {
 
@@ -59,16 +59,16 @@ object ApiClient {
         get() = if (NetworkConstants.isEmulator) {
             listOf(
                 "10.0.2.2" to 80,
+                "127.0.0.1" to 8080,
                 "127.0.0.1" to 80,
                 "127.0.0.1" to 8000,
-                "127.0.0.1" to 8080,
                 "10.0.2.2" to 8000
             )
         } else {
             listOf(
+                "127.0.0.1" to 8080,
                 "127.0.0.1" to 80,
                 "127.0.0.1" to 8000,
-                "127.0.0.1" to 8080,
                 "10.0.2.2" to 80,
                 "10.0.2.2" to 8000
             )
@@ -156,7 +156,7 @@ object ApiClient {
             var resolvedResponse: Response? = null
             var lastError: java.io.IOException = primaryError
 
-            // Try alternate hosts & ports (127.0.0.1:80, 127.0.0.1:8000, 127.0.0.1:8080, 10.0.2.2:80)
+            // Try alternate hosts & ports (127.0.0.1:8080, 127.0.0.1:80, 127.0.0.1:8000, 10.0.2.2:80)
             for ((altHost, altPort) in candidates) {
                 try {
                     val altRequest = buildEndpointRequest(builtRequest, altHost, altPort)
@@ -173,7 +173,7 @@ object ApiClient {
 
             // If primary hosts failed or returned 404, try nested directory /diawell_backend/diawell_backend/
             if (resolvedResponse == null || resolvedResponse.code == 404) {
-                for ((altHost, altPort) in listOf("127.0.0.1" to 80, "127.0.0.1" to 8000, "10.0.2.2" to 80)) {
+                for ((altHost, altPort) in listOf("127.0.0.1" to 8080, "127.0.0.1" to 80, "127.0.0.1" to 8000, "10.0.2.2" to 80)) {
                     try {
                         val nestedRequest = buildEndpointRequest(builtRequest, altHost, altPort, "/diawell_backend/diawell_backend")
                         val attempt = chain.withConnectTimeout(2, TimeUnit.SECONDS).proceed(nestedRequest)
