@@ -5,26 +5,27 @@ package com.simats.diawell123.data.api
  *
  * Configurable endpoints:
  * - PHP Backend (Apache Port 80):
- *     - Emulator: "http://10.0.2.2/"
- *     - Physical Device (ADB Reverse): "http://127.0.0.1/"
+ *     - Emulator: "http://10.0.2.2/diawell_backend/"
+ *     - Physical Device (ADB Reverse): "http://127.0.0.1/diawell_backend/"
  * - Ollama Engine: Port 11434 (via PHP middleware)
  */
 object NetworkConstants {
 
     // -------------------------------------------------------------------------
-    // PHP Backend Settings (Apache Port 80 / ADB Reverse Port 8000 -> 80)
+    // PHP Backend Settings (Apache Port 80 / ADB Reverse)
     // -------------------------------------------------------------------------
     const val LOCAL_PHP_BASE_URL = "http://127.0.0.1/diawell_backend/"
     const val ADB_REVERSE_PHP_BASE_URL = "http://127.0.0.1:8000/diawell_backend/"
+    const val ADB_REVERSE_8080_PHP_BASE_URL = "http://127.0.0.1:8080/diawell_backend/"
     const val EMULATOR_PHP_BASE_URL = "http://10.0.2.2/diawell_backend/"
-    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://192.168.1.3/diawell_backend/" // Current Host PC LAN IPv4 from ipconfig
-    const val DEVTUNNEL_BASE_URL = "https://surcharge-blot-expenses.ngrok-free.dev/diawell_backend/"
+    const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://127.0.0.1/diawell_backend/"
+    const val DEVTUNNEL_BASE_URL = "http://127.0.0.1/diawell_backend/"
 
     // -------------------------------------------------------------------------
     // Legacy / Microservice Settings (Kept for compatibility)
     // -------------------------------------------------------------------------
     const val EMULATOR_AI_BASE_URL = "http://10.0.2.2/diawell_backend/"
-    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://192.168.1.3/diawell_backend/"
+    const val PHYSICAL_DEVICE_AI_LAN_URL = "http://127.0.0.1/diawell_backend/"
 
     /**
      * Standardized relative chat endpoint path appended to BASE_URL (http://127.0.0.1/diawell_backend/).
@@ -36,11 +37,10 @@ object NetworkConstants {
      * Ordered fallback endpoints for Dr. Jarvis AI if primary connection fails.
      */
     val AI_CHAT_FALLBACK_URLS: List<String> = listOf(
-        "http://192.168.1.3/diawell_backend/ai/chat.php",
-        "http://127.0.0.1:8000/diawell_backend/ai/chat.php",
-        "http://192.168.1.7/diawell_backend/ai/chat.php",
-        "http://10.0.2.2/diawell_backend/ai/chat.php",
         "http://127.0.0.1/diawell_backend/ai/chat.php",
+        "http://127.0.0.1:8000/diawell_backend/ai/chat.php",
+        "http://127.0.0.1:8080/diawell_backend/ai/chat.php",
+        "http://10.0.2.2/diawell_backend/ai/chat.php",
         "http://127.0.0.1/diawell_backend/diawell_backend/ai/chat.php"
     )
 
@@ -71,11 +71,10 @@ object NetworkConstants {
 
     /**
      * Standardized primary Base URL used by Retrofit across all DiaWell modules & Dr. Jarvis AI.
-     * Automatic connection fallback in ApiClient/ChatRepository seamlessly probes ADB reverse (8000),
-     * LAN Wi-Fi, and Emulator (10.0.2.2) endpoints if 127.0.0.1:80 is unavailable.
+     * Physical devices strictly use http://127.0.0.1/diawell_backend/ to route reliably through ADB reverse.
      */
     val BASE_URL: String
-        get() = if (isEmulator) EMULATOR_PHP_BASE_URL else PHYSICAL_DEVICE_PHP_LAN_URL
+        get() = if (isEmulator) EMULATOR_PHP_BASE_URL else LOCAL_PHP_BASE_URL
 
     /**
      * Active Base URL used by Retrofit for Dr. Jarvis AI Chatbot.
@@ -83,4 +82,3 @@ object NetworkConstants {
     val AI_BASE_URL: String
         get() = BASE_URL
 }
-

@@ -26,11 +26,11 @@ class ChatViewModelTest {
     @Test
     fun test_network_constants_defaults() {
         // PHP Backend for Auth & Profiles
-        assertEquals("http://10.0.2.2/", NetworkConstants.EMULATOR_PHP_BASE_URL)
-        assertEquals("http://10.0.2.2/", NetworkConstants.BASE_URL)
+        assertEquals("http://10.0.2.2/diawell_backend/", NetworkConstants.EMULATOR_PHP_BASE_URL)
+        assertEquals("http://10.0.2.2/diawell_backend/", NetworkConstants.BASE_URL)
 
         // Dr. Jarvis AI Backend (Port 80 PHP -> Local Ollama)
-        assertEquals("DiaWell_backend/ai/chat.php", NetworkConstants.CHAT_ENDPOINT)
+        assertEquals("ai/chat.php", NetworkConstants.CHAT_ENDPOINT)
         assertEquals(NetworkConstants.BASE_URL, NetworkConstants.AI_BASE_URL)
     }
 
