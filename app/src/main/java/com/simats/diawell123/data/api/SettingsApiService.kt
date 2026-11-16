@@ -6,6 +6,7 @@ import com.simats.diawell123.data.model.DeleteAccountRequest
 import com.simats.diawell123.data.model.DeleteAccountResponse
 import com.simats.diawell123.data.model.ExportRecordsResponse
 import com.simats.diawell123.data.model.NotificationPreferencesResponse
+import com.simats.diawell123.data.model.ResetLogsResponse
 import com.simats.diawell123.data.model.UpdateNotificationPreferencesRequest
 import retrofit2.Response
 import retrofit2.http.Body
@@ -46,5 +47,8 @@ interface SettingsApiService {
     suspend fun deleteAccount(
         @Body request: DeleteAccountRequest
     ): Response<DeleteAccountResponse>
+
+    @POST("settings/reset_logs.php")
+    suspend fun resetUserLogs(): Response<ResetLogsResponse>
 }
 

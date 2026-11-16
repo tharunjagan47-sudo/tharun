@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.data.local.HealthMetricsStore
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.ExportRecordsData
 import com.simats.diawell123.data.model.ExportReportOptions
@@ -404,6 +405,30 @@ class SettingsViewModel(
                 },
                 onFailure = { error ->
                     _deleteState.update { it.copy(isDeleting = false, errorMessage = error.message) }
+                }
+            )
+        }
+    }
+
+    fun resetUserLogs(
+        context: Context,
+        onSuccess: (String) -> Unit = {},
+        onFailure: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            val result = repository.resetUserLogs()
+            // Always clear local SharedPreferences health metrics and cached files
+            try {
+                HealthMetricsStore(context).clearAll()
+                File(context.cacheDir, "reports").deleteRecursively()
+            } catch (_: Exception) {}
+
+            result.fold(
+                onSuccess = { msg ->
+                    onSuccess(msg)
+                },
+                onFailure = { error ->
+                    onFailure(error.message ?: "Failed to reset remote logs.")
                 }
             )
         }

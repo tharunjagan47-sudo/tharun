@@ -31,6 +31,8 @@ interface SettingsRepository {
     suspend fun exportRecords(range: String = "all", format: String = "json"): Result<ExportRecordsData>
 
     suspend fun deleteAccount(password: String): Result<String>
+
+    suspend fun resetUserLogs(): Result<String>
 }
 
 class SettingsRepositoryImpl(
@@ -162,6 +164,28 @@ class SettingsRepositoryImpl(
             } else {
                 val errorMsg = parseErrorMessage(response.errorBody()?.string())
                     ?: "Failed to delete account (${response.code()})."
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: IOException) {
+            Result.failure(Exception("Network error: Please check your connection and try again."))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun resetUserLogs(): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.resetUserLogs()
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (body.success) {
+                    Result.success(body.message.ifEmpty { "Health logs cleared successfully." })
+                } else {
+                    Result.failure(Exception(body.message.ifEmpty { "Failed to reset logs." }))
+                }
+            } else {
+                val errorMsg = parseErrorMessage(response.errorBody()?.string())
+                    ?: "Failed to reset logs (${response.code()})."
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: IOException) {

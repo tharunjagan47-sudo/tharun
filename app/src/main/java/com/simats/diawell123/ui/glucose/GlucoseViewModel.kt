@@ -27,7 +27,7 @@ data class GlucoseHistoryUiState(
 data class LogGlucoseUiState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
-    val readingValue: String = "120",
+    val readingValue: String = "",
     val readingType: String = "Fasting",
     val readingDate: String = "",
     val readingTime: String = "",

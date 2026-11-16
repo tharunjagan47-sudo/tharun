@@ -34,15 +34,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.local.HealthMetricsStore
 import com.simats.diawell123.data.model.HomeRoutineItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -163,9 +166,12 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val data = uiState.dashboardData
     val context = LocalContext.current
+    val metricsStore = remember(context) { HealthMetricsStore(context) }
+    var waterGlasses by remember { mutableIntStateOf(metricsStore.getWaterGlasses()) }
 
     LaunchedEffect(Unit) {
         viewModel.loadDashboard(isPullToRefresh = true)
+        waterGlasses = metricsStore.getWaterGlasses()
     }
 
     val lifecycleOwner = context as? LifecycleOwner
@@ -174,6 +180,7 @@ fun HomeScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.loadDashboard(isPullToRefresh = true)
+                waterGlasses = metricsStore.getWaterGlasses()
             }
         }
         lifecycle?.addObserver(observer)
@@ -235,7 +242,7 @@ fun HomeScreen(
                                             overflow = TextOverflow.Ellipsis,
                                         )
                                         Text(
-                                            text = data?.wellnessSubtitle?.takeIf { it.isNotBlank() } ?: "Daily Wellness • 94% On Track",
+                                            text = data?.wellnessSubtitle?.takeIf { it.isNotBlank() } ?: "Daily Wellness • Start your day",
                                             fontSize = 12.sp,
                                             color = Color.White.copy(alpha = 0.85f),
                                             maxLines = 1,
@@ -310,7 +317,7 @@ fun HomeScreen(
                                             .padding(horizontal = 10.dp, vertical = 5.dp),
                                     ) {
                                         Text(
-                                            text = data?.streakBadge?.takeIf { it.isNotBlank() } ?: "🔥 7 Day Logging Streak",
+                                            text = data?.streakBadge?.takeIf { it.isNotBlank() } ?: "⚡ Start your streak today",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White,
@@ -324,7 +331,7 @@ fun HomeScreen(
                                             .padding(horizontal = 10.dp, vertical = 5.dp),
                                     ) {
                                         Text(
-                                            text = data?.targetBadge?.takeIf { it.isNotBlank() } ?: "🎯 Fasting Target Met",
+                                            text = data?.targetBadge?.takeIf { it.isNotBlank() } ?: "🎯 Fasting Target: 120 mg/dL",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White,
@@ -401,11 +408,11 @@ fun HomeScreen(
                                 MetricCard(
                                     icon = "🩸",
                                     title = gMetric?.title?.ifBlank { "Glucose" } ?: "Glucose",
-                                    value = gMetric?.value?.ifBlank { "128 mg/dL" } ?: "128 mg/dL",
-                                    subtitle = gMetric?.subtitle?.ifBlank { "Fasting • 7:15 AM" } ?: "Fasting • 7:15 AM",
-                                    statusText = gMetric?.statusText?.ifBlank { "In Target Range" } ?: "In Target Range",
-                                    statusBg = parseHexColor(gMetric?.statusBg, Color(0xFFE8F5E9)),
-                                    statusColor = parseHexColor(gMetric?.statusColor, Color(0xFF2E7D32)),
+                                    value = gMetric?.value?.ifBlank { "-- mg/dL" } ?: "-- mg/dL",
+                                    subtitle = gMetric?.subtitle?.ifBlank { "Tap to log your first reading" } ?: "Tap to log your first reading",
+                                    statusText = gMetric?.statusText?.ifBlank { "No Readings Logged" } ?: "No Readings Logged",
+                                    statusBg = parseHexColor(gMetric?.statusBg, Color(0xFFF3F4F6)),
+                                    statusColor = parseHexColor(gMetric?.statusColor, Color(0xFF6B7280)),
                                     cardBg = Color(0xFFFDEEF7),
                                     borderColor = AppTheme.colors.border,
                                     actionText = "History ›",
@@ -421,11 +428,11 @@ fun HomeScreen(
                                 MetricCard(
                                     icon = "🥗",
                                     title = nMetric?.title?.ifBlank { "Nutrition" } ?: "Nutrition",
-                                    value = nMetric?.value?.ifBlank { "1,450 kcal" } ?: "1,450 kcal",
-                                    subtitle = nMetric?.subtitle?.ifBlank { "3 of 4 meals logged" } ?: "3 of 4 meals logged",
-                                    statusText = nMetric?.statusText?.ifBlank { "C:160g • P:75g" } ?: "C:160g • P:75g",
-                                    statusBg = parseHexColor(nMetric?.statusBg, Color(0xFFE8F5E9)),
-                                    statusColor = parseHexColor(nMetric?.statusColor, Color(0xFF2E7D32)),
+                                    value = nMetric?.value?.ifBlank { "0 kcal" } ?: "0 kcal",
+                                    subtitle = nMetric?.subtitle?.ifBlank { "0 meals logged today" } ?: "0 meals logged today",
+                                    statusText = nMetric?.statusText?.ifBlank { "No meals logged" } ?: "No meals logged",
+                                    statusBg = parseHexColor(nMetric?.statusBg, Color(0xFFF3F4F6)),
+                                    statusColor = parseHexColor(nMetric?.statusColor, Color(0xFF6B7280)),
                                     cardBg = Color(0xFFEBF7F0),
                                     borderColor = Color(0xFFD4EFE0),
                                     actionText = "Explore",
@@ -448,11 +455,11 @@ fun HomeScreen(
                                 MetricCard(
                                     icon = "💊",
                                     title = mMetric?.title?.ifBlank { "Medication" } ?: "Medication",
-                                    value = mMetric?.value?.ifBlank { "Metformin" } ?: "Metformin",
-                                    subtitle = mMetric?.subtitle?.ifBlank { "500mg • 8:00 PM" } ?: "500mg • 8:00 PM",
-                                    statusText = mMetric?.statusText?.ifBlank { "Upcoming Dose" } ?: "Upcoming Dose",
-                                    statusBg = parseHexColor(mMetric?.statusBg, Color(0xFFFFF3E0)),
-                                    statusColor = parseHexColor(mMetric?.statusColor, Color(0xFFE65100)),
+                                    value = mMetric?.value?.ifBlank { "0 Active Medications" } ?: "0 Active Medications",
+                                    subtitle = mMetric?.subtitle?.ifBlank { "No medications scheduled" } ?: "No medications scheduled",
+                                    statusText = mMetric?.statusText?.ifBlank { "No Reminders" } ?: "No Reminders",
+                                    statusBg = parseHexColor(mMetric?.statusBg, Color(0xFFF3F4F6)),
+                                    statusColor = parseHexColor(mMetric?.statusColor, Color(0xFF6B7280)),
                                     cardBg = Color(0xFFFFF8EE),
                                     borderColor = Color(0xFFFFECC8),
                                     actionText = "View",
@@ -468,11 +475,11 @@ fun HomeScreen(
                                 MetricCard(
                                     icon = "📊",
                                     title = wMetric?.title?.ifBlank { "Weekly Report" } ?: "Weekly Report",
-                                    value = wMetric?.value?.ifBlank { "7/7 Days" } ?: "7/7 Days",
-                                    subtitle = wMetric?.subtitle?.ifBlank { "Glucose & Diet Logged" } ?: "Glucose & Diet Logged",
-                                    statusText = wMetric?.statusText?.ifBlank { "Excellent Routine" } ?: "Excellent Routine",
-                                    statusBg = parseHexColor(wMetric?.statusBg, Color(0xFFE3F2FD)),
-                                    statusColor = parseHexColor(wMetric?.statusColor, Color(0xFF1565C0)),
+                                    value = wMetric?.value?.ifBlank { "0/7 Days" } ?: "0/7 Days",
+                                    subtitle = wMetric?.subtitle?.ifBlank { "No logs this week" } ?: "No logs this week",
+                                    statusText = wMetric?.statusText?.ifBlank { "Start logging today" } ?: "Start logging today",
+                                    statusBg = parseHexColor(wMetric?.statusBg, Color(0xFFF3F4F6)),
+                                    statusColor = parseHexColor(wMetric?.statusColor, Color(0xFF6B7280)),
                                     cardBg = Color(0xFFF0F7FF),
                                     borderColor = Color(0xFFD0E4FC),
                                     actionText = "Reports",
@@ -572,8 +579,8 @@ fun HomeScreen(
                                 ) {
                                     val defaultRoutine = remember {
                                         listOf(
-                                            HomeRoutineItem(icon = "🥣", label = "Breakfast", isDone = true),
-                                            HomeRoutineItem(icon = "🩸", label = "Glucose", isDone = true),
+                                            HomeRoutineItem(icon = "🥣", label = "Breakfast", isDone = false),
+                                            HomeRoutineItem(icon = "🩸", label = "Glucose", isDone = false),
                                             HomeRoutineItem(icon = "🥗", label = "Lunch", isDone = false),
                                             HomeRoutineItem(icon = "💊", label = "Dinner/Meds", isDone = false),
                                         )
@@ -600,6 +607,101 @@ fun HomeScreen(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+
+                // Water Intake Tracker Card
+                ElementPopUpContainer(delayMillis = 220) {
+                    FloatingBubbleContainer(phaseOffsetMs = 450) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(if (AppTheme.colors.isDark) Color(0xFF1E293B) else Color(0xFFE0F2FE))
+                                .border(1.dp, if (AppTheme.colors.isDark) Color(0xFF334155) else Color(0xFFBAE6FD), RoundedCornerShape(18.dp))
+                                .padding(16.dp),
+                        ) {
+                            Column {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(text = "💧", fontSize = 20.sp)
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Column {
+                                            Text(
+                                                text = "Water Intake Tracker",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = AppTheme.colors.textPrimary,
+                                            )
+                                            Text(
+                                                text = "$waterGlasses / 8 glasses (${waterGlasses * 250} ml)",
+                                                fontSize = 12.sp,
+                                                color = AppTheme.colors.textSecondary,
+                                            )
+                                        }
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        if (waterGlasses > 0) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(Color.White.copy(alpha = 0.5f))
+                                                    .clickable {
+                                                        metricsStore.resetWater()
+                                                        waterGlasses = 0
+                                                    }
+                                                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                                            ) {
+                                                Text(
+                                                    text = "Reset",
+                                                    fontSize = 11.sp,
+                                                    color = Color(0xFF0284C7),
+                                                    fontWeight = FontWeight.Medium,
+                                                )
+                                            }
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(Color(0xFF0284C7))
+                                                .clickable {
+                                                    val updated = metricsStore.addWaterGlass()
+                                                    waterGlasses = updated
+                                                }
+                                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                        ) {
+                                            Text(
+                                                text = "+ 250 ml",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                LinearProgressIndicator(
+                                    progress = { (waterGlasses / 8f).coerceIn(0f, 1f) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .clip(RoundedCornerShape(4.dp)),
+                                    color = Color(0xFF0284C7),
+                                    trackColor = if (AppTheme.colors.isDark) Color(0xFF334155) else Color(0xFFBAE6FD).copy(alpha = 0.5f),
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // 5. Vibrant Quick Actions
                 ElementPopUpContainer(delayMillis = 240) {

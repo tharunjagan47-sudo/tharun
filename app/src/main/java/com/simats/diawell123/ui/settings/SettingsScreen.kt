@@ -21,7 +21,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +56,7 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     profileViewModel: ProfileViewModel = viewModel(),
+    settingsViewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onPersonalProfileClick: () -> Unit = {},
     onNotificationPrefsClick: () -> Unit = {},
@@ -69,6 +72,8 @@ fun SettingsScreen(
     onReportsTabClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Settings") }
+    var showResetDialog by remember { mutableStateOf(false) }
+    var isResetting by remember { mutableStateOf(false) }
     val profileUiState by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -310,6 +315,13 @@ fun SettingsScreen(
                             }
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        SettingsRow(
+                            icon = "🗑️",
+                            title = "Reset / Clear My Logs",
+                            isDestructive = true,
+                            onClick = { showResetDialog = true }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
                         Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(icon = "🚪", title = "Log Out", isDestructive = true, onClick = onLogoutClick)
@@ -352,6 +364,61 @@ fun SettingsScreen(
                 onMedsTabClick = onMedsTabClick,
                 onReportsTabClick = onReportsTabClick,
                 onSettingsTabClick = { selectedTab = "Settings" },
+            )
+        }
+
+        if (showResetDialog) {
+            AlertDialog(
+                onDismissRequest = { if (!isResetting) showResetDialog = false },
+                title = {
+                    Text(
+                        text = "Reset Health Logs?",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD32F2F)
+                    )
+                },
+                text = {
+                    Text(
+                        text = "This will permanently wipe all glucose readings, active medications, meals, and exercise logs from your account and reset all dashboard counters to zero. This cannot be undone.",
+                        fontSize = 13.5.sp,
+                        lineHeight = 19.sp
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            isResetting = true
+                            settingsViewModel.resetUserLogs(
+                                context = context,
+                                onSuccess = { msg ->
+                                    isResetting = false
+                                    showResetDialog = false
+                                    Toast.makeText(context, "✅ $msg", Toast.LENGTH_LONG).show()
+                                },
+                                onFailure = { err ->
+                                    isResetting = false
+                                    showResetDialog = false
+                                    Toast.makeText(context, "⚠️ Logs cleared locally: $err", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        },
+                        enabled = !isResetting
+                    ) {
+                        Text(
+                            text = if (isResetting) "Clearing..." else "Reset Everything",
+                            color = Color(0xFFD32F2F),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showResetDialog = false },
+                        enabled = !isResetting
+                    ) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
     }

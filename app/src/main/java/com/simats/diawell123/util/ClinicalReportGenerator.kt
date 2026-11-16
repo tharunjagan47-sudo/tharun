@@ -290,7 +290,7 @@ object ClinicalReportGenerator {
             val hm = patient.heightCm / 100f
             String.format(Locale.US, "%.1f kg/m²", patient.weightKg / (hm * hm))
         } else "N/A"
-        val targetStr = patient.targetGlucose?.takeIf { it > 0f }?.let { "${it.toInt()} mg/dL" } ?: "120 mg/dL"
+        val targetStr = patient.targetGlucose?.takeIf { it > 0f }?.let { "${it.toInt()} mg/dL" } ?: "--"
 
         val col1X = MARGIN_X + 12f
         val col2X = MARGIN_X + CONTENT_WIDTH * 0.36f
@@ -352,7 +352,7 @@ object ClinicalReportGenerator {
                 badgeText = "${data.glucoseReadings.size} Records"
             )
             if (data.glucoseReadings.isEmpty()) {
-                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No blood glucose readings recorded during ${options.timeRangeLabel}.", y)
+                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No clinical entries recorded by patient during this period (${options.timeRangeLabel}).", y)
                 y += 30f
             } else {
                 val cols = floatArrayOf(130f, 80f, 82f, 92f, CONTENT_WIDTH - 384f)
@@ -396,7 +396,7 @@ object ClinicalReportGenerator {
                 badgeText = "${data.medications.size} Prescriptions"
             )
             if (data.medications.isEmpty()) {
-                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No active medications recorded during ${options.timeRangeLabel}.", y)
+                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No clinical entries recorded by patient during this period (${options.timeRangeLabel}).", y)
                 y += 30f
             } else {
                 val cols = floatArrayOf(155f, 115f, 95f, 85f, CONTENT_WIDTH - 450f)
@@ -441,7 +441,7 @@ object ClinicalReportGenerator {
                 badgeText = "${data.foodLogs.size} Meals"
             )
             if (data.foodLogs.isEmpty()) {
-                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No dietary or meal entries logged during ${options.timeRangeLabel}.", y)
+                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No clinical entries recorded by patient during this period (${options.timeRangeLabel}).", y)
                 y += 30f
             } else {
                 val cols = floatArrayOf(115f, 75f, 170f, 75f, CONTENT_WIDTH - 435f)
@@ -480,7 +480,7 @@ object ClinicalReportGenerator {
                 badgeText = "${data.activityLogs.size} Sessions"
             )
             if (data.activityLogs.isEmpty()) {
-                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No exercise sessions recorded during ${options.timeRangeLabel}.", y)
+                drawEmptyNotice(canvas, fillPaint, strokePaint, textPaint, "No clinical entries recorded by patient during this period (${options.timeRangeLabel}).", y)
                 y += 30f
             } else {
                 val cols = floatArrayOf(125f, 130f, 80f, 80f, CONTENT_WIDTH - 415f)
@@ -573,7 +573,7 @@ object ClinicalReportGenerator {
 
         row("DIAWELL CLINICAL PATIENT HEALTH REPORT")
         row("Patient Name", patient.name.ifBlank { "Patient" }, "Diabetes Type", patient.diabetesType, "Period", options.timeRangeLabel)
-        row("Age", patient.age ?: "", "Weight (kg)", patient.weightKg ?: "", "Height (cm)", patient.heightCm ?: "", "Target Glucose", patient.targetGlucose ?: 120f)
+        row("Age", patient.age ?: "", "Weight (kg)", patient.weightKg ?: "", "Height (cm)", patient.heightCm ?: "", "Target Glucose", patient.targetGlucose?.takeIf { it > 0f } ?: "--")
         row("Average Glucose (mg/dL)", summary.averageGlucose, "Est. HbA1c (%)", summary.estimatedHba1c, "Med Adherence (%)", summary.adherencePercent, "Care Status", summary.careStatus)
         sb.append("\n")
 

@@ -244,3 +244,14 @@ data class DeleteAccountResponse(
     val message: String = ""
 )
 
+/**
+ * Reset / Clear Logs
+ */
+data class ResetLogsResponse(
+    @SerializedName("success")
+    val success: Boolean = false,
+
+    @SerializedName("message")
+    val message: String = ""
+)
+

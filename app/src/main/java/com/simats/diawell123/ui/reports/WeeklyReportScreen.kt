@@ -94,16 +94,16 @@ fun WeeklyReportScreen(
     }
 
     val displayWeekLabel = report?.weekLabel?.takeIf { it.isNotBlank() } ?: selectedWeekText
-    val avgGlucose = report?.glucose?.average ?: "120 mg/dL"
-    val timeInRange = report?.glucose?.timeInRangePercent ?: 78
-    val glucoseTag = report?.glucose?.summaryTag ?: "Optimal Glycemic Control"
+    val avgGlucose = report?.glucose?.average?.takeIf { it.isNotBlank() && it != "0 mg/dL" } ?: "-- mg/dL"
+    val timeInRange = report?.glucose?.timeInRangePercent ?: 0
+    val glucoseTag = report?.glucose?.summaryTag?.takeIf { it.isNotBlank() } ?: "No readings logged"
     val mealsLoggedText = if (report != null && report.nutrition.totalMealsLogged > 0) {
-        "${report.nutrition.totalMealsLogged} of 28"
+        "${report.nutrition.totalMealsLogged} meals logged"
     } else {
-        "25 of 28"
+        "0 meals logged"
     }
-    val medAdherence = report?.medication?.adherencePercent ?: 90
-    val medStatus = report?.medication?.statusLabel ?: "18 marked taken • 1 skipped • 1 upcoming"
+    val medAdherence = report?.medication?.adherencePercent ?: 0
+    val medStatus = report?.medication?.statusLabel?.takeIf { it.isNotBlank() } ?: "No medications scheduled"
 
     Box(
         modifier = modifier
@@ -250,99 +250,124 @@ fun WeeklyReportScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            // Animated Sweep-and-Stop Glucose ECG Pulse Line Canvas
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(110.dp),
-                            ) {
-                                Canvas(modifier = Modifier.fillMaxSize()) {
-                                    val w = size.width
-                                    val h = size.height
-
-                                    val points = listOf(
-                                        Offset(w * 0.08f, h * 0.65f),
-                                        Offset(w * 0.28f, h * 0.38f),
-                                        Offset(w * 0.50f, h * 0.22f),
-                                        Offset(w * 0.72f, h * 0.58f),
-                                        Offset(w * 0.92f, h * 0.32f),
-                                    )
-
-                                    val progress = chartProgress.value
-                                    val maxAllowedX = w * progress
-
-                                    val ecgPath = Path().apply {
-                                        val startX = points.first().x
-                                        moveTo(0f, points.first().y)
-                                        lineTo(startX, points.first().y)
-
-                                        for (i in 0 until points.size - 1) {
-                                            val pA = points[i]
-                                            val pB = points[i + 1]
-                                            val segW = pB.x - pA.x
-
-                                            lineTo(pA.x + segW * 0.20f, pA.y)
-                                            lineTo(pA.x + segW * 0.35f, pA.y - 12.dp.toPx())
-                                            lineTo(pA.x + segW * 0.45f, pA.y)
-                                            lineTo(pA.x + segW * 0.52f, pA.y + 16.dp.toPx())
-                                            lineTo(pA.x + segW * 0.60f, (pA.y + pB.y) / 2 - 32.dp.toPx())
-                                            lineTo(pA.x + segW * 0.68f, (pA.y + pB.y) / 2 + 24.dp.toPx())
-                                            lineTo(pA.x + segW * 0.78f, pB.y - 10.dp.toPx())
-                                            lineTo(pA.x + segW * 0.88f, pB.y)
-                                            lineTo(pB.x, pB.y)
-                                        }
-                                        lineTo(w, points.last().y)
+                            // Animated Sweep-and-Stop Glucose ECG Pulse Line Canvas or Empty Placeholder
+                            if (report == null || report.glucose.averageNum <= 0f) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(95.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "📊 No logs recorded yet.",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = AppTheme.colors.textSecondary,
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "Tap + to add your first entry",
+                                            fontSize = 11.5.sp,
+                                            color = Color(0xFFB81D85),
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
                                     }
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(110.dp),
+                                ) {
+                                    Canvas(modifier = Modifier.fillMaxSize()) {
+                                        val w = size.width
+                                        val h = size.height
 
-                                    clipRect(left = 0f, top = 0f, right = maxAllowedX, bottom = h) {
-                                        val fillEcgPath = Path().apply {
-                                            addPath(ecgPath)
-                                            lineTo(w, h)
-                                            lineTo(0f, h)
-                                            close()
+                                        val points = listOf(
+                                            Offset(w * 0.08f, h * 0.65f),
+                                            Offset(w * 0.28f, h * 0.38f),
+                                            Offset(w * 0.50f, h * 0.22f),
+                                            Offset(w * 0.72f, h * 0.58f),
+                                            Offset(w * 0.92f, h * 0.32f),
+                                        )
+
+                                        val progress = chartProgress.value
+                                        val maxAllowedX = w * progress
+
+                                        val ecgPath = Path().apply {
+                                            val startX = points.first().x
+                                            moveTo(0f, points.first().y)
+                                            lineTo(startX, points.first().y)
+
+                                            for (i in 0 until points.size - 1) {
+                                                val pA = points[i]
+                                                val pB = points[i + 1]
+                                                val segW = pB.x - pA.x
+
+                                                lineTo(pA.x + segW * 0.20f, pA.y)
+                                                lineTo(pA.x + segW * 0.35f, pA.y - 12.dp.toPx())
+                                                lineTo(pA.x + segW * 0.45f, pA.y)
+                                                lineTo(pA.x + segW * 0.52f, pA.y + 16.dp.toPx())
+                                                lineTo(pA.x + segW * 0.60f, (pA.y + pB.y) / 2 - 32.dp.toPx())
+                                                lineTo(pA.x + segW * 0.68f, (pA.y + pB.y) / 2 + 24.dp.toPx())
+                                                lineTo(pA.x + segW * 0.78f, pB.y - 10.dp.toPx())
+                                                lineTo(pA.x + segW * 0.88f, pB.y)
+                                                lineTo(pB.x, pB.y)
+                                            }
+                                            lineTo(w, points.last().y)
                                         }
 
-                                        drawPath(
-                                            path = fillEcgPath,
-                                            brush = Brush.verticalGradient(
-                                                colors = listOf(
-                                                    Color(0x35B81D85),
-                                                    Color(0x00B81D85),
-                                                ),
-                                            ),
-                                        )
+                                        clipRect(left = 0f, top = 0f, right = maxAllowedX, bottom = h) {
+                                            val fillEcgPath = Path().apply {
+                                                addPath(ecgPath)
+                                                lineTo(w, h)
+                                                lineTo(0f, h)
+                                                close()
+                                            }
 
-                                        drawPath(
-                                            path = ecgPath,
-                                            brush = Brush.horizontalGradient(
-                                                colors = listOf(
-                                                    Color(0xFF00E5FF),
-                                                    Color(0xFFB81D85),
-                                                    Color(0xFFFF5722),
+                                            drawPath(
+                                                path = fillEcgPath,
+                                                brush = Brush.verticalGradient(
+                                                    colors = listOf(
+                                                        Color(0x35B81D85),
+                                                        Color(0x00B81D85),
+                                                    ),
                                                 ),
-                                            ),
-                                            style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round),
-                                        )
+                                            )
 
-                                        points.forEach { pt ->
-                                            if (pt.x <= maxAllowedX) {
-                                                drawCircle(color = Color.White, radius = 5.dp.toPx(), center = pt)
-                                                drawCircle(color = Color(0xFFB81D85), radius = 3.5.dp.toPx(), center = pt)
+                                            drawPath(
+                                                path = ecgPath,
+                                                brush = Brush.horizontalGradient(
+                                                    colors = listOf(
+                                                        Color(0xFF00E5FF),
+                                                        Color(0xFFB81D85),
+                                                        Color(0xFFFF5722),
+                                                    ),
+                                                ),
+                                                style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round),
+                                            )
+
+                                            points.forEach { pt ->
+                                                if (pt.x <= maxAllowedX) {
+                                                    drawCircle(color = Color.White, radius = 5.dp.toPx(), center = pt)
+                                                    drawCircle(color = Color(0xFFB81D85), radius = 3.5.dp.toPx(), center = pt)
+                                                }
                                             }
                                         }
-                                    }
 
-                                    if (progress > 0f && progress < 1f) {
-                                        val currentTipX = maxAllowedX.coerceIn(0f, w)
-                                        val tipY = h * 0.45f
+                                        if (progress > 0f && progress < 1f) {
+                                            val currentTipX = maxAllowedX.coerceIn(0f, w)
+                                            val tipY = h * 0.45f
 
-                                        drawCircle(color = Color.White, radius = 6.dp.toPx(), center = Offset(currentTipX, tipY))
-                                        drawCircle(
-                                            color = Color(0xFFFF5722),
-                                            radius = 8.dp.toPx(),
-                                            center = Offset(currentTipX, tipY),
-                                            style = Stroke(width = 2.dp.toPx()),
-                                        )
+                                            drawCircle(color = Color.White, radius = 6.dp.toPx(), center = Offset(currentTipX, tipY))
+                                            drawCircle(
+                                                color = Color(0xFFFF5722),
+                                                radius = 8.dp.toPx(),
+                                                center = Offset(currentTipX, tipY),
+                                                style = Stroke(width = 2.dp.toPx()),
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -391,29 +416,44 @@ fun WeeklyReportScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(60.dp),
-                            ) {
-                                Canvas(modifier = Modifier.fillMaxSize()) {
-                                    val w = size.width
-                                    val h = size.height
-                                    val barWidth = 16.dp.toPx()
-                                    val barSpacing = (w - (barWidth * 7)) / 8
+                            if (report == null || report.nutrition.totalMealsLogged <= 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = "No meals logged for this week",
+                                        fontSize = 12.sp,
+                                        color = AppTheme.colors.textSecondary,
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(60.dp),
+                                ) {
+                                    Canvas(modifier = Modifier.fillMaxSize()) {
+                                        val w = size.width
+                                        val h = size.height
+                                        val barWidth = 16.dp.toPx()
+                                        val barSpacing = (w - (barWidth * 7)) / 8
 
-                                    val heights = listOf(0.9f, 1.0f, 0.8f, 1.0f, 0.95f, 1.0f, 0.85f)
+                                        val heights = listOf(0.9f, 1.0f, 0.8f, 1.0f, 0.95f, 1.0f, 0.85f)
 
-                                    heights.forEachIndexed { i, factor ->
-                                        val left = barSpacing + i * (barWidth + barSpacing)
-                                        val animatedFactor = factor * chartProgress.value
-                                        val barH = h * animatedFactor
-                                        drawRoundRect(
-                                            color = Color(0xFFB81D85),
-                                            topLeft = Offset(left, h - barH),
-                                            size = Size(barWidth, barH),
-                                            cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
-                                        )
+                                        heights.forEachIndexed { i, factor ->
+                                            val left = barSpacing + i * (barWidth + barSpacing)
+                                            val animatedFactor = factor * chartProgress.value
+                                            val barH = h * animatedFactor
+                                            drawRoundRect(
+                                                color = Color(0xFFB81D85),
+                                                topLeft = Offset(left, h - barH),
+                                                size = Size(barWidth, barH),
+                                                cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -421,7 +461,7 @@ fun WeeklyReportScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "Avg daily calories: ${report?.nutrition?.dailyAverageCalories ?: "1,450 kcal"}",
+                                text = "Avg daily calories: ${report?.nutrition?.dailyAverageCalories?.takeIf { it.isNotBlank() && it != "0 kcal" } ?: "0 kcal"}",
                                 fontSize = 11.sp,
                                 color = AppTheme.colors.textSecondary,
                             )

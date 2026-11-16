@@ -44,22 +44,22 @@ data class WeeklyReportData(
 
 data class WeeklyGlucoseSummary(
     @SerializedName("average")
-    val average: String = "120 mg/dL",
+    val average: String = "-- mg/dL",
 
     @SerializedName("average_num")
-    val averageNum: Float = 120f,
+    val averageNum: Float = 0f,
 
     @SerializedName("time_in_range_percent")
-    val timeInRangePercent: Int = 78,
+    val timeInRangePercent: Int = 0,
 
     @SerializedName("above_target_percent")
-    val aboveTargetPercent: Int = 14,
+    val aboveTargetPercent: Int = 0,
 
     @SerializedName("below_target_percent")
-    val belowTargetPercent: Int = 8,
+    val belowTargetPercent: Int = 0,
 
     @SerializedName("summary_tag")
-    val summaryTag: String = "Optimal Glycemic Control"
+    val summaryTag: String = "No Readings Logged"
 )
 
 data class WeeklyNutritionSummary(
@@ -70,7 +70,7 @@ data class WeeklyNutritionSummary(
     val totalCalories: String = "0 kcal",
 
     @SerializedName("daily_average_calories")
-    val dailyAverageCalories: String = "1,450 kcal"
+    val dailyAverageCalories: String = "0 kcal"
 )
 
 data class WeeklyMedicationSummary(
@@ -100,6 +100,6 @@ data class WeeklyGlucoseChartPoint(
     val date: String = "",
 
     @SerializedName("average_glucose")
-    val averageGlucose: Float = 120f
+    val averageGlucose: Float = 0f
 )
 
