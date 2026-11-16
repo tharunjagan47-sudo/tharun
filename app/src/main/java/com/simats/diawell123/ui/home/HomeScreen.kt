@@ -39,7 +39,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.simats.diawell123.data.local.HealthMetricsStore
 import com.simats.diawell123.data.model.HomeRoutineItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -161,17 +160,15 @@ fun HomeScreen(
     onProfileClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onExportReportClick: () -> Unit = {},
+    onTrackFoodCategoryClick: (category: String) -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
     val uiState by viewModel.uiState.collectAsState()
     val data = uiState.dashboardData
     val context = LocalContext.current
-    val metricsStore = remember(context) { HealthMetricsStore(context) }
-    var waterGlasses by remember { mutableIntStateOf(metricsStore.getWaterGlasses()) }
 
     LaunchedEffect(Unit) {
         viewModel.loadDashboard(isPullToRefresh = true)
-        waterGlasses = metricsStore.getWaterGlasses()
     }
 
     val lifecycleOwner = context as? LifecycleOwner
@@ -180,7 +177,6 @@ fun HomeScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.loadDashboard(isPullToRefresh = true)
-                waterGlasses = metricsStore.getWaterGlasses()
             }
         }
         lifecycle?.addObserver(observer)
@@ -589,7 +585,15 @@ fun HomeScreen(
                                     routineItems.forEach { item ->
                                         val onRoutineClick: () -> Unit = when {
                                             item.label.contains("Glucose", ignoreCase = true) -> onLogGlucoseClick
-                                            item.label.contains("Lunch", ignoreCase = true) || item.label.contains("Breakfast", ignoreCase = true) -> onTrackFoodClick
+                                            item.label.contains("Breakfast", ignoreCase = true) -> {
+                                                { onTrackFoodCategoryClick("breakfast") }
+                                            }
+                                            item.label.contains("Lunch", ignoreCase = true) -> {
+                                                { onTrackFoodCategoryClick("lunch") }
+                                            }
+                                            item.label.contains("Dinner", ignoreCase = true) -> {
+                                                { onTrackFoodCategoryClick("dinner") }
+                                            }
                                             item.label.contains("Med", ignoreCase = true) -> onMedsTabClick
                                             else -> onTrackFoodClick
                                         }
@@ -606,102 +610,6 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Water Intake Tracker Card
-                ElementPopUpContainer(delayMillis = 220) {
-                    FloatingBubbleContainer(phaseOffsetMs = 450) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(if (AppTheme.colors.isDark) Color(0xFF1E293B) else Color(0xFFE0F2FE))
-                                .border(1.dp, if (AppTheme.colors.isDark) Color(0xFF334155) else Color(0xFFBAE6FD), RoundedCornerShape(18.dp))
-                                .padding(16.dp),
-                        ) {
-                            Column {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(text = "💧", fontSize = 20.sp)
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Column {
-                                            Text(
-                                                text = "Water Intake Tracker",
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = AppTheme.colors.textPrimary,
-                                            )
-                                            Text(
-                                                text = "$waterGlasses / 8 glasses (${waterGlasses * 250} ml)",
-                                                fontSize = 12.sp,
-                                                color = AppTheme.colors.textSecondary,
-                                            )
-                                        }
-                                    }
-
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    ) {
-                                        if (waterGlasses > 0) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(8.dp))
-                                                    .background(Color.White.copy(alpha = 0.5f))
-                                                    .clickable {
-                                                        metricsStore.resetWater()
-                                                        waterGlasses = 0
-                                                    }
-                                                    .padding(horizontal = 8.dp, vertical = 5.dp),
-                                            ) {
-                                                Text(
-                                                    text = "Reset",
-                                                    fontSize = 11.sp,
-                                                    color = Color(0xFF0284C7),
-                                                    fontWeight = FontWeight.Medium,
-                                                )
-                                            }
-                                        }
-
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .background(Color(0xFF0284C7))
-                                                .clickable {
-                                                    val updated = metricsStore.addWaterGlass()
-                                                    waterGlasses = updated
-                                                }
-                                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                                        ) {
-                                            Text(
-                                                text = "+ 250 ml",
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.White,
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                LinearProgressIndicator(
-                                    progress = { (waterGlasses / 8f).coerceIn(0f, 1f) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(8.dp)
-                                        .clip(RoundedCornerShape(4.dp)),
-                                    color = Color(0xFF0284C7),
-                                    trackColor = if (AppTheme.colors.isDark) Color(0xFF334155) else Color(0xFFBAE6FD).copy(alpha = 0.5f),
-                                )
-                            }
-                        }
-                    }
-                }
 
                 // 5. Vibrant Quick Actions
                 ElementPopUpContainer(delayMillis = 240) {

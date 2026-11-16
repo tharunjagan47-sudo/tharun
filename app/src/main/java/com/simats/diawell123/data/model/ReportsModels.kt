@@ -70,7 +70,10 @@ data class WeeklyNutritionSummary(
     val totalCalories: String = "0 kcal",
 
     @SerializedName("daily_average_calories")
-    val dailyAverageCalories: String = "0 kcal"
+    val dailyAverageCalories: String = "0 kcal",
+
+    @SerializedName("meal_chart_data")
+    val mealChartData: List<Int> = emptyList()
 )
 
 data class WeeklyMedicationSummary(

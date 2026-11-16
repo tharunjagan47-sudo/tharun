@@ -9,6 +9,7 @@ interface ReportsApiService {
 
     @GET("reports/weekly.php")
     suspend fun getWeeklyReport(
+        @Query("user_id") userId: Int? = null,
         @Query("end_date") endDate: String? = null
     ): Response<WeeklyReportResponse>
 }

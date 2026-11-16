@@ -74,11 +74,25 @@ fun WeeklyReportScreen(
     onExportReportClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Reports") }
-    var selectedWeekText by remember { mutableStateOf("8–15 Oct 2026") }
+    val initialWeekText = remember {
+        val cal = java.util.Calendar.getInstance()
+        val endSdf = java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale.getDefault())
+        val endStr = endSdf.format(cal.time)
+        cal.add(java.util.Calendar.DAY_OF_YEAR, -6)
+        val startSdf = java.text.SimpleDateFormat("d", java.util.Locale.getDefault())
+        val startStr = startSdf.format(cal.time)
+        "$startStr–$endStr"
+    }
+    var selectedWeekText by remember { mutableStateOf(initialWeekText) }
     var showCalendarDialog by remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
     val report = uiState.reportData
+    val chartData = report?.chartData ?: emptyList()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadWeeklyReport(isPullToRefresh = true)
+    }
 
     // Smooth Line Sweep & Stop Graph Animation
     val chartProgress = remember { Animatable(0f) }
@@ -250,8 +264,10 @@ fun WeeklyReportScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
+                            val hasReadings = chartData.any { it.averageGlucose > 0f } || (report != null && report.glucose.averageNum > 0f)
+
                             // Animated Sweep-and-Stop Glucose ECG Pulse Line Canvas or Empty Placeholder
-                            if (report == null || report.glucose.averageNum <= 0f) {
+                            if (!hasReadings) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -278,44 +294,47 @@ fun WeeklyReportScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(110.dp),
+                                        .height(115.dp),
                                 ) {
                                     Canvas(modifier = Modifier.fillMaxSize()) {
                                         val w = size.width
                                         val h = size.height
 
-                                        val points = listOf(
-                                            Offset(w * 0.08f, h * 0.65f),
-                                            Offset(w * 0.28f, h * 0.38f),
-                                            Offset(w * 0.50f, h * 0.22f),
-                                            Offset(w * 0.72f, h * 0.58f),
-                                            Offset(w * 0.92f, h * 0.32f),
-                                        )
+                                        val validReadings = chartData.filter { it.averageGlucose > 0f }.map { it.averageGlucose }
+                                        val minVal = (validReadings.minOrNull() ?: 70f).coerceAtMost(70f)
+                                        val maxVal = (validReadings.maxOrNull() ?: 180f).coerceAtLeast(180f)
+                                        val span = (maxVal - minVal).coerceAtLeast(40f)
+
+                                        val numDays = chartData.size.coerceAtLeast(1)
+                                        val points = chartData.mapIndexed { i, pt ->
+                                            val x = if (numDays > 1) {
+                                                (w * 0.06f) + (i.toFloat() / (numDays - 1)) * (w * 0.88f)
+                                            } else {
+                                                w * 0.5f
+                                            }
+                                            val y = if (pt.averageGlucose > 0f) {
+                                                h * 0.80f - ((pt.averageGlucose - minVal) / span) * (h * 0.60f)
+                                            } else {
+                                                h * 0.82f
+                                            }
+                                            Offset(x, y)
+                                        }
 
                                         val progress = chartProgress.value
                                         val maxAllowedX = w * progress
 
                                         val ecgPath = Path().apply {
-                                            val startX = points.first().x
-                                            moveTo(0f, points.first().y)
-                                            lineTo(startX, points.first().y)
-
-                                            for (i in 0 until points.size - 1) {
-                                                val pA = points[i]
-                                                val pB = points[i + 1]
-                                                val segW = pB.x - pA.x
-
-                                                lineTo(pA.x + segW * 0.20f, pA.y)
-                                                lineTo(pA.x + segW * 0.35f, pA.y - 12.dp.toPx())
-                                                lineTo(pA.x + segW * 0.45f, pA.y)
-                                                lineTo(pA.x + segW * 0.52f, pA.y + 16.dp.toPx())
-                                                lineTo(pA.x + segW * 0.60f, (pA.y + pB.y) / 2 - 32.dp.toPx())
-                                                lineTo(pA.x + segW * 0.68f, (pA.y + pB.y) / 2 + 24.dp.toPx())
-                                                lineTo(pA.x + segW * 0.78f, pB.y - 10.dp.toPx())
-                                                lineTo(pA.x + segW * 0.88f, pB.y)
-                                                lineTo(pB.x, pB.y)
+                                            if (points.isNotEmpty()) {
+                                                moveTo(0f, points.first().y)
+                                                lineTo(points.first().x, points.first().y)
+                                                for (i in 1 until points.size) {
+                                                    val pPrev = points[i - 1]
+                                                    val pCurr = points[i]
+                                                    val midX = (pPrev.x + pCurr.x) / 2f
+                                                    cubicTo(midX, pPrev.y, midX, pCurr.y, pCurr.x, pCurr.y)
+                                                }
+                                                lineTo(w, points.last().y)
                                             }
-                                            lineTo(w, points.last().y)
                                         }
 
                                         clipRect(left = 0f, top = 0f, right = maxAllowedX, bottom = h) {
@@ -348,17 +367,17 @@ fun WeeklyReportScreen(
                                                 style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round),
                                             )
 
-                                            points.forEach { pt ->
-                                                if (pt.x <= maxAllowedX) {
+                                            points.forEachIndexed { idx, pt ->
+                                                if (pt.x <= maxAllowedX && (chartData.getOrNull(idx)?.averageGlucose ?: 0f) > 0f) {
                                                     drawCircle(color = Color.White, radius = 5.dp.toPx(), center = pt)
                                                     drawCircle(color = Color(0xFFB81D85), radius = 3.5.dp.toPx(), center = pt)
                                                 }
                                             }
                                         }
 
-                                        if (progress > 0f && progress < 1f) {
+                                        if (progress > 0f && progress < 1f && points.isNotEmpty()) {
                                             val currentTipX = maxAllowedX.coerceIn(0f, w)
-                                            val tipY = h * 0.45f
+                                            val tipY = points.lastOrNull { it.x <= currentTipX }?.y ?: (h * 0.5f)
 
                                             drawCircle(color = Color.White, radius = 6.dp.toPx(), center = Offset(currentTipX, tipY))
                                             drawCircle(
@@ -366,6 +385,23 @@ fun WeeklyReportScreen(
                                                 radius = 8.dp.toPx(),
                                                 center = Offset(currentTipX, tipY),
                                                 style = Stroke(width = 2.dp.toPx()),
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (chartData.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        chartData.forEach { pt ->
+                                            Text(
+                                                text = pt.day,
+                                                fontSize = 10.sp,
+                                                fontWeight = if (pt.averageGlucose > 0f) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (pt.averageGlucose > 0f) Color(0xFFB81D85) else AppTheme.colors.textMuted,
                                             )
                                         }
                                     }
@@ -416,7 +452,10 @@ fun WeeklyReportScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            if (report == null || report.nutrition.totalMealsLogged <= 0) {
+                            val mealData = report?.nutrition?.mealChartData ?: emptyList()
+                            val totalMealsCount = report?.nutrition?.totalMealsLogged ?: 0
+
+                            if (report == null || totalMealsCount <= 0) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -430,30 +469,51 @@ fun WeeklyReportScreen(
                                     )
                                 }
                             } else {
+                                val displayMealCounts = if (mealData.size == 7) mealData else List(7) { 0 }
+                                val maxDayMeals = (displayMealCounts.maxOrNull() ?: 3).coerceAtLeast(3).toFloat()
+
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(60.dp),
+                                        .height(65.dp),
                                 ) {
                                     Canvas(modifier = Modifier.fillMaxSize()) {
                                         val w = size.width
                                         val h = size.height
-                                        val barWidth = 16.dp.toPx()
+                                        val barWidth = 18.dp.toPx()
                                         val barSpacing = (w - (barWidth * 7)) / 8
 
-                                        val heights = listOf(0.9f, 1.0f, 0.8f, 1.0f, 0.95f, 1.0f, 0.85f)
-
-                                        heights.forEachIndexed { i, factor ->
+                                        displayMealCounts.forEachIndexed { i, count ->
                                             val left = barSpacing + i * (barWidth + barSpacing)
+                                            val factor = if (count > 0) (count.toFloat() / maxDayMeals).coerceIn(0.20f, 1f) else 0.04f
                                             val animatedFactor = factor * chartProgress.value
-                                            val barH = h * animatedFactor
+                                            val barH = (h * animatedFactor).coerceAtLeast(3.dp.toPx())
+                                            val barColor = if (count > 0) Color(0xFFB81D85) else AppTheme.colors.border
+
                                             drawRoundRect(
-                                                color = Color(0xFFB81D85),
+                                                color = barColor,
                                                 topLeft = Offset(left, h - barH),
                                                 size = Size(barWidth, barH),
                                                 cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
                                             )
                                         }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
+                                    horizontalArrangement = Arrangement.SpaceAround,
+                                ) {
+                                    val daysLabelList = if (chartData.size == 7) chartData.map { it.day.take(1) } else listOf("M", "T", "W", "T", "F", "S", "S")
+                                    daysLabelList.forEachIndexed { idx, dayChar ->
+                                        val count = displayMealCounts.getOrElse(idx) { 0 }
+                                        Text(
+                                            text = dayChar,
+                                            fontSize = 10.sp,
+                                            fontWeight = if (count > 0) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (count > 0) Color(0xFFB81D85) else AppTheme.colors.textMuted,
+                                        )
                                     }
                                 }
                             }
@@ -600,7 +660,21 @@ fun ReportCalendarDialog(
     onWeekSelected: (String, String) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    var selectedDay by remember { mutableIntStateOf(15) }
+    val currentCal = remember { java.util.Calendar.getInstance() }
+    var calendarMonthOffset by remember { mutableIntStateOf(0) }
+
+    val activeCal = remember(calendarMonthOffset) {
+        (currentCal.clone() as java.util.Calendar).apply {
+            add(java.util.Calendar.MONTH, calendarMonthOffset)
+        }
+    }
+
+    val maxDaysInMonth = activeCal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
+    val defaultDay = if (calendarMonthOffset == 0) currentCal.get(java.util.Calendar.DAY_OF_MONTH) else 15
+    var selectedDay by remember(calendarMonthOffset) { mutableIntStateOf(defaultDay.coerceIn(1, maxDaysInMonth)) }
+
+    val monthYearFormat = remember { java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.getDefault()) }
+    val monthYearText = remember(activeCal) { monthYearFormat.format(activeCal.time) }
 
     Dialog(onDismissRequest = onDismissRequest) {
         Box(
@@ -649,14 +723,30 @@ fun ReportCalendarDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = "‹", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
                     Text(
-                        text = "October 2026",
+                        text = "‹",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB81D85),
+                        modifier = Modifier
+                            .clickable { calendarMonthOffset-- }
+                            .padding(horizontal = 6.dp)
+                    )
+                    Text(
+                        text = monthYearText,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
                     )
-                    Text(text = "›", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
+                    Text(
+                        text = "›",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB81D85),
+                        modifier = Modifier
+                            .clickable { calendarMonthOffset++ }
+                            .padding(horizontal = 6.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -680,8 +770,8 @@ fun ReportCalendarDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Days Grid (1 to 31)
-                val daysList = (1..31).toList()
+                // Days Grid
+                val daysList = (1..maxDaysInMonth).toList()
                 val rows = daysList.chunked(7)
 
                 rows.forEach { week ->
@@ -759,10 +849,22 @@ fun ReportCalendarDialog(
                                 ),
                             )
                             .clickable {
-                                val startDay = (selectedDay - 7).coerceAtLeast(1)
-                                val formattedDay = if (selectedDay < 10) "0$selectedDay" else "$selectedDay"
-                                val endDateIso = "2026-10-$formattedDay"
-                                onWeekSelected("$startDay–$selectedDay Oct 2026", endDateIso)
+                                val selCal = (activeCal.clone() as java.util.Calendar).apply {
+                                    set(java.util.Calendar.DAY_OF_MONTH, selectedDay.coerceIn(1, maxDaysInMonth))
+                                }
+                                val endIsoSdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                val endDateIso = endIsoSdf.format(selCal.time)
+
+                                val endDisplaySdf = java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale.getDefault())
+                                val endDisplayStr = endDisplaySdf.format(selCal.time)
+
+                                val startCal = (selCal.clone() as java.util.Calendar).apply {
+                                    add(java.util.Calendar.DAY_OF_YEAR, -6)
+                                }
+                                val startDisplaySdf = java.text.SimpleDateFormat("d", java.util.Locale.getDefault())
+                                val startDisplayStr = startDisplaySdf.format(startCal.time)
+
+                                onWeekSelected("$startDisplayStr–$endDisplayStr", endDateIso)
                                 onDismissRequest()
                             },
                         contentAlignment = Alignment.Center,

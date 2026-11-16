@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.simats.diawell123.data.api.ApiClient
 import com.simats.diawell123.data.api.ReportsApiService
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.WeeklyReportData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,7 +20,9 @@ class ReportsRepositoryImpl(
 
     override suspend fun getWeeklyReport(endDate: String?): Result<WeeklyReportData> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getWeeklyReport(endDate = endDate)
+            val sessionManager = SessionManager.getInstance()
+            val userId = sessionManager?.getUserId()
+            val response = apiService.getWeeklyReport(userId = userId, endDate = endDate)
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {

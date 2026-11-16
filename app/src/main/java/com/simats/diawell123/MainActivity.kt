@@ -212,6 +212,10 @@ class MainActivity : ComponentActivity() {
                         medsViewModel.loadMedications(isPullToRefresh = true)
                     } else if (currentScreen == "home") {
                         homeViewModel.loadDashboard(isPullToRefresh = true)
+                    } else if (currentScreen == "weekly_report") {
+                        reportsViewModel.loadWeeklyReport(isPullToRefresh = true)
+                    } else if (currentScreen == "food_log") {
+                        dietViewModel.loadFoodLog()
                     }
                 }
 
@@ -287,6 +291,10 @@ class MainActivity : ComponentActivity() {
                             onLogGlucoseClick = { currentScreen = "log_glucose" },
                             onGlucoseHistoryClick = { currentScreen = "glucose_history" },
                             onTrackFoodClick = { currentScreen = "daily_diet_plan" },
+                            onTrackFoodCategoryClick = { category ->
+                                selectedMealCategory = category
+                                currentScreen = "daily_diet_plan"
+                            },
                             onActivityTrackingClick = { currentScreen = "activity_tracking" },
                             onDietChatbotClick = { currentScreen = "ai_chatbot" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
@@ -370,6 +378,8 @@ class MainActivity : ComponentActivity() {
                         "food_log" -> FoodLogScreen(
                             viewModel = dietViewModel,
                             onBackClick = { currentScreen = "home" },
+                            onAddFoodClick = { currentScreen = "explore_food" },
+                            onNutritionSummaryClick = { currentScreen = "nutrition_summary" },
                         )
 
                         "nutrition_summary" -> NutritionSummaryScreen(
