@@ -43,6 +43,7 @@ class SessionManager private constructor(context: Context) {
         private const val KEY_HAS_COMPLETED_ONBOARDING = "has_completed_onboarding"
         private const val KEY_EXPIRED_REASON = "session_expired_reason"
         private const val KEY_APP_LOCK_ENABLED = "app_lock_enabled"
+        private const val KEY_APP_LOCK_PIN = "app_lock_pin"
         private const val KEY_BIOMETRIC_UNLOCK_ENABLED = "biometric_unlock_enabled"
         private const val KEY_DATA_AI_PREFS_ENABLED = "data_ai_prefs_enabled"
         private const val KEY_REMINDER_SOUND = "reminder_sound"
@@ -198,6 +199,8 @@ class SessionManager private constructor(context: Context) {
         prefs.edit().putString(KEY_PROFILE_PHOTO, path).apply()
     }
 
+    fun getFullName(): String? = prefs.getString(KEY_FULL_NAME, null)
+
     /**
      * Updates activity timestamp.
      */
@@ -256,6 +259,18 @@ class SessionManager private constructor(context: Context) {
 
     fun isAppLockEnabled(): Boolean = prefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
     fun setAppLockEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_APP_LOCK_ENABLED, enabled).apply()
+
+    fun getAppLockPin(): String? = prefs.getString(KEY_APP_LOCK_PIN, null)
+    fun setAppLockPin(pin: String) = prefs.edit().putString(KEY_APP_LOCK_PIN, pin).apply()
+    fun hasAppLockPin(): Boolean = !getAppLockPin().isNullOrBlank()
+
+    @Volatile
+    private var isAppUnlockedInMemory: Boolean = false
+
+    fun isAppUnlocked(): Boolean = isAppUnlockedInMemory
+    fun setAppUnlocked(unlocked: Boolean) {
+        isAppUnlockedInMemory = unlocked
+    }
 
     fun isBiometricUnlockEnabled(): Boolean = prefs.getBoolean(KEY_BIOMETRIC_UNLOCK_ENABLED, false)
     fun setBiometricUnlockEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_BIOMETRIC_UNLOCK_ENABLED, enabled).apply()

@@ -18,7 +18,7 @@ import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.SmartNudgeEngine
 import androidx.core.app.NotificationManagerCompat
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
@@ -31,11 +31,15 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.repository.AuthRepositoryImpl
@@ -43,6 +47,7 @@ import com.simats.diawell123.ui.activity.ActivityHistoryScreen
 import com.simats.diawell123.ui.activity.ActivityTrackingScreen
 import com.simats.diawell123.ui.activity.ActivityViewModel
 import com.simats.diawell123.ui.ai.AiChatbotScreen
+import com.simats.diawell123.ui.auth.AppLockScreen
 import com.simats.diawell123.ui.auth.ForgotPasswordScreen
 import com.simats.diawell123.ui.auth.LoginScreen
 import com.simats.diawell123.ui.auth.SignUpScreen
@@ -92,8 +97,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     private var externalNavTarget by mutableStateOf<String?>(null)
+    private var lastBackgroundTimestamp: Long = 0L
+
+    override fun onStop() {
+        super.onStop()
+        lastBackgroundTimestamp = System.currentTimeMillis()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +115,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Diawell123Theme {
                 var currentScreen by remember { mutableStateOf("splash") }
+                var screenBeforeLock by remember { mutableStateOf("home") }
                 var selectedMealCategory by remember { mutableStateOf("breakfast") }
                 var selectedFoodId by remember { mutableStateOf<Int?>(null) }
                 var selectedDishName by remember { mutableStateOf<String?>(null) }
@@ -136,6 +148,29 @@ class MainActivity : ComponentActivity() {
                 // Initialize ProfileState from disk cache & session so avatar and username persist across launches
                 LaunchedEffect(Unit) {
                     ProfileState.init(applicationContext, sessionManager.getUserId())
+                }
+
+                // Auto-Lock on Resume: If app was backgrounded for more than 2 seconds and App Lock is enabled
+                val lifecycleOwner = LocalLifecycleOwner.current
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            val now = System.currentTimeMillis()
+                            if (lastBackgroundTimestamp > 0L && (now - lastBackgroundTimestamp) > 2000L) {
+                                if (sessionManager.isLoggedIn() && sessionManager.isAppLockEnabled()) {
+                                    sessionManager.setAppUnlocked(false)
+                                    if (currentScreen != "app_lock" && currentScreen != "splash") {
+                                        screenBeforeLock = currentScreen
+                                        currentScreen = "app_lock"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    }
                 }
 
                 // Request Runtime Notification Permission on Android 13+ (TIRAMISU)
@@ -223,7 +258,12 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     delay(2400)
                     if (sessionManager.isLoggedIn()) {
-                        currentScreen = "home"
+                        if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) {
+                            screenBeforeLock = "home"
+                            currentScreen = "app_lock"
+                        } else {
+                            currentScreen = "home"
+                        }
                     } else if (sessionManager.isOnboardingCompleted()) {
                         currentScreen = "login"
                     } else {
@@ -234,7 +274,7 @@ class MainActivity : ComponentActivity() {
                 AnimatedContent(
                     targetState = currentScreen,
                     transitionSpec = {
-                        if (initialState == "splash" && (targetState == "home" || targetState == "login" || targetState == "onboarding")) {
+                        if (initialState == "splash" && (targetState == "home" || targetState == "login" || targetState == "onboarding" || targetState == "app_lock")) {
                             (fadeIn(animationSpec = tween(700, easing = FastOutSlowInEasing)) +
                                 scaleIn(initialScale = 0.94f, animationSpec = tween(700))) togetherWith
                                 (fadeOut(animationSpec = tween(500)) +
@@ -259,12 +299,16 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "signup" -> SignUpScreen(
-                            onSignUpSuccess = { currentScreen = "patient_profile" },
+                            onSignUpSuccess = {
+                                sessionManager.setAppUnlocked(true)
+                                currentScreen = "patient_profile"
+                            },
                         ) { currentScreen = "login" }
 
                         "login" -> LoginScreen(
                             onLoginSuccess = {
                                 ProfileState.init(applicationContext, sessionManager.getUserId())
+                                sessionManager.setAppUnlocked(true)
                                 currentScreen = "home"
                             },
                             onForgotPasswordClick = { currentScreen = "forgot_password" },
@@ -554,6 +598,25 @@ class MainActivity : ComponentActivity() {
                         "logout_dialog" -> LogoutConfirmationDialog(
                             onCancelClick = { currentScreen = "settings" },
                             onConfirmLogoutClick = {
+                                sessionManager.setAppUnlocked(false)
+                                sessionManager.clearSession()
+                                ProfileState.clear()
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        AuthRepositoryImpl().logout()
+                                    } catch (_: Exception) {}
+                                }
+                                currentScreen = "login"
+                            },
+                        )
+
+                        "app_lock" -> AppLockScreen(
+                            onUnlocked = {
+                                sessionManager.setAppUnlocked(true)
+                                currentScreen = if (screenBeforeLock in listOf("splash", "login", "signup", "app_lock")) "home" else screenBeforeLock
+                            },
+                            onSignOut = {
+                                sessionManager.setAppUnlocked(false)
                                 sessionManager.clearSession()
                                 ProfileState.clear()
                                 CoroutineScope(Dispatchers.IO).launch {
