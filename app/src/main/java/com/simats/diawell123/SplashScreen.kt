@@ -17,6 +17,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -48,8 +50,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -241,22 +243,22 @@ fun SplashScreen(
                         modifier = Modifier.fillMaxSize(),
                     )
 
-                    // Outer Cyan Energy Aura Ring
+                    // Outer Purple Energy Aura Ring
                     Box(
                         modifier = Modifier
                             .size(160.dp)
                             .scale(pulseScale)
                             .clip(CircleShape)
-                            .background(Color(0xFF00E5FF).copy(alpha = neonGlowAlpha * 0.35f)),
+                            .background(Color(0xFFA855F7).copy(alpha = neonGlowAlpha * 0.35f)),
                     )
 
-                    // Inner Magenta Energy Aura Ring
+                    // Inner Lilac Energy Aura Ring
                     Box(
                         modifier = Modifier
                             .size(136.dp)
                             .scale(pulseScale * 0.96f)
                             .clip(CircleShape)
-                            .background(Color(0xFFA855F7).copy(alpha = neonGlowAlpha * 0.25f)),
+                            .background(Color(0xFFF0ABFC).copy(alpha = neonGlowAlpha * 0.25f)),
                     )
 
                     // Arc Reactor Canvas Logo (Spins, slows down, and STOPS!)
@@ -343,7 +345,7 @@ fun OutsideEcgPulseCanvas(
 
         // Baseline Line across the screen
         drawLine(
-            color = Color(0xFF00E5FF).copy(alpha = 0.35f),
+            color = Color(0xFFA855F7).copy(alpha = 0.30f),
             start = Offset(0f, centerY),
             end = Offset(w, centerY),
             strokeWidth = 2.dp.toPx(),
@@ -371,10 +373,10 @@ fun OutsideEcgPulseCanvas(
             path = ecgPath,
             brush = Brush.horizontalGradient(
                 colors = listOf(
-                    Color(0xFF00E5FF).copy(alpha = 0.2f),
-                    Color(0xFF00E5FF),
+                    Color(0xFFA855F7).copy(alpha = 0.2f),
                     Color(0xFFA855F7),
-                    Color(0xFF00E5FF).copy(alpha = 0.2f),
+                    Color(0xFFF0ABFC),
+                    Color(0xFFA855F7).copy(alpha = 0.2f),
                 ),
             ),
             style = Stroke(width = 3.5.dp.toPx()),
@@ -391,7 +393,7 @@ fun OutsideEcgPulseCanvas(
         )
 
         drawCircle(
-            color = Color(0xFF00E5FF),
+            color = Color(0xFFF0ABFC),
             radius = 7.dp.toPx(),
             center = Offset(leadDotX, leadDotY),
             style = Stroke(width = 2.dp.toPx()),
@@ -401,139 +403,38 @@ fun OutsideEcgPulseCanvas(
 
 @Composable
 fun ArcReactorCanvas(
-    rotationAngle: Float,
+    rotationAngle: Float = 0f,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
             .shadow(
-                elevation = 20.dp,
+                elevation = 16.dp,
                 shape = CircleShape,
-                ambientColor = Color(0xFF00E5FF).copy(alpha = 0.6f),
-                spotColor = Color(0xFFA855F7).copy(alpha = 0.6f),
+                ambientColor = Color(0xFFA855F7).copy(alpha = 0.55f),
+                spotColor = Color(0xFFF0ABFC).copy(alpha = 0.55f),
             )
             .clip(CircleShape)
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF00E5FF),
-                        Color(0xFF0B2236),
-                        Color(0xFF08121B),
-                        Color(0xFF050A0E),
-                    ),
-                ),
-            ),
+            .background(Color(0xFF0A0C19)),
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-            val center = Offset(w / 2, h / 2)
-
-            // 1. Spinning Outer Segmented Arc Reactor Power Ring (Spins, slows down, and STOPS!)
-            rotate(degrees = rotationAngle, pivot = center) {
-                val outerRadius = w * 0.44f
-                val strokeWidth = 5.dp.toPx()
-                val segmentCount = 10
-                val sweepAngle = 26f
-                val gapAngle = 10f
-
-                for (i in 0 until segmentCount) {
-                    val startAngle = i * (sweepAngle + gapAngle)
-                    drawArc(
-                        brush = Brush.sweepGradient(
-                            colors = listOf(Color(0xFF00E5FF), Color(0xFFA855F7), Color(0xFF00E5FF)),
-                        ),
-                        startAngle = startAngle,
-                        sweepAngle = sweepAngle,
-                        useCenter = false,
-                        topLeft = Offset(center.x - outerRadius, center.y - outerRadius),
-                        size = Size(outerRadius * 2, outerRadius * 2),
-                        style = Stroke(width = strokeWidth),
-                    )
-                }
-
-                // Inner Metallic Ring
-                val innerRingRadius = w * 0.36f
-                drawCircle(
-                    color = Color(0xFF00E5FF).copy(alpha = 0.7f),
-                    radius = innerRingRadius,
-                    center = center,
-                    style = Stroke(width = 2.dp.toPx()),
-                )
-
-                // 2. Arc Reactor Inner Triangular Framework
-                val trianglePath = Path().apply {
-                    val topY = center.y - innerRingRadius * 0.70f
-                    val bottomY = center.y + innerRingRadius * 0.75f
-                    val sideX = innerRingRadius * 0.75f
-
-                    moveTo(center.x, bottomY)
-                    lineTo(center.x - sideX, topY)
-                    lineTo(center.x + sideX, topY)
-                    close()
-                }
-
-                drawPath(
-                    path = trianglePath,
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF00E5FF), Color(0xFFA855F7), Color.White),
-                    ),
-                    style = Stroke(width = 2.5.dp.toPx()),
-                )
-
-                // Inverted Inner Triangle
-                val innerTrianglePath = Path().apply {
-                    val topY = center.y - innerRingRadius * 0.45f
-                    val bottomY = center.y + innerRingRadius * 0.50f
-                    val sideX = innerRingRadius * 0.48f
-
-                    moveTo(center.x, bottomY)
-                    lineTo(center.x - sideX, topY)
-                    lineTo(center.x + sideX, topY)
-                    close()
-                }
-
-                drawPath(
-                    path = innerTrianglePath,
-                    color = Color.White.copy(alpha = 0.85f),
-                    style = Stroke(width = 2.dp.toPx()),
-                )
-            }
-
-            // 3. Bright Small White Heart Core Reactor (Replacing white dot!)
-            val heartSize = 13.dp.toPx()
-            val heartPath = Path().apply {
-                val hW = heartSize * 0.9f
-                val hH = heartSize * 0.9f
-                moveTo(center.x, center.y + hH * 0.65f)
-                cubicTo(
-                    center.x - hW * 1.1f, center.y + hH * 0.20f,
-                    center.x - hW * 0.9f, center.y - hH * 0.65f,
-                    center.x, center.y - hH * 0.15f,
-                )
-                cubicTo(
-                    center.x + hW * 0.9f, center.y - hH * 0.65f,
-                    center.x + hW * 1.1f, center.y + hH * 0.20f,
-                    center.x, center.y + hH * 0.65f,
-                )
-                close()
-            }
-
-            // Solid White Heart Core
-            drawPath(
-                path = heartPath,
-                color = Color.White,
-            )
-
-            // Cyan Glow Outline around Heart Core
-            drawPath(
-                path = heartPath,
-                color = Color(0xFF00E5FF),
-                style = Stroke(width = 1.8.dp.toPx()),
-            )
-        }
+        Image(
+            painter = painterResource(id = R.drawable.app_logo),
+            contentDescription = "DiaWell Logo",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxSize()
+                .rotate(rotationAngle),
+        )
     }
+}
+
+@Composable
+fun DiaWellLogo(
+    modifier: Modifier = Modifier,
+    rotationAngle: Float = 0f,
+) {
+    ArcReactorCanvas(rotationAngle = rotationAngle, modifier = modifier)
 }
 
 @Preview(showBackground = true, showSystemUi = true)
