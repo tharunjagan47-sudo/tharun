@@ -282,7 +282,7 @@ class MainActivity : FragmentActivity() {
 
                 // Splash screen initial routing based on saved persistent authentication session
                 LaunchedEffect(Unit) {
-                    delay(3400) // Allow ring spin-stop + Netflix-style DW writing animation to complete
+                    delay(2600) // Splash duration matching logo spin, audio clicks, and settle
                     if (sessionManager.isLoggedIn()) {
                         if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) {
                             screenBeforeLock = "home"
