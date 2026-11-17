@@ -1,5 +1,4 @@
 package com.simats.diawell123
-import com.simats.diawell123.ui.theme.AppTheme
 
 import android.content.Context
 import android.media.AudioManager
@@ -9,57 +8,34 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -71,10 +47,9 @@ fun SplashScreen(
     val context = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
 
-    // 1. Rotation animation: Spins, slows down, and STOPS completely!
-    val spinRotation = remember { Animatable(0f) }
+    // Timeline progress from 0ms to 6500ms
+    val animTime = remember { Animatable(0f) }
 
-    // Synchronized Sound Effects & Vibration Feedback Effect
     LaunchedEffect(Unit) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
@@ -84,321 +59,218 @@ fun SplashScreen(
             context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
         }
 
-        // High-volume system tone generator for audible spin clicks
+        // High-volume system tone generator for audible spin clicks & lock
         val toneGen = try {
-            ToneGenerator(AudioManager.STREAM_SYSTEM, 80)
+            ToneGenerator(AudioManager.STREAM_SYSTEM, 70)
         } catch (_: Exception) {
             try {
-                ToneGenerator(AudioManager.STREAM_MUSIC, 80)
+                ToneGenerator(AudioManager.STREAM_MUSIC, 70)
             } catch (_: Exception) {
                 null
             }
         }
 
-        // Launch Arc Reactor Rotation
         launch {
-            spinRotation.animateTo(
-                targetValue = 720f, // 2 full spins
+            animTime.animateTo(
+                targetValue = 6500f,
                 animationSpec = tween(
-                    durationMillis = 2200,
-                    easing = FastOutSlowInEasing, // Spins, slows down, and comes to a complete STOP
+                    durationMillis = 6500,
+                    easing = LinearEasing,
                 ),
             )
         }
 
-        // Synchronized Pulsing Sound & Haptic Ticks that slow down and stop
-        val startTime = System.currentTimeMillis()
-        val duration = 2200L
-
-        while (spinRotation.isRunning) {
-            val elapsed = System.currentTimeMillis() - startTime
-            val progress = (elapsed.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
-
-            if (progress >= 0.94f) break
-
-            // Interval slows down gradually as easing slows down the rotation (45ms -> 280ms)
-            val currentInterval = (45 + (progress * progress * 235)).toLong()
-
-            // 1. Trigger Audible Audio Beep/Click
-            toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, 30)
-
-            // 2. Trigger Compose System Haptic Feedback
-            try {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            } catch (_: Exception) {
-                // Ignore
-            }
-
-            // 3. Trigger Hardware Vibrator Feedback
-            try {
-                if (vibrator != null && vibrator.hasVibrator()) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        vibrator.vibrate(VibrationEffect.createOneShot(25L, VibrationEffect.DEFAULT_AMPLITUDE))
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(25L)
-                    }
+        // Haptic pulses during spin (0ms to 2400ms)
+        var lastTick = 0L
+        while (animTime.value < 2600f) {
+            val t = animTime.value
+            if (t in 200f..2600f) {
+                val interval = 60 + ((t / 2600f) * (t / 2600f) * 220).toLong()
+                if (System.currentTimeMillis() - lastTick > interval) {
+                    lastTick = System.currentTimeMillis()
+                    toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, 20)
+                    try {
+                        if (vibrator != null && vibrator.hasVibrator()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                vibrator.vibrate(VibrationEffect.createOneShot(15L, VibrationEffect.DEFAULT_AMPLITUDE))
+                            } else {
+                                @Suppress("DEPRECATION")
+                                vibrator.vibrate(15L)
+                            }
+                        }
+                    } catch (_: Exception) {}
                 }
-            } catch (_: Exception) {
-                // Ignore
             }
-
-            delay(currentInterval)
+            delay(30)
         }
 
+        // Wait until lock-in at 5400ms for heavy haptic confirmation
+        while (animTime.value < 5400f) {
+            delay(50)
+        }
+        try {
+            toneGen?.startTone(ToneGenerator.TONE_PROP_ACK, 60)
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(50L, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(50L)
+                }
+            }
+        } catch (_: Exception) {}
         toneGen?.release()
     }
 
-    // 2. Infinite transition for Arc Reactor Glow + Running Horizontal ECG Pulse Wave OUTSIDE
-    val infiniteTransition = rememberInfiniteTransition(label = "ArcReactorAnimations")
+    val tMs = animTime.value
 
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1.0f,
-        targetValue = 1.06f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "pulseScale",
-    )
+    // SCENE 1 & 2: Ring Rotation
+    // 0ms - 1800ms: Accelerates spin
+    // 1800ms - 2800ms: Decelerates and stops dead at 1080f (upright)
+    // 2800ms+: STAYS COMPLETELY STATIONARY AT 0° / 1080°!
+    val ringRotation = remember(tMs) {
+        when {
+            tMs < 200f -> 0f
+            tMs < 1800f -> {
+                val p = (tMs - 200f) / 1600f
+                (p * p * 720f)
+            }
+            tMs < 2800f -> {
+                val p = (tMs - 1800f) / 1000f
+                val decel = 1f - (1f - p) * (1f - p) * (1f - p)
+                720f + (decel * 360f)
+            }
+            else -> 1080f // 3 full cycles, exactly equivalent to 0° upright and 100% stationary!
+        }
+    }
 
-    val neonGlowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.85f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "neonGlowAlpha",
-    )
+    // SCENE 3: DW Drawing Progress (2800ms to 5400ms)
+    val dwDrawProgress = remember(tMs) {
+        when {
+            tMs < 2800f -> 0f
+            tMs < 5200f -> (tMs - 2800f) / 2400f
+            else -> 1f
+        }
+    }
 
-    // Continuous running ECG pulse line animation (0f to 1f) running OUTSIDE the Arc Reactor
-    val ecgSweepProgress by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1600, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "ecgSweepProgress",
-    )
+    // SCENE 4: Final Pulse & Glow
+    val isRevealed = tMs >= 5200f
+    val finalPulseAlpha = remember(tMs) {
+        if (tMs >= 5400f && tMs < 6200f) {
+            1f - (tMs - 5400f) / 800f
+        } else 0f
+    }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppTheme.colors.background),
+            .background(Color.Black), // Deep black background (Strict Rule)
+        contentAlignment = Alignment.Center,
     ) {
-        // Ambient background shapes
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.width
-            val height = size.height
-
-            val ambientPink = if (AppTheme.colors.isDark) Color(0xFF2E1065).copy(alpha = 0.20f) else Color(0xFFF3E8FF)
-            val ambientCyan = if (AppTheme.colors.isDark) Color(0xFF0E7490).copy(alpha = 0.20f) else Color(0xFFE0F7FA).copy(alpha = 0.6f)
-
-            drawCircle(
-                color = ambientPink,
-                radius = width * 0.45f,
-                center = Offset(x = width * 0.1f, y = height * 0.08f),
-            )
-
-            drawCircle(
-                color = ambientCyan,
-                radius = width * 0.55f,
-                center = Offset(x = width * 0.85f, y = height * 0.12f),
-            )
-
-            drawCircle(
-                color = ambientPink,
-                radius = width * 0.48f,
-                center = Offset(x = width * 0.92f, y = height * 0.85f),
-                style = Stroke(width = 44.dp.toPx()),
-            )
-        }
-
-        // Main content column
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Center section: Arc Reactor + Running Horizontal Pulse Line OUTSIDE
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                // Arc Reactor Logo Container with Horizontal ECG Line Running Outside
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(240.dp, 180.dp),
-                ) {
-                    // Running ECG Pulse Line Canvas OUTSIDE the Arc Reactor
-                    OutsideEcgPulseCanvas(
-                        ecgProgress = ecgSweepProgress,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-
-                    // Outer Purple Energy Aura Ring
-                    Box(
-                        modifier = Modifier
-                            .size(160.dp)
-                            .scale(pulseScale)
-                            .clip(CircleShape)
-                            .background(Color(0xFFA855F7).copy(alpha = neonGlowAlpha * 0.35f)),
-                    )
-
-                    // Inner Lilac Energy Aura Ring
-                    Box(
-                        modifier = Modifier
-                            .size(136.dp)
-                            .scale(pulseScale * 0.96f)
-                            .clip(CircleShape)
-                            .background(Color(0xFFF0ABFC).copy(alpha = neonGlowAlpha * 0.25f)),
-                    )
-
-                    // Arc Reactor Canvas Logo (Transforms from Bird to DW Logo as it spins, slows down, and STOPS!)
-                    ArcReactorCanvas(
-                        rotationAngle = spinRotation.value,
-                        isSplashTransform = true,
-                        modifier = Modifier
-                            .size(128.dp)
-                            .scale(pulseScale),
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // App Title
-                Text(
-                    text = "DiaWell",
-                    fontSize = 42.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFA855F7),
-                    letterSpacing = (-0.5).sp,
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Tagline / Headline
-                Text(
-                    text = "Eat Smart. Track Better. Live Well.",
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Center,
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Secondary Text
-                Text(
-                    text = "Powered by high-precision glucose intelligence\nand smart health routines.",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = AppTheme.colors.textSecondary,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp,
-                )
-            }
-
-            // Bottom Footer Section
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
+        // Shockwave pulse in Scene 4
+        if (finalPulseAlpha > 0f) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 28.dp),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_shield_check),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(18.dp),
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "Designed around your wellbeing",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OutsideEcgPulseCanvas(
-    ecgProgress: Float,
-    modifier: Modifier = Modifier,
-) {
-    Canvas(modifier = modifier) {
-        val w = size.width
-        val h = size.height
-        val centerY = h / 2f
-
-        // Baseline Line across the screen
-        drawLine(
-            color = Color(0xFFA855F7).copy(alpha = 0.30f),
-            start = Offset(0f, centerY),
-            end = Offset(w, centerY),
-            strokeWidth = 2.dp.toPx(),
-        )
-
-        // Continuous Moving Pulse Wave running OUTSIDE
-        val pulseWidth = w * 0.45f
-        val pulseStartX = (ecgProgress * (w + pulseWidth)) - pulseWidth
-
-        val ecgPath = Path().apply {
-            moveTo(0f, centerY)
-            if (pulseStartX > 0f) {
-                lineTo(pulseStartX, centerY)
-            }
-            lineTo(pulseStartX + pulseWidth * 0.25f, centerY)
-            lineTo(pulseStartX + pulseWidth * 0.38f, centerY - 28.dp.toPx())
-            lineTo(pulseStartX + pulseWidth * 0.50f, centerY + 32.dp.toPx())
-            lineTo(pulseStartX + pulseWidth * 0.62f, centerY - 38.dp.toPx())
-            lineTo(pulseStartX + pulseWidth * 0.75f, centerY + 18.dp.toPx())
-            lineTo(pulseStartX + pulseWidth, centerY)
-            lineTo(w, centerY)
+                    .size((280 + (1f - finalPulseAlpha) * 200).dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF0ABFC).copy(alpha = finalPulseAlpha * 0.35f))
+            )
         }
 
-        drawPath(
-            path = ecgPath,
-            brush = Brush.horizontalGradient(
-                colors = listOf(
-                    Color(0xFFA855F7).copy(alpha = 0.2f),
-                    Color(0xFFA855F7),
-                    Color(0xFFF0ABFC),
-                    Color(0xFFA855F7).copy(alpha = 0.2f),
-                ),
-            ),
-            style = Stroke(width = 3.5.dp.toPx()),
-        )
+        // Stationary / Spinning Ring Container
+        Box(
+            modifier = Modifier.size(280.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            // 1. Outer Circular Ring: Spins, stops at 2.8s, remains stationary thereafter!
+            Image(
+                painter = painterResource(id = R.drawable.ring_only),
+                contentDescription = "DiaWell Outer Ring",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .rotate(ringRotation),
+            )
 
-        // Glowing Lead Dot
-        val leadDotX = (pulseStartX + pulseWidth * 0.62f).coerceIn(0f, w)
-        val leadDotY = centerY - 38.dp.toPx()
+            // 2. DW Monogram Reveal (Scene 3 & 4)
+            if (tMs >= 2800f) {
+                if (isRevealed) {
+                    // Fully solid 3D DW Monogram settled inside stationary ring
+                    Image(
+                        painter = painterResource(id = R.drawable.dw_only),
+                        contentDescription = "DiaWell Monogram",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .shadow(
+                                elevation = 16.dp,
+                                shape = CircleShape,
+                                ambientColor = Color(0xFFA855F7).copy(alpha = 0.55f),
+                                spotColor = Color(0xFFF0ABFC).copy(alpha = 0.55f)
+                            )
+                    )
+                } else {
+                    // Progressive reveal with neon glow pen
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.dw_only),
+                            contentDescription = "DiaWell Monogram Reveal",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(dwDrawProgress)
+                                .scale(0.92f + dwDrawProgress * 0.08f)
+                        )
 
-        drawCircle(
-            color = Color.White,
-            radius = 4.dp.toPx(),
-            center = Offset(leadDotX, leadDotY),
-        )
+                        // Dynamic glowing laser tracer
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val w = size.width
+                            val h = size.height
+                            val cx = w / 2f
+                            val cy = h / 2f
 
-        drawCircle(
-            color = Color(0xFFF0ABFC),
-            radius = 7.dp.toPx(),
-            center = Offset(leadDotX, leadDotY),
-            style = Stroke(width = 2.dp.toPx()),
-        )
+                            // Neon laser pen coordinates
+                            val penX: Float
+                            val penY: Float
+                            if (dwDrawProgress < 0.48f) {
+                                val pD = dwDrawProgress / 0.48f
+                                val angle = pD * (Math.PI * 2).toFloat()
+                                penX = cx - (w * 0.20f) + (Math.sin(angle.toDouble()) * (w * 0.12f)).toFloat()
+                                penY = cy - (h * 0.14f) + (pD * (h * 0.28f))
+                            } else {
+                                val pW = (dwDrawProgress - 0.48f) / 0.52f
+                                val wave = Math.sin((pW * Math.PI * 2.5).toDouble()).toFloat()
+                                penX = cx - (w * 0.04f) + (pW * (w * 0.32f))
+                                penY = cy + (wave * (h * 0.14f))
+                            }
+
+                            // Glowing laser pen bloom
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color.White,
+                                        Color(0xFFF0ABFC),
+                                        Color(0xFFA855F7).copy(alpha = 0.4f),
+                                        Color.Transparent
+                                    ),
+                                    center = Offset(penX, penY),
+                                    radius = 28.dp.toPx()
+                                ),
+                                center = Offset(penX, penY),
+                                radius = 28.dp.toPx()
+                            )
+
+                            // Laser hot spot
+                            drawCircle(
+                                color = Color.White,
+                                radius = 4.dp.toPx(),
+                                center = Offset(penX, penY)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -408,9 +280,6 @@ fun ArcReactorCanvas(
     modifier: Modifier = Modifier,
     isSplashTransform: Boolean = false,
 ) {
-    val showDW = !isSplashTransform || rotationAngle >= 360f
-    val currentDrawable = if (showDW) R.drawable.app_logo else R.drawable.bird_logo
-
     Box(
         modifier = modifier
             .shadow(
@@ -424,7 +293,7 @@ fun ArcReactorCanvas(
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            painter = painterResource(id = currentDrawable),
+            painter = painterResource(id = R.drawable.app_logo),
             contentDescription = "DiaWell Logo",
             contentScale = ContentScale.Fit,
             modifier = Modifier
