@@ -2,16 +2,20 @@ package com.simats.diawell123.ui.profile
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -115,10 +119,7 @@ fun EditProfileScreen(
     val heightRange = remember { (140..210).filter { it % 5 == 0 }.map { "$it cm" } }
     val weightRange = remember { (40..140).filter { it % 5 == 0 || it == 68 }.map { "$it kg" } }
 
-    // Android Gallery Photo Picker Launcher
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-    ) { uri: Uri? ->
+    val handlePickedUri: (Uri?) -> Unit = { uri: Uri? ->
         if (uri != null) {
             try {
                 val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -141,6 +142,36 @@ fun EditProfileScreen(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(context, "Error loading image: ${e.localizedMessage ?: "Unknown"}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Android Gallery Photo Picker Launcher (Modern Photo Picker)
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = handlePickedUri
+    )
+
+    // Legacy File/Gallery Picker Launcher Fallback
+    val legacyGalleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = handlePickedUri
+    )
+
+    val safeLaunchGallery: () -> Unit = {
+        showPhotoOptionsDialog = false
+        showViewPictureDialog = false
+        try {
+            galleryLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        } catch (_: Exception) {
+            try {
+                legacyGalleryLauncher.launch("image/*")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Unable to open photo picker", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -164,7 +195,44 @@ fun EditProfileScreen(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(context, "Error saving photo: ${e.localizedMessage ?: "Unknown"}", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    // Camera Runtime Permission Launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            try {
+                cameraLauncher.launch(null)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Unable to launch camera", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Camera permission is required to take a photo", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val safeLaunchCamera: () -> Unit = {
+        showPhotoOptionsDialog = false
+        showViewPictureDialog = false
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            try {
+                cameraLauncher.launch(null)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Unable to launch camera", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -181,15 +249,12 @@ fun EditProfileScreen(
     if (showPhotoOptionsDialog) {
         ProfilePhotoOptionsDialog(
             onDismissRequest = { showPhotoOptionsDialog = false },
-            onViewPictureClick = { showViewPictureDialog = true },
-            onChooseGalleryClick = {
-                galleryLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                )
+            onViewPictureClick = {
+                showPhotoOptionsDialog = false
+                showViewPictureDialog = true
             },
-            onTakePhotoClick = {
-                cameraLauncher.launch(null)
-            }
+            onChooseGalleryClick = safeLaunchGallery,
+            onTakePhotoClick = safeLaunchCamera
         )
     }
 
@@ -197,14 +262,8 @@ fun EditProfileScreen(
         ViewProfilePictureDialog(
             userName = fullName,
             onDismissRequest = { showViewPictureDialog = false },
-            onChooseGalleryClick = {
-                galleryLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                )
-            },
-            onTakePhotoClick = {
-                cameraLauncher.launch(null)
-            }
+            onChooseGalleryClick = safeLaunchGallery,
+            onTakePhotoClick = safeLaunchCamera
         )
     }
 
@@ -366,11 +425,7 @@ fun EditProfileScreen(
                             .clip(RoundedCornerShape(16.dp))
                             .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                             .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-                            .clickable {
-                                galleryLauncher.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                                )
-                            }
+                            .clickable { safeLaunchGallery() }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Text(
@@ -386,9 +441,7 @@ fun EditProfileScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color(0xFFA855F7))
-                            .clickable {
-                                cameraLauncher.launch(null)
-                            }
+                            .clickable { safeLaunchCamera() }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Text(

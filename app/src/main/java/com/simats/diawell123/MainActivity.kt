@@ -105,6 +105,19 @@ class MainActivity : FragmentActivity() {
     private var externalNavTarget by mutableStateOf<String?>(null)
     private var lastBackgroundTimestamp: Long = 0L
 
+    @Suppress("DEPRECATION")
+    override fun startActivityForResult(intent: Intent, requestCode: Int, options: Bundle?) {
+        try {
+            super.startActivityForResult(intent, requestCode, options)
+        } catch (e: IllegalArgumentException) {
+            if (e.message?.contains("Can only use lower 16 bits", ignoreCase = true) == true) {
+                super.startActivityForResult(intent, requestCode and 0xffff, options)
+            } else {
+                throw e
+            }
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 101) {
