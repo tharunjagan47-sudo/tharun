@@ -76,10 +76,10 @@ data class MedicationItem(
     val status: String = "Upcoming",
 
     @SerializedName("status_color")
-    val statusColor: String = "#B81D85",
+    val statusColor: String = "#A855F7",
 
     @SerializedName("status_bg")
-    val statusBg: String = "#FDEEF7",
+    val statusBg: String = "#F5F3FF",
 
     @SerializedName("notes")
     val notes: String = "",

@@ -108,7 +108,7 @@ fun GlucoseHistoryScreen(
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp,
-                            color = Color(0xFFBD1E85),
+                            color = Color(0xFFA855F7),
                         )
                     }
                 }
@@ -133,7 +133,7 @@ fun GlucoseHistoryScreen(
                                 .background(
                                     if (isSelected) {
                                         Brush.horizontalGradient(
-                                            colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                            colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC)),
                                         )
                                     } else {
                                         Brush.horizontalGradient(
@@ -171,14 +171,14 @@ fun GlucoseHistoryScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                     ) {
                         Text(
                             text = "🩸 Tracked",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                         )
                     }
                 }
@@ -241,7 +241,7 @@ fun GlucoseHistoryScreen(
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
-                                color = Color(0xFFBD1E85),
+                                color = Color(0xFFA855F7),
                                 strokeWidth = 2.dp,
                             )
                         }
@@ -299,7 +299,7 @@ fun GlucoseHistoryScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                             .clickable { onLogGlucoseClick() }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     ) {
@@ -307,7 +307,7 @@ fun GlucoseHistoryScreen(
                             text = "+ Log glucose",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                         )
                     }
                 }
@@ -382,7 +382,7 @@ fun DynamicGlucoseLineChart(chartData: List<GlucoseChartPoint>) {
             val single = chartData[0]
             val pt = Offset(w * 0.5f, h * 0.5f)
             drawCircle(color = Color.White, radius = 7.dp.toPx(), center = pt)
-            drawCircle(color = Color(0xFFB81D85), radius = 5.dp.toPx(), center = pt)
+            drawCircle(color = Color(0xFFA855F7), radius = 5.dp.toPx(), center = pt)
             return@Canvas
         }
 
@@ -408,7 +408,7 @@ fun DynamicGlucoseLineChart(chartData: List<GlucoseChartPoint>) {
 
         drawPath(
             path = path,
-            color = Color(0xFFB81D85),
+            color = Color(0xFFA855F7),
             style = Stroke(
                 width = 3.dp.toPx(),
                 cap = StrokeCap.Round,
@@ -419,7 +419,7 @@ fun DynamicGlucoseLineChart(chartData: List<GlucoseChartPoint>) {
         // Draw points
         points.forEach { pt ->
             drawCircle(color = Color.White, radius = 5.5.dp.toPx(), center = pt)
-            drawCircle(color = Color(0xFF7A1C7D), radius = 3.5.dp.toPx(), center = pt)
+            drawCircle(color = Color(0xFF7E22CE), radius = 3.5.dp.toPx(), center = pt)
         }
     }
 }
@@ -433,7 +433,7 @@ fun HistoryStatCard(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
             .padding(vertical = 10.dp, horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -442,7 +442,7 @@ fun HistoryStatCard(
                 text = value,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF7A1C7D),
+                color = Color(0xFF7E22CE),
             )
             Text(
                 text = label,
@@ -503,7 +503,7 @@ fun ReadingHistoryItem(
                             text = value,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF7A1C7D),
+                            color = Color(0xFF7E22CE),
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(

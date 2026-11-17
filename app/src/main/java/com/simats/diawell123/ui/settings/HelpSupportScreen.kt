@@ -179,7 +179,7 @@ fun HelpSupportScreen(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(text = "💬", fontSize = 28.sp)
@@ -244,10 +244,10 @@ fun HelpSupportScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = AppTheme.colors.textPrimary,
                     unfocusedTextColor = AppTheme.colors.textPrimary,
-                    cursorColor = Color(0xFFBD1E85),
+                    cursorColor = Color(0xFFA855F7),
                     focusedContainerColor = AppTheme.colors.inputBackground,
                     unfocusedContainerColor = AppTheme.colors.inputBackground,
-                    focusedBorderColor = Color(0xFFBD1E85),
+                    focusedBorderColor = Color(0xFFA855F7),
                     unfocusedBorderColor = AppTheme.colors.inputBorder,
                 ),
                 modifier = Modifier.fillMaxWidth(),

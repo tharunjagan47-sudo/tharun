@@ -133,7 +133,7 @@ fun FoodDetailsScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF6B156E), Color(0xFFB81D85)),
+                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7)),
                             ),
                         )
                         .padding(20.dp),
@@ -310,7 +310,7 @@ fun FoodDetailsScreen(
                                         text = "🩺 $diabeticGuidanceText",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF6B156E),
+                                        color = Color(0xFF7E22CE),
                                         lineHeight = 17.sp,
                                     )
                                 }
@@ -452,8 +452,8 @@ fun StyledBackButton(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFFF80AB).copy(alpha = glowAlpha * 0.45f),
-                        Color(0xFFBD1E85).copy(alpha = glowAlpha * 0.20f),
+                        Color(0xFFF0ABFC).copy(alpha = glowAlpha * 0.45f),
+                        Color(0xFFA855F7).copy(alpha = glowAlpha * 0.20f),
                         Color.Transparent,
                     ),
                     center = Offset(w * 0.5f, h * 0.5f),
@@ -464,9 +464,9 @@ fun StyledBackButton(
             drawRoundRect(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFBD1E85).copy(alpha = 0.35f),
-                        Color(0xFF7A1C7D).copy(alpha = 0.20f),
-                        Color(0xFF4A0E4E).copy(alpha = 0.15f),
+                        Color(0xFFA855F7).copy(alpha = 0.35f),
+                        Color(0xFF7E22CE).copy(alpha = 0.20f),
+                        Color(0xFF1E1B4B).copy(alpha = 0.15f),
                     ),
                 ),
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(h / 2, h / 2),
@@ -476,8 +476,8 @@ fun StyledBackButton(
                 brush = Brush.linearGradient(
                     colors = listOf(
                         Color.White.copy(alpha = 0.90f),
-                        Color(0xFFFF80AB).copy(alpha = 0.60f),
-                        Color(0xFFBD1E85).copy(alpha = 0.40f),
+                        Color(0xFFF0ABFC).copy(alpha = 0.60f),
+                        Color(0xFFA855F7).copy(alpha = 0.40f),
                     ),
                     start = Offset(0f, 0f),
                     end = Offset(w, h),
@@ -493,7 +493,7 @@ fun StyledBackButton(
             }
             drawPath(
                 path = arrowPath,
-                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
+                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
                 style = Stroke(
                     width = 2.8.dp.toPx(),
                     cap = StrokeCap.Round,
@@ -511,9 +511,10 @@ fun IosLiquidGlassButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     gradientColors: List<Color> = listOf(
-        Color(0xFF7A1C7D),
-        Color(0xFFBD1E85),
-        Color(0xFFFF4081),
+        Color(0xFF1E1B4B),
+        Color(0xFF7E22CE),
+        Color(0xFFA855F7),
+        Color(0xFFF0ABFC),
     ),
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "LiquidGlassPulse")
@@ -535,8 +536,8 @@ fun IosLiquidGlassButton(
             .shadow(
                 elevation = 14.dp,
                 shape = RoundedCornerShape(27.dp),
-                spotColor = (gradientColors.getOrNull(1) ?: gradientColors.firstOrNull() ?: Color(0xFFBD1E85)).copy(alpha = 0.55f),
-                ambientColor = (gradientColors.firstOrNull() ?: Color(0xFF7A1C7D)).copy(alpha = 0.35f),
+                spotColor = (gradientColors.getOrNull(2) ?: gradientColors.firstOrNull() ?: Color(0xFFA855F7)).copy(alpha = 0.55f),
+                ambientColor = (gradientColors.firstOrNull() ?: Color(0xFF1E1B4B)).copy(alpha = 0.35f),
             )
             .clip(RoundedCornerShape(27.dp))
             .background(

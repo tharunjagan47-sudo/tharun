@@ -190,7 +190,7 @@ fun ReadingDetailsScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
-                        color = Color(0xFFBD1E85),
+                        color = Color(0xFFA855F7),
                         strokeWidth = 2.dp,
                     )
                 }
@@ -208,7 +208,7 @@ fun ReadingDetailsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                         .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                         .padding(20.dp),
                     contentAlignment = Alignment.Center,
@@ -224,7 +224,7 @@ fun ReadingDetailsScreen(
                                 text = details.readingType,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
+                                color = Color(0xFFA855F7),
                             )
                         }
 
@@ -235,14 +235,14 @@ fun ReadingDetailsScreen(
                                 text = details.readingValue,
                                 fontSize = 42.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF7A1C7D),
+                                color = Color(0xFF7E22CE),
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = details.unit,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF7A1C7D),
+                                color = Color(0xFF7E22CE),
                                 modifier = Modifier.padding(bottom = 6.dp),
                             )
                         }
@@ -341,7 +341,7 @@ fun ReadingDetailsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                         .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                         .padding(16.dp),
                 ) {
@@ -353,7 +353,7 @@ fun ReadingDetailsScreen(
                                 text = "AI Trend Summary",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             )
                         }
 
@@ -402,7 +402,7 @@ fun RecentReadingsLineChart(readings: List<GlucoseRecentPoint>) {
         if (readings.size == 1) {
             val pt = Offset(w * 0.5f, h * 0.5f)
             drawCircle(color = Color.White, radius = 7.dp.toPx(), center = pt)
-            drawCircle(color = Color(0xFFB81D85), radius = 5.dp.toPx(), center = pt)
+            drawCircle(color = Color(0xFFA855F7), radius = 5.dp.toPx(), center = pt)
             return@Canvas
         }
 
@@ -427,7 +427,7 @@ fun RecentReadingsLineChart(readings: List<GlucoseRecentPoint>) {
 
         drawPath(
             path = path,
-            color = Color(0xFFB81D85),
+            color = Color(0xFFA855F7),
             style = Stroke(
                 width = 3.dp.toPx(),
                 cap = StrokeCap.Round,
@@ -437,7 +437,7 @@ fun RecentReadingsLineChart(readings: List<GlucoseRecentPoint>) {
 
         points.forEach { pt ->
             drawCircle(color = Color.White, radius = 6.dp.toPx(), center = pt)
-            drawCircle(color = Color(0xFFB81D85), radius = 4.dp.toPx(), center = pt)
+            drawCircle(color = Color(0xFFA855F7), radius = 4.dp.toPx(), center = pt)
         }
     }
 }

@@ -91,7 +91,7 @@ fun NotificationsScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFB81D85))
+                                .background(Color(0xFFA855F7))
                                 .padding(horizontal = 7.dp, vertical = 2.dp)
                         ) {
                             Text(
@@ -124,7 +124,7 @@ fun NotificationsScreen(
                             text = "Clear all",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
                                 .clickable { viewModel.clearAll() }
@@ -144,7 +144,7 @@ fun NotificationsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             modifier = Modifier.size(32.dp),
                             strokeWidth = 3.dp
                         )
@@ -224,7 +224,7 @@ fun NotificationItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(if (isUnread) Color(0xFFFDEEF7) else Color.White)
+            .background(if (isUnread) Color(0xFFF5F3FF) else Color.White)
             .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
@@ -248,7 +248,7 @@ fun NotificationItem(
                 text = time,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isUnread) Color(0xFFB81D85) else AppTheme.colors.textMuted,
+                color = if (isUnread) Color(0xFFA855F7) else AppTheme.colors.textMuted,
             )
         }
     }

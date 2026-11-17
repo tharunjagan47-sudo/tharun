@@ -168,9 +168,10 @@ fun AppLockScreen(
                         .background(
                             Brush.linearGradient(
                                 colors = listOf(
-                                    Color(0xFF8B1575),
-                                    Color(0xFFB81D85),
-                                    Color(0xFF6B0E5A)
+                                    Color(0xFF1E1B4B),
+                                    Color(0xFF7E22CE),
+                                    Color(0xFFA855F7),
+                                    Color(0xFFF0ABFC)
                                 )
                             )
                         ),
@@ -210,11 +211,11 @@ fun AppLockScreen(
                                 .size(18.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (isFilled) Color(0xFFB81D85) else AppTheme.colors.border
+                                    if (isFilled) Color(0xFFA855F7) else AppTheme.colors.border
                                 )
                                 .border(
                                     width = 1.5.dp,
-                                    color = if (isFilled) Color(0xFFB81D85) else AppTheme.colors.textMuted,
+                                    color = if (isFilled) Color(0xFFA855F7) else AppTheme.colors.textMuted,
                                     shape = CircleShape
                                 )
                         )
@@ -354,7 +355,7 @@ fun AppLockScreen(
                     text = "Forgot Passcode?",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFFB81D85)
+                    color = Color(0xFFA855F7)
                 )
             }
         }

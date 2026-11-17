@@ -120,7 +120,7 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.20f) else Color(0xFFFDEEF7),
+                color = if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF),
                 radius = bgRadius,
                 center = center
             )

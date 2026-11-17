@@ -63,8 +63,8 @@ object ClinicalReportGenerator {
 
     // Clinical Palette
     private val COLOR_NAVY = Color.parseColor("#0F172A")
-    private val COLOR_PRIMARY = Color.parseColor("#6B156E")
-    private val COLOR_ACCENT = Color.parseColor("#B81D85")
+    private val COLOR_PRIMARY = Color.parseColor("#7E22CE")
+    private val COLOR_ACCENT = Color.parseColor("#A855F7")
     private val COLOR_TEAL = Color.parseColor("#0D9488")
     private val COLOR_BG_SUBTLE = Color.parseColor("#F8FAFC")
     private val COLOR_BG_TINT = Color.parseColor("#FDF2F8")

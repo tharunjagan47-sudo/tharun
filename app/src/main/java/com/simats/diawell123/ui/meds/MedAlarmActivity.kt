@@ -274,7 +274,7 @@ fun MedAlarmScreen(
                             brush = Brush.radialGradient(
                                 colors = listOf(
                                     Color(0xFFFF3366).copy(alpha = 0.4f),
-                                    Color(0xFFBD1E85).copy(alpha = 0.2f),
+                                    Color(0xFFA855F7).copy(alpha = 0.2f),
                                     Color.Transparent
                                 )
                             )
@@ -348,8 +348,8 @@ fun MedAlarmScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFBD1E85).copy(alpha = 0.25f))
-                            .border(1.dp, Color(0xFFBD1E85), RoundedCornerShape(12.dp))
+                            .background(Color(0xFFA855F7).copy(alpha = 0.25f))
+                            .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(12.dp))
                             .padding(horizontal = 14.dp, vertical = 6.dp)
                     ) {
                         Text(

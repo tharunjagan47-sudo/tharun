@@ -113,7 +113,7 @@ fun PrivacySecurityScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -124,7 +124,7 @@ fun PrivacySecurityScreen(
                             text = "Your choices, your control",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
@@ -360,8 +360,8 @@ fun SetAppLockPinDialog(
                             modifier = Modifier
                                 .size(16.dp)
                                 .clip(CircleShape)
-                                .background(if (isFilled) Color(0xFFB81D85) else AppTheme.colors.border)
-                                .border(1.dp, if (isFilled) Color(0xFFB81D85) else AppTheme.colors.textMuted, CircleShape)
+                                .background(if (isFilled) Color(0xFFA855F7) else AppTheme.colors.border)
+                                .border(1.dp, if (isFilled) Color(0xFFA855F7) else AppTheme.colors.textMuted, CircleShape)
                         )
                     }
                 }
@@ -556,7 +556,7 @@ fun PrivacyToggleRow(
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = Color(0xFFB81D85),
+                    checkedTrackColor = Color(0xFFA855F7),
                     uncheckedThumbColor = AppTheme.colors.textMuted,
                     uncheckedTrackColor = AppTheme.colors.border,
                 ),

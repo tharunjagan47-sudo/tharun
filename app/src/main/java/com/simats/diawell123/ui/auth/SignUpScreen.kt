@@ -141,7 +141,7 @@ fun SignUpScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -329,7 +329,7 @@ fun SignUpScreen(
                     text = "Log In",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                     modifier = Modifier.clickable { onLogInClick() },
                 )
             }
@@ -420,7 +420,7 @@ fun SignUpInputField(
                 focusedContainerColor = AppTheme.colors.inputBackground,
                 unfocusedContainerColor = AppTheme.colors.inputBackground,
                 disabledContainerColor = AppTheme.colors.secondaryBackground,
-                focusedBorderColor = Color(0xFFBD1E85),
+                focusedBorderColor = Color(0xFFA855F7),
                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                 focusedTextColor = AppTheme.colors.textPrimary,
                 unfocusedTextColor = AppTheme.colors.textPrimary,

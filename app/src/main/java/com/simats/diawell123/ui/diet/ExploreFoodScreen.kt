@@ -149,10 +149,10 @@ fun ExploreFoodScreen(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = AppTheme.colors.textPrimary,
                                 unfocusedTextColor = AppTheme.colors.textPrimary,
-                                cursorColor = Color(0xFFBD1E85),
+                                cursorColor = Color(0xFFA855F7),
                                 focusedContainerColor = AppTheme.colors.inputBackground,
                                 unfocusedContainerColor = AppTheme.colors.inputBackground,
-                                focusedBorderColor = Color(0xFFBD1E85),
+                                focusedBorderColor = Color(0xFFA855F7),
                                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                             ),
                             modifier = Modifier.fillMaxWidth(),
@@ -175,7 +175,7 @@ fun ExploreFoodScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(20.dp))
-                                    .background(if (isSelected) Color(0xFFB81D85) else AppTheme.colors.secondaryBackground)
+                                    .background(if (isSelected) Color(0xFFA855F7) else AppTheme.colors.secondaryBackground)
                                     .clickable { viewModel.onDailyDietCategoryChanged(category) }
                                     .padding(horizontal = 14.dp, vertical = 6.dp),
                             ) {
@@ -197,7 +197,7 @@ fun ExploreFoodScreen(
                     text = userPrefText,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -242,7 +242,7 @@ fun ExploreFoodScreen(
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp,
-                                    color = Color(0xFFBD1E85),
+                                    color = Color(0xFFA855F7),
                                 )
                             }
                         }
@@ -263,7 +263,7 @@ fun ExploreFoodScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                                     .padding(12.dp),
                             ) {
                                 Text(
@@ -373,7 +373,7 @@ fun AiRecommendedFoodCard(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = item.icon, fontSize = 20.sp)
@@ -384,7 +384,7 @@ fun AiRecommendedFoodCard(
                             text = item.category.uppercase(),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             letterSpacing = 0.5.sp,
                         )
                         Text(
@@ -402,7 +402,7 @@ fun AiRecommendedFoodCard(
                         .clip(RoundedCornerShape(8.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF6B156E), Color(0xFFB81D85)),
+                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7)),
                             ),
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -452,7 +452,7 @@ fun AiRecommendedFoodCard(
                                 text = tag,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             )
                         }
                     }
@@ -509,7 +509,7 @@ fun ExploreMealCard(
                         text = category,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         letterSpacing = 0.5.sp,
                     )
                     Text(
@@ -535,10 +535,10 @@ fun ExploreMealCard(
                 text = "+ Add",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }

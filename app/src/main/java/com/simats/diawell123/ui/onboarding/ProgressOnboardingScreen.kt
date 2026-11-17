@@ -123,7 +123,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.20f) else Color(0xFFFDEEF7),
+                color = if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF),
                 radius = bgRadius,
                 center = center
             )
@@ -167,7 +167,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
 
             drawPath(
                 path = chartPath,
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
                 style = Stroke(width = 3.5.dp.toPx())
             )
 
@@ -176,7 +176,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
 
             drawCircle(
                 brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722))
+                    colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
                 ),
                 radius = checkBadgeRadius,
                 center = checkBadgeCenter

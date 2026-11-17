@@ -532,7 +532,7 @@ fun GlowingSiriOrb(
                 drawPath(
                     path = ringPath,
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFFFF4081), Color(0xFF00E5FF), Color(0xFFA855F7))
+                        colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
                     ),
                     style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round)
                 )

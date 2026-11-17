@@ -33,7 +33,7 @@ fun ProfileAvatarView(
     sizeDp: Dp = 48.dp,
     bgCircleColor: Color = if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else AppTheme.colors.border,
     borderColor: Color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color.White,
-    textColor: Color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+    textColor: Color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
     fontSizeSp: Int = 16,
 ) {
     val bitmap = ProfileState.profileImageBitmap

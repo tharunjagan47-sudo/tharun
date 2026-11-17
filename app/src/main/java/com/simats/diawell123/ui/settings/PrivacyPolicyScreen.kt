@@ -80,7 +80,7 @@ fun PrivacyPolicyScreen(
             Text(
                 text = "Effective Date: October 15, 2026 • DiaWell Health",
                 fontSize = 11.sp,
-                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                 fontWeight = FontWeight.Medium,
             )
 
@@ -91,7 +91,7 @@ fun PrivacyPolicyScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -100,7 +100,7 @@ fun PrivacyPolicyScreen(
                     Text(
                         text = "Your privacy matters. Learn how we handle your data with care and confidentiality.",
                         fontSize = 12.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         lineHeight = 16.sp,
                     )
                 }

@@ -187,7 +187,7 @@ fun ExportRecordsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -196,7 +196,7 @@ fun ExportRecordsScreen(
                     Text(
                         text = "Compiles your real MySQL glucose logs, medications, meals, and workouts into a doctor-ready clinical summary.",
                         fontSize = 12.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         lineHeight = 16.sp,
                         modifier = Modifier.weight(1f),
                     )
@@ -385,14 +385,14 @@ private fun TimeRangeChip(
             .clip(RoundedCornerShape(12.dp))
             .background(
                 if (isSelected) {
-                    if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)
+                    if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)
                 } else {
                     AppTheme.colors.secondaryBackground
                 }
             )
             .border(
                 width = if (isSelected) 1.5.dp else 1.dp,
-                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                 shape = RoundedCornerShape(12.dp),
             )
             .clickable { onClick() }
@@ -403,7 +403,7 @@ private fun TimeRangeChip(
             text = label,
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
         )
     }
@@ -423,14 +423,14 @@ fun ExportFormatCard(
             .clip(RoundedCornerShape(14.dp))
             .background(
                 if (isSelected) {
-                    if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)
+                    if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)
                 } else {
                     AppTheme.colors.cardBackground
                 }
             )
             .border(
                 width = 1.2.dp,
-                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                 shape = RoundedCornerShape(14.dp),
             )
             .clickable { onClick() }
@@ -441,7 +441,7 @@ fun ExportFormatCard(
                 text = title,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
+                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -486,7 +486,7 @@ fun ExportCheckOption(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFFB81D85),
+                    checkedColor = Color(0xFFA855F7),
                     uncheckedColor = AppTheme.colors.textMuted,
                     checkmarkColor = Color.White,
                 ),

@@ -123,7 +123,7 @@ fun SearchMedicationScreen(
                 trailingIcon = {
                     if (searchState.isSearching) {
                         CircularProgressIndicator(
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             strokeWidth = 2.dp,
                             modifier = Modifier
                                 .size(18.dp)
@@ -147,10 +147,10 @@ fun SearchMedicationScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = AppTheme.colors.textPrimary,
                     unfocusedTextColor = AppTheme.colors.textPrimary,
-                    cursorColor = Color(0xFFBD1E85),
+                    cursorColor = Color(0xFFA855F7),
                     focusedContainerColor = AppTheme.colors.inputBackground,
                     unfocusedContainerColor = AppTheme.colors.inputBackground,
-                    focusedBorderColor = Color(0xFFBD1E85),
+                    focusedBorderColor = Color(0xFFA855F7),
                     unfocusedBorderColor = AppTheme.colors.inputBorder,
                 ),
                 modifier = Modifier.fillMaxWidth(),
@@ -164,8 +164,8 @@ fun SearchMedicationScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
-                        .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(14.dp))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
+                        .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(14.dp))
                         .clickable {
                             viewModel.selectMedicineForReminder(searchQuery.trim(), "1 Tablet / Dose")
                             onSelectMedication(searchQuery.trim(), "1 Tablet / Dose")
@@ -182,7 +182,7 @@ fun SearchMedicationScreen(
                                 text = "+ Add '${searchQuery.trim()}'",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85)
+                                color = Color(0xFFA855F7)
                             )
                             Text(
                                 text = "Use this custom medication name",
@@ -194,7 +194,7 @@ fun SearchMedicationScreen(
                             text = "Select ›",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85)
+                            color = Color(0xFFA855F7)
                         )
                     }
                 }
@@ -253,7 +253,7 @@ fun SearchMedicationScreen(
                                         text = tablet.dose,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFFB81D85),
+                                        color = Color(0xFFA855F7),
                                         softWrap = true,
                                     )
                                     if (tablet.primaryIngredient.isNotBlank()) {
@@ -276,7 +276,7 @@ fun SearchMedicationScreen(
                                             if (tablet.category.contains("diabet", ignoreCase = true))
                                                 Color(0xFFE8F5E9)
                                             else
-                                                Color(0xFFFDEEF7)
+                                                Color(0xFFF5F3FF)
                                         )
                                         .padding(horizontal = 8.dp, vertical = 3.dp),
                                 ) {
@@ -287,7 +287,7 @@ fun SearchMedicationScreen(
                                         color = if (tablet.category.contains("diabet", ignoreCase = true))
                                             Color(0xFF2E7D32)
                                         else
-                                            Color(0xFFB81D85),
+                                            Color(0xFFA855F7),
                                     )
                                 }
                             }
@@ -326,7 +326,7 @@ fun SearchMedicationScreen(
                                 text = "+ Set Reminder ›",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
+                                color = Color(0xFFA855F7),
                             )
                         }
                     }

@@ -10,12 +10,12 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.messaging.FirebaseMessaging
 import com.simats.diawell123.service.DiaWellFirebaseMessagingService
 import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.SmartNudgeEngine
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
@@ -105,6 +105,14 @@ class MainActivity : FragmentActivity() {
     private var externalNavTarget by mutableStateOf<String?>(null)
     private var lastBackgroundTimestamp: Long = 0L
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101) {
+            val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            Log.d("MainActivity", "POST_NOTIFICATIONS granted: $granted")
+        }
+    }
+
     override fun onStop() {
         super.onStop()
         lastBackgroundTimestamp = System.currentTimeMillis()
@@ -178,19 +186,16 @@ class MainActivity : FragmentActivity() {
                     }
                 }
 
-                // Request Runtime Notification Permission on Android 13+ (TIRAMISU)
-                val notificationPermissionLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.RequestPermission()
-                ) { isGranted ->
-                    Log.d("MainActivity", "POST_NOTIFICATIONS granted: $isGranted")
-                }
-
                 LaunchedEffect(Unit) {
                     DiaWellNotificationHelper.scheduleDailyHealthReminders(applicationContext)
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            ActivityCompat.requestPermissions(
+                                this@MainActivity,
+                                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                                101
+                            )
                         }
                     }
                 }

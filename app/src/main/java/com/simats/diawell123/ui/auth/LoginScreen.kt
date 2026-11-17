@@ -139,7 +139,7 @@ fun LoginScreen(
                     text = "DiaWell",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF7A1C7D),
+                    color = Color(0xFFA855F7),
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -241,7 +241,7 @@ fun LoginScreen(
                         text = "Forgot Password?",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         modifier = Modifier.clickable { onForgotPasswordClick() },
                     )
                 }
@@ -274,7 +274,7 @@ fun LoginScreen(
                         text = "Create Account",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         modifier = Modifier.clickable { onCreateAccountClick() },
                     )
                 }
@@ -387,7 +387,7 @@ fun LoginInputField(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = AppTheme.colors.inputBackground,
                 unfocusedContainerColor = AppTheme.colors.inputBackground,
-                focusedBorderColor = Color(0xFFBD1E85),
+                focusedBorderColor = Color(0xFFA855F7),
                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                 focusedTextColor = AppTheme.colors.textPrimary,
                 unfocusedTextColor = AppTheme.colors.textPrimary,

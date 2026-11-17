@@ -139,7 +139,7 @@ fun DailyDietPlanScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                                     .clickable { onFoodLogClick() }
                                     .padding(vertical = 9.dp),
                                 contentAlignment = Alignment.Center,
@@ -148,7 +148,7 @@ fun DailyDietPlanScreen(
                                     text = "📖 Food Log",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                                 )
                             }
                             Box(
@@ -220,10 +220,10 @@ fun DailyDietPlanScreen(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = AppTheme.colors.textPrimary,
                                 unfocusedTextColor = AppTheme.colors.textPrimary,
-                                cursorColor = Color(0xFFBD1E85),
+                                cursorColor = Color(0xFFA855F7),
                                 focusedContainerColor = AppTheme.colors.inputBackground,
                                 unfocusedContainerColor = AppTheme.colors.inputBackground,
-                                focusedBorderColor = Color(0xFFBD1E85),
+                                focusedBorderColor = Color(0xFFA855F7),
                                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                             ),
                             modifier = Modifier.fillMaxWidth(),
@@ -243,7 +243,7 @@ fun DailyDietPlanScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(20.dp))
-                                        .background(if (isSelected) Color(0xFFB81D85) else AppTheme.colors.secondaryBackground)
+                                        .background(if (isSelected) Color(0xFFA855F7) else AppTheme.colors.secondaryBackground)
                                         .clickable { viewModel.onDailyDietCategoryChanged(category) }
                                         .padding(horizontal = 14.dp, vertical = 7.dp),
                                 ) {
@@ -276,7 +276,7 @@ fun DailyDietPlanScreen(
                                 Text(
                                     text = "‹",
                                     fontSize = 20.sp,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier
                                         .clickable { viewModel.navigateDate(-1) }
@@ -292,7 +292,7 @@ fun DailyDietPlanScreen(
                                 Text(
                                     text = "›",
                                     fontSize = 20.sp,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier
                                         .clickable { viewModel.navigateDate(1) }
@@ -399,7 +399,7 @@ fun DailyDietPlanScreen(
 
                     if (aiState.isLoading || aiState.isUpdatingInputs) {
                         CircularProgressIndicator(
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             strokeWidth = 2.dp,
                             modifier = Modifier.size(16.dp)
                         )
@@ -632,7 +632,7 @@ fun ActiveHealthMatchCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = "🩸", fontSize = 18.sp)
@@ -667,7 +667,7 @@ fun ActiveHealthMatchCard(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
                         .background(AppTheme.colors.secondaryBackground)
-                        .border(1.dp, Color(0xFFBD1E85).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                        .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
                         .clickable { onAdjustClick() }
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                 ) {
@@ -675,7 +675,7 @@ fun ActiveHealthMatchCard(
                         text = "⚙️ Adjust",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     )
                 }
             }
@@ -786,10 +786,10 @@ fun AdjustHealthInputsDialog(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = AppTheme.colors.textPrimary,
                         unfocusedTextColor = AppTheme.colors.textPrimary,
-                        cursorColor = Color(0xFFBD1E85),
+                        cursorColor = Color(0xFFA855F7),
                         focusedContainerColor = AppTheme.colors.inputBackground,
                         unfocusedContainerColor = AppTheme.colors.inputBackground,
-                        focusedBorderColor = Color(0xFFBD1E85),
+                        focusedBorderColor = Color(0xFFA855F7),
                         unfocusedBorderColor = AppTheme.colors.inputBorder,
                     ),
                     modifier = Modifier.fillMaxWidth(),
@@ -803,7 +803,7 @@ fun AdjustHealthInputsDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (glucoseInput == valStr) Color(0xFFBD1E85) else AppTheme.colors.secondaryBackground)
+                                .background(if (glucoseInput == valStr) Color(0xFFA855F7) else AppTheme.colors.secondaryBackground)
                                 .clickable { glucoseInput = valStr }
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                         ) {
@@ -834,7 +834,7 @@ fun AdjustHealthInputsDialog(
                     Text(
                         text = "Multiple selection",
                         fontSize = 10.sp,
-                        color = Color(0xFFBD1E85),
+                        color = Color(0xFFA855F7),
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
@@ -849,14 +849,14 @@ fun AdjustHealthInputsDialog(
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(
                                     if (isSelected) {
-                                        Brush.horizontalGradient(listOf(Color(0xFF811978), Color(0xFFBD1E85)))
+                                        Brush.horizontalGradient(listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7)))
                                     } else {
                                         Brush.horizontalGradient(listOf(AppTheme.colors.secondaryBackground, AppTheme.colors.secondaryBackground))
                                     }
                                 )
                                 .border(
                                     1.dp,
-                                    if (isSelected) Color(0xFFBD1E85) else AppTheme.colors.border,
+                                    if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                     RoundedCornerShape(10.dp)
                                 )
                                 .clickable {
@@ -905,7 +905,7 @@ fun AdjustHealthInputsDialog(
                     Text(
                         text = "Multiple selection",
                         fontSize = 10.sp,
-                        color = Color(0xFFBD1E85),
+                        color = Color(0xFFA855F7),
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
@@ -920,14 +920,14 @@ fun AdjustHealthInputsDialog(
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(
                                     if (isSelected) {
-                                        Brush.horizontalGradient(listOf(Color(0xFF6B156E), Color(0xFF9E1B80)))
+                                        Brush.horizontalGradient(listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7)))
                                     } else {
                                         Brush.horizontalGradient(listOf(AppTheme.colors.secondaryBackground, AppTheme.colors.secondaryBackground))
                                     }
                                 )
                                 .border(
                                     1.dp,
-                                    if (isSelected) Color(0xFFBD1E85) else AppTheme.colors.border,
+                                    if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                     RoundedCornerShape(10.dp)
                                 )
                                 .clickable {
@@ -984,7 +984,7 @@ fun AdjustHealthInputsDialog(
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 brush = Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF6B156E), Color(0xFFB81D85)),
+                                    colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7)),
                                 ),
                             )
                             .clickable {
@@ -1033,7 +1033,7 @@ fun AiDietMealCard(
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = item.icon, fontSize = 22.sp)
@@ -1044,7 +1044,7 @@ fun AiDietMealCard(
                             text = item.category.uppercase(),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             letterSpacing = 0.5.sp,
                         )
                         Text(
@@ -1068,7 +1068,7 @@ fun AiDietMealCard(
                         .clip(RoundedCornerShape(8.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF6B156E), Color(0xFFB81D85)),
+                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7)),
                             ),
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -1117,7 +1117,7 @@ fun AiDietMealCard(
                                 text = tag,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             )
                         }
                     }
@@ -1177,7 +1177,7 @@ fun DietPlanMealCard(
                         text = category,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         letterSpacing = 0.5.sp,
                     )
                     Text(
@@ -1205,7 +1205,7 @@ fun DietPlanMealCard(
                 text = "View ›",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
             )
         }
     }
@@ -1248,7 +1248,7 @@ fun CalendarDatePickerDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                                 .clickable {
                                     val c = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, offset) }
                                     onDateSelected(c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH))
@@ -1260,7 +1260,7 @@ fun CalendarDatePickerDialog(
                                 text = label,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             )
                         }
                     }

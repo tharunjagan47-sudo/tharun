@@ -218,7 +218,7 @@ fun ExportReportViewerScreen(
                                     text = "DiaWell Clinical Summary",
                                     fontSize = 14.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                                 )
                                 Text(
                                     text = "$periodLabel • ${if (formatTag == "PDF") "Hospital PDF" else "CSV Telemetry"}",
@@ -249,7 +249,7 @@ fun ExportReportViewerScreen(
                         text = "PATIENT DETAILS",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         letterSpacing = 0.5.sp,
                     )
 
@@ -269,7 +269,7 @@ fun ExportReportViewerScreen(
                         text = "LIVE CLINICAL SUMMARY",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         letterSpacing = 0.5.sp,
                     )
 
@@ -420,7 +420,7 @@ fun ExportReportViewerScreen(
                             text = "${exportState.previewBitmaps.size} page(s)",
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                         )
                     }
                 }

@@ -228,7 +228,7 @@ fun FoodPreferencesSettingsScreen(
             Text(
                 text = "Profile • ${ProfileState.userName}",
                 fontSize = 11.sp,
-                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                 fontWeight = FontWeight.Medium,
             )
 
@@ -305,7 +305,7 @@ fun FoodPreferencesSettingsScreen(
                     text = "+ Common allergies",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .clickable { showAddAllergyDialog = true }
@@ -324,10 +324,10 @@ fun FoodPreferencesSettingsScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else AppTheme.colors.secondaryBackground)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable { allergies[index] = name to !isSelected }
@@ -337,7 +337,7 @@ fun FoodPreferencesSettingsScreen(
                             text = if (isSelected) "✓  $name" else name,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -364,10 +364,10 @@ fun FoodPreferencesSettingsScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else AppTheme.colors.secondaryBackground)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable { preferredStyles[index] = name to !isSelected }
@@ -377,7 +377,7 @@ fun FoodPreferencesSettingsScreen(
                             text = if (isSelected) "✓  $name" else name,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -410,10 +410,10 @@ fun FoodPreferencesSettingsScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = AppTheme.colors.textPrimary,
                     unfocusedTextColor = AppTheme.colors.textPrimary,
-                    cursorColor = Color(0xFFBD1E85),
+                    cursorColor = Color(0xFFA855F7),
                     focusedContainerColor = AppTheme.colors.inputBackground,
                     unfocusedContainerColor = AppTheme.colors.inputBackground,
-                    focusedBorderColor = Color(0xFFBD1E85),
+                    focusedBorderColor = Color(0xFFA855F7),
                     unfocusedBorderColor = AppTheme.colors.inputBorder,
                 ),
                 modifier = Modifier.fillMaxWidth(),
@@ -426,7 +426,7 @@ fun FoodPreferencesSettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(14.dp),
             ) {
                 Column {
@@ -434,7 +434,7 @@ fun FoodPreferencesSettingsScreen(
                         text = "Meal ideas, shaped around you",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -510,7 +510,7 @@ fun FoodPreferencesSettingsScreen(
                                     Text(
                                         text = if (alreadyExists) "✓ $item (Already added)" else "+ $item",
                                         fontSize = 13.sp,
-                                        color = if (alreadyExists) AppTheme.colors.textMuted else Color(0xFFB81D85),
+                                        color = if (alreadyExists) AppTheme.colors.textMuted else Color(0xFFA855F7),
                                         fontWeight = if (alreadyExists) FontWeight.Normal else FontWeight.SemiBold
                                     )
                                 }
@@ -519,7 +519,7 @@ fun FoodPreferencesSettingsScreen(
                     },
                     confirmButton = {
                         TextButton(onClick = { showAddAllergyDialog = false }) {
-                            Text("Close", color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                            Text("Close", color = Color(0xFFA855F7), fontWeight = FontWeight.Bold)
                         }
                     },
                     containerColor = AppTheme.colors.cardBackground
@@ -540,10 +540,10 @@ fun DietTypeOptionCard(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
+            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else AppTheme.colors.secondaryBackground)
             .border(
                 width = 1.5.dp,
-                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                 shape = RoundedCornerShape(12.dp),
             )
             .clickable { onClick() }
@@ -560,7 +560,7 @@ fun DietTypeOptionCard(
                 text = title,
                 fontSize = 11.5.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
+                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 softWrap = false,

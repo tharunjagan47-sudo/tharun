@@ -191,7 +191,7 @@ fun SplashScreen(
             val width = size.width
             val height = size.height
 
-            val ambientPink = if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.20f) else Color(0xFFFDEEF7)
+            val ambientPink = if (AppTheme.colors.isDark) Color(0xFF2E1065).copy(alpha = 0.20f) else Color(0xFFF3E8FF)
             val ambientCyan = if (AppTheme.colors.isDark) Color(0xFF0E7490).copy(alpha = 0.20f) else Color(0xFFE0F7FA).copy(alpha = 0.6f)
 
             drawCircle(
@@ -256,7 +256,7 @@ fun SplashScreen(
                             .size(136.dp)
                             .scale(pulseScale * 0.96f)
                             .clip(CircleShape)
-                            .background(Color(0xFFB81D85).copy(alpha = neonGlowAlpha * 0.25f)),
+                            .background(Color(0xFFA855F7).copy(alpha = neonGlowAlpha * 0.25f)),
                     )
 
                     // Arc Reactor Canvas Logo (Spins, slows down, and STOPS!)
@@ -275,7 +275,7 @@ fun SplashScreen(
                     text = "DiaWell",
                     fontSize = 42.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF7A1C7D),
+                    color = Color(0xFFA855F7),
                     letterSpacing = (-0.5).sp,
                 )
 
@@ -324,7 +324,7 @@ fun SplashScreen(
                     text = "Designed around your wellbeing",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
                 )
             }
         }
@@ -373,7 +373,7 @@ fun OutsideEcgPulseCanvas(
                 colors = listOf(
                     Color(0xFF00E5FF).copy(alpha = 0.2f),
                     Color(0xFF00E5FF),
-                    Color(0xFFB81D85),
+                    Color(0xFFA855F7),
                     Color(0xFF00E5FF).copy(alpha = 0.2f),
                 ),
             ),
@@ -410,7 +410,7 @@ fun ArcReactorCanvas(
                 elevation = 20.dp,
                 shape = CircleShape,
                 ambientColor = Color(0xFF00E5FF).copy(alpha = 0.6f),
-                spotColor = Color(0xFFB81D85).copy(alpha = 0.6f),
+                spotColor = Color(0xFFA855F7).copy(alpha = 0.6f),
             )
             .clip(CircleShape)
             .background(
@@ -442,7 +442,7 @@ fun ArcReactorCanvas(
                     val startAngle = i * (sweepAngle + gapAngle)
                     drawArc(
                         brush = Brush.sweepGradient(
-                            colors = listOf(Color(0xFF00E5FF), Color(0xFFB81D85), Color(0xFF00E5FF)),
+                            colors = listOf(Color(0xFF00E5FF), Color(0xFFA855F7), Color(0xFF00E5FF)),
                         ),
                         startAngle = startAngle,
                         sweepAngle = sweepAngle,
@@ -477,7 +477,7 @@ fun ArcReactorCanvas(
                 drawPath(
                     path = trianglePath,
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF00E5FF), Color(0xFFB81D85), Color.White),
+                        colors = listOf(Color(0xFF00E5FF), Color(0xFFA855F7), Color.White),
                     ),
                     style = Stroke(width = 2.5.dp.toPx()),
                 )

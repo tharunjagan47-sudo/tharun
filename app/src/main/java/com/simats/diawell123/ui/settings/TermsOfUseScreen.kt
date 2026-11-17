@@ -80,7 +80,7 @@ fun TermsOfUseScreen(
             Text(
                 text = "Last Updated: October 15, 2026 • DiaWell",
                 fontSize = 11.sp,
-                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                 fontWeight = FontWeight.Medium,
             )
 
@@ -91,7 +91,7 @@ fun TermsOfUseScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -100,7 +100,7 @@ fun TermsOfUseScreen(
                     Text(
                         text = "Please read these terms carefully before using the DiaWell application.",
                         fontSize = 12.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         lineHeight = 16.sp,
                     )
                 }

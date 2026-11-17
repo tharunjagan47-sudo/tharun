@@ -42,7 +42,7 @@ fun OnboardingTopBar(
             text = "DiaWell",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF7A1C7D),
+            color = Color(0xFF7E22CE),
         )
 
         Box(
@@ -58,7 +58,7 @@ fun OnboardingTopBar(
                 text = "Skip",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
             )
         }
     }
@@ -81,7 +81,7 @@ fun OnboardingBadge(
             text = text,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFFB81D85),
+            color = Color(0xFFA855F7),
             letterSpacing = 0.8.sp,
         )
     }

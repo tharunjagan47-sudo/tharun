@@ -293,7 +293,7 @@ fun NotificationPreferencesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .clickable { showQuietHoursDialog = true }
                     .padding(14.dp),
             ) {
@@ -307,12 +307,12 @@ fun NotificationPreferencesScreen(
                             text = "🌙  Quiet hours",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         )
                         Text(
                             text = "›",
                             fontSize = 18.sp,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         )
                     }
 
@@ -329,7 +329,7 @@ fun NotificationPreferencesScreen(
                     Text(
                         text = "Review scheduled medication reminders with your care team before changing quiet hours.",
                         fontSize = 11.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         lineHeight = 15.sp,
                     )
                 }
@@ -387,7 +387,7 @@ fun NotificationPreferencesScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(10.dp))
-                                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.Transparent)
+                                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.Transparent)
                                         .clickable {
                                             viewModel.setQuietHours(schedule)
                                             showQuietHoursDialog = false
@@ -399,7 +399,7 @@ fun NotificationPreferencesScreen(
                                         text = if (isSelected) "✓  $schedule" else schedule,
                                         fontSize = 14.sp,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary
+                                        color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary
                                     )
                                 }
                             }
@@ -407,7 +407,7 @@ fun NotificationPreferencesScreen(
                     },
                     confirmButton = {
                         TextButton(onClick = { showQuietHoursDialog = false }) {
-                            Text("Done", color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                            Text("Done", color = Color(0xFFA855F7), fontWeight = FontWeight.Bold)
                         }
                     },
                     containerColor = AppTheme.colors.cardBackground
@@ -464,7 +464,7 @@ fun NotificationToggleRow(
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = Color(0xFFB81D85),
+                    checkedTrackColor = Color(0xFFA855F7),
                     uncheckedThumbColor = AppTheme.colors.textMuted,
                     uncheckedTrackColor = AppTheme.colors.border,
                 ),

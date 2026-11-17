@@ -210,9 +210,10 @@ fun HomeScreen(
                                 .background(
                                     brush = Brush.horizontalGradient(
                                         colors = listOf(
-                                            Color(0xFF6B156E),
-                                            Color(0xFFB81D85),
-                                            Color(0xFFFF5722),
+                                            Color(0xFF1E1B4B), // Deep Indigo
+                                            Color(0xFF7E22CE), // Royal Purple
+                                            Color(0xFFA855F7), // Electric Purple
+                                            Color(0xFFF0ABFC), // Neon Lilac / Orchid
                                         ),
                                     ),
                                 )
@@ -409,7 +410,7 @@ fun HomeScreen(
                                     statusText = gMetric?.statusText?.ifBlank { "No Readings Logged" } ?: "No Readings Logged",
                                     statusBg = parseHexColor(gMetric?.statusBg, Color(0xFFF3F4F6)),
                                     statusColor = parseHexColor(gMetric?.statusColor, Color(0xFF6B7280)),
-                                    cardBg = Color(0xFFFDEEF7),
+                                    cardBg = if (AppTheme.colors.isDark) Color(0xFF2E1065) else Color(0xFFF5F3FF),
                                     borderColor = AppTheme.colors.border,
                                     actionText = "History ›",
                                     onActionClick = onGlucoseHistoryClick,
@@ -499,7 +500,7 @@ fun HomeScreen(
                                     brush = if (AppTheme.colors.isDark) {
                                         Brush.linearGradient(listOf(Color(0xFF202C40), Color(0xFF182235)))
                                     } else {
-                                        Brush.linearGradient(listOf(Color(0xFFFDEEF7), Color(0xFFFFF0F5)))
+                                        Brush.linearGradient(listOf(Color(0xFFFAF5FF), Color(0xFFF3E8FF)))
                                     },
                                 )
                                 .border(1.5.dp, if (AppTheme.colors.isDark) AppTheme.colors.border else AppTheme.colors.border, RoundedCornerShape(18.dp))
@@ -520,7 +521,7 @@ fun HomeScreen(
                                             text = data?.aiTip?.title ?: "Dr. JARVIS Tip Of The Day ⚡",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFB81D85),
+                                            color = Color(0xFFA855F7),
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
@@ -538,7 +539,7 @@ fun HomeScreen(
                                     text = "Ask →",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                 )
                             }
                         }
@@ -902,15 +903,15 @@ fun IosLiquidGlassBottomNav(
                         colors = if (isDarkNav) {
                             listOf(
                                 Color(0xFF334155),
-                                Color(0xFF00E5FF).copy(alpha = 0.50f),
-                                Color(0xFFF472B6).copy(alpha = 0.50f),
+                                Color(0xFF7E22CE).copy(alpha = 0.50f),
+                                Color(0xFFF0ABFC).copy(alpha = 0.50f),
                                 Color(0xFF334155),
                             )
                         } else {
                             listOf(
                                 Color.White.copy(alpha = 0.95f),
-                                Color(0xFF00E5FF).copy(alpha = 0.60f),
-                                Color(0xFFB81D85).copy(alpha = 0.60f),
+                                Color(0xFF7E22CE).copy(alpha = 0.60f),
+                                Color(0xFFA855F7).copy(alpha = 0.60f),
                                 Color.White.copy(alpha = 0.95f),
                             )
                         },
@@ -938,15 +939,15 @@ fun IosLiquidGlassBottomNav(
                             .shadow(
                                 elevation = 10.dp,
                                 shape = RoundedCornerShape(20.dp),
-                                ambientColor = Color(0xFF5363FF).copy(alpha = 0.45f),
-                                spotColor = Color(0xFF8E24AA).copy(alpha = 0.55f),
+                                ambientColor = Color(0xFF1E1B4B).copy(alpha = 0.45f),
+                                spotColor = Color(0xFFA855F7).copy(alpha = 0.55f),
                             )
                             .clip(RoundedCornerShape(20.dp))
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        Color(0xFF5363FF),
-                                        Color(0xFF8E24AA),
+                                        Color(0xFF1E1B4B),
+                                        Color(0xFFA855F7),
                                     ),
                                 ),
                             )
@@ -1055,7 +1056,7 @@ fun MetricCard(
     val actualCardBg = if (AppTheme.colors.isDark) AppTheme.colors.cardBackground else cardBg
     val actualBorder = if (AppTheme.colors.isDark) AppTheme.colors.border else borderColor
     val actualStatusBg = if (AppTheme.colors.isDark) statusColor.copy(alpha = 0.22f) else statusBg
-    val actualActionColor = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85)
+    val actualActionColor = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7)
     Box(
         modifier = modifier
             .heightIn(min = 140.dp)

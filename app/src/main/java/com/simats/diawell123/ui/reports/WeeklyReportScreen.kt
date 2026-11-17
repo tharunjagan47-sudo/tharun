@@ -162,8 +162,8 @@ fun WeeklyReportScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7))
-                                    .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                                    .background(if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF))
+                                    .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(12.dp))
                                     .clickable { onExportReportClick() }
                                     .padding(horizontal = 10.dp, vertical = 7.dp),
                                 contentAlignment = Alignment.Center,
@@ -172,7 +172,7 @@ fun WeeklyReportScreen(
                                     text = "📤 Export",
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
                                 )
                             }
                         }
@@ -182,7 +182,7 @@ fun WeeklyReportScreen(
                         Text(
                             text = "${ProfileState.userName} • Personalized health summary",
                             fontSize = 11.sp,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             fontWeight = FontWeight.Medium,
                         )
 
@@ -203,14 +203,14 @@ fun WeeklyReportScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(text = "‹", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                                Text(text = "‹", fontSize = 18.sp, color = Color(0xFFA855F7), fontWeight = FontWeight.Bold)
                                 Text(
                                     text = "📅  $displayWeekLabel",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
                                 )
-                                Text(text = "›", fontSize = 18.sp, color = Color(0xFFB81D85), fontWeight = FontWeight.Bold)
+                                Text(text = "›", fontSize = 18.sp, color = Color(0xFFA855F7), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -226,7 +226,7 @@ fun WeeklyReportScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             strokeWidth = 3.dp,
                             modifier = Modifier.size(32.dp)
                         )
@@ -258,7 +258,7 @@ fun WeeklyReportScreen(
                                     text = "mg/dL",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                 )
                             }
 
@@ -285,7 +285,7 @@ fun WeeklyReportScreen(
                                         Text(
                                             text = "Tap + to add your first entry",
                                             fontSize = 11.5.sp,
-                                            color = Color(0xFFB81D85),
+                                            color = Color(0xFFA855F7),
                                             fontWeight = FontWeight.SemiBold,
                                         )
                                     }
@@ -349,8 +349,8 @@ fun WeeklyReportScreen(
                                                 path = fillEcgPath,
                                                 brush = Brush.verticalGradient(
                                                     colors = listOf(
-                                                        Color(0x35B81D85),
-                                                        Color(0x00B81D85),
+                                                        Color(0x35A855F7),
+                                                        Color(0x00A855F7),
                                                     ),
                                                 ),
                                             )
@@ -359,9 +359,10 @@ fun WeeklyReportScreen(
                                                 path = ecgPath,
                                                 brush = Brush.horizontalGradient(
                                                     colors = listOf(
-                                                        Color(0xFF00E5FF),
-                                                        Color(0xFFB81D85),
-                                                        Color(0xFFFF5722),
+                                                        Color(0xFF1E1B4B),
+                                                        Color(0xFF7E22CE),
+                                                        Color(0xFFA855F7),
+                                                        Color(0xFFF0ABFC),
                                                     ),
                                                 ),
                                                 style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round),
@@ -370,7 +371,7 @@ fun WeeklyReportScreen(
                                             points.forEachIndexed { idx, pt ->
                                                 if (pt.x <= maxAllowedX && (chartData.getOrNull(idx)?.averageGlucose ?: 0f) > 0f) {
                                                     drawCircle(color = Color.White, radius = 5.dp.toPx(), center = pt)
-                                                    drawCircle(color = Color(0xFFB81D85), radius = 3.5.dp.toPx(), center = pt)
+                                                    drawCircle(color = Color(0xFFA855F7), radius = 3.5.dp.toPx(), center = pt)
                                                 }
                                             }
                                         }
@@ -381,7 +382,7 @@ fun WeeklyReportScreen(
 
                                             drawCircle(color = Color.White, radius = 6.dp.toPx(), center = Offset(currentTipX, tipY))
                                             drawCircle(
-                                                color = Color(0xFFFF5722),
+                                                color = Color(0xFFF0ABFC),
                                                 radius = 8.dp.toPx(),
                                                 center = Offset(currentTipX, tipY),
                                                 style = Stroke(width = 2.dp.toPx()),
@@ -401,7 +402,7 @@ fun WeeklyReportScreen(
                                                 text = pt.day,
                                                 fontSize = 10.sp,
                                                 fontWeight = if (pt.averageGlucose > 0f) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (pt.averageGlucose > 0f) Color(0xFFB81D85) else AppTheme.colors.textMuted,
+                                                color = if (pt.averageGlucose > 0f) Color(0xFFA855F7) else AppTheme.colors.textMuted,
                                             )
                                         }
                                     }
@@ -446,7 +447,7 @@ fun WeeklyReportScreen(
                                     text = mealsLoggedText,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                 )
                             }
 
@@ -488,7 +489,7 @@ fun WeeklyReportScreen(
                                             val factor = if (count > 0) (count.toFloat() / maxDayMeals).coerceIn(0.20f, 1f) else 0.04f
                                             val animatedFactor = factor * chartProgress.value
                                             val barH = (h * animatedFactor).coerceAtLeast(3.dp.toPx())
-                                            val barColor = if (count > 0) Color(0xFFB81D85) else AppTheme.colors.border
+                                            val barColor = if (count > 0) Color(0xFFA855F7) else AppTheme.colors.border
 
                                             drawRoundRect(
                                                 color = barColor,
@@ -512,7 +513,7 @@ fun WeeklyReportScreen(
                                             text = dayChar,
                                             fontSize = 10.sp,
                                             fontWeight = if (count > 0) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (count > 0) Color(0xFFB81D85) else AppTheme.colors.textMuted,
+                                            color = if (count > 0) Color(0xFFA855F7) else AppTheme.colors.textMuted,
                                         )
                                     }
                                 }
@@ -556,7 +557,7 @@ fun WeeklyReportScreen(
                                     text = "$medAdherence% adherence",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                 )
                             }
 
@@ -564,8 +565,8 @@ fun WeeklyReportScreen(
 
                             LinearProgressIndicator(
                                 progress = { ((medAdherence / 100f) * chartProgress.value).coerceIn(0f, 1f) },
-                                color = Color(0xFFB81D85),
-                                trackColor = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFFDEEF7),
+                                color = Color(0xFFA855F7),
+                                trackColor = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFF5F3FF),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(8.dp)
@@ -602,7 +603,7 @@ fun WeeklyReportScreen(
                                 text = "7 days of health & glucose logging",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             )
                             Text(
                                 text = if (report != null && report.activity.totalActiveMins > 0)
@@ -727,7 +728,7 @@ fun ReportCalendarDialog(
                         text = "‹",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         modifier = Modifier
                             .clickable { calendarMonthOffset-- }
                             .padding(horizontal = 6.dp)
@@ -736,13 +737,13 @@ fun ReportCalendarDialog(
                         text = monthYearText,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     )
                     Text(
                         text = "›",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                         modifier = Modifier
                             .clickable { calendarMonthOffset++ }
                             .padding(horizontal = 6.dp)
@@ -785,7 +786,7 @@ fun ReportCalendarDialog(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(if (isSelected) Color(0xFFB81D85) else Color.Transparent)
+                                    .background(if (isSelected) Color(0xFFA855F7) else Color.Transparent)
                                     .border(
                                         width = if (isSelected) 0.dp else 1.dp,
                                         color = if (isSelected) Color.Transparent else AppTheme.colors.border,
@@ -845,7 +846,7 @@ fun ReportCalendarDialog(
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 brush = Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85)),
+                                    colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC)),
                                 ),
                             )
                             .clickable {

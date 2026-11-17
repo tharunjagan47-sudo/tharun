@@ -134,8 +134,8 @@ fun MedicationsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
-                                .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                                .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
+                                .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(12.dp))
                                 .clickable { onAddMedicationClick() }
                                 .padding(14.dp),
                             contentAlignment = Alignment.Center,
@@ -144,7 +144,7 @@ fun MedicationsScreen(
                                 text = "+ Add medication or set reminder",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85),
+                                color = Color(0xFFA855F7),
                             )
                         }
                     }
@@ -211,7 +211,7 @@ fun MedicationsScreen(
                                         Text(text = "Taken", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                     }
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(text = "${stats.adherencePercent}%", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB81D85))
+                                        Text(text = "${stats.adherencePercent}%", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFA855F7))
                                         Text(text = "Adherence", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                     }
                                 }
@@ -230,7 +230,7 @@ fun MedicationsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             strokeWidth = 2.5.dp,
                             modifier = Modifier.size(32.dp)
                         )
@@ -378,7 +378,7 @@ fun MedicationScheduleCard(
                             text = time,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                         )
                         val meta = listOf(timing, scheduleTag)
                             .filter { it.isNotBlank() }
@@ -413,7 +413,7 @@ fun MedicationScheduleCard(
                         Text(
                             text = subInfo,
                             fontSize = 10.5.sp,
-                            color = Color(0xFF7A1C7D),
+                            color = Color(0xFF7E22CE),
                             softWrap = true,
                         )
                     }
@@ -490,8 +490,8 @@ fun resolveMedsStatusColors(
         "taken" -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
         "snoozed" -> Color(0xFF1565C0) to Color(0xFFE3F2FD)
         "skipped", "missed" -> Color(0xFFC62828) to Color(0xFFFFEBEE)
-        "upcoming" -> Color(0xFFB81D85) to Color(0xFFFDEEF7)
-        else -> parseMedsHexColor(hexColor, Color(0xFFB81D85)) to parseMedsHexColor(hexBg, Color(0xFFFDEEF7))
+        "upcoming" -> Color(0xFFA855F7) to Color(0xFFF5F3FF)
+        else -> parseMedsHexColor(hexColor, Color(0xFFA855F7)) to parseMedsHexColor(hexBg, Color(0xFFF5F3FF))
     }
 }
 

@@ -59,11 +59,11 @@ fun LogoutConfirmationDialog(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                         .border(1.dp, AppTheme.colors.border, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = "➔", fontSize = 28.sp, color = Color(0xFFB81D85))
+                    Text(text = "➔", fontSize = 28.sp, color = Color(0xFFA855F7))
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -99,7 +99,7 @@ fun LogoutConfirmationDialog(
                         .clip(RoundedCornerShape(12.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85), Color(0xFFFF5722)),
+                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC)),
                             ),
                         )
                         .clickable {

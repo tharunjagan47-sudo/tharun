@@ -143,7 +143,7 @@ fun ForgotPasswordScreen(
                     text = "DiaWell",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF7A1C7D),
+                    color = Color(0xFFA855F7),
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -205,7 +205,7 @@ fun ForgotPasswordScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = AppTheme.colors.inputBackground,
                             unfocusedContainerColor = AppTheme.colors.inputBackground,
-                            focusedBorderColor = Color(0xFFBD1E85),
+                            focusedBorderColor = Color(0xFFA855F7),
                             unfocusedBorderColor = AppTheme.colors.inputBorder,
                             focusedTextColor = AppTheme.colors.textPrimary,
                             unfocusedTextColor = AppTheme.colors.textPrimary,
@@ -258,7 +258,7 @@ fun ForgotPasswordScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = AppTheme.colors.inputBackground,
                             unfocusedContainerColor = AppTheme.colors.inputBackground,
-                            focusedBorderColor = Color(0xFFBD1E85),
+                            focusedBorderColor = Color(0xFFA855F7),
                             unfocusedBorderColor = AppTheme.colors.inputBorder,
                             focusedTextColor = AppTheme.colors.textPrimary,
                             unfocusedTextColor = AppTheme.colors.textPrimary,
@@ -311,7 +311,7 @@ fun ForgotPasswordScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = AppTheme.colors.inputBackground,
                             unfocusedContainerColor = AppTheme.colors.inputBackground,
-                            focusedBorderColor = Color(0xFFBD1E85),
+                            focusedBorderColor = Color(0xFFA855F7),
                             unfocusedBorderColor = AppTheme.colors.inputBorder,
                             focusedTextColor = AppTheme.colors.textPrimary,
                             unfocusedTextColor = AppTheme.colors.textPrimary,
@@ -343,7 +343,7 @@ fun ForgotPasswordScreen(
                     text = "Back to Login",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                     modifier = Modifier.clickable { onBackClick() },
                 )
             }

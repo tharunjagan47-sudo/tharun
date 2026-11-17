@@ -192,10 +192,10 @@ fun HealthPreferencesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedHealthFocus = title }
@@ -206,7 +206,7 @@ fun HealthPreferencesScreen(
                                 text = if (isSelected) "●  $title" else "○  $title",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary,
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
@@ -240,10 +240,10 @@ fun HealthPreferencesScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isChecked) Color(0xFFB81D85) else Color.White)
+                            .background(if (isChecked) Color(0xFFA855F7) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isChecked) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (isChecked) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable {
@@ -327,10 +327,10 @@ fun HealthPreferencesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.White)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedActivityLevel = level }
@@ -340,7 +340,7 @@ fun HealthPreferencesScreen(
                             text = if (isSelected) "●  $level" else "○  $level",
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
+                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary,
                         )
                     }
                 }
@@ -353,13 +353,13 @@ fun HealthPreferencesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(12.dp),
             ) {
                 Text(
                     text = "Your health preferences guide AI recommendation models to suggest balanced, personalized meal and exercise plans tailored for your diabetes management.",
                     fontSize = 12.sp,
-                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     lineHeight = 17.sp,
                 )
             }
@@ -478,7 +478,7 @@ fun AiSpeechOrbLoadingView(
                         brush = Brush.radialGradient(
                             colors = listOf(
                                 Color(0xFF00E5FF).copy(alpha = glowAlpha * 0.45f),
-                                Color(0xFFB81D85).copy(alpha = glowAlpha * 0.32f),
+                                Color(0xFFA855F7).copy(alpha = glowAlpha * 0.32f),
                                 Color.Transparent,
                             ),
                         ),
@@ -505,7 +505,7 @@ fun AiSpeechOrbLoadingView(
                         brush = Brush.sweepGradient(
                             colors = listOf(
                                 Color(0xFF00E5FF),
-                                Color(0xFFB81D85).copy(alpha = 0.5f),
+                                Color(0xFFA855F7).copy(alpha = 0.5f),
                                 Color(0xFF00E5FF).copy(alpha = 0.2f),
                                 Color(0xFF00E5FF),
                             ),
@@ -554,7 +554,7 @@ fun AiSpeechOrbLoadingView(
                             colors = listOf(
                                 Color(0xFF00E5FF),
                                 Color.White,
-                                Color(0xFFFF4081),
+                                Color(0xFFF0ABFC),
                                 Color(0xFF00E5FF),
                             ),
                         ),
@@ -618,7 +618,7 @@ fun AiSpeechOrbLoadingView(
             text = statusText,
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF7A1C7D),
+            color = Color(0xFF7E22CE),
             textAlign = TextAlign.Center,
         )
 

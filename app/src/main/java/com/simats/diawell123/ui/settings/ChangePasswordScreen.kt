@@ -193,7 +193,7 @@ fun ChangePasswordScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -202,7 +202,7 @@ fun ChangePasswordScreen(
                     Text(
                         text = "Keep your DiaWell account safe with a strong, unique password.",
                         fontSize = 12.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         lineHeight = 16.sp,
                     )
                 }
@@ -369,7 +369,7 @@ fun PasswordInputField(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = AppTheme.colors.inputBackground,
                 unfocusedContainerColor = AppTheme.colors.inputBackground,
-                focusedBorderColor = Color(0xFFBD1E85),
+                focusedBorderColor = Color(0xFFA855F7),
                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                 focusedTextColor = AppTheme.colors.textPrimary,
                 unfocusedTextColor = AppTheme.colors.textPrimary,

@@ -320,7 +320,7 @@ fun EditProfileScreen(
                         modifier = Modifier
                             .size(28.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFB81D85))
+                            .background(Color(0xFFA855F7))
                             .border(1.5.dp, Color.White, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -347,8 +347,8 @@ fun EditProfileScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
-                            .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
+                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                             .clickable { showViewPictureDialog = true }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
@@ -356,7 +356,7 @@ fun EditProfileScreen(
                             text = "👁️ View Photo",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85)
+                            color = Color(0xFFA855F7)
                         )
                     }
 
@@ -364,8 +364,8 @@ fun EditProfileScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
-                            .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
+                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                             .clickable {
                                 galleryLauncher.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
@@ -377,7 +377,7 @@ fun EditProfileScreen(
                             text = "🖼️ Gallery",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85)
+                            color = Color(0xFFA855F7)
                         )
                     }
 
@@ -385,7 +385,7 @@ fun EditProfileScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFB81D85))
+                            .background(Color(0xFFA855F7))
                             .clickable {
                                 cameraLauncher.launch(null)
                             }
@@ -412,7 +412,7 @@ fun EditProfileScreen(
                 Text(
                     text = "User profile • DiaWell care",
                     fontSize = 11.sp,
-                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                 )
             }
 
@@ -629,7 +629,7 @@ fun ProfileDetailInputField(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = AppTheme.colors.inputBackground,
                 unfocusedContainerColor = AppTheme.colors.inputBackground,
-                focusedBorderColor = Color(0xFFBD1E85),
+                focusedBorderColor = Color(0xFFA855F7),
                 unfocusedBorderColor = AppTheme.colors.inputBorder,
                 focusedTextColor = AppTheme.colors.textPrimary,
                 unfocusedTextColor = AppTheme.colors.textPrimary,
@@ -665,7 +665,7 @@ fun VerticalScrollAndSelectPicker(
                 text = selectedItem,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
             )
         }
 
@@ -689,7 +689,7 @@ fun VerticalScrollAndSelectPicker(
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.Transparent)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.Transparent)
                             .clickable { onItemSelected(item) }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center,
@@ -698,7 +698,7 @@ fun VerticalScrollAndSelectPicker(
                             text = item,
                             fontSize = 13.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -829,8 +829,8 @@ private fun PhotoOptionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7).copy(alpha = 0.6f))
-            .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.25f), RoundedCornerShape(14.dp))
+            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF).copy(alpha = 0.6f))
+            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.25f), RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -839,7 +839,7 @@ private fun PhotoOptionItem(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFB81D85).copy(alpha = 0.15f)),
+                .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
             Text(text = icon, fontSize = 20.sp)
@@ -925,7 +925,7 @@ fun ViewProfilePictureDialog(
                 Text(
                     text = "DiaWell Patient Profile Picture",
                     fontSize = 12.sp,
-                    color = Color(0xFFB81D85)
+                    color = Color(0xFFA855F7)
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -939,7 +939,7 @@ fun ViewProfilePictureDialog(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFB81D85))
+                            .background(Color(0xFFA855F7))
                             .clickable {
                                 onDismissRequest()
                                 onTakePhotoClick()
@@ -963,8 +963,8 @@ fun ViewProfilePictureDialog(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7))
-                            .border(1.dp, Color(0xFFB81D85), RoundedCornerShape(12.dp))
+                            .background(if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF))
+                            .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(12.dp))
                             .clickable {
                                 onDismissRequest()
                                 onChooseGalleryClick()
@@ -979,7 +979,7 @@ fun ViewProfilePictureDialog(
                                 text = "Gallery",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB81D85)
+                                color = Color(0xFFA855F7)
                             )
                         }
                     }

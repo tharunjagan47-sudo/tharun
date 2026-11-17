@@ -330,7 +330,7 @@ fun SetMedicationReminderScreen(
                                     text = "SELECTED MEDICINE",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                 )
                                 if (reminderState.therapeuticClass.isNotBlank()) {
                                     Box(
@@ -343,7 +343,7 @@ fun SetMedicationReminderScreen(
                                             text = reminderState.therapeuticClass,
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFB81D85),
+                                            color = Color(0xFFA855F7),
                                         )
                                     }
                                 }
@@ -358,7 +358,7 @@ fun SetMedicationReminderScreen(
                                 text = activeDose,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             )
                         }
                     }
@@ -424,7 +424,7 @@ fun SetMedicationReminderScreen(
                     text = if (isDailySchedule) "🔁 Daily Repeating" else "🔔 Single Alarm",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                 )
             }
 
@@ -460,7 +460,7 @@ fun SetMedicationReminderScreen(
                         text = "Change Date ›",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                     )
                 }
             }
@@ -495,15 +495,15 @@ fun SetMedicationReminderScreen(
                             .clip(RoundedCornerShape(20.dp))
                             .background(
                                 if (selected) {
-                                    if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f)
-                                    else Color(0xFFFDEEF7)
+                                    if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f)
+                                    else Color(0xFFF5F3FF)
                                 } else {
                                     AppTheme.colors.secondaryBackground
                                 }
                             )
                             .border(
                                 width = if (selected) 1.5.dp else 1.dp,
-                                color = if (selected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (selected) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable { onSelect() }
@@ -514,7 +514,7 @@ fun SetMedicationReminderScreen(
                             text = label,
                             fontSize = 12.sp,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+                            color = if (selected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
                             maxLines = 1,
                             softWrap = false,
                         )
@@ -541,7 +541,7 @@ fun SetMedicationReminderScreen(
                     text = "Tap to pick any time ⏱",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                 )
             }
 
@@ -553,7 +553,7 @@ fun SetMedicationReminderScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
                     .background(AppTheme.colors.cardBackground)
-                    .border(1.2.dp, Color(0xFFB81D85).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                    .border(1.2.dp, Color(0xFFA855F7).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                     .clickable { showCustomTimePicker() }
                     .padding(horizontal = 14.dp, vertical = 12.dp),
             ) {
@@ -569,7 +569,7 @@ fun SetMedicationReminderScreen(
                             text = selectedTime,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         )
                     }
 
@@ -583,7 +583,7 @@ fun SetMedicationReminderScreen(
                             text = "Set Custom Time ✎",
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                         )
                     }
                 }
@@ -609,10 +609,10 @@ fun SetMedicationReminderScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else AppTheme.colors.secondaryBackground)
                             .border(
                                 width = if (isSelected) 1.5.dp else 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable { selectedTime = time }
@@ -622,7 +622,7 @@ fun SetMedicationReminderScreen(
                             text = time,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -668,7 +668,7 @@ fun SetMedicationReminderScreen(
                         text = "Suggested: ${reminderState.selectedTiming}",
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFFB81D85),
+                        color = Color(0xFFA855F7),
                     )
                 }
             }
@@ -685,10 +685,10 @@ fun SetMedicationReminderScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else AppTheme.colors.secondaryBackground)
+                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else AppTheme.colors.secondaryBackground)
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable { selectedTiming = timing }
@@ -698,7 +698,7 @@ fun SetMedicationReminderScreen(
                             text = timing,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textSecondary,
+                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -725,7 +725,7 @@ fun SetMedicationReminderScreen(
                     unfocusedTextColor = AppTheme.colors.textPrimary,
                     focusedContainerColor = AppTheme.colors.inputBackground,
                     unfocusedContainerColor = AppTheme.colors.inputBackground,
-                    focusedBorderColor = Color(0xFFBD1E85),
+                    focusedBorderColor = Color(0xFFA855F7),
                     unfocusedBorderColor = AppTheme.colors.inputBorder,
                 ),
                 modifier = Modifier.fillMaxWidth(),
@@ -741,11 +741,7 @@ fun SetMedicationReminderScreen(
                     .clip(RoundedCornerShape(14.dp))
                     .background(
                         brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF7A1C7D),
-                                Color(0xFFBD1E85),
-                                Color(0xFFFF5722),
-                            ),
+                            colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC)),
                         ),
                     )
                     .clickable(enabled = !reminderState.isSaving) {
@@ -832,7 +828,7 @@ fun SetMedicationReminderScreen(
                     .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(AppTheme.colors.secondaryBackground)
-                    .border(1.dp, Color(0xFFBD1E85), RoundedCornerShape(14.dp))
+                    .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(14.dp))
                     .clickable {
                         val existingMed = listState.data?.medications?.lastOrNull {
                             it.name.equals(activeName.trim(), ignoreCase = true)
@@ -860,7 +856,7 @@ fun SetMedicationReminderScreen(
                     text = "🔔 Test Full-Screen Alarm Now",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFBD1E85)
+                    color = Color(0xFFA855F7)
                 )
             }
 
@@ -948,9 +944,9 @@ fun MedicationDatePickerDialog(
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
                                     if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface
-                                    else Color(0xFFFDEEF7)
+                                    else Color(0xFFF5F3FF)
                                 )
-                                .border(1.dp, Color(0xFFB81D85).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
                                 .clickable {
                                     action()
                                     onDismissRequest()
@@ -962,7 +958,7 @@ fun MedicationDatePickerDialog(
                                 text = label,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                                 maxLines = 1,
                                 softWrap = false,
                             )

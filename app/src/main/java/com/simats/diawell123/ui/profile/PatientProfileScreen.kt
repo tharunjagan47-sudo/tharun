@@ -111,7 +111,7 @@ fun PatientProfileScreen(
                 text = "PATIENT PROFILE • STEP 1 OF 2",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
                 letterSpacing = 0.5.sp,
             )
 
@@ -119,7 +119,7 @@ fun PatientProfileScreen(
 
             LinearProgressIndicator(
                 progress = { 0.5f },
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
                 trackColor = AppTheme.colors.border,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,13 +134,13 @@ fun PatientProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
                     text = "Profile • ${ProfileState.userName}",
                     fontSize = 12.sp,
-                    color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     fontWeight = FontWeight.Medium,
                 )
             }
@@ -289,7 +289,7 @@ fun IosLiquidGlassSlider(
                 text = selectedItem,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFB81D85),
+                color = Color(0xFFA855F7),
             )
         }
 
@@ -302,8 +302,8 @@ fun IosLiquidGlassSlider(
                 .shadow(
                     elevation = 6.dp,
                     shape = RoundedCornerShape(32.dp),
-                    ambientColor = Color(0xFF811978).copy(alpha = 0.15f),
-                    spotColor = Color(0xFF811978).copy(alpha = 0.20f),
+                    ambientColor = Color(0xFF7E22CE).copy(alpha = 0.15f),
+                    spotColor = Color(0xFF7E22CE).copy(alpha = 0.20f),
                 )
                 .clip(RoundedCornerShape(32.dp))
                 .background(
@@ -352,8 +352,8 @@ fun IosLiquidGlassSlider(
                                     .shadow(
                                         elevation = 4.dp,
                                         shape = RoundedCornerShape(24.dp),
-                                        ambientColor = Color(0xFFB81D85).copy(alpha = 0.3f),
-                                        spotColor = Color(0xFFB81D85).copy(alpha = 0.4f),
+                                        ambientColor = Color(0xFFA855F7).copy(alpha = 0.3f),
+                                        spotColor = Color(0xFFA855F7).copy(alpha = 0.4f),
                                     )
                                     .clip(RoundedCornerShape(24.dp))
                                     .background(

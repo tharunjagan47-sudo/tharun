@@ -91,7 +91,7 @@ fun ActivityHistoryScreen(
                             if (historyState.isLoading) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 CircularProgressIndicator(
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                     strokeWidth = 2.dp,
                                     modifier = Modifier.size(16.dp)
                                 )
@@ -116,7 +116,12 @@ fun ActivityHistoryScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF6B156E), Color(0xFFB81D85), Color(0xFFFF5722)),
+                                colors = listOf(
+                                    Color(0xFF1E1B4B),
+                                    Color(0xFF7E22CE),
+                                    Color(0xFFA855F7),
+                                    Color(0xFFF0ABFC)
+                                ),
                             ),
                         )
                         .padding(18.dp),

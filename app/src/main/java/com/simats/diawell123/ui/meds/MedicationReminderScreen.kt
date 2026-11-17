@@ -115,7 +115,7 @@ fun MedicationReminderScreen(
             Text(
                 text = "$medName • Scheduled reminder",
                 fontSize = 11.sp,
-                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start,
             )
@@ -127,7 +127,7 @@ fun MedicationReminderScreen(
                 modifier = Modifier
                     .size(90.dp)
                     .clip(CircleShape)
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(text = "💊", fontSize = 42.sp)
@@ -168,14 +168,14 @@ fun MedicationReminderScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                                     .padding(horizontal = 8.dp, vertical = 3.dp),
                             ) {
                                 Text(
                                     text = medDate,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB81D85),
+                                    color = Color(0xFFA855F7),
                                 )
                             }
 
@@ -199,7 +199,7 @@ fun MedicationReminderScreen(
                             text = medTime,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF7A1C7D),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         )
                     }
 
@@ -252,7 +252,7 @@ fun MedicationReminderScreen(
                                     Text(
                                         text = "🏷️ Class: ${activeMed.therapeuticClass}",
                                         fontSize = 10.5.sp,
-                                        color = Color(0xFFB81D85),
+                                        color = Color(0xFFA855F7),
                                     )
                                 }
                                 if (!activeMed.manufacturer.isNullOrBlank() || !activeMed.packaging.isNullOrBlank()) {
@@ -304,7 +304,7 @@ fun MedicationReminderScreen(
 
             if (detailState.isUpdating) {
                 CircularProgressIndicator(
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                     strokeWidth = 2.5.dp,
                     modifier = Modifier.size(32.dp)
                 )
@@ -395,7 +395,7 @@ fun MedicationReminderScreen(
                     text = "Skip",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFB81D85),
+                    color = Color(0xFFA855F7),
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {

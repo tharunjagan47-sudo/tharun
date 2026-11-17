@@ -193,8 +193,8 @@ fun DeleteAccountScreen(
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF831843).copy(alpha = 0.4f) else Color(0xFFFDEEF7)) else Color.White)
-                        .border(1.dp, if (isSelected) Color(0xFFB81D85) else AppTheme.colors.border, RoundedCornerShape(10.dp))
+                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.White)
+                        .border(1.dp, if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border, RoundedCornerShape(10.dp))
                         .clickable {
                             selectedReason = reason
                             Toast.makeText(context, "Reason: $reason", Toast.LENGTH_SHORT).show()
@@ -205,7 +205,7 @@ fun DeleteAccountScreen(
                         text = if (isSelected) "●  $reason" else "○  $reason",
                         fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isSelected) Color(0xFFB81D85) else AppTheme.colors.textPrimary,
+                        color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary,
                     )
                 }
             }

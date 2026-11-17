@@ -381,7 +381,7 @@ fun ChatScreen(
                     Text(
                         text = "Wellness & diet guidance. Consult your doctor for med edits.",
                         fontSize = 11.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
                         lineHeight = 15.sp,
                         modifier = Modifier
                             .weight(1f)
@@ -392,7 +392,7 @@ fun ChatScreen(
                             .clip(RoundedCornerShape(16.dp))
                             .background(
                                 brush = Brush.linearGradient(
-                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722))
+                                    colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
                                 )
                             )
                             .clickable { startVoiceInput() }
@@ -521,7 +521,7 @@ fun ChatScreen(
                             text = prompt,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
                             maxLines = 1,
                             softWrap = false
                         )
@@ -554,7 +554,7 @@ fun ChatScreen(
                             .border(
                                 width = 1.2.dp,
                                 brush = Brush.linearGradient(
-                                    colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85))
+                                    colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7))
                                 ),
                                 shape = CircleShape
                             )
@@ -585,7 +585,7 @@ fun ChatScreen(
                             unfocusedTextColor = AppTheme.colors.textPrimary,
                             focusedContainerColor = AppTheme.colors.inputBackground,
                             unfocusedContainerColor = AppTheme.colors.inputBackground,
-                            focusedBorderColor = Color(0xFFBD1E85),
+                            focusedBorderColor = Color(0xFFA855F7),
                             unfocusedBorderColor = AppTheme.colors.inputBorder
                         ),
                         modifier = Modifier
@@ -602,7 +602,7 @@ fun ChatScreen(
                             .background(
                                 brush = if (canSend) {
                                     Brush.linearGradient(
-                                        colors = listOf(Color(0xFF7A1C7D), Color(0xFFFF5722))
+                                        colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
                                     )
                                 } else {
                                     Brush.linearGradient(
@@ -714,7 +714,7 @@ fun ChatMessageItem(
                         .clip(RoundedCornerShape(18.dp, 18.dp, 4.dp, 18.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF7A1C7D), Color(0xFFBD1E85))
+                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7))
                             )
                         )
                         .padding(horizontal = 14.dp, vertical = 10.dp)
@@ -778,7 +778,7 @@ fun ChatMessageItem(
                                 text = "Dr. Jarvis AI ⚡🩺",
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFFB81D85),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier

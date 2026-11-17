@@ -102,7 +102,7 @@ class MedsViewModel(
             "taken" -> "#2E7D32" to "#E8F5E9"
             "snoozed" -> "#1565C0" to "#E3F2FD"
             "skipped", "missed" -> "#C62828" to "#FFEBEE"
-            else -> "#B81D85" to "#FDEEF7"
+            else -> "#A855F7" to "#F5F3FF"
         }
     }
 

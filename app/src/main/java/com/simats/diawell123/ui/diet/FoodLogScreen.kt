@@ -109,7 +109,7 @@ fun FoodLogScreen(
                         Text(
                             text = "‹",
                             fontSize = 18.sp,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .clickable { viewModel.navigateDate(-1) }
@@ -124,7 +124,7 @@ fun FoodLogScreen(
                         Text(
                             text = "›",
                             fontSize = 18.sp,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .clickable { viewModel.navigateDate(1) }
@@ -140,7 +140,7 @@ fun FoodLogScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                         .clickable { onNutritionSummaryClick() }
                         .padding(16.dp),
                 ) {
@@ -154,13 +154,13 @@ fun FoodLogScreen(
                                 text = "Daily nutrition",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF472B6) else Color(0xFF811978),
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                             )
                             Text(
                                 text = "${uiState.totalCaloriesNum} kcal",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF7A1C7D),
+                                color = Color(0xFF7E22CE),
                             )
                         }
 
@@ -215,11 +215,7 @@ fun FoodLogScreen(
                         .clip(RoundedCornerShape(14.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF7A1C7D),
-                                    Color(0xFFBD1E85),
-                                    Color(0xFFFF5722),
-                                ),
+                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC)),
                             ),
                         )
                         .clickable { onAddFoodClick() }
@@ -276,7 +272,7 @@ fun FoodLogItem(
                             text = category,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB81D85),
+                            color = Color(0xFFA855F7),
                             letterSpacing = 0.5.sp,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -307,7 +303,7 @@ fun FoodLogItem(
                 text = calories,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF7A1C7D),
+                color = Color(0xFF7E22CE),
             )
         }
     }
