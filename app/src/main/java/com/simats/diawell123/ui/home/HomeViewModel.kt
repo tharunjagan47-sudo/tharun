@@ -4,7 +4,9 @@ import com.simats.diawell123.ui.theme.AppTheme
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.data.api.ApiClient
 import com.simats.diawell123.data.model.DashboardData
+import com.simats.diawell123.data.model.UpdateProfileRequest
 import com.simats.diawell123.data.repository.HomeRepository
 import com.simats.diawell123.data.repository.HomeRepositoryImpl
 import com.simats.diawell123.ui.profile.ProfileState
@@ -119,6 +121,42 @@ class HomeViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    /**
+     * Updates patient's fasting and post-meal glucose targets directly from Home screen.
+     */
+    fun updateTargetGlucose(
+        fastingTarget: Int,
+        postmealTarget: Int = 140,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                val currentName = _uiState.value.dashboardData?.profile?.name?.takeIf { it.isNotBlank() } ?: ProfileState.userName
+                val currentEmail = ProfileState.userEmail
+                val currentDiabetes = _uiState.value.dashboardData?.profile?.diabetesType ?: "Type 2"
+                val request = UpdateProfileRequest(
+                    fullName = currentName,
+                    email = currentEmail,
+                    diabetesType = currentDiabetes,
+                    targetFastingGlucose = fastingTarget,
+                    targetPostmealGlucose = postmealTarget
+                )
+                val response = ApiClient.profileApiService.updateProfile(request)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    loadDashboard(isPullToRefresh = true)
+                    onSuccess()
+                } else {
+                    val msg = response.body()?.message ?: "Failed to update target."
+                    onError(msg)
+                }
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "Failed to update target glucose", e)
+                onError(e.localizedMessage ?: "Network error updating target.")
+            }
+        }
     }
 }
 

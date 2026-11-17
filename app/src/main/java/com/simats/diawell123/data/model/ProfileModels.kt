@@ -85,13 +85,13 @@ data class UpdateProfileRequest(
     val diabetesType: String,
 
     @SerializedName("age")
-    val age: Int?,
+    val age: Int? = null,
 
     @SerializedName("height_cm")
-    val heightCm: Float?,
+    val heightCm: Float? = null,
 
     @SerializedName("weight_kg")
-    val weightKg: Float?,
+    val weightKg: Float? = null,
 
     @SerializedName("target_fasting_glucose")
     val targetFastingGlucose: Int? = null,

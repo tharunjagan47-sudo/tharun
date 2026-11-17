@@ -33,9 +33,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.window.Dialog
+import com.simats.diawell123.data.local.SessionManager
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -163,6 +169,8 @@ fun HomeScreen(
     onTrackFoodCategoryClick: (category: String) -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
+    var showStreakDialog by remember { mutableStateOf(false) }
+    var showTargetEditDialog by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsState()
     val data = uiState.dashboardData
     val context = LocalContext.current
@@ -225,37 +233,59 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
+                                    val currentHour = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
+                                    val timeGreeting = remember(currentHour) {
+                                        when {
+                                            currentHour < 12 -> "Good morning"
+                                            currentHour < 17 -> "Good afternoon"
+                                            else -> "Good evening"
+                                        }
+                                    }
+                                    val displayName: String = data?.profile?.name?.takeIf { it.isNotBlank() }
+                                        ?: ProfileState.userName.takeIf { it.isNotBlank() }
+                                        ?: (try { SessionManager.getInstance().getFullName() } catch (_: Exception) { null })?.takeIf { it.isNotBlank() }
+                                        ?: "Patient"
+
                                     Column(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(end = 10.dp),
+                                            .padding(end = 12.dp),
                                     ) {
                                         Text(
-                                            text = data?.greeting?.takeIf { it.isNotBlank() } ?: "Good morning, ${ProfileState.userName} 👋",
-                                            fontSize = 19.sp,
-                                            fontWeight = FontWeight.Bold,
+                                            text = "$timeGreeting,",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color.White.copy(alpha = 0.90f),
+                                            letterSpacing = 0.5.sp,
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "$displayName 👋",
+                                            fontSize = 22.sp,
+                                            fontWeight = FontWeight.ExtraBold,
                                             color = Color.White,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
+                                        Spacer(modifier = Modifier.height(3.dp))
                                         Text(
                                             text = data?.wellnessSubtitle?.takeIf { it.isNotBlank() } ?: "Daily Wellness • Start your day",
-                                            fontSize = 12.sp,
+                                            fontSize = 11.5.sp,
                                             color = Color.White.copy(alpha = 0.85f),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
                                     }
 
-                                    // Top Right Actions: Theme Toggle, Notifications Bell & Profile Avatar
+                                    // Top Right Actions: Theme Toggle & Profile Avatar (Bell button removed)
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                                     ) {
                                         // Quick Theme Toggle Button (☀️ / 🌙) - Perfectly Circular
                                         Box(
                                             modifier = Modifier
-                                                .size(36.dp)
+                                                .size(38.dp)
                                                 .clip(CircleShape)
                                                 .background(Color.White.copy(alpha = 0.20f))
                                                 .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape)
@@ -264,35 +294,21 @@ fun HomeScreen(
                                         ) {
                                             Text(
                                                 text = if (AppTheme.colors.isDark) "🌙" else "☀️",
-                                                fontSize = 15.sp,
+                                                fontSize = 16.sp,
                                             )
-                                        }
-
-                                        // Notification Bell - Perfectly Circular
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(CircleShape)
-                                                .background(Color.White.copy(alpha = 0.20f))
-                                                .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape)
-                                                .clickable { onNotificationsClick() }
-                                                .padding(2.dp),
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            Text(text = "🔔", fontSize = 15.sp)
                                         }
 
                                         // Profile Avatar - Crisp, distinct, perfectly circular with specular border
                                         Box(
                                             modifier = Modifier
-                                                .size(42.dp)
+                                                .size(44.dp)
                                                 .clip(CircleShape)
                                                 .clickable { onProfileClick() },
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             ProfileAvatarView(
-                                                sizeDp = 42.dp,
-                                                fontSizeSp = 15,
+                                                sizeDp = 44.dp,
+                                                fontSizeSp = 16,
                                                 bgCircleColor = Color.White.copy(alpha = 0.25f),
                                                 borderColor = Color.White.copy(alpha = 0.90f),
                                                 textColor = Color.White,
@@ -307,32 +323,46 @@ fun HomeScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
+                                    // Interactive Streak Badge (e.g. 2-Day Streak)
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(20.dp))
-                                            .background(Color.White.copy(alpha = 0.2f))
-                                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                                            .background(Color.White.copy(alpha = 0.22f))
+                                            .border(1.dp, Color.White.copy(alpha = 0.40f), RoundedCornerShape(20.dp))
+                                            .clickable { showStreakDialog = true }
+                                            .padding(horizontal = 11.dp, vertical = 6.dp),
                                     ) {
-                                        Text(
-                                            text = data?.streakBadge?.takeIf { it.isNotBlank() } ?: "⚡ Start your streak today",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = data?.streakBadge?.takeIf { it.isNotBlank() } ?: "⚡ Start your streak today",
+                                                fontSize = 11.5.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(text = "🔥", fontSize = 10.sp)
+                                        }
                                     }
 
+                                    // Interactive Target Editing Badge / Button
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(20.dp))
-                                            .background(Color.White.copy(alpha = 0.2f))
-                                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                                            .background(Color.White.copy(alpha = 0.22f))
+                                            .border(1.dp, Color.White.copy(alpha = 0.40f), RoundedCornerShape(20.dp))
+                                            .clickable { showTargetEditDialog = true }
+                                            .padding(horizontal = 11.dp, vertical = 6.dp),
                                     ) {
-                                        Text(
-                                            text = data?.targetBadge?.takeIf { it.isNotBlank() } ?: "🎯 Fasting Target: 120 mg/dL",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = data?.targetBadge?.takeIf { it.isNotBlank() } ?: "🎯 Target: 100 mg/dL",
+                                                fontSize = 11.5.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                            )
+                                            Spacer(modifier = Modifier.width(5.dp))
+                                            Text(text = "✏️", fontSize = 11.sp)
+                                        }
                                     }
                                 }
                             }
@@ -672,6 +702,43 @@ fun HomeScreen(
                 onMedsTabClick = onMedsTabClick,
                 onReportsTabClick = onReportsTabClick,
                 onSettingsTabClick = onSettingsTabClick,
+            )
+        }
+
+        if (showStreakDialog) {
+            StreakDetailsDialog(
+                streakDays = data?.streakDays ?: 2,
+                streakBadge = data?.streakBadge ?: "🔥 2 Day Logging Streak",
+                onDismissRequest = { showStreakDialog = false },
+                onLogGlucoseClick = {
+                    showStreakDialog = false
+                    onLogGlucoseClick()
+                },
+                onTrackFoodClick = {
+                    showStreakDialog = false
+                    onTrackFoodClick()
+                }
+            )
+        }
+
+        if (showTargetEditDialog) {
+            TargetEditDialog(
+                initialFasting = data?.targetFastingGlucose ?: 100,
+                initialPostmeal = data?.targetPostmealGlucose ?: 140,
+                onDismissRequest = { showTargetEditDialog = false },
+                onSaveTarget = { fasting, postmeal ->
+                    viewModel.updateTargetGlucose(
+                        fastingTarget = fasting,
+                        postmealTarget = postmeal,
+                        onSuccess = {
+                            showTargetEditDialog = false
+                            Toast.makeText(context, "Target blood sugar updated to $fasting mg/dL!", Toast.LENGTH_SHORT).show()
+                        },
+                        onError = { err ->
+                            Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
             )
         }
     }
@@ -1223,6 +1290,401 @@ fun VibrantQuickActionButton(
     }
 }
 
+
+@Composable
+fun StreakDetailsDialog(
+    streakDays: Int,
+    streakBadge: String,
+    onDismissRequest: () -> Unit,
+    onLogGlucoseClick: () -> Unit,
+    onTrackFoodClick: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .clip(RoundedCornerShape(24.dp))
+                .background(AppTheme.colors.cardBackground)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(24.dp))
+                .padding(22.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Header with fire icon
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFFFEDD5)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🔥", fontSize = 34.sp)
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = if (streakDays > 0) "$streakDays-Day Active Streak!" else "Start Your Streak!",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = if (streakDays > 0)
+                        "You've logged your health data $streakDays consecutive days in a row! Consistent daily logging keeps blood sugar in target."
+                    else
+                        "Log your blood sugar or meals today to kick off your healthy diabetes care streak!",
+                    fontSize = 13.sp,
+                    color = AppTheme.colors.textSecondary,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 18.sp
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // Streak Calendar Ribbon
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    val days = listOf("Day 1", "Day 2", "Day 3", "Day 4", "Today")
+                    days.forEachIndexed { index, day ->
+                        val isAchieved = index < streakDays.coerceAtMost(5)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isAchieved) Color(0xFFA855F7) else AppTheme.colors.elevatedSurface)
+                                    .border(1.dp, if (isAchieved) Color(0xFFA855F7) else AppTheme.colors.border, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (isAchieved) "✓" else "○",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isAchieved) Color.White else AppTheme.colors.textSecondary
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(text = day, fontSize = 10.sp, color = AppTheme.colors.textSecondary)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                // Quick Action Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFA855F7))
+                            .clickable {
+                                onDismissRequest()
+                                onLogGlucoseClick()
+                            }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🩸 Log Glucose",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF))
+                            .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(12.dp))
+                            .clickable {
+                                onDismissRequest()
+                                onTrackFoodClick()
+                            }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🥗 Log Meal",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFA855F7)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "Close",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppTheme.colors.textSecondary,
+                    modifier = Modifier
+                        .clickable { onDismissRequest() }
+                        .padding(vertical = 6.dp, horizontal = 12.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TargetEditDialog(
+    initialFasting: Int,
+    initialPostmeal: Int,
+    onDismissRequest: () -> Unit,
+    onSaveTarget: (fasting: Int, postmeal: Int) -> Unit
+) {
+    var fastingText by remember { mutableStateOf(initialFasting.toString()) }
+    var postmealText by remember { mutableStateOf(initialPostmeal.toString()) }
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .clip(RoundedCornerShape(24.dp))
+                .background(AppTheme.colors.cardBackground)
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(24.dp))
+                .padding(22.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🎯 Edit Target Glucose",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.textPrimary
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(CircleShape)
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF3F4F6))
+                            .clickable { onDismissRequest() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✕", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Personalize your target fasting & post-meal blood sugar levels.",
+                    fontSize = 12.sp,
+                    color = AppTheme.colors.textSecondary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Fasting Target Input
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Fasting Target (mg/dL)",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AppTheme.colors.elevatedSurface)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(8.dp))
+                                .clickable {
+                                    val current = fastingText.toIntOrNull() ?: 100
+                                    if (current > 70) fastingText = (current - 5).toString()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "−", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        }
+
+                        OutlinedTextField(
+                            value = fastingText,
+                            onValueChange = { if (it.length <= 3 && it.all { ch -> ch.isDigit() }) fastingText = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFA855F7),
+                                unfocusedBorderColor = AppTheme.colors.border,
+                                focusedTextColor = AppTheme.colors.textPrimary,
+                                unfocusedTextColor = AppTheme.colors.textPrimary
+                            )
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AppTheme.colors.elevatedSurface)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(8.dp))
+                                .clickable {
+                                    val current = fastingText.toIntOrNull() ?: 100
+                                    if (current < 200) fastingText = (current + 5).toString()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Post-Meal Target Input
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Post-Meal Target (mg/dL)",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AppTheme.colors.elevatedSurface)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(8.dp))
+                                .clickable {
+                                    val current = postmealText.toIntOrNull() ?: 140
+                                    if (current > 100) postmealText = (current - 5).toString()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "−", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        }
+
+                        OutlinedTextField(
+                            value = postmealText,
+                            onValueChange = { if (it.length <= 3 && it.all { ch -> ch.isDigit() }) postmealText = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFA855F7),
+                                unfocusedBorderColor = AppTheme.colors.border,
+                                focusedTextColor = AppTheme.colors.textPrimary,
+                                unfocusedTextColor = AppTheme.colors.textPrimary
+                            )
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AppTheme.colors.elevatedSurface)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(8.dp))
+                                .clickable {
+                                    val current = postmealText.toIntOrNull() ?: 140
+                                    if (current < 300) postmealText = (current + 5).toString()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Recommended Presets Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    val presets = listOf("Standard (100)" to (100 to 140), "Strict (90)" to (90 to 130), "Gentle (120)" to (120 to 160))
+                    presets.forEach { (label, targets) ->
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (fastingText == targets.first.toString()) Color(0xFFA855F7).copy(alpha = 0.2f) else AppTheme.colors.elevatedSurface)
+                                .border(1.dp, if (fastingText == targets.first.toString()) Color(0xFFA855F7) else AppTheme.colors.border, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    fastingText = targets.first.toString()
+                                    postmealText = targets.second.toString()
+                                }
+                                .padding(vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (fastingText == targets.first.toString()) Color(0xFFA855F7) else AppTheme.colors.textSecondary
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Save Target Button
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFA855F7))
+                        .clickable {
+                            val f = fastingText.toIntOrNull() ?: 100
+                            val p = postmealText.toIntOrNull() ?: 140
+                            onSaveTarget(f, p)
+                        }
+                        .padding(vertical = 13.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Save Target",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
 
 fun parseHexColor(hexString: String?, fallback: Color): Color {
     if (hexString.isNullOrBlank()) return fallback

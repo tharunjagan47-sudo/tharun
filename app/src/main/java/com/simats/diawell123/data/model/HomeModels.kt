@@ -35,6 +35,15 @@ data class DashboardData(
     @SerializedName("target_badge")
     val targetBadge: String = "🎯 Fasting Target Met",
 
+    @SerializedName("streak_days")
+    val streakDays: Int = 0,
+
+    @SerializedName("target_fasting_glucose")
+    val targetFastingGlucose: Int? = null,
+
+    @SerializedName("target_postmeal_glucose")
+    val targetPostmealGlucose: Int? = null,
+
     @SerializedName("ai_tip")
     val aiTip: HomeAiTip? = null,
 
