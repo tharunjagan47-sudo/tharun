@@ -261,9 +261,10 @@ fun SplashScreen(
                             .background(Color(0xFFF0ABFC).copy(alpha = neonGlowAlpha * 0.25f)),
                     )
 
-                    // Arc Reactor Canvas Logo (Spins, slows down, and STOPS!)
+                    // Arc Reactor Canvas Logo (Transforms from Bird to DW Logo as it spins, slows down, and STOPS!)
                     ArcReactorCanvas(
                         rotationAngle = spinRotation.value,
+                        isSplashTransform = true,
                         modifier = Modifier
                             .size(128.dp)
                             .scale(pulseScale),
@@ -405,7 +406,11 @@ fun OutsideEcgPulseCanvas(
 fun ArcReactorCanvas(
     rotationAngle: Float = 0f,
     modifier: Modifier = Modifier,
+    isSplashTransform: Boolean = false,
 ) {
+    val showDW = !isSplashTransform || rotationAngle >= 360f
+    val currentDrawable = if (showDW) R.drawable.app_logo else R.drawable.bird_logo
+
     Box(
         modifier = modifier
             .shadow(
@@ -419,7 +424,7 @@ fun ArcReactorCanvas(
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            painter = painterResource(id = R.drawable.app_logo),
+            painter = painterResource(id = currentDrawable),
             contentDescription = "DiaWell Logo",
             contentScale = ContentScale.Fit,
             modifier = Modifier
