@@ -1,14 +1,27 @@
 package com.simats.diawell123
 
 import android.app.Application
+import android.util.Log
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.util.DiaWellNotificationHelper
 
 class DiawellApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        SessionManager.init(this)
-        DiaWellNotificationHelper.createNotificationChannels(this)
+        
+        // Global uncaught exception safeguard across all worker threads
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Log.e("DiawellApp", "Uncaught exception on thread ${thread.name}: ${throwable.message}", throwable)
+            defaultHandler?.uncaughtException(thread, throwable)
+        }
+
+        try {
+            SessionManager.init(this)
+            DiaWellNotificationHelper.createNotificationChannels(this)
+        } catch (e: Exception) {
+            Log.e("DiawellApp", "Error during DiawellApplication onCreate", e)
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.simats.diawell123.ui.meds
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.model.CatalogMedicationItem
@@ -10,6 +11,7 @@ import com.simats.diawell123.data.repository.MedsRepository
 import com.simats.diawell123.data.repository.MedsRepositoryImpl
 import com.simats.diawell123.util.MedStatusChangedEvent
 import com.simats.diawell123.util.MedicationStatusUpdater
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,6 +84,15 @@ class MedsViewModel(
 
     private var searchJob: Job? = null
 
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("MedsViewModel", "Uncaught exception in MedsViewModel", throwable)
+        val msg = throwable.localizedMessage ?: "Network communication error."
+        _listState.update { it.copy(isLoading = false, isRefreshing = false, errorMessage = msg) }
+        _searchState.update { it.copy(isSearching = false, errorMessage = msg) }
+        _setReminderState.update { it.copy(isSaving = false, errorMessage = msg) }
+        _detailState.update { it.copy(isUpdating = false, errorMessage = msg) }
+    }
+
     init {
         loadMedications()
         searchMedications("")
@@ -89,10 +100,14 @@ class MedsViewModel(
     }
 
     private fun observeStatusChanges() {
-        viewModelScope.launch {
-            MedicationStatusUpdater.events.collect { event ->
-                applyOptimisticStatusEvent(event)
-                loadMedications(isPullToRefresh = true)
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                MedicationStatusUpdater.events.collect { event ->
+                    applyOptimisticStatusEvent(event)
+                    loadMedications(isPullToRefresh = true)
+                }
+            } catch (e: Exception) {
+                Log.e("MedsViewModel", "MedicationStatusUpdater collector error", e)
             }
         }
     }
@@ -173,38 +188,49 @@ class MedsViewModel(
      * Load medications for the specified or current date.
      */
     fun loadMedications(date: String? = null, isPullToRefresh: Boolean = false) {
-        viewModelScope.launch {
-            val targetDate = date ?: _listState.value.selectedDate
-            _listState.update {
-                if (isPullToRefresh) {
-                    it.copy(isRefreshing = true, selectedDate = targetDate, errorMessage = null)
-                } else {
-                    it.copy(isLoading = it.data == null, selectedDate = targetDate, errorMessage = null)
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                val targetDate = date ?: _listState.value.selectedDate
+                _listState.update {
+                    if (isPullToRefresh) {
+                        it.copy(isRefreshing = true, selectedDate = targetDate, errorMessage = null)
+                    } else {
+                        it.copy(isLoading = it.data == null, selectedDate = targetDate, errorMessage = null)
+                    }
+                }
+
+                val result = repository.getMedications(date = targetDate)
+                result.fold(
+                    onSuccess = { data ->
+                        _listState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                data = data,
+                                errorMessage = null
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        _listState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                errorMessage = error.message ?: "Failed to load medications."
+                            )
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("MedsViewModel", "Exception loading medications", e)
+                _listState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        errorMessage = e.localizedMessage ?: "Failed to load medications."
+                    )
                 }
             }
-
-            val result = repository.getMedications(date = targetDate)
-            result.fold(
-                onSuccess = { data ->
-                    _listState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            data = data,
-                            errorMessage = null
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _listState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            errorMessage = error.message ?: "Failed to load medications."
-                        )
-                    }
-                }
-            )
         }
     }
 
@@ -213,31 +239,43 @@ class MedsViewModel(
      */
     fun searchMedications(query: String) {
         searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            _searchState.update { it.copy(query = query, isSearching = true, errorMessage = null) }
-            if (query.isNotBlank()) {
-                delay(200) // Debounce rapid keystrokes to ensure smooth UI and eliminate race conditions
-            }
-            val result = repository.searchMedications(query = query.trim())
-            result.fold(
-                onSuccess = { list ->
-                    _searchState.update {
-                        it.copy(
-                            isSearching = false,
-                            results = list,
-                            errorMessage = null
-                        )
+        searchJob = viewModelScope.launch(exceptionHandler) {
+            try {
+                _searchState.update { it.copy(query = query, isSearching = true, errorMessage = null) }
+                if (query.isNotBlank()) {
+                    delay(200) // Debounce rapid keystrokes to ensure smooth UI and eliminate race conditions
+                }
+                val result = repository.searchMedications(query = query.trim())
+                result.fold(
+                    onSuccess = { list ->
+                        _searchState.update {
+                            it.copy(
+                                isSearching = false,
+                                results = list,
+                                errorMessage = null
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        _searchState.update {
+                            it.copy(
+                                isSearching = false,
+                                errorMessage = error.message
+                            )
+                        }
                     }
-                },
-                onFailure = { error ->
+                )
+            } catch (e: Exception) {
+                if (e !is kotlinx.coroutines.CancellationException) {
+                    Log.e("MedsViewModel", "Exception searching medications", e)
                     _searchState.update {
                         it.copy(
                             isSearching = false,
-                            errorMessage = error.message
+                            errorMessage = e.localizedMessage ?: "Failed to search medications."
                         )
                     }
                 }
-            )
+            }
         }
     }
 
@@ -307,42 +345,53 @@ class MedsViewModel(
      * Save newly configured medication reminder with dataset attributes to backend.
      */
     fun saveMedicationReminder(onSuccess: (MedicationItem) -> Unit = {}) {
-        viewModelScope.launch {
-            val state = _setReminderState.value
-            _setReminderState.update { it.copy(isSaving = true, errorMessage = null) }
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                val state = _setReminderState.value
+                _setReminderState.update { it.copy(isSaving = true, errorMessage = null) }
 
-            val result = repository.addMedication(
-                name = state.medicationName,
-                dose = state.medicationDose,
-                reminderTime = state.selectedTime,
-                reminderDate = state.reminderDateText,
-                timing = state.selectedTiming,
-                frequency = state.selectedFrequency,
-                notes = state.notes,
-                therapeuticClass = state.therapeuticClass,
-                manufacturer = state.manufacturer,
-                primaryIngredient = state.primaryIngredient,
-                packaging = state.packaging,
-                dosageForm = state.dosageForm
-            )
+                val result = repository.addMedication(
+                    name = state.medicationName,
+                    dose = state.medicationDose,
+                    reminderTime = state.selectedTime,
+                    reminderDate = state.reminderDateText,
+                    timing = state.selectedTiming,
+                    frequency = state.selectedFrequency,
+                    notes = state.notes,
+                    therapeuticClass = state.therapeuticClass,
+                    manufacturer = state.manufacturer,
+                    primaryIngredient = state.primaryIngredient,
+                    packaging = state.packaging,
+                    dosageForm = state.dosageForm
+                )
 
-            result.fold(
-                onSuccess = { savedMed ->
-                    _setReminderState.update { it.copy(isSaving = false, isSuccess = true) }
-                    loadMedications(isPullToRefresh = true) // Refresh list
-                    MedicationStatusUpdater.emitLocalChange(savedMed.id, savedMed.name, savedMed.status)
-                    onSuccess(savedMed)
-                },
-                onFailure = { error ->
-                    _setReminderState.update {
-                        it.copy(
-                            isSaving = false,
-                            isSuccess = false,
-                            errorMessage = error.message ?: "Failed to set medication reminder."
-                        )
+                result.fold(
+                    onSuccess = { savedMed ->
+                        _setReminderState.update { it.copy(isSaving = false, isSuccess = true) }
+                        loadMedications(isPullToRefresh = true) // Refresh list
+                        MedicationStatusUpdater.emitLocalChange(savedMed.id, savedMed.name, savedMed.status)
+                        onSuccess(savedMed)
+                    },
+                    onFailure = { error ->
+                        _setReminderState.update {
+                            it.copy(
+                                isSaving = false,
+                                isSuccess = false,
+                                errorMessage = error.message ?: "Failed to set medication reminder."
+                            )
+                        }
                     }
+                )
+            } catch (e: Exception) {
+                Log.e("MedsViewModel", "Exception saving medication reminder", e)
+                _setReminderState.update {
+                    it.copy(
+                        isSaving = false,
+                        isSuccess = false,
+                        errorMessage = e.localizedMessage ?: "Failed to save medication reminder."
+                    )
                 }
-            )
+            }
         }
     }
 
@@ -372,47 +421,57 @@ class MedsViewModel(
         medicationName: String? = null,
         onSuccess: () -> Unit = {}
     ) {
-        viewModelScope.launch {
-            _detailState.update { it.copy(isUpdating = true, errorMessage = null) }
-            val result = repository.updateMedicationStatus(
-                medicationId = medicationId,
-                status = newStatus,
-                medicationName = medicationName ?: _detailState.value.medication?.name,
-                snoozeMinutes = snoozeMinutes.takeIf { it > 0 },
-                newReminderTime = newReminderTime
-            )
-            result.fold(
-                onSuccess = {
-                    val (sColor, sBg) = statusStyleFor(newStatus)
-                    val newTimeLabel = if (newStatus.equals("Snoozed", ignoreCase = true) && snoozeMinutes > 0) {
-                        MedicationStatusUpdater.computeSnoozeTimeStrings(snoozeMinutes).second
-                    } else null
-                    val medNameStr = medicationName ?: _detailState.value.medication?.name ?: ""
-                    _detailState.update {
-                        it.copy(
-                            isUpdating = false,
-                            isStatusUpdated = true,
-                            medication = it.medication?.copy(
-                                status = newStatus,
-                                statusColor = sColor,
-                                statusBg = sBg,
-                                reminderTime = newTimeLabel ?: it.medication.reminderTime
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _detailState.update { it.copy(isUpdating = true, errorMessage = null) }
+                val result = repository.updateMedicationStatus(
+                    medicationId = medicationId,
+                    status = newStatus,
+                    medicationName = medicationName ?: _detailState.value.medication?.name,
+                    snoozeMinutes = snoozeMinutes.takeIf { it > 0 },
+                    newReminderTime = newReminderTime
+                )
+                result.fold(
+                    onSuccess = {
+                        val (sColor, sBg) = statusStyleFor(newStatus)
+                        val newTimeLabel = if (newStatus.equals("Snoozed", ignoreCase = true) && snoozeMinutes > 0) {
+                            MedicationStatusUpdater.computeSnoozeTimeStrings(snoozeMinutes).second
+                        } else null
+                        val medNameStr = medicationName ?: _detailState.value.medication?.name ?: ""
+                        _detailState.update {
+                            it.copy(
+                                isUpdating = false,
+                                isStatusUpdated = true,
+                                medication = it.medication?.copy(
+                                    status = newStatus,
+                                    statusColor = sColor,
+                                    statusBg = sBg,
+                                    reminderTime = newTimeLabel ?: it.medication.reminderTime
+                                )
                             )
-                        )
+                        }
+                        MedicationStatusUpdater.emitLocalChange(medicationId, medNameStr, newStatus, newTimeLabel)
+                        loadMedications(isPullToRefresh = true) // Refresh list
+                        onSuccess()
+                    },
+                    onFailure = { error ->
+                        _detailState.update {
+                            it.copy(
+                                isUpdating = false,
+                                errorMessage = error.message ?: "Failed to update medication status."
+                            )
+                        }
                     }
-                    MedicationStatusUpdater.emitLocalChange(medicationId, medNameStr, newStatus, newTimeLabel)
-                    loadMedications(isPullToRefresh = true) // Refresh list
-                    onSuccess()
-                },
-                onFailure = { error ->
-                    _detailState.update {
-                        it.copy(
-                            isUpdating = false,
-                            errorMessage = error.message ?: "Failed to update medication status."
-                        )
-                    }
+                )
+            } catch (e: Exception) {
+                Log.e("MedsViewModel", "Exception updating status", e)
+                _detailState.update {
+                    it.copy(
+                        isUpdating = false,
+                        errorMessage = e.localizedMessage ?: "Failed to update status."
+                    )
                 }
-            )
+            }
         }
     }
 
@@ -420,26 +479,36 @@ class MedsViewModel(
      * Delete medication reminder.
      */
     fun deleteMedication(medicationId: Int, onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
-            _detailState.update { it.copy(isUpdating = true, errorMessage = null) }
-            val result = repository.deleteMedication(medicationId = medicationId)
-            result.fold(
-                onSuccess = {
-                    val deletedName = _detailState.value.medication?.name ?: ""
-                    _detailState.update { it.copy(isUpdating = false, isDeleted = true) }
-                    MedicationStatusUpdater.emitLocalChange(medicationId, deletedName, "Deleted")
-                    loadMedications(isPullToRefresh = true) // Refresh list
-                    onSuccess()
-                },
-                onFailure = { error ->
-                    _detailState.update {
-                        it.copy(
-                            isUpdating = false,
-                            errorMessage = error.message ?: "Failed to delete medication."
-                        )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _detailState.update { it.copy(isUpdating = true, errorMessage = null) }
+                val result = repository.deleteMedication(medicationId = medicationId)
+                result.fold(
+                    onSuccess = {
+                        val deletedName = _detailState.value.medication?.name ?: ""
+                        _detailState.update { it.copy(isUpdating = false, isDeleted = true) }
+                        MedicationStatusUpdater.emitLocalChange(medicationId, deletedName, "Deleted")
+                        loadMedications(isPullToRefresh = true) // Refresh list
+                        onSuccess()
+                    },
+                    onFailure = { error ->
+                        _detailState.update {
+                            it.copy(
+                                isUpdating = false,
+                                errorMessage = error.message ?: "Failed to delete medication."
+                            )
+                        }
                     }
+                )
+            } catch (e: Exception) {
+                Log.e("MedsViewModel", "Exception deleting medication", e)
+                _detailState.update {
+                    it.copy(
+                        isUpdating = false,
+                        errorMessage = e.localizedMessage ?: "Failed to delete medication."
+                    )
                 }
-            )
+            }
         }
     }
 

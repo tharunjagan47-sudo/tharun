@@ -1,6 +1,7 @@
 package com.simats.diawell123.ui.diet
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.model.AiRecommendationData
@@ -11,6 +12,7 @@ import com.simats.diawell123.data.model.FoodLogItem
 import com.simats.diawell123.data.model.FoodLogRequest
 import com.simats.diawell123.data.repository.DietRepository
 import com.simats.diawell123.data.repository.DietRepositoryImpl
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -86,6 +88,15 @@ class DietViewModel(
     private val _aiRecommendationsState = MutableStateFlow(AiRecommendationUiState())
     val aiRecommendationsState: StateFlow<AiRecommendationUiState> = _aiRecommendationsState.asStateFlow()
 
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("DietViewModel", "Uncaught exception in DietViewModel", throwable)
+        val msg = throwable.localizedMessage ?: "Network error loading diet data."
+        _dailyDietState.update { it.copy(isLoading = false, errorMessage = msg) }
+        _detailsState.update { it.copy(isLoading = false, isLogging = false, errorMessage = msg) }
+        _foodLogState.update { it.copy(isLoading = false, errorMessage = msg) }
+        _aiRecommendationsState.update { it.copy(isLoading = false, isUpdatingInputs = false, errorMessage = msg) }
+    }
+
     init {
         loadExploreFoods()
 
@@ -99,7 +110,7 @@ class DietViewModel(
         overrideDiet: String? = null,
         overrideFocus: String? = null
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             val cat = category ?: _dailyDietState.value.selectedCategory
             val g = overrideGlucose ?: _aiRecommendationsState.value.activeGlucose
             val d = overrideDiet ?: _aiRecommendationsState.value.activeDietPreference
@@ -144,7 +155,7 @@ class DietViewModel(
     }
 
     fun updateHealthInputs(glucose: Float, dietPreference: String, healthFocus: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             _aiRecommendationsState.update {
                 it.copy(
                     isUpdatingInputs = true,
@@ -187,7 +198,7 @@ class DietViewModel(
     }
 
     fun loadExploreFoods() {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             _dailyDietState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = dietRepository.exploreFoods(
                 query = _dailyDietState.value.searchQuery,
@@ -212,7 +223,7 @@ class DietViewModel(
     }
 
     fun loadFoodLog(date: String? = null) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             _foodLogState.update { it.copy(isLoading = true) }
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val targetDate = date ?: sdf.format(_dailyDietState.value.selectedDateCalendar.time)
@@ -291,7 +302,7 @@ class DietViewModel(
     }
 
     fun loadFoodDetails(foodId: Int? = null, dishName: String? = null, category: String? = null) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             _detailsState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = dietRepository.getFoodDetails(foodId = foodId, dishName = dishName, category = category)
             result.onSuccess { data ->
@@ -313,7 +324,7 @@ class DietViewModel(
         iconFallback: String,
         onSuccess: () -> Unit
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             _detailsState.update { it.copy(isLogging = true) }
             val details = _detailsState.value.details
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())

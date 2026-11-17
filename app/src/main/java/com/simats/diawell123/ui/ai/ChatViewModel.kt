@@ -1,6 +1,7 @@
 package com.simats.diawell123.ui.ai
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.model.AlertType
@@ -20,6 +21,7 @@ import com.simats.diawell123.data.repository.GlucoseRepositoryImpl
 import com.simats.diawell123.data.repository.MedsRepository
 import com.simats.diawell123.data.repository.MedsRepositoryImpl
 import com.simats.diawell123.ui.profile.ProfileState
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,6 +51,18 @@ class ChatViewModel(
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     private var lastUserMessage: String? = null
+
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("ChatViewModel", "Uncaught exception in ChatViewModel: ${throwable.message}", throwable)
+        val errorMsg = throwable.localizedMessage ?: "Unable to complete AI query."
+        _errorMessage.value = errorMsg
+        _isLoading.value = false
+        _messages.value = _messages.value + ChatMessage(
+            sender = ChatSender.AI,
+            text = "⚠️ $errorMsg\n\nPlease check your network connection or tap Retry.",
+            isError = true
+        )
+    }
 
     init {
         initWelcomeMessage()
@@ -86,7 +100,7 @@ class ChatViewModel(
         )
         _messages.value = _messages.value + userMsg
 
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             try {
                 _isLoading.value = true
 

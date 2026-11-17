@@ -3,6 +3,7 @@ import com.simats.diawell123.ui.theme.AppTheme
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.local.HealthMetricsStore
@@ -14,6 +15,7 @@ import com.simats.diawell123.data.repository.SettingsRepository
 import com.simats.diawell123.data.repository.SettingsRepositoryImpl
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.util.ClinicalReportGenerator
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -103,6 +105,15 @@ class SettingsViewModel(
     private val _deleteState = MutableStateFlow(DeleteAccountUiState())
     val deleteState: StateFlow<DeleteAccountUiState> = _deleteState.asStateFlow()
 
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("SettingsViewModel", "Uncaught exception in SettingsViewModel", throwable)
+        val msg = throwable.localizedMessage ?: "Operation failed. Please try again."
+        _prefsState.update { it.copy(isLoading = false, isSaving = false, errorMessage = msg) }
+        _passwordState.update { it.copy(isSubmitting = false, errorMessage = msg) }
+        _exportState.update { it.copy(isLoading = false, errorMessage = msg) }
+        _deleteState.update { it.copy(isDeleting = false, errorMessage = msg) }
+    }
+
     init {
         loadNotificationPreferences()
     }
@@ -138,31 +149,36 @@ class SettingsViewModel(
     }
 
     fun loadNotificationPreferences() {
-        viewModelScope.launch {
-            _prefsState.update { it.copy(isLoading = true, errorMessage = null) }
-            val result = repository.getNotificationPreferences()
-            result.fold(
-                onSuccess = { data ->
-                    _prefsState.update {
-                        it.copy(
-                            isLoading = false,
-                            medicationReminders = data.medicationReminders,
-                            mealLoggingReminders = data.mealLoggingReminders,
-                            glucoseCheckins = data.glucoseCheckins,
-                            weeklyReportAlerts = data.weeklyReportAlerts,
-                            errorMessage = null
-                        )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _prefsState.update { it.copy(isLoading = true, errorMessage = null) }
+                val result = repository.getNotificationPreferences()
+                result.fold(
+                    onSuccess = { data ->
+                        _prefsState.update {
+                            it.copy(
+                                isLoading = false,
+                                medicationReminders = data.medicationReminders,
+                                mealLoggingReminders = data.mealLoggingReminders,
+                                glucoseCheckins = data.glucoseCheckins,
+                                weeklyReportAlerts = data.weeklyReportAlerts,
+                                errorMessage = null
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        _prefsState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = error.message
+                            )
+                        }
                     }
-                },
-                onFailure = { error ->
-                    _prefsState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message
-                        )
-                    }
-                }
-            )
+                )
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception loading notification prefs", e)
+                _prefsState.update { it.copy(isLoading = false, errorMessage = e.localizedMessage ?: "Failed to load preferences.") }
+            }
         }
     }
 
@@ -191,56 +207,71 @@ class SettingsViewModel(
     fun toggleWeeklyReportAlerts(enabled: Boolean) = toggleWeeklyReport(enabled)
 
     fun saveNotificationPreferences(onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
-            val s = _prefsState.value
-            _prefsState.update { it.copy(isSaving = true, errorMessage = null) }
-            val result = repository.updateNotificationPreferences(
-                medicationReminders = s.medicationReminders,
-                mealLoggingReminders = s.mealLoggingReminders,
-                glucoseCheckins = s.glucoseCheckins,
-                weeklyReportAlerts = s.weeklyReportAlerts
-            )
-            result.fold(
-                onSuccess = {
-                    _prefsState.update { it.copy(isSaving = false, isSuccess = true) }
-                    onSuccess()
-                },
-                onFailure = { error ->
-                    _prefsState.update { it.copy(isSaving = false, errorMessage = error.message) }
-                }
-            )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                val s = _prefsState.value
+                _prefsState.update { it.copy(isSaving = true, errorMessage = null) }
+                val result = repository.updateNotificationPreferences(
+                    medicationReminders = s.medicationReminders,
+                    mealLoggingReminders = s.mealLoggingReminders,
+                    glucoseCheckins = s.glucoseCheckins,
+                    weeklyReportAlerts = s.weeklyReportAlerts
+                )
+                result.fold(
+                    onSuccess = {
+                        _prefsState.update { it.copy(isSaving = false, isSuccess = true) }
+                        onSuccess()
+                    },
+                    onFailure = { error ->
+                        _prefsState.update { it.copy(isSaving = false, errorMessage = error.message) }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception saving notification preferences", e)
+                _prefsState.update { it.copy(isSaving = false, errorMessage = e.localizedMessage ?: "Failed to save preferences.") }
+            }
         }
     }
 
     fun changePassword(currentPassword: String, newPassword: String, confirmPassword: String, onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
-            _passwordState.update { it.copy(isSubmitting = true, errorMessage = null, isSuccess = false) }
-            val result = repository.changePassword(currentPassword, newPassword, confirmPassword)
-            result.fold(
-                onSuccess = { msg ->
-                    _passwordState.update { it.copy(isSubmitting = false, isSuccess = true, successMessage = msg) }
-                    onSuccess()
-                },
-                onFailure = { error ->
-                    _passwordState.update { it.copy(isSubmitting = false, isSuccess = false, errorMessage = error.message) }
-                }
-            )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _passwordState.update { it.copy(isSubmitting = true, errorMessage = null, isSuccess = false) }
+                val result = repository.changePassword(currentPassword, newPassword, confirmPassword)
+                result.fold(
+                    onSuccess = { msg ->
+                        _passwordState.update { it.copy(isSubmitting = false, isSuccess = true, successMessage = msg) }
+                        onSuccess()
+                    },
+                    onFailure = { error ->
+                        _passwordState.update { it.copy(isSubmitting = false, isSuccess = false, errorMessage = error.message) }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception changing password", e)
+                _passwordState.update { it.copy(isSubmitting = false, errorMessage = e.localizedMessage ?: "Failed to change password.") }
+            }
         }
     }
 
     fun exportRecords(range: String, format: String = "json", onSuccess: (ExportRecordsData) -> Unit = {}) {
-        viewModelScope.launch {
-            _exportState.update { it.copy(isLoading = true, selectedRange = range, selectedFormat = format, errorMessage = null) }
-            val result = repository.exportRecords(range = range, format = format)
-            result.fold(
-                onSuccess = { data ->
-                    _exportState.update { it.copy(isLoading = false, exportedData = data) }
-                    onSuccess(data)
-                },
-                onFailure = { error ->
-                    _exportState.update { it.copy(isLoading = false, errorMessage = error.message) }
-                }
-            )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _exportState.update { it.copy(isLoading = true, selectedRange = range, selectedFormat = format, errorMessage = null) }
+                val result = repository.exportRecords(range = range, format = format)
+                result.fold(
+                    onSuccess = { data ->
+                        _exportState.update { it.copy(isLoading = false, exportedData = data) }
+                        onSuccess(data)
+                    },
+                    onFailure = { error ->
+                        _exportState.update { it.copy(isLoading = false, errorMessage = error.message) }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception exporting records", e)
+                _exportState.update { it.copy(isLoading = false, errorMessage = e.localizedMessage ?: "Failed to export records.") }
+            }
         }
     }
 
@@ -254,74 +285,79 @@ class SettingsViewModel(
             return
         }
 
-        viewModelScope.launch {
-            _exportState.update {
-                it.copy(
-                    isLoading = true,
-                    selectedRange = options.daysParam,
-                    selectedRangeLabel = options.timeRangeLabel,
-                    selectedFormat = options.format,
-                    options = options,
-                    errorMessage = null
-                )
-            }
-
-            val result = repository.exportRecords(range = options.daysParam, format = "json")
-            result.fold(
-                onSuccess = { rawData ->
-                    val sessionUser = sessionManager.getUserSession()
-                    val mergedPatient = rawData.patient.copy(
-                        name = rawData.patient.name.ifBlank { sessionUser?.fullName?.ifBlank { ProfileState.userName } ?: ProfileState.userName },
-                        email = rawData.patient.email.ifBlank { sessionUser?.email ?: "" },
-                        diabetesType = rawData.patient.diabetesType.ifBlank { sessionUser?.diabetesType?.ifBlank { "Type 2" } ?: "Type 2" },
-                        age = rawData.patient.age ?: sessionUser?.age,
-                        heightCm = rawData.patient.heightCm ?: sessionUser?.heightCm,
-                        weightKg = rawData.patient.weightKg ?: sessionUser?.weightKg,
-                        currentGlucose = rawData.patient.currentGlucose ?: sessionUser?.currentGlucoseMgDl,
-                        targetGlucose = rawData.patient.targetGlucose ?: sessionUser?.targetGlucoseMgDl ?: 120f
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _exportState.update {
+                    it.copy(
+                        isLoading = true,
+                        selectedRange = options.daysParam,
+                        selectedRangeLabel = options.timeRangeLabel,
+                        selectedFormat = options.format,
+                        options = options,
+                        errorMessage = null
                     )
-                    val enrichedData = rawData.copy(patient = mergedPatient)
-
-                    try {
-                        val generated = withContext(Dispatchers.IO) {
-                            ClinicalReportGenerator.generateReport(
-                                context = context.applicationContext,
-                                data = enrichedData,
-                                options = options
-                            )
-                        }
-
-                        _exportState.update {
-                            it.copy(
-                                isLoading = false,
-                                exportedData = enrichedData,
-                                generatedFile = generated.file,
-                                generatedFileName = generated.fileName,
-                                generatedMimeType = generated.mimeType,
-                                previewBitmaps = generated.previewBitmaps,
-                                csvPreviewText = generated.csvPreviewText,
-                                errorMessage = null
-                            )
-                        }
-                        onSuccess()
-                    } catch (e: Exception) {
-                        _exportState.update {
-                            it.copy(
-                                isLoading = false,
-                                errorMessage = "Failed to generate ${options.format} file: ${e.message}"
-                            )
-                        }
-                    }
-                },
-                onFailure = { error ->
-                    _exportState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message ?: "Failed to load patient records."
-                        )
-                    }
                 }
-            )
+
+                val result = repository.exportRecords(range = options.daysParam, format = "json")
+                result.fold(
+                    onSuccess = { rawData ->
+                        val sessionUser = sessionManager.getUserSession()
+                        val mergedPatient = rawData.patient.copy(
+                            name = rawData.patient.name.ifBlank { sessionUser?.fullName?.ifBlank { ProfileState.userName } ?: ProfileState.userName },
+                            email = rawData.patient.email.ifBlank { sessionUser?.email ?: "" },
+                            diabetesType = rawData.patient.diabetesType.ifBlank { sessionUser?.diabetesType?.ifBlank { "Type 2" } ?: "Type 2" },
+                            age = rawData.patient.age ?: sessionUser?.age,
+                            heightCm = rawData.patient.heightCm ?: sessionUser?.heightCm,
+                            weightKg = rawData.patient.weightKg ?: sessionUser?.weightKg,
+                            currentGlucose = rawData.patient.currentGlucose ?: sessionUser?.currentGlucoseMgDl,
+                            targetGlucose = rawData.patient.targetGlucose ?: sessionUser?.targetGlucoseMgDl ?: 120f
+                        )
+                        val enrichedData = rawData.copy(patient = mergedPatient)
+
+                        try {
+                            val generated = withContext(Dispatchers.IO) {
+                                ClinicalReportGenerator.generateReport(
+                                    context = context.applicationContext,
+                                    data = enrichedData,
+                                    options = options
+                                )
+                            }
+
+                            _exportState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    exportedData = enrichedData,
+                                    generatedFile = generated.file,
+                                    generatedFileName = generated.fileName,
+                                    generatedMimeType = generated.mimeType,
+                                    previewBitmaps = generated.previewBitmaps,
+                                    csvPreviewText = generated.csvPreviewText,
+                                    errorMessage = null
+                                )
+                            }
+                            onSuccess()
+                        } catch (e: Exception) {
+                            _exportState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    errorMessage = "Failed to generate ${options.format} file: ${e.message}"
+                                )
+                            }
+                        }
+                    },
+                    onFailure = { error ->
+                        _exportState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = error.message ?: "Failed to load patient records."
+                            )
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception generating report", e)
+                _exportState.update { it.copy(isLoading = false, errorMessage = e.localizedMessage ?: "Failed to generate report.") }
+            }
         }
     }
 
@@ -394,19 +430,24 @@ class SettingsViewModel(
     }
 
     fun deleteAccount(password: String, reason: String? = null, onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
-            _deleteState.update { it.copy(isDeleting = true, errorMessage = null) }
-            val result = repository.deleteAccount(password)
-            result.fold(
-                onSuccess = {
-                    sessionManager.clearSession()
-                    _deleteState.update { it.copy(isDeleting = false, isDeleted = true) }
-                    onSuccess()
-                },
-                onFailure = { error ->
-                    _deleteState.update { it.copy(isDeleting = false, errorMessage = error.message) }
-                }
-            )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _deleteState.update { it.copy(isDeleting = true, errorMessage = null) }
+                val result = repository.deleteAccount(password)
+                result.fold(
+                    onSuccess = {
+                        sessionManager.clearSession()
+                        _deleteState.update { it.copy(isDeleting = false, isDeleted = true) }
+                        onSuccess()
+                    },
+                    onFailure = { error ->
+                        _deleteState.update { it.copy(isDeleting = false, errorMessage = error.message) }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception deleting account", e)
+                _deleteState.update { it.copy(isDeleting = false, errorMessage = e.localizedMessage ?: "Failed to delete account.") }
+            }
         }
     }
 
@@ -415,22 +456,27 @@ class SettingsViewModel(
         onSuccess: (String) -> Unit = {},
         onFailure: (String) -> Unit = {}
     ) {
-        viewModelScope.launch {
-            val result = repository.resetUserLogs()
-            // Always clear local SharedPreferences health metrics and cached files
+        viewModelScope.launch(exceptionHandler) {
             try {
-                HealthMetricsStore(context).clearAll()
-                File(context.cacheDir, "reports").deleteRecursively()
-            } catch (_: Exception) {}
+                val result = repository.resetUserLogs()
+                // Always clear local SharedPreferences health metrics and cached files
+                try {
+                    HealthMetricsStore(context).clearAll()
+                    File(context.cacheDir, "reports").deleteRecursively()
+                } catch (_: Exception) {}
 
-            result.fold(
-                onSuccess = { msg ->
-                    onSuccess(msg)
-                },
-                onFailure = { error ->
-                    onFailure(error.message ?: "Failed to reset remote logs.")
-                }
-            )
+                result.fold(
+                    onSuccess = { msg ->
+                        onSuccess(msg)
+                    },
+                    onFailure = { error ->
+                        onFailure(error.message ?: "Failed to reset remote logs.")
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception resetting user logs", e)
+                onFailure(e.localizedMessage ?: "Failed to reset remote logs.")
+            }
         }
     }
 }

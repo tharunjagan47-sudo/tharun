@@ -1,12 +1,14 @@
 package com.simats.diawell123.ui.glucose
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.model.GlucoseDetailsData
 import com.simats.diawell123.data.model.GlucoseHistoryData
 import com.simats.diawell123.data.repository.GlucoseRepository
 import com.simats.diawell123.data.repository.GlucoseRepositoryImpl
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,30 +63,43 @@ class GlucoseViewModel(
     private val _detailsState = MutableStateFlow(ReadingDetailsUiState())
     val detailsState: StateFlow<ReadingDetailsUiState> = _detailsState.asStateFlow()
 
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("GlucoseViewModel", "Uncaught exception in GlucoseViewModel", throwable)
+        val msg = throwable.localizedMessage ?: "Network communication error."
+        _historyState.update { it.copy(isLoading = false, errorMessage = msg) }
+        _logState.update { it.copy(isLoading = false, errorMessage = msg) }
+        _detailsState.update { it.copy(isLoading = false, isDeleting = false, errorMessage = msg) }
+    }
+
     init {
         loadHistory()
     }
 
     fun loadHistory(range: String? = null) {
         val targetRange = range ?: _historyState.value.selectedRange
-        viewModelScope.launch {
-            _historyState.update { it.copy(isLoading = true, selectedRange = targetRange, errorMessage = null) }
-            val result = repository.getGlucoseHistory(range = targetRange)
-            result.onSuccess { data ->
-                _historyState.update {
-                    it.copy(
-                        isLoading = false,
-                        historyData = data,
-                        errorMessage = null
-                    )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _historyState.update { it.copy(isLoading = true, selectedRange = targetRange, errorMessage = null) }
+                val result = repository.getGlucoseHistory(range = targetRange)
+                result.onSuccess { data ->
+                    _historyState.update {
+                        it.copy(
+                            isLoading = false,
+                            historyData = data,
+                            errorMessage = null
+                        )
+                    }
+                }.onFailure { error ->
+                    _historyState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = error.localizedMessage ?: "Failed to load glucose history."
+                        )
+                    }
                 }
-            }.onFailure { error ->
-                _historyState.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = error.localizedMessage ?: "Failed to load glucose history."
-                    )
-                }
+            } catch (e: Exception) {
+                Log.e("GlucoseViewModel", "Exception loading history", e)
+                _historyState.update { it.copy(isLoading = false, errorMessage = e.localizedMessage ?: "Failed to load history.") }
             }
         }
     }
@@ -126,31 +141,42 @@ class GlucoseViewModel(
             return
         }
 
-        viewModelScope.launch {
-            _logState.update { it.copy(isLoading = true, errorMessage = null, isSuccess = false) }
-            val result = repository.logGlucose(
-                readingValue = readingValue,
-                readingType = readingType,
-                readingDate = readingDate,
-                readingTime = readingTime,
-                notes = notes
-            )
-            result.onSuccess {
-                _logState.update {
-                    it.copy(
-                        isLoading = false,
-                        isSuccess = true,
-                        errorMessage = null
-                    )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _logState.update { it.copy(isLoading = true, errorMessage = null, isSuccess = false) }
+                val result = repository.logGlucose(
+                    readingValue = readingValue,
+                    readingType = readingType,
+                    readingDate = readingDate,
+                    readingTime = readingTime,
+                    notes = notes
+                )
+                result.onSuccess {
+                    _logState.update {
+                        it.copy(
+                            isLoading = false,
+                            isSuccess = true,
+                            errorMessage = null
+                        )
+                    }
+                    // Refresh history with new reading
+                    loadHistory()
+                }.onFailure { error ->
+                    _logState.update {
+                        it.copy(
+                            isLoading = false,
+                            isSuccess = false,
+                            errorMessage = error.localizedMessage ?: "Failed to save reading."
+                        )
+                    }
                 }
-                // Refresh history with new reading
-                loadHistory()
-            }.onFailure { error ->
+            } catch (e: Exception) {
+                Log.e("GlucoseViewModel", "Exception logging glucose", e)
                 _logState.update {
                     it.copy(
                         isLoading = false,
                         isSuccess = false,
-                        errorMessage = error.localizedMessage ?: "Failed to save reading."
+                        errorMessage = e.localizedMessage ?: "Failed to save reading."
                     )
                 }
             }
@@ -170,22 +196,32 @@ class GlucoseViewModel(
     }
 
     fun loadReadingDetails(readingId: Int? = null) {
-        viewModelScope.launch {
-            _detailsState.update { it.copy(isLoading = true, isDeleted = false, errorMessage = null) }
-            val result = repository.getReadingDetails(readingId = readingId)
-            result.onSuccess { data ->
-                _detailsState.update {
-                    it.copy(
-                        isLoading = false,
-                        details = data,
-                        errorMessage = null
-                    )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _detailsState.update { it.copy(isLoading = true, isDeleted = false, errorMessage = null) }
+                val result = repository.getReadingDetails(readingId = readingId)
+                result.onSuccess { data ->
+                    _detailsState.update {
+                        it.copy(
+                            isLoading = false,
+                            details = data,
+                            errorMessage = null
+                        )
+                    }
+                }.onFailure { error ->
+                    _detailsState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = error.localizedMessage ?: "Failed to load reading details."
+                        )
+                    }
                 }
-            }.onFailure { error ->
+            } catch (e: Exception) {
+                Log.e("GlucoseViewModel", "Exception loading reading details", e)
                 _detailsState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = error.localizedMessage ?: "Failed to load reading details."
+                        errorMessage = e.localizedMessage ?: "Failed to load reading details."
                     )
                 }
             }
@@ -193,24 +229,34 @@ class GlucoseViewModel(
     }
 
     fun deleteReading(readingId: Int) {
-        viewModelScope.launch {
-            _detailsState.update { it.copy(isDeleting = true, errorMessage = null) }
-            val result = repository.deleteReading(readingId = readingId)
-            result.onSuccess {
-                _detailsState.update {
-                    it.copy(
-                        isDeleting = false,
-                        isDeleted = true,
-                        errorMessage = null
-                    )
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _detailsState.update { it.copy(isDeleting = true, errorMessage = null) }
+                val result = repository.deleteReading(readingId = readingId)
+                result.onSuccess {
+                    _detailsState.update {
+                        it.copy(
+                            isDeleting = false,
+                            isDeleted = true,
+                            errorMessage = null
+                        )
+                    }
+                    // Refresh history after deletion
+                    loadHistory()
+                }.onFailure { error ->
+                    _detailsState.update {
+                        it.copy(
+                            isDeleting = false,
+                            errorMessage = error.localizedMessage ?: "Failed to delete reading."
+                        )
+                    }
                 }
-                // Refresh history after deletion
-                loadHistory()
-            }.onFailure { error ->
+            } catch (e: Exception) {
+                Log.e("GlucoseViewModel", "Exception deleting reading", e)
                 _detailsState.update {
                     it.copy(
                         isDeleting = false,
-                        errorMessage = error.localizedMessage ?: "Failed to delete reading."
+                        errorMessage = e.localizedMessage ?: "Failed to delete reading."
                     )
                 }
             }

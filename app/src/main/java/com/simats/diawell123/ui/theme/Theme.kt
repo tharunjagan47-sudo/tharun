@@ -16,23 +16,23 @@ import androidx.core.view.WindowCompat
 
 /**
  * Multi-tone Glowing Purple / Neon Electric Purple to Lilac Gradient Design System
- * Deep Indigo (#1E1B4B) -> Royal Purple (#7E22CE) -> Electric Purple (#A855F7) -> Neon Lilac / Orchid (#F0ABFC)
+ * Deep Indigo (#1E1B4B) -> Royal Purple (#7C3AED) -> Electric Purple (#8B5CF6 / #A855F7) -> Neon Lilac (#F0ABFC)
  */
 object DiaWellGradients {
     val glowingPurple = listOf(
         Color(0xFF1E1B4B), // Deep Indigo
-        Color(0xFF7E22CE), // Royal Purple
-        Color(0xFFA855F7), // Electric Purple
+        Color(0xFF7C3AED), // Royal Purple
+        Color(0xFF8B5CF6), // Electric Purple
         Color(0xFFF0ABFC)  // Neon Lilac / Orchid
     )
 
     val glowingPurple2Tone = listOf(
         Color(0xFF1E1B4B), // Deep Indigo
-        Color(0xFFA855F7)  // Electric Purple
+        Color(0xFF8B5CF6)  // Electric Purple
     )
 
     val glowingLilac2Tone = listOf(
-        Color(0xFFA855F7), // Electric Purple
+        Color(0xFF8B5CF6), // Electric Purple
         Color(0xFFF0ABFC)  // Neon Lilac
     )
 
@@ -54,25 +54,29 @@ data class AppColors(
     val textSecondary: Color,
     val textMuted: Color,
     val primaryAccent: Color,
-    val success: Color,
-    val successBg: Color,
-    val successText: Color,
+    val accentTeal: Color = Color(0xFF38BDF8),
+    val accentCoral: Color = Color(0xFFF43F5E),
+    val success: Color = Color(0xFF10B981),
+    val successBg: Color = Color(0xFFECFDF5),
+    val successText: Color = Color(0xFF047857),
 )
 
 val LightAppColors = AppColors(
     isDark = false,
-    background = Color(0xFFFAF8FC),
-    secondaryBackground = Color(0xFFF5F0F8),
-    cardBackground = Color(0xFFFFFFFF),
+    background = Color(0xFFF8FAFC),         // Clean frosted light gray-purple tint
+    secondaryBackground = Color(0xFFF1F5F9),
+    cardBackground = Color(0xFFFFFFFF),      // Crisp pure white cards
     cardElevated = Color(0xFFFFFFFF),
-    elevatedSurface = Color(0xFFF5F3FF), // Soft Lilac Glow
-    inputBackground = Color(0xFFFAF5FF),
-    inputBorder = Color(0xFFE9D5FF),
-    border = Color(0xFFE9D5FF),
-    textPrimary = Color(0xFF1E1E22),
-    textSecondary = Color(0xFF5E5E65),
-    textMuted = Color(0xFF8E8E95),
-    primaryAccent = Color(0xFFA855F7), // Electric Purple
+    elevatedSurface = Color(0xFFF5F3FF),     // Soft Lilac Glow
+    inputBackground = Color(0xFFF8FAFC),
+    inputBorder = Color(0xFFE2E8F0),
+    border = Color(0xFFE2E8F0),
+    textPrimary = Color(0xFF1E293B),         // Dark Slate
+    textSecondary = Color(0xFF64748B),       // Subtitle
+    textMuted = Color(0xFF94A3B8),
+    primaryAccent = Color(0xFF7C3AED),       // Deep rich royal purple
+    accentTeal = Color(0xFF0284C7),
+    accentCoral = Color(0xFFE11D48),
     success = Color(0xFF10B981),
     successBg = Color(0xFFECFDF5),
     successText = Color(0xFF047857),
@@ -80,18 +84,20 @@ val LightAppColors = AppColors(
 
 val DarkAppColors = AppColors(
     isDark = true,
-    background = Color(0xFF0F0B1E), // Deep Dark Indigo/Black
-    secondaryBackground = Color(0xFF1A1435),
-    cardBackground = Color(0xFF1E1B4B), // Deep Indigo
-    cardElevated = Color(0xFF28235C),
-    elevatedSurface = Color(0xFF2E1065), // Deep Glowing Violet
-    inputBackground = Color(0xFF1A1435),
-    inputBorder = Color(0xFF3B0764),
-    border = Color(0xFF3B0764),
-    textPrimary = Color(0xFFF8FAFC),
+    background = Color(0xFF0F0E17),         // Deep charcoal-purple obsidian base
+    secondaryBackground = Color(0xFF171524),
+    cardBackground = Color(0xFF1E1B2E),      // Rich muted dark purple elevated surface
+    cardElevated = Color(0xFF25213D),
+    elevatedSurface = Color(0xFF25213D),     // Subtle glowing border / container
+    inputBackground = Color(0xFF171524),
+    inputBorder = Color(0xFF383256),
+    border = Color(0xFF383256),
+    textPrimary = Color(0xFFF8FAFC),         // Pure White
     textSecondary = Color(0xFFCBD5E1),
-    textMuted = Color(0xFF94A3B8),
-    primaryAccent = Color(0xFFF0ABFC), // Neon Lilac / Orchid
+    textMuted = Color(0xFF94A3B8),           // Muted Gray
+    primaryAccent = Color(0xFFA78BFA),       // Vibrant neon lavender-purple
+    accentTeal = Color(0xFF38BDF8),          // High-contrast teal accent
+    accentCoral = Color(0xFFF43F5E),         // Coral accent
     success = Color(0xFF10B981),
     successBg = Color(0xFF064E3B),
     successText = Color(0xFF34D399),
@@ -105,21 +111,21 @@ object AppTheme {
 }
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFFA855F7), // Electric Purple
-    secondary = Color(0xFF7E22CE), // Royal Purple
-    tertiary = Color(0xFFF0ABFC), // Neon Lilac / Orchid
-    background = Color(0xFFFAF8FC),
+    primary = Color(0xFF7C3AED),            // Deep Rich Royal Purple
+    secondary = Color(0xFF6D28D9),
+    tertiary = Color(0xFF38BDF8),           // Accent Teal
+    background = Color(0xFFF8FAFC),
     surface = Color.White,
-    onBackground = Color(0xFF1E1E22),
-    onSurface = Color(0xFF1E1E22),
+    onBackground = Color(0xFF1E293B),
+    onSurface = Color(0xFF1E293B),
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFF0ABFC), // Neon Lilac / Orchid
-    secondary = Color(0xFFA855F7), // Electric Purple
-    tertiary = Color(0xFF1E1B4B), // Deep Indigo
-    background = Color(0xFF0F0B1E),
-    surface = Color(0xFF1E1B4B),
+    primary = Color(0xFFA78BFA),            // Vibrant Neon Lavender-Purple
+    secondary = Color(0xFF8B5CF6),
+    tertiary = Color(0xFF38BDF8),           // Accent Teal
+    background = Color(0xFF0F0E17),         // Deep charcoal-purple obsidian base
+    surface = Color(0xFF1E1B2E),            // Rich muted dark purple
     onBackground = Color(0xFFF8FAFC),
     onSurface = Color(0xFFF8FAFC),
 )

@@ -682,7 +682,7 @@ fun VerticalScrollAndSelectPicker(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                items(items) { item ->
+                items(items, key = { it }) { item ->
                     val isSelected = item == selectedItem
                     Box(
                         modifier = Modifier

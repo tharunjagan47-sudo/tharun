@@ -824,14 +824,14 @@ fun WorkoutProgressTrack(
         label = "WorkoutFigureTrackProgress"
     )
 
-    val tealColor = Color(0xFF0D9488)
-    val trackBgColor = if (isDark) Color(0xFF134E4A).copy(alpha = 0.35f) else Color(0xFFF0FDFA)
+    val trackAccent = if (isDark) Color(0xFF38BDF8) else Color(0xFF7C3AED)
+    val trackBgColor = if (isDark) Color(0xFF1E1B2E) else Color(0xFFF5F3FF)
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
             .background(trackBgColor)
-            .border(1.dp, tealColor.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
+            .border(1.dp, trackAccent.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
         Column {
@@ -844,13 +844,13 @@ fun WorkoutProgressTrack(
                     text = "Activity Progress Track",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = tealColor
+                    color = trackAccent
                 )
                 Text(
                     text = "${(animatedProgress * 100).toInt()}%",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = tealColor
+                    color = trackAccent
                 )
             }
 
@@ -874,7 +874,7 @@ fun WorkoutProgressTrack(
 
                     // 1. Horizontal dashed baseline track
                     drawLine(
-                        color = tealColor.copy(alpha = 0.35f),
+                        color = trackAccent.copy(alpha = 0.35f),
                         start = Offset(paddingX, trackY),
                         end = Offset(size.width - paddingX, trackY),
                         strokeWidth = strokeW,
@@ -886,7 +886,7 @@ fun WorkoutProgressTrack(
                     val currentProgressX = paddingX + (availableWidth * animatedProgress)
                     if (currentProgressX > paddingX) {
                         drawLine(
-                            color = tealColor,
+                            color = trackAccent,
                             start = Offset(paddingX, trackY),
                             end = Offset(currentProgressX, trackY),
                             strokeWidth = strokeW + 0.8.dp.toPx(),
@@ -896,14 +896,14 @@ fun WorkoutProgressTrack(
 
                     // 3. Start Point Dot
                     drawCircle(
-                        color = tealColor,
+                        color = trackAccent,
                         radius = 4.dp.toPx(),
                         center = Offset(paddingX, trackY)
                     )
 
                     // 4. Finish Goal Dot
                     drawCircle(
-                        color = tealColor,
+                        color = trackAccent,
                         radius = 4.dp.toPx(),
                         center = Offset(size.width - paddingX, trackY),
                         style = Stroke(width = 2.dp.toPx())

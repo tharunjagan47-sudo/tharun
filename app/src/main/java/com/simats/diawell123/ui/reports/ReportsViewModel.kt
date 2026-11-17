@@ -1,11 +1,13 @@
 package com.simats.diawell123.ui.reports
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.model.WeeklyReportData
 import com.simats.diawell123.data.repository.ReportsRepository
 import com.simats.diawell123.data.repository.ReportsRepositoryImpl
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,40 +29,62 @@ class ReportsViewModel(
     private val _uiState = MutableStateFlow(WeeklyReportUiState())
     val uiState: StateFlow<WeeklyReportUiState> = _uiState.asStateFlow()
 
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("ReportsViewModel", "Uncaught exception in ReportsViewModel", throwable)
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                isRefreshing = false,
+                errorMessage = throwable.localizedMessage ?: "Failed to compile weekly report."
+            )
+        }
+    }
+
     init {
         loadWeeklyReport()
     }
 
     fun loadWeeklyReport(endDate: String? = null, isPullToRefresh: Boolean = false) {
-        viewModelScope.launch {
-            _uiState.update {
-                if (isPullToRefresh) it.copy(isRefreshing = true, errorMessage = null)
-                else it.copy(isLoading = it.reportData == null, selectedEndDate = endDate, errorMessage = null)
-            }
-
-            val result = repository.getWeeklyReport(endDate = endDate)
-            result.fold(
-                onSuccess = { data ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            reportData = data,
-                            selectedEndDate = data.endDate,
-                            errorMessage = null
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            errorMessage = error.message ?: "Failed to compile weekly report."
-                        )
-                    }
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                _uiState.update {
+                    if (isPullToRefresh) it.copy(isRefreshing = true, errorMessage = null)
+                    else it.copy(isLoading = it.reportData == null, selectedEndDate = endDate, errorMessage = null)
                 }
-            )
+
+                val result = repository.getWeeklyReport(endDate = endDate)
+                result.fold(
+                    onSuccess = { data ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                reportData = data,
+                                selectedEndDate = data.endDate,
+                                errorMessage = null
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                errorMessage = error.message ?: "Failed to compile weekly report."
+                            )
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("ReportsViewModel", "Exception loading report", e)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        errorMessage = e.localizedMessage ?: "Failed to compile weekly report."
+                    )
+                }
+            }
         }
     }
 }

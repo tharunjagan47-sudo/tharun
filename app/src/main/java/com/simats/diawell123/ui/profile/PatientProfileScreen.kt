@@ -342,7 +342,7 @@ fun IosLiquidGlassSlider(
                     contentPadding = PaddingValues(horizontal = 6.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    items(items) { item ->
+                    items(items, key = { it }) { item ->
                         val isSelected = item == selectedItem
 
                         if (isSelected) {
