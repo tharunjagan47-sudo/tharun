@@ -17,6 +17,7 @@ import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Query
 
 interface ProfileApiService {
 
@@ -49,7 +50,8 @@ interface ProfileApiService {
     @Multipart
     @POST("auth/uploadprofile.php")
     suspend fun uploadProfilePhoto(
-        @Part photo: MultipartBody.Part
+        @Part photo: MultipartBody.Part,
+        @Query("user_id") userId: Int? = null
     ): Response<UploadProfilePhotoResponse>
 }
 

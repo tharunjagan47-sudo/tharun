@@ -138,7 +138,9 @@ fun EditProfileScreen(
                 // Upload to server
                 val tempFile = uriToFile(context, uri)
                 if (tempFile != null) {
-                    viewModel.uploadProfilePhoto(tempFile)
+                    viewModel.uploadProfilePhoto(tempFile) {
+                        Toast.makeText(context, "Profile picture updated successfully!", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -191,7 +193,9 @@ fun EditProfileScreen(
 
                 val tempFile = bitmapToFile(context, bitmap)
                 if (tempFile != null) {
-                    viewModel.uploadProfilePhoto(tempFile)
+                    viewModel.uploadProfilePhoto(tempFile) {
+                        Toast.makeText(context, "Profile picture captured and updated!", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

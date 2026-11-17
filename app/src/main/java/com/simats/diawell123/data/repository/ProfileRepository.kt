@@ -269,12 +269,21 @@ class ProfileRepositoryImpl(
 
     override suspend fun uploadProfilePhoto(photoFile: File): Result<UploadPhotoData> = withContext(Dispatchers.IO) {
         try {
-            val requestBody = photoFile.asRequestBody("image/*".toMediaTypeOrNull())
-            val part = MultipartBody.Part.createFormData("photo", photoFile.name, requestBody)
-            val response = apiService.uploadProfilePhoto(part)
+            val sessionManager = getSessionManager()
+            val userId = sessionManager?.getUserId()
+            val mimeType = when (photoFile.extension.lowercase()) {
+                "png" -> "image/png"
+                "webp" -> "image/webp"
+                else -> "image/jpeg"
+            }
+            val requestBody = photoFile.asRequestBody(mimeType.toMediaTypeOrNull())
+            val part = MultipartBody.Part.createFormData("profile_photo", photoFile.name, requestBody)
+            val response = apiService.uploadProfilePhoto(part, userId)
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
+                    body.data.photoPath?.let { sessionManager?.saveProfilePhoto(it) }
+                    body.data.photoUrl?.let { sessionManager?.saveProfilePhotoUrl(it) }
                     Result.success(body.data)
                 } else {
                     Result.failure(Exception(body.message.ifEmpty { "Failed to upload photo." }))
