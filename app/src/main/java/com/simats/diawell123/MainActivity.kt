@@ -47,6 +47,7 @@ import com.simats.diawell123.ui.activity.ActivityHistoryScreen
 import com.simats.diawell123.ui.activity.ActivityTrackingScreen
 import com.simats.diawell123.ui.activity.ActivityViewModel
 import com.simats.diawell123.ui.ai.AiChatbotScreen
+import com.simats.diawell123.ui.ai.ChatViewModel
 import com.simats.diawell123.ui.auth.AppLockScreen
 import com.simats.diawell123.ui.auth.ForgotPasswordScreen
 import com.simats.diawell123.ui.auth.LoginScreen
@@ -129,6 +130,7 @@ class MainActivity : FragmentActivity() {
                 val reportsViewModel: ReportsViewModel = viewModel()
                 val settingsViewModel: SettingsViewModel = viewModel()
                 val profileViewModel: ProfileViewModel = viewModel()
+                val chatViewModel: ChatViewModel = viewModel()
 
                 var selectedGlucoseReadingId by remember { mutableStateOf<Int?>(null) }
                 var selectedMedication by remember { mutableStateOf<com.simats.diawell123.data.model.MedicationItem?>(null) }
@@ -485,6 +487,7 @@ class MainActivity : FragmentActivity() {
                         )
 
                         "ai_chatbot", "dr_jarvis_chat" -> AiChatbotScreen(
+                            viewModel = chatViewModel,
                             onBackClick = { currentScreen = "home" },
                         )
 

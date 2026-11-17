@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.model.AlertType
 import com.simats.diawell123.data.model.BadgeType
+import com.simats.diawell123.data.model.ChatHistoryMessage
 import com.simats.diawell123.data.model.ChatMessage
 import com.simats.diawell123.data.model.ChatSender
 import com.simats.diawell123.data.model.NutritionMetric
@@ -119,8 +120,19 @@ class ChatViewModel(
                     activityRepo = activityRepository
                 )
 
-                // 3. Query Dr. Jarvis AI conversational backend
-                val result = repository.sendMessage(trimmed, patientContext)
+                // 3. Extract continuous multi-turn conversation history (last 6 turns)
+                val historyList = _messages.value
+                    .filter { !it.isError && it.text.isNotBlank() && it.text != trimmed }
+                    .takeLast(6)
+                    .map { msg ->
+                        ChatHistoryMessage(
+                            role = if (msg.sender == ChatSender.USER) "user" else "assistant",
+                            content = msg.text
+                        )
+                    }
+
+                // 4. Query Dr. Jarvis AI conversational backend with patient context & conversation memory
+                val result = repository.sendMessage(trimmed, patientContext, historyList)
 
                 result.fold(
                     onSuccess = { chatResponse ->

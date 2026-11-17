@@ -4,6 +4,7 @@ import com.simats.diawell123.data.api.ApiClient
 import com.simats.diawell123.data.api.DiaWellApiService
 import com.simats.diawell123.data.api.NetworkConstants
 import com.simats.diawell123.data.local.SessionManager
+import com.simats.diawell123.data.model.ChatHistoryMessage
 import com.simats.diawell123.data.model.ChatPatientContext
 import com.simats.diawell123.data.model.ChatRequest
 import com.simats.diawell123.data.model.ChatResponse
@@ -12,10 +13,14 @@ import retrofit2.Response
 import java.io.IOException
 
 /**
- * Repository interface for Dr. Jarvis AI communication with Live Patient Context Awareness.
+ * Repository interface for Dr. Jarvis AI communication with Live Patient Context Awareness and Multi-Turn Conversation Memory.
  */
 interface ChatRepository {
-    suspend fun sendMessage(message: String, patientContext: ChatPatientContext? = null): Result<ChatResponse>
+    suspend fun sendMessage(
+        message: String,
+        patientContext: ChatPatientContext? = null,
+        history: List<ChatHistoryMessage>? = null
+    ): Result<ChatResponse>
 }
 
 /**
@@ -27,7 +32,11 @@ class ChatRepositoryImpl(
     private val apiService: DiaWellApiService = ApiClient.diaWellApiService
 ) : ChatRepository {
 
-    override suspend fun sendMessage(message: String, patientContext: ChatPatientContext?): Result<ChatResponse> {
+    override suspend fun sendMessage(
+        message: String,
+        patientContext: ChatPatientContext?,
+        history: List<ChatHistoryMessage>?
+    ): Result<ChatResponse> {
         val trimmed = message.trim()
         if (trimmed.isEmpty()) {
             return Result.failure(IllegalArgumentException("Message cannot be empty."))
@@ -42,9 +51,10 @@ class ChatRepositoryImpl(
         val request = ChatRequest(
             prompt = trimmed,
             model = "qwen2.5:0.5b",
-            temperature = 0.7,
+            temperature = 0.3,
             userId = userId,
-            patientContext = patientContext
+            patientContext = patientContext,
+            history = history
         )
 
         return try {
@@ -62,7 +72,7 @@ class ChatRepositoryImpl(
             tryFallbackUrls(request, initialError = e)
         } catch (e: Exception) {
             // Intelligent Personal Health RAG fallback for unexpected exceptions
-            val fallbackReply = OfflineJarvisResponder.generateResponse(trimmed, patientContext)
+            val fallbackReply = OfflineJarvisResponder.generateResponse(trimmed, patientContext, history)
             Result.success(
                 ChatResponse(
                     success = true,
@@ -97,7 +107,7 @@ class ChatRepositoryImpl(
 
         // OFFLINE DEMO FALLBACK FOR DR. JARVIS AI (Personal Health RAG)
         // If cable is unplugged or server is unreachable, Dr. Jarvis answers accurately using live on-device context!
-        val fallbackReply = OfflineJarvisResponder.generateResponse(request.prompt, request.patientContext)
+        val fallbackReply = OfflineJarvisResponder.generateResponse(request.prompt, request.patientContext, request.history)
         return Result.success(
             ChatResponse(
                 success = true,

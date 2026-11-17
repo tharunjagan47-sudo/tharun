@@ -39,6 +39,17 @@ data class ChatPatientContext(
 )
 
 /**
+ * Single turn in the conversation memory passed to Dr. Jarvis.
+ */
+data class ChatHistoryMessage(
+    @SerializedName("role")
+    val role: String,
+
+    @SerializedName("content")
+    val content: String
+)
+
+/**
  * Request payload sent to DiaWell AI /api/chat or ai/chat.php
  * Primary input field is `prompt`. `message` is maintained for compatibility.
  */
@@ -50,7 +61,7 @@ data class ChatRequest(
     val model: String? = "qwen2.5:0.5b",
 
     @SerializedName("temperature")
-    val temperature: Double? = 0.7,
+    val temperature: Double? = 0.3,
 
     @SerializedName("user_id")
     val userId: Int? = null,
@@ -59,7 +70,10 @@ data class ChatRequest(
     val message: String? = prompt,
 
     @SerializedName("patient_context")
-    val patientContext: ChatPatientContext? = null
+    val patientContext: ChatPatientContext? = null,
+
+    @SerializedName("history")
+    val history: List<ChatHistoryMessage>? = null
 )
 
 /**
