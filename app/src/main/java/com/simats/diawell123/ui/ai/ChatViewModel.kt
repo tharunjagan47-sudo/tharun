@@ -8,8 +8,12 @@ import com.simats.diawell123.data.model.BadgeType
 import com.simats.diawell123.data.model.ChatMessage
 import com.simats.diawell123.data.model.ChatSender
 import com.simats.diawell123.data.model.NutritionMetric
+import com.simats.diawell123.data.repository.ActivityRepository
+import com.simats.diawell123.data.repository.ActivityRepositoryImpl
 import com.simats.diawell123.data.repository.ChatRepository
 import com.simats.diawell123.data.repository.ChatRepositoryImpl
+import com.simats.diawell123.data.repository.DietRepository
+import com.simats.diawell123.data.repository.DietRepositoryImpl
 import com.simats.diawell123.data.repository.GlucoseRepository
 import com.simats.diawell123.data.repository.GlucoseRepositoryImpl
 import com.simats.diawell123.data.repository.MedsRepository
@@ -24,12 +28,14 @@ import java.util.regex.Pattern
 /**
  * ViewModel managing state for Dr. Jarvis AI Chatbot and Siri-style Voice Mode.
  * Supports two-way voice responses, hands-free glucose logging / medication alarm actions,
- * and clinical alert/macro extraction.
+ * and live Patient Context Awareness (Personal Health RAG).
  */
 class ChatViewModel(
     private val repository: ChatRepository = ChatRepositoryImpl(),
     private val glucoseRepository: GlucoseRepository = GlucoseRepositoryImpl(),
-    private val medsRepository: MedsRepository = MedsRepositoryImpl()
+    private val medsRepository: MedsRepository = MedsRepositoryImpl(),
+    private val dietRepository: DietRepository = DietRepositoryImpl(),
+    private val activityRepository: ActivityRepository = ActivityRepositoryImpl()
 ) : ViewModel() {
 
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
@@ -51,7 +57,7 @@ class ChatViewModel(
         val userName = ProfileState.userName.ifBlank { "there" }
         val greeting = ChatMessage(
             sender = ChatSender.AI,
-            text = "Hello $userName! I am Dr. Jarvis, your DiaWell voice & diabetes wellness assistant. ⚡🩺\n\nTap the **🎙️ Mic** for Siri-style Voice Mode: ask diet questions in English or Tanglish, or say **\"Log my fasting sugar 115\"** or **\"Remind me to take Metformin at 8 PM\"** hands-free!",
+            text = "Hello $userName! I am Dr. Jarvis, your DiaWell voice & diabetes wellness assistant. ⚡🩺\n\nTap the **🎙️ Mic** for Siri-style Voice Mode: ask about your blood sugar, medications, or diet (e.g. **\"What is my glucose level?\"** or **\"What medications am I taking?\"**), or say **\"Log my fasting sugar 115\"** hands-free!",
             alertType = AlertType.NONE,
             metrics = emptyList()
         )
@@ -104,8 +110,17 @@ class ChatViewModel(
                     }
                 }
 
-                // 2. Otherwise query Dr. Jarvis AI conversational backend
-                val result = repository.sendMessage(trimmed)
+                // 2. Aggregate live Patient Context (Personal Health RAG)
+                val patientContext = PatientContextProvider.getLivePatientContext(
+                    context = context,
+                    glucoseRepo = glucoseRepository,
+                    medsRepo = medsRepository,
+                    dietRepo = dietRepository,
+                    activityRepo = activityRepository
+                )
+
+                // 3. Query Dr. Jarvis AI conversational backend
+                val result = repository.sendMessage(trimmed, patientContext)
 
                 result.fold(
                     onSuccess = { chatResponse ->
