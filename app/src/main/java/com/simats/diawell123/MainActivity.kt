@@ -46,6 +46,9 @@ import com.simats.diawell123.data.repository.AuthRepositoryImpl
 import com.simats.diawell123.ui.activity.ActivityHistoryScreen
 import com.simats.diawell123.ui.activity.ActivityTrackingScreen
 import com.simats.diawell123.ui.activity.ActivityViewModel
+import com.simats.diawell123.ui.activity.CyclingScreen
+import com.simats.diawell123.ui.activity.RunningScreen
+import com.simats.diawell123.ui.activity.WalkingScreen
 import com.simats.diawell123.ui.ai.AiChatbotScreen
 import com.simats.diawell123.ui.ai.ChatViewModel
 import com.simats.diawell123.ui.auth.AppLockScreen
@@ -232,6 +235,9 @@ class MainActivity : FragmentActivity() {
                             "daily_diet_plan", "diet" -> currentScreen = "daily_diet_plan"
                             "ai_chatbot", "dr_jarvis_chat" -> currentScreen = "ai_chatbot"
                             "activity_tracking", "activity" -> currentScreen = "activity_tracking"
+                            "walking" -> currentScreen = "walking"
+                            "running" -> currentScreen = "running"
+                            "cycling" -> currentScreen = "cycling"
                             "log_glucose", "glucose" -> currentScreen = "log_glucose"
                             "home" -> currentScreen = "home"
                         }
@@ -434,6 +440,24 @@ class MainActivity : FragmentActivity() {
                         )
 
                         "activity_tracking" -> ActivityTrackingScreen(
+                            viewModel = activityViewModel,
+                            onBackClick = { currentScreen = "home" },
+                            onHistoryClick = { currentScreen = "activity_history" },
+                        )
+
+                        "walking" -> WalkingScreen(
+                            viewModel = activityViewModel,
+                            onBackClick = { currentScreen = "home" },
+                            onHistoryClick = { currentScreen = "activity_history" },
+                        )
+
+                        "running" -> RunningScreen(
+                            viewModel = activityViewModel,
+                            onBackClick = { currentScreen = "home" },
+                            onHistoryClick = { currentScreen = "activity_history" },
+                        )
+
+                        "cycling" -> CyclingScreen(
                             viewModel = activityViewModel,
                             onBackClick = { currentScreen = "home" },
                             onHistoryClick = { currentScreen = "activity_history" },
