@@ -282,7 +282,7 @@ class MainActivity : FragmentActivity() {
 
                 // Splash screen initial routing based on saved persistent authentication session
                 LaunchedEffect(Unit) {
-                    delay(2400)
+                    delay(6800) // Allow full 6.5s cinematic 3D reveal sequence to complete
                     if (sessionManager.isLoggedIn()) {
                         if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) {
                             screenBeforeLock = "home"
