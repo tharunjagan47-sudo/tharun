@@ -27,9 +27,13 @@ object OfflineJarvisResponder {
         val lastAssistantTurn = history?.lastOrNull { it.role.equals("assistant", ignoreCase = true) || it.role.equals("ai", ignoreCase = true) }?.content?.lowercase() ?: ""
         val lastUserTurn = history?.lastOrNull { it.role.equals("user", ignoreCase = true) }?.content?.lowercase() ?: ""
 
-        // 1. Greetings, Thanks & Goodbyes
-        if (Pattern.compile("^(hi|hello|hey|hai|vanakkam|good\\s*(morning|afternoon|evening)|halo|dr\\s*jarvis|jarvis)($|\\s)", Pattern.CASE_INSENSITIVE).matcher(lower).find() && lower.length < 25) {
-            return "Hello $patientName! I am Dr. Jarvis, your DiaWell diabetes wellness companion. How can I assist you with your blood sugar, medications, diet, or hospital guidance today?"
+        // 1. Greetings, Identity, Thanks & Goodbyes
+        if (Pattern.compile("^(hi|hello|hey|hai|vanakkam|good\\s*(morning|afternoon|evening)|halo|diva|hey\\s*diva)($|\\s)", Pattern.CASE_INSENSITIVE).matcher(lower).find() && lower.length < 25) {
+            return "Hello $patientName! I am DIVA (DiaWell Intelligent Virtual Assistant), your DiaWell diabetes wellness companion. How can I assist you with your blood sugar, medications, diet, or hospital guidance today?"
+        }
+
+        if (Pattern.compile("\\b(who are you|what is your name|whats your name|your name|introduce yourself)\\b", Pattern.CASE_INSENSITIVE).matcher(lower).find()) {
+            return "Hello $patientName! I am DIVA (DiaWell Intelligent Virtual Assistant), your personal AI diabetes care companion in DiaWell. I can help you track glucose, manage medications, plan meals, and answer diabetes questions."
         }
 
         if (Pattern.compile("^(thank\\s*you|thanks|thanku|thx|nandri|romba\\s*nandri)($|\\s)", Pattern.CASE_INSENSITIVE).matcher(lower).find() && lower.length < 30) {
