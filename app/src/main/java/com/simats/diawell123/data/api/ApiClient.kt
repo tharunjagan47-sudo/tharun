@@ -22,6 +22,7 @@ object ApiClient {
         set(value) {
             field = if (value.trim().endsWith("/")) value.trim() else "${value.trim()}/"
             synchronized(this) {
+                stickyWorkingEndpoint = null
                 retrofitInstance = null
             }
         }
@@ -53,7 +54,7 @@ object ApiClient {
     }
 
     @Volatile
-    private var stickyWorkingHostPort: Pair<String, Int>? = null
+    private var stickyWorkingEndpoint: Triple<String, String, Int>? = null
 
     val localBackendHostPorts: List<Pair<String, Int>>
         get() = if (NetworkConstants.isEmulator) {
@@ -74,14 +75,29 @@ object ApiClient {
             )
         }
 
+    private val backendEndpoints: List<Triple<String, String, Int>>
+        get() = buildList {
+            for ((host, port) in localBackendHostPorts) {
+                add(Triple("http", host, port))
+            }
+            val ngrokHost = NetworkConstants.NGROK_HOST.trim()
+            if (ngrokHost.isNotEmpty()) {
+                add(Triple("https", ngrokHost, 443))
+            }
+        }
+
+    private fun isLocalHost(host: String): Boolean =
+        host in setOf("127.0.0.1", "localhost", "10.0.2.2")
+
     private fun buildEndpointRequest(
         request: okhttp3.Request,
+        scheme: String,
         host: String,
         port: Int,
         pathPrefix: String? = null
     ): okhttp3.Request {
         val urlBuilder = request.url.newBuilder()
-            .scheme("http")
+            .scheme(scheme)
             .host(host)
             .port(port)
 
@@ -104,15 +120,27 @@ object ApiClient {
     }
 
     /**
+     * Injects required Ngrok browser warning bypass and client User-Agent headers on all requests.
+     */
+    private val ngrokHeaderInterceptor = Interceptor { chain ->
+        val request = chain.request().newBuilder()
+            .header("ngrok-skip-browser-warning", "true")
+            .header("User-Agent", "DiaWell-Android-Client")
+            .build()
+        chain.proceed(request)
+    }
+
+    /**
      * Interceptor to inject session cookies and X-User-Id into requests,
-     * extract Set-Cookie (PHPSESSID), and automatically log out on HTTP 401.
+     * extract Set-Cookie (PHPSESSID), seamlessly fail over between Localhost and Ngrok,
+     * and automatically log out on HTTP 401.
      */
     private val sessionInterceptor = Interceptor { chain ->
         val sessionManager = getSessionManager()
         val originalRequest = chain.request()
         val rawPath = originalRequest.url.encodedPath
 
-        // Seamlessly route local root requests to /diawell_backend/ if not already prefixed
+        // Seamlessly route root requests to /diawell_backend/ if not already prefixed
         val effectiveRequest = if (!rawPath.startsWith("/diawell_backend", ignoreCase = true) &&
             !rawPath.startsWith("/DiaWell_backend", ignoreCase = true)
         ) {
@@ -138,33 +166,40 @@ object ApiClient {
         }
 
         val builtRequest = requestBuilder.build()
-        val cachedHostPort = stickyWorkingHostPort
-        val initialIsLocalHost = builtRequest.url.host in setOf("127.0.0.1", "localhost", "10.0.2.2")
-        val finalRequest = if (initialIsLocalHost && cachedHostPort != null) {
-            buildEndpointRequest(builtRequest, cachedHostPort.first, cachedHostPort.second)
+        val cachedEndpoint = stickyWorkingEndpoint
+        val finalRequest = if (cachedEndpoint != null) {
+            buildEndpointRequest(builtRequest, cachedEndpoint.first, cachedEndpoint.second, cachedEndpoint.third)
         } else {
             builtRequest
         }
 
+        val primaryTimeoutSec = if (isLocalHost(finalRequest.url.host)) 2 else 10
         val response: Response = try {
-            chain.withConnectTimeout(2, TimeUnit.SECONDS).proceed(finalRequest)
+            val primaryAttempt = chain.withConnectTimeout(primaryTimeoutSec, TimeUnit.SECONDS).proceed(finalRequest)
+            if (primaryAttempt.isSuccessful || primaryAttempt.code != 404) {
+                stickyWorkingEndpoint = Triple(finalRequest.url.scheme, finalRequest.url.host, finalRequest.url.port)
+            }
+            primaryAttempt
         } catch (primaryError: java.io.IOException) {
-            stickyWorkingHostPort = null
-            val currentPair = finalRequest.url.host to finalRequest.url.port
-            val candidates = localBackendHostPorts.filter { it != currentPair }
+            stickyWorkingEndpoint = null
+            val currentEndpoint = Triple(finalRequest.url.scheme, finalRequest.url.host, finalRequest.url.port)
+            val candidates = backendEndpoints.filter { it != currentEndpoint }
 
             var resolvedResponse: Response? = null
             var lastError: java.io.IOException = primaryError
 
-            // Try alternate hosts & ports (127.0.0.1:8080, 127.0.0.1:80, 127.0.0.1:8000, 10.0.2.2:80)
-            for ((altHost, altPort) in candidates) {
+            // Seamless Localhost <-> Ngrok failover across all configured endpoints
+            for ((altScheme, altHost, altPort) in candidates) {
                 try {
-                    val altRequest = buildEndpointRequest(builtRequest, altHost, altPort)
-                    val attempt = chain.withConnectTimeout(2, TimeUnit.SECONDS).proceed(altRequest)
+                    val altRequest = buildEndpointRequest(builtRequest, altScheme, altHost, altPort)
+                    val timeoutSec = if (isLocalHost(altHost)) 2 else 10
+                    val attempt = chain.withConnectTimeout(timeoutSec, TimeUnit.SECONDS).proceed(altRequest)
                     if (attempt.isSuccessful || attempt.code != 404) {
-                        stickyWorkingHostPort = altHost to altPort
+                        stickyWorkingEndpoint = Triple(altScheme, altHost, altPort)
                         resolvedResponse = attempt
                         break
+                    } else {
+                        attempt.close()
                     }
                 } catch (attemptError: java.io.IOException) {
                     lastError = attemptError
@@ -173,13 +208,22 @@ object ApiClient {
 
             // If primary hosts failed or returned 404, try nested directory /diawell_backend/diawell_backend/
             if (resolvedResponse == null || resolvedResponse.code == 404) {
-                for ((altHost, altPort) in listOf("127.0.0.1" to 8080, "127.0.0.1" to 80, "127.0.0.1" to 8000, "10.0.2.2" to 80)) {
+                for ((altScheme, altHost, altPort) in backendEndpoints) {
                     try {
-                        val nestedRequest = buildEndpointRequest(builtRequest, altHost, altPort, "/diawell_backend/diawell_backend")
-                        val attempt = chain.withConnectTimeout(2, TimeUnit.SECONDS).proceed(nestedRequest)
+                        val nestedRequest = buildEndpointRequest(
+                            builtRequest,
+                            altScheme,
+                            altHost,
+                            altPort,
+                            "/diawell_backend/diawell_backend"
+                        )
+                        val timeoutSec = if (isLocalHost(altHost)) 2 else 10
+                        val attempt = chain.withConnectTimeout(timeoutSec, TimeUnit.SECONDS).proceed(nestedRequest)
                         if (attempt.isSuccessful) {
                             resolvedResponse = attempt
                             break
+                        } else {
+                            attempt.close()
                         }
                     } catch (_: Exception) {}
                 }
@@ -215,9 +259,10 @@ object ApiClient {
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .addInterceptor(ngrokHeaderInterceptor)
             .addInterceptor(sessionInterceptor)
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(4, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
@@ -271,8 +316,10 @@ object ApiClient {
 
     private val aiOkHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .addInterceptor(ngrokHeaderInterceptor)
+            .addInterceptor(sessionInterceptor)
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(5, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
