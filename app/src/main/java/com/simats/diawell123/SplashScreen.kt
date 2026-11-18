@@ -81,7 +81,7 @@ fun SplashScreen(
     // 1. Rotation animation: Spins, slows down, and STOPS completely
     val spinRotation = remember { Animatable(0f) }
 
-    // Synchronized Cinematic Intro Theme ("Ta-Dum" + Lush Bloom) & Haptic Beats
+    // Synchronized Smooth Cinematic Intro Theme & Gentle Haptic Swell
     LaunchedEffect(Unit) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
@@ -126,27 +126,20 @@ fun SplashScreen(
                 )
             }
 
-            // Deep cinematic haptic pulse on Hit 1 ("TA" at 80ms)
-            delay(80)
+            // Single gentle smooth haptic swell matching the smooth cinematic bloom
+            delay(220)
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator?.vibrate(VibrationEffect.createOneShot(45L, 180))
+                    vibrator?.vibrate(
+                        VibrationEffect.createWaveform(
+                            longArrayOf(0L, 120L, 180L, 140L),
+                            intArrayOf(0, 65, 115, 45),
+                            -1,
+                        ),
+                    )
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator?.vibrate(45L)
-                }
-            } catch (_: Exception) {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-            }
-
-            // Deeper cinematic haptic boom on Hit 2 ("DUM" at 360ms -> +280ms)
-            delay(280)
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator?.vibrate(VibrationEffect.createOneShot(85L, 255))
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator?.vibrate(85L)
+                    vibrator?.vibrate(60L)
                 }
             } catch (_: Exception) {
                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
