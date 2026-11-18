@@ -9,7 +9,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -64,10 +64,6 @@ import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.sqrt
-
-// Physical constant-friction deceleration matching wheel_spin.wav peg cadence
-private val WheelDecelerationEasing = Easing { u -> 1f - (1f - u) * (1f - u) }
 
 // Instagram Sans Headline font family matching exact branding
 val InstagramSansHeadline = FontFamily(
@@ -82,10 +78,10 @@ fun SplashScreen(
     val context = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
 
-    // 1. Rotation animation: Spins fast immediately, slows down smoothly, and STOPS completely
+    // 1. Rotation animation: Spins, slows down, and STOPS completely
     val spinRotation = remember { Animatable(0f) }
 
-    // Synchronized Wheel Spinning Sound (R.raw.wheel_spin) & Tactile Haptic Feedback
+    // Synchronized Cinematic Intro Theme ("Ta-Dum" + Lush Bloom) & Haptic Beats
     LaunchedEffect(Unit) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
@@ -100,10 +96,10 @@ fun SplashScreen(
                 setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build(),
                 )
-                context.resources.openRawResourceFd(R.raw.wheel_spin).use { afd ->
+                context.resources.openRawResourceFd(R.raw.cinematic_intro).use { afd ->
                     setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
                 }
                 prepare()
@@ -114,51 +110,51 @@ fun SplashScreen(
         }
 
         try {
-            val spinDurationMs = 2200
-            val numPegs = 36
-
-            // Start realistic wheel spinning sound simultaneously with logo rotation
+            // Start cinematic Netflix-style intro theme right with the splash reveal
             try {
                 mediaPlayer?.start()
             } catch (_: Exception) {}
 
-            // Launch Logo Wheel Rotation using identical quadratic friction deceleration
+            // Launch smooth logo spin to stop
             val spinJob = launch {
                 spinRotation.animateTo(
-                    targetValue = 720f, // 2 full spins, decelerating smoothly to a complete stop
+                    targetValue = 720f, // 2 full spins
                     animationSpec = tween(
-                        durationMillis = spinDurationMs,
-                        easing = WheelDecelerationEasing,
+                        durationMillis = 2200,
+                        easing = FastOutSlowInEasing,
                     ),
                 )
             }
 
-            // Light tactile haptic ticks aligned with the exact wheel peg timestamps
-            val startTime = System.currentTimeMillis()
-            for (k in 0 until numPegs) {
-                val yPos = (k + 0.92) / numPegs.toDouble()
-                val u = 1.0 - sqrt((1.0 - yPos).coerceAtLeast(0.0))
-                val targetMs = (u * spinDurationMs).toLong()
-                val waitMs = targetMs - (System.currentTimeMillis() - startTime)
-                if (waitMs > 0L) delay(waitMs)
-
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        val vel = (1.0 - u).toFloat().coerceIn(0.15f, 1.0f)
-                        val amplitude = (45 + (vel * 120)).toInt().coerceIn(35, 180)
-                        vibrator?.vibrate(VibrationEffect.createOneShot(10L, amplitude))
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator?.vibrate(10L)
-                    }
-                } catch (_: Exception) {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            // Deep cinematic haptic pulse on Hit 1 ("TA" at 80ms)
+            delay(80)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator?.vibrate(VibrationEffect.createOneShot(45L, 180))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator?.vibrate(45L)
                 }
+            } catch (_: Exception) {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+
+            // Deeper cinematic haptic boom on Hit 2 ("DUM" at 360ms -> +280ms)
+            delay(280)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator?.vibrate(VibrationEffect.createOneShot(85L, 255))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator?.vibrate(85L)
+                }
+            } catch (_: Exception) {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             }
 
             spinJob.join()
-            // Allow audio tail (2.35s) to decay cleanly to silence
-            delay(180)
+            // Allow cinematic reverb tail (2.55s) to complete cleanly
+            delay(360)
         } finally {
             try {
                 mediaPlayer?.let {
