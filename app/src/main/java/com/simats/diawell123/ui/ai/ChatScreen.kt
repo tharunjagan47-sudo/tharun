@@ -114,6 +114,8 @@ fun ChatScreen(
     val voiceManager = remember { JarvisVoiceManager(context) }
     val voiceState by voiceManager.voiceState.collectAsState()
     val rmsLevel by voiceManager.rmsLevel.collectAsState()
+    val mouthOpenness by voiceManager.mouthOpenness.collectAsState()
+    val mouthShape by voiceManager.mouthShape.collectAsState()
     val partialTranscript by voiceManager.partialTranscript.collectAsState()
     val voiceError by voiceManager.voiceError.collectAsState()
     val localeLabel by voiceManager.activeLocaleLabel.collectAsState()
@@ -444,6 +446,8 @@ fun ChatScreen(
                 ) {
                     DivaTalkingAvatar(
                         isSpeaking = true,
+                        mouthOpenness = mouthOpenness,
+                        mouthShape = mouthShape,
                         sizeDp = 82,
                     )
 
@@ -719,6 +723,8 @@ fun ChatScreen(
             visible = isVoiceOverlayOpen,
             voiceState = voiceState,
             rmsLevel = rmsLevel,
+            mouthOpenness = mouthOpenness,
+            mouthShape = mouthShape,
             partialTranscript = partialTranscript,
             latestAiResponse = latestAiResponse,
             voiceError = voiceError,
