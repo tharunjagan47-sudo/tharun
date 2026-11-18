@@ -38,7 +38,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Assessment
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -82,6 +89,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.ai.IronmanDoctorAvatar
@@ -93,6 +101,7 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.ui.theme.ThemeManager
 import android.widget.Toast
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlin.math.exp
 
 @Composable
@@ -746,32 +755,37 @@ fun IosLiquidGlassBottomNav(
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
+    val density = LocalDensity.current
     val isDark = AppTheme.colors.isDark
+
     val tabs = remember {
         listOf(
-            "Home" to "🏠",
-            "Diet" to "🥗",
-            "Meds" to "💊",
-            "Reports" to "📊",
-            "Settings" to "⚙️",
+            "Home" to Icons.Rounded.Home,
+            "Diet" to Icons.Rounded.Restaurant,
+            "Meds" to Icons.Rounded.Medication,
+            "Reports" to Icons.Rounded.Assessment,
+            "Settings" to Icons.Rounded.Settings,
         )
     }
 
-    val selectedIndex = remember(selectedTab) {
-        tabs.indexOfFirst { it.first == selectedTab }.coerceAtLeast(0)
+    // Single source of truth: strictly driven by selectedTab index (zero conflicting drag state)
+    val selectedTabIndex = remember(selectedTab) {
+        tabs.indexOfFirst { it.first == selectedTab }.coerceIn(0, tabs.lastIndex)
     }
 
-    var dragFraction by remember { mutableStateOf<Float?>(null) }
-    val targetIndex = dragFraction ?: selectedIndex.toFloat()
+    var rowWidthPx by remember { mutableFloatStateOf(0f) }
+    val tabSlotWidthPx = if (tabs.isNotEmpty()) rowWidthPx / tabs.size.toFloat() else 0f
+    val pillWidthDp = 64.dp
+    val pillHeightDp = 48.dp
+    val pillWidthPx = with(density) { pillWidthDp.toPx() }
 
-    // Responsive, snappy spring animation — read strictly in graphicsLayer for zero recomposition
-    val animatedTabIndexState = animateFloatAsState(
-        targetValue = targetIndex,
+    val animatedIndexState = animateFloatAsState(
+        targetValue = selectedTabIndex.toFloat(),
         animationSpec = spring(
-            dampingRatio = 0.78f,
-            stiffness = 500f,
+            dampingRatio = 0.82f, // Crisp, zero-overshoot hi-tech snap
+            stiffness = 680f,     // Ultra-fast response (never gets stuck)
         ),
-        label = "LiquidPillSlide",
+        label = "HiTechPillSlide",
     )
 
     fun triggerTabSelection(index: Int) {
@@ -790,35 +804,24 @@ fun IosLiquidGlassBottomNav(
         }
     }
 
-    // Pre-allocated hardware-accelerated brushes (zero per-frame allocations)
-    val dockShape = remember { RoundedCornerShape(32.dp) }
-    val pillShape = remember { RoundedCornerShape(26.dp) }
-    val dockFillColor = if (isDark) Color(0xE6181528) else Color(0xF2FFFFFF)
+    // Pre-allocated hardware-accelerated shapes & brushes
+    val dockShape = remember { RoundedCornerShape(34.dp) }
+    val pillShape = remember { RoundedCornerShape(24.dp) }
+    val laserShape = remember { RoundedCornerShape(50) }
+
+    val dockFillColor = if (isDark) Color(0xF013111C) else Color(0xF5FFFFFF)
     val dockBorderBrush = remember(isDark) {
-        Brush.verticalGradient(
+        Brush.horizontalGradient(
             colors = if (isDark) {
-                listOf(Color.White.copy(alpha = 0.28f), Color.White.copy(alpha = 0.04f))
+                listOf(Color(0x66A855F7), Color(0x22FFFFFF), Color(0x667C3AED))
             } else {
-                listOf(Color(0x407C3AED), Color(0x147C3AED))
+                listOf(Color(0x55A855F7), Color(0x227C3AED), Color(0x557C3AED))
             },
         )
     }
-    val pillFillBrush = remember(isDark) {
-        Brush.linearGradient(
-            colors = if (isDark) {
-                listOf(Color(0x55A78BFA), Color(0x287C3AED))
-            } else {
-                listOf(Color(0x45A78BFA), Color(0x247C3AED))
-            },
-        )
-    }
-    val pillRimColor = if (isDark) Color(0x99C4B5FD) else Color(0x889333EA)
-    val pillGlossBrush = remember(isDark) {
+    val activeCapsuleBrush = remember {
         Brush.verticalGradient(
-            colors = listOf(
-                Color.White.copy(alpha = if (isDark) 0.26f else 0.55f),
-                Color.Transparent,
-            ),
+            colors = listOf(Color(0xFF9333EA), Color(0xFF5B21B6)),
         )
     }
 
@@ -826,189 +829,131 @@ fun IosLiquidGlassBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        // Outer iOS 18 Frosted Specular Floating Dock
+        // Outer Hi-Tech Cyber-Medical Floating Glass Capsule Dock
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(66.dp)
+                .height(68.dp)
                 .shadow(
-                    elevation = if (isDark) 18.dp else 12.dp,
+                    elevation = if (isDark) 20.dp else 12.dp,
                     shape = dockShape,
-                    ambientColor = Color(0xFF09061A).copy(alpha = if (isDark) 0.65f else 0.16f),
-                    spotColor = Color(0xFF7C3AED).copy(alpha = if (isDark) 0.35f else 0.20f),
+                    ambientColor = Color(0xFF09061A).copy(alpha = if (isDark) 0.75f else 0.16f),
+                    spotColor = Color(0xFF9333EA).copy(alpha = if (isDark) 0.42f else 0.22f),
                 )
                 .clip(dockShape)
                 .background(dockFillColor)
                 .border(width = 1.dp, brush = dockBorderBrush, shape = dockShape)
-                .padding(4.dp),
+                .padding(horizontal = 6.dp),
+            contentAlignment = Alignment.CenterStart,
         ) {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(tabs.size, selectedTab) {
-                        val slotWidth = size.width / tabs.size.toFloat()
-                        if (slotWidth <= 0f) return@pointerInput
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                val frac = ((offset.x / slotWidth) - 0.5f).coerceIn(0f, (tabs.size - 1).toFloat())
-                                dragFraction = frac
-                                triggerTabSelection((offset.x / slotWidth).toInt().coerceIn(0, tabs.size - 1))
-                            },
-                            onDrag = { change, _ ->
-                                change.consume()
-                                val frac = ((change.position.x / slotWidth) - 0.5f).coerceIn(0f, (tabs.size - 1).toFloat())
-                                dragFraction = frac
-                                triggerTabSelection((change.position.x / slotWidth).toInt().coerceIn(0, tabs.size - 1))
-                            },
-                            onDragEnd = { dragFraction = null },
-                            onDragCancel = { dragFraction = null },
-                        )
-                    },
-            ) {
-                val tabWidthPx = constraints.maxWidth / tabs.size.toFloat()
-                val tabWidthDp = maxWidth / tabs.size
-
-                // 1. GPU-ACCELERATED LIQUID SLIDING GLASS PILL (Zero layout recomposition!)
+            // 1. EXACT PIXEL-LOCKED SLIDING ACTIVE CAPSULE (64.dp x 48.dp)
+            if (rowWidthPx > 0f) {
                 Box(
                     modifier = Modifier
-                        .width(tabWidthDp)
-                        .fillMaxHeight()
-                        .graphicsLayer {
-                            val currentIdx = animatedTabIndexState.value
-                            val travelDelta = abs(targetIndex - currentIdx).coerceAtMost(1.5f)
-                            translationX = currentIdx * tabWidthPx
-                            scaleX = 1f + (travelDelta * 0.12f)
-                            scaleY = 1f - (travelDelta * 0.06f)
+                        .offset {
+                            val xPx = (animatedIndexState.value * tabSlotWidthPx) +
+                                ((tabSlotWidthPx - pillWidthPx) / 2f)
+                            IntOffset(xPx.roundToInt(), 0)
                         }
-                        .padding(horizontal = 2.dp, vertical = 1.dp)
+                        .width(pillWidthDp)
+                        .height(pillHeightDp)
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = pillShape,
+                            ambientColor = Color(0xFF9333EA).copy(alpha = 0.65f),
+                            spotColor = Color(0xFFA855F7).copy(alpha = 0.85f),
+                        )
                         .clip(pillShape)
-                        .background(pillFillBrush)
-                        .border(width = 1.dp, color = pillRimColor, shape = pillShape),
+                        .background(activeCapsuleBrush)
+                        .border(
+                            width = 0.8.dp,
+                            color = Color(0x66E9D5FF),
+                            shape = pillShape,
+                        ),
+                    contentAlignment = Alignment.TopCenter,
                 ) {
-                    // Subtle top specular highlight sheen
+                    // Bright top neon laser indicator line
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(22.dp)
-                            .background(pillGlossBrush),
+                            .padding(top = 3.dp)
+                            .width(24.dp)
+                            .height(3.dp)
+                            .clip(laserShape)
+                            .background(Color(0xFFE9D5FF)),
                     )
                 }
+            }
 
-                // 2. TAB ICON BUTTONS WITH SNAPPY GPU MICRO-ANIMATIONS (Zero ripple delay!)
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    tabs.forEachIndexed { index, (name, icon) ->
-                        val isSelected = selectedTab == name
-                        val interactionSource = remember { MutableInteractionSource() }
+            // 2. EQUAL-WEIGHT TAB ROW WITH CRISP MATERIAL 3 VECTOR ICONS
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onGloballyPositioned { coordinates ->
+                        rowWidthPx = coordinates.size.width.toFloat()
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                tabs.forEachIndexed { index, (name, iconVector) ->
+                    val isSelected = index == selectedTabIndex
+                    val interactionSource = remember { MutableInteractionSource() }
 
-                        val iconScaleState = animateFloatAsState(
-                            targetValue = if (isSelected) 1.18f else 1.0f,
-                            animationSpec = spring(dampingRatio = 0.6f, stiffness = 600f),
-                            label = "IconScale_$name",
-                        )
-                        val iconLiftState = animateFloatAsState(
-                            targetValue = if (isSelected) -3f else 0f,
-                            animationSpec = spring(dampingRatio = 0.65f, stiffness = 550f),
-                            label = "IconLift_$name",
-                        )
-                        val labelAlphaState = animateFloatAsState(
-                            targetValue = if (isSelected) 1f else 0.70f,
-                            animationSpec = tween(durationMillis = 160),
-                            label = "LabelAlpha_$name",
-                        )
-                        val glowAlphaState = animateFloatAsState(
-                            targetValue = if (isSelected) 1f else 0f,
-                            animationSpec = tween(durationMillis = 180),
-                            label = "GlowAlpha_$name",
-                        )
-                        val iconTilt = remember { Animatable(0f) }
-                        LaunchedEffect(isSelected) {
-                            if (isSelected) {
-                                iconTilt.snapTo(-8f)
-                                iconTilt.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = spring(dampingRatio = 0.42f, stiffness = 700f),
-                                )
-                            } else {
-                                iconTilt.snapTo(0f)
-                            }
-                        }
+                    val iconScaleState = animateFloatAsState(
+                        targetValue = if (isSelected) 1.12f else 1.0f,
+                        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
+                        label = "HiTechIconScale_$name",
+                    )
 
-                        val activeGlowBrush = remember {
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0x55C4B5FD),
-                                    Color.Transparent,
-                                ),
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
-                                ) {
-                                    triggerTabSelection(index)
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            // Soft radial glow bloom behind active icon
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .graphicsLayer {
-                                        alpha = glowAlphaState.value
-                                        scaleX = iconScaleState.value
-                                        scaleY = iconScaleState.value
-                                    }
-                                    .background(activeGlowBrush, CircleShape),
-                            )
-
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
                             ) {
-                                Text(
-                                    text = icon,
-                                    fontSize = 18.sp,
-                                    modifier = Modifier.graphicsLayer {
+                                triggerTabSelection(index)
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                imageVector = iconVector,
+                                contentDescription = name,
+                                tint = if (isSelected) {
+                                    Color.White
+                                } else {
+                                    if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                },
+                                modifier = Modifier
+                                    .size(21.dp)
+                                    .graphicsLayer {
                                         val s = iconScaleState.value
                                         scaleX = s
                                         scaleY = s
-                                        translationY = iconLiftState.value.dp.toPx()
-                                        rotationZ = iconTilt.value
                                     },
-                                )
+                            )
 
-                                Spacer(modifier = Modifier.height(1.dp))
+                            Spacer(modifier = Modifier.height(2.dp))
 
-                                Text(
-                                    text = name,
-                                    fontSize = 10.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) {
-                                        if (isDark) Color.White else Color(0xFF5B21B6)
-                                    } else {
-                                        AppTheme.colors.textSecondary
-                                    },
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    softWrap = false,
-                                    modifier = Modifier.graphicsLayer {
-                                        alpha = labelAlphaState.value
-                                        translationY = (iconLiftState.value * 0.35f).dp.toPx()
-                                    },
-                                )
-                            }
+                            Text(
+                                text = name,
+                                fontSize = if (isSelected) 11.sp else 10.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) {
+                                    Color(0xFFE9D5FF)
+                                } else {
+                                    Color(0xFF64748B)
+                                },
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                softWrap = false,
+                            )
                         }
                     }
                 }
