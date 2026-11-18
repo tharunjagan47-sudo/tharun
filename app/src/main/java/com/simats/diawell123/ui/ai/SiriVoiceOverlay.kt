@@ -18,6 +18,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -38,6 +40,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,15 +89,7 @@ fun SiriVoiceOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF050816).copy(alpha = 0.97f),
-                            Color(0xFF150A28).copy(alpha = 0.98f),
-                            Color(0xFF050816).copy(alpha = 0.99f)
-                        )
-                    )
-                )
+                .background(Color(0xFF0B0E17))
                 .systemBarsPadding()
         ) {
             Column(
@@ -199,7 +194,7 @@ fun SiriVoiceOverlay(
                         JarvisVoiceState.THINKING -> "⚡ THINKING..."
                         JarvisVoiceState.SPEAKING -> "🔊 DIVA SPEAKING"
                         JarvisVoiceState.ERROR -> "⚠️ TRY AGAIN"
-                        JarvisVoiceState.IDLE -> "🎙️ TAP ORB TO SPEAK"
+                        JarvisVoiceState.IDLE -> "🎙️ TAP DW LOGO TO SPEAK"
                     }
                     val stateBadgeColor = when (voiceState) {
                         JarvisVoiceState.LISTENING -> Color(0xFF00E5FF)
@@ -358,10 +353,10 @@ fun SiriVoiceOverlay(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     val helperHint = when (voiceState) {
-                        JarvisVoiceState.LISTENING -> "Tap DIVA when finished speaking"
-                        JarvisVoiceState.SPEAKING -> "Tap DIVA to interrupt and speak"
+                        JarvisVoiceState.LISTENING -> "Tap the DW chest orb when finished speaking"
+                        JarvisVoiceState.SPEAKING -> "Tap the DW chest orb to interrupt and speak"
                         JarvisVoiceState.THINKING -> "DIVA is analyzing..."
-                        else -> "Tap DIVA to speak"
+                        else -> "Tap the DW logo on DIVA's chest to speak"
                     }
 
                     Row(
@@ -407,7 +402,7 @@ fun GlowingSiriOrb(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "SiriOrbAnim")
+    val infiniteTransition = rememberInfiniteTransition(label = "DivaChestCoreAnim")
 
     val rotationAngle by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -415,134 +410,231 @@ fun GlowingSiriOrb(
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = when (voiceState) {
-                    JarvisVoiceState.THINKING -> 1600
-                    JarvisVoiceState.SPEAKING -> 2400
-                    else -> 5200
+                    JarvisVoiceState.THINKING -> 1400
+                    JarvisVoiceState.SPEAKING -> 2200
+                    JarvisVoiceState.LISTENING -> 2600
+                    else -> 5400
                 },
                 easing = LinearEasing
             ),
             repeatMode = RepeatMode.Restart
         ),
-        label = "orbRotation"
+        label = "chestOrbRotation"
     )
 
     val breathing by infiniteTransition.animateFloat(
         initialValue = 0.94f,
-        targetValue = 1.07f,
+        targetValue = 1.08f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "orbBreath"
+        label = "chestOrbBreath"
     )
 
     val wavePhase by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = (2f * PI).toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1100, easing = LinearEasing),
+            animation = tween(durationMillis = 1000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
-        label = "wavePhase"
+        label = "chestWavePhase"
+    )
+
+    val rippleProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "chestRipple"
     )
 
     val smoothRms by animateFloatAsState(
         targetValue = when (voiceState) {
-            JarvisVoiceState.LISTENING -> rmsLevel.coerceIn(0.08f, 1f)
-            JarvisVoiceState.SPEAKING -> 0.55f
-            JarvisVoiceState.THINKING -> 0.35f
-            else -> 0.05f
+            JarvisVoiceState.LISTENING -> rmsLevel.coerceIn(0.12f, 1f)
+            JarvisVoiceState.SPEAKING -> 0.62f
+            JarvisVoiceState.THINKING -> 0.42f
+            else -> 0.06f
         },
-        animationSpec = tween(durationMillis = 110),
+        animationSpec = tween(durationMillis = 100),
         label = "smoothRms"
     )
 
+    val isOrbActive = voiceState == JarvisVoiceState.LISTENING ||
+        voiceState == JarvisVoiceState.THINKING ||
+        voiceState == JarvisVoiceState.SPEAKING
+
+    val orbActivationAlpha by animateFloatAsState(
+        targetValue = if (isOrbActive) 1f else 0f,
+        animationSpec = tween(durationMillis = 220),
+        label = "orbActivationAlpha"
+    )
+
+    val stageSizeDp = 304
+    val interactionSource = remember { MutableInteractionSource() }
+
     Box(
         modifier = modifier
-            .size(224.dp)
-            .clip(CircleShape)
-            .clickable { onClick() },
+            .size(stageSizeDp.dp),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val cx = size.width / 2f
-            val cy = size.height / 2f
-            val baseRadius = size.minDimension * 0.36f * breathing + (smoothRms * 12f)
+        // 1. LARGE FULL-BODY VIRTUAL ASSISTANT DIVA ROBOT (No circle crop, seamlessly floating in space!)
+        DivaTalkingAvatar(
+            isSpeaking = voiceState == JarvisVoiceState.SPEAKING,
+            sizeDp = stageSizeDp,
+            fullBody = true
+        )
 
-            // Outer ambient glow
-            val auraColors = when (voiceState) {
-                JarvisVoiceState.SPEAKING -> listOf(
-                    Color(0xFF00E5FF).copy(alpha = 0.45f),
-                    Color(0xFFA855F7).copy(alpha = 0.25f),
-                    Color.Transparent
-                )
-                JarvisVoiceState.THINKING -> listOf(
-                    Color(0xFFFF2E93).copy(alpha = 0.44f),
-                    Color(0xFF8B5CF6).copy(alpha = 0.22f),
-                    Color.Transparent
-                )
-                else -> listOf(
-                    Color(0xFF00E5FF).copy(alpha = 0.36f + smoothRms * 0.26f),
-                    Color(0xFFA855F7).copy(alpha = 0.24f),
-                    Color.Transparent
-                )
-            }
+        // 2. INTERACTIVE VOICE ORB CENTERED EXACTLY ON DIVA'S DW CHEST LOGO (x=50%, y=61.5%)
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val cx = size.width * 0.50f
+            val cy = size.height * 0.615f
+            val dwCoreRadius = size.minDimension * 0.148f
+
+            // Subtle inviting glow halo on the DW chest logo even when IDLE
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = auraColors,
+                    colors = listOf(
+                        Color(0xFFA855F7).copy(alpha = 0.22f * breathing),
+                        Color(0xFF00E5FF).copy(alpha = 0.10f * breathing),
+                        Color.Transparent
+                    ),
                     center = Offset(cx, cy),
-                    radius = size.minDimension * 0.50f
-                )
+                    radius = dwCoreRadius * 1.45f
+                ),
+                radius = dwCoreRadius * 1.45f,
+                center = Offset(cx, cy)
             )
 
-            // Dual counter-rotating Siri plasma ribbons around DIVA
-            rotate(degrees = rotationAngle, pivot = Offset(cx, cy)) {
-                drawCircle(
-                    brush = Brush.sweepGradient(
-                        colors = listOf(
-                            Color(0xFF00E5FF),
-                            Color(0xFF8B5CF6),
-                            Color(0xFFF0ABFC),
-                            Color(0xFF38BDF8),
-                            Color(0xFF00E5FF)
-                        ),
-                        center = Offset(cx, cy)
-                    ),
-                    radius = baseRadius + 10f,
-                    style = Stroke(width = 3.5.dp.toPx())
-                )
-            }
+            // Active Glowing Siri Voice Orb erupting right inside/around the DW chest emblem!
+            if (orbActivationAlpha > 0.01f) {
+                val activeRadius = dwCoreRadius * (0.98f + smoothRms * 0.14f) * breathing
 
-            rotate(degrees = -rotationAngle * 1.3f, pivot = Offset(cx, cy)) {
-                val points = 72
-                val ringPath = Path()
-                val amp = if (voiceState == JarvisVoiceState.LISTENING || voiceState == JarvisVoiceState.SPEAKING) {
-                    5f + (smoothRms * 11f)
-                } else {
-                    2f
-                }
-                for (i in 0..points) {
-                    val theta = (i.toFloat() / points) * 2f * PI.toFloat()
-                    val r = baseRadius + 4f + sin(theta * 5f + wavePhase) * amp
-                    val px = cx + r * cos(theta)
-                    val py = cy + r * sin(theta)
-                    if (i == 0) ringPath.moveTo(px, py) else ringPath.lineTo(px, py)
-                }
-                ringPath.close()
-                drawPath(
-                    path = ringPath,
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF00E5FF), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
-                    ),
-                    style = Stroke(width = 2.8.dp.toPx(), cap = StrokeCap.Round)
+                // Expanding voice energy ripple wave radiating out from DW chest core
+                val rippleRadius = dwCoreRadius * (1.0f + rippleProgress * (0.85f + smoothRms * 0.65f))
+                val rippleAlpha = (1f - rippleProgress) * 0.55f * orbActivationAlpha
+                drawCircle(
+                    color = when (voiceState) {
+                        JarvisVoiceState.SPEAKING -> Color(0xFF00E5FF).copy(alpha = rippleAlpha)
+                        JarvisVoiceState.THINKING -> Color(0xFFF472B6).copy(alpha = rippleAlpha)
+                        else -> Color(0xFF00E5FF).copy(alpha = rippleAlpha)
+                    },
+                    radius = rippleRadius,
+                    center = Offset(cx, cy),
+                    style = Stroke(width = 2.2.dp.toPx())
                 )
+
+                // Soft glowing plasma aura centered right on the DW logo
+                val auraColors = when (voiceState) {
+                    JarvisVoiceState.SPEAKING -> listOf(
+                        Color(0xFF00E5FF).copy(alpha = 0.42f * orbActivationAlpha),
+                        Color(0xFFA855F7).copy(alpha = 0.28f * orbActivationAlpha),
+                        Color.Transparent
+                    )
+                    JarvisVoiceState.THINKING -> listOf(
+                        Color(0xFFFF2E93).copy(alpha = 0.46f * orbActivationAlpha),
+                        Color(0xFF8B5CF6).copy(alpha = 0.26f * orbActivationAlpha),
+                        Color.Transparent
+                    )
+                    else -> listOf(
+                        Color(0xFF00E5FF).copy(alpha = (0.40f + smoothRms * 0.25f) * orbActivationAlpha),
+                        Color(0xFFA855F7).copy(alpha = 0.28f * orbActivationAlpha),
+                        Color.Transparent
+                    )
+                }
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = auraColors,
+                        center = Offset(cx, cy),
+                        radius = dwCoreRadius * 1.95f
+                    ),
+                    radius = dwCoreRadius * 1.95f,
+                    center = Offset(cx, cy)
+                )
+
+                // Primary rotating neon Siri plasma ring hugging the DW chest emblem
+                rotate(degrees = rotationAngle, pivot = Offset(cx, cy)) {
+                    drawCircle(
+                        brush = Brush.sweepGradient(
+                            colors = listOf(
+                                Color(0xFF00E5FF).copy(alpha = orbActivationAlpha),
+                                Color(0xFF8B5CF6).copy(alpha = orbActivationAlpha),
+                                Color(0xFFFF2E93).copy(alpha = orbActivationAlpha),
+                                Color(0xFFF0ABFC).copy(alpha = orbActivationAlpha),
+                                Color(0xFF00E5FF).copy(alpha = orbActivationAlpha)
+                            ),
+                            center = Offset(cx, cy)
+                        ),
+                        radius = activeRadius,
+                        center = Offset(cx, cy),
+                        style = Stroke(width = 3.2.dp.toPx())
+                    )
+                }
+
+                // Counter-rotating RMS-reactive liquid plasma waveform ring right on the DW logo
+                rotate(degrees = -rotationAngle * 1.35f, pivot = Offset(cx, cy)) {
+                    val points = 60
+                    val ringPath = Path()
+                    val amp = (3.0f + smoothRms * 8.5f) * orbActivationAlpha
+                    for (i in 0..points) {
+                        val theta = (i.toFloat() / points) * 2f * PI.toFloat()
+                        val r = activeRadius * 0.92f + sin(theta * 5f + wavePhase) * amp
+                        val px = cx + r * cos(theta)
+                        val py = cy + r * sin(theta)
+                        if (i == 0) ringPath.moveTo(px, py) else ringPath.lineTo(px, py)
+                    }
+                    ringPath.close()
+                    drawPath(
+                        path = ringPath,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF00E5FF).copy(alpha = 0.90f * orbActivationAlpha),
+                                Color(0xFFA855F7).copy(alpha = 0.90f * orbActivationAlpha),
+                                Color(0xFFF0ABFC).copy(alpha = 0.90f * orbActivationAlpha)
+                            )
+                        ),
+                        style = Stroke(width = 2.4.dp.toPx(), cap = StrokeCap.Round)
+                    )
+                }
+
+                // Mini live audio equalizer bars pulsing gently inside the DW chest core during LISTENING
+                if (voiceState == JarvisVoiceState.LISTENING) {
+                    val barCount = 5
+                    val spacing = 7.dp.toPx()
+                    val startX = cx - ((barCount - 1) * spacing) / 2f
+                    for (b in 0 until barCount) {
+                        val weight = 1f - (kotlin.math.abs(b - 2) * 0.22f)
+                        val osc = kotlin.math.abs(sin(wavePhase + b * 0.85f))
+                        val barH = (6f + smoothRms * 22f * osc * weight).dp.toPx()
+                            .coerceAtMost(dwCoreRadius * 1.15f)
+                        val bx = startX + b * spacing
+                        drawLine(
+                            color = if (b % 2 == 0) Color(0xFF00E5FF) else Color(0xFFF0ABFC),
+                            start = Offset(bx, cy - barH / 2f),
+                            end = Offset(bx, cy + barH / 2f),
+                            strokeWidth = 2.8.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+                    }
+                }
             }
         }
 
-        // Animated Talking DIVA Robot: mouth moves & sparkles animate live while SPEAKING!
-        DivaTalkingAvatar(
-            isSpeaking = voiceState == JarvisVoiceState.SPEAKING,
-            sizeDp = 152
+        // 3. DEDICATED CLICKABLE HOTSPOT RIGHT OVER DIVA'S DW CHEST LOGO (y = 61.5% -> +35.dp from center)
+        Box(
+            modifier = Modifier
+                .offset(y = 35.dp)
+                .size(106.dp)
+                .clip(CircleShape)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                    onClick()
+                }
         )
     }
 }
