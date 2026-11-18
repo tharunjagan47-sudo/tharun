@@ -14,7 +14,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,6 +65,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,7 +80,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.launch
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -756,6 +761,7 @@ fun IosLiquidGlassBottomNav(
 ) {
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
     val isDark = AppTheme.colors.isDark
 
     val tabs = remember {
@@ -768,28 +774,14 @@ fun IosLiquidGlassBottomNav(
         )
     }
 
-    // Single source of truth: strictly driven by selectedTab index (zero conflicting drag state)
     val selectedTabIndex = remember(selectedTab) {
         tabs.indexOfFirst { it.first == selectedTab }.coerceIn(0, tabs.lastIndex)
     }
 
-    var rowWidthPx by remember { mutableFloatStateOf(0f) }
-    val tabSlotWidthPx = if (tabs.isNotEmpty()) rowWidthPx / tabs.size.toFloat() else 0f
-    val pillWidthDp = 64.dp
-    val pillHeightDp = 48.dp
-    val pillWidthPx = with(density) { pillWidthDp.toPx() }
-
-    val animatedIndexState = animateFloatAsState(
-        targetValue = selectedTabIndex.toFloat(),
-        animationSpec = spring(
-            dampingRatio = 0.82f, // Crisp, zero-overshoot hi-tech snap
-            stiffness = 680f,     // Ultra-fast response (never gets stuck)
-        ),
-        label = "HiTechPillSlide",
-    )
-
-    fun triggerTabSelection(index: Int) {
-        val tabName = tabs.getOrNull(index)?.first ?: return
+    // Keep latest callbacks & state accessible inside pointerInput(Unit) without ever cancelling active drags!
+    val currentSelectedIndex by rememberUpdatedState(selectedTabIndex)
+    val currentOnSelectIndex by rememberUpdatedState<(Int) -> Unit> { index ->
+        val tabName = tabs.getOrNull(index)?.first ?: return@rememberUpdatedState
         if (tabName != selectedTab) {
             try {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -804,24 +796,123 @@ fun IosLiquidGlassBottomNav(
         }
     }
 
-    // Pre-allocated hardware-accelerated shapes & brushes
-    val dockShape = remember { RoundedCornerShape(34.dp) }
-    val pillShape = remember { RoundedCornerShape(24.dp) }
-    val laserShape = remember { RoundedCornerShape(50) }
+    var rowWidthPx by remember { mutableFloatStateOf(0f) }
+    var isPressed by remember { mutableStateOf(false) }
+    var hoveredIndex by remember { mutableIntStateOf(selectedTabIndex) }
+    var activeDragPos by remember { mutableStateOf<Float?>(null) }
+    var velocityStretch by remember { mutableFloatStateOf(0f) }
 
-    val dockFillColor = if (isDark) Color(0xF013111C) else Color(0xF5FFFFFF)
+    // Continuous 60/120 FPS liquid lens position [0f .. 4f]
+    val lensPos = remember { Animatable(selectedTabIndex.toFloat()) }
+
+    // Sync lens smoothly when tab changes externally (e.g. from screen buttons/back press)
+    LaunchedEffect(selectedTabIndex) {
+        hoveredIndex = selectedTabIndex
+        if (!isPressed && activeDragPos == null) {
+            lensPos.animateTo(
+                targetValue = selectedTabIndex.toFloat(),
+                animationSpec = spring(
+                    dampingRatio = 0.72f,
+                    stiffness = 560f,
+                ),
+            )
+        }
+    }
+
+    // Smooth liquid inflation when finger presses & slides the glass lens
+    val pressScaleState = animateFloatAsState(
+        targetValue = if (isPressed) 1.09f else 1.0f,
+        animationSpec = spring(dampingRatio = 0.62f, stiffness = 580f),
+        label = "LiquidLensPressScale",
+    )
+    val smoothStretchState = animateFloatAsState(
+        targetValue = velocityStretch,
+        animationSpec = spring(dampingRatio = 0.70f, stiffness = 420f),
+        label = "LiquidLensStretch",
+    )
+
+    val pillWidthDp = 76.dp
+    val pillHeightDp = 70.dp
+    val dockHeightDp = 56.dp
+    val pillWidthPx = with(density) { pillWidthDp.toPx() }
+    val tabSlotWidthPx = if (tabs.isNotEmpty() && rowWidthPx > 0f) rowWidthPx / tabs.size.toFloat() else 0f
+
+    // Pre-allocated shapes & crystal liquid-glass brushes (zero per-frame allocations)
+    val dockShape = remember { RoundedCornerShape(28.dp) }
+    val lensShape = remember { RoundedCornerShape(24.dp) }
+
+    val dockFillColor = if (isDark) Color(0xF20C0E16) else Color(0xF5FFFFFF)
     val dockBorderBrush = remember(isDark) {
         Brush.horizontalGradient(
             colors = if (isDark) {
-                listOf(Color(0x66A855F7), Color(0x22FFFFFF), Color(0x667C3AED))
+                listOf(Color(0x40FFFFFF), Color(0x28A855F7), Color(0x40FFFFFF))
             } else {
-                listOf(Color(0x55A855F7), Color(0x227C3AED), Color(0x557C3AED))
+                listOf(Color(0x337C3AED), Color(0x18000000), Color(0x337C3AED))
             },
         )
     }
-    val activeCapsuleBrush = remember {
+
+    // iOS 26 Refractive Liquid Glass Lens Fill:
+    // Bright translucent crystal edges protruding top & bottom + deep smoked-purple glass center
+    val lensFillBrush = remember(isDark) {
+        if (isDark) {
+            Brush.verticalGradient(
+                colorStops = arrayOf(
+                    0.00f to Color(0x58E9D5FF),
+                    0.16f to Color(0xB8181428),
+                    0.50f to Color(0xD8151226),
+                    0.84f to Color(0xB82E1065),
+                    1.00f to Color(0x66F0ABFC),
+                ),
+            )
+        } else {
+            Brush.verticalGradient(
+                colorStops = arrayOf(
+                    0.00f to Color(0x99FFFFFF),
+                    0.18f to Color(0xCCEDE9FE),
+                    0.50f to Color(0xE0DDD6FE),
+                    0.84f to Color(0xCCF5D0FE),
+                    1.00f to Color(0x99FFFFFF),
+                ),
+            )
+        }
+    }
+
+    // Crisp gleaming liquid-glass specular rim border
+    val lensRimBrush = remember(isDark) {
         Brush.verticalGradient(
-            colors = listOf(Color(0xFF9333EA), Color(0xFF5B21B6)),
+            colors = if (isDark) {
+                listOf(
+                    Color(0xE6FFFFFF),
+                    Color(0x55C4B5FD),
+                    Color(0x337C3AED),
+                    Color(0xCCF0ABFC),
+                )
+            } else {
+                listOf(
+                    Color(0xFFFFFFFF),
+                    Color(0x889333EA),
+                    Color(0x667C3AED),
+                    Color(0xFFFFFFFF),
+                )
+            },
+        )
+    }
+
+    val topRefractionBrush = remember {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color.White.copy(alpha = 0.36f),
+                Color.Transparent,
+            ),
+        )
+    }
+    val bottomRefractionBrush = remember {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color.Transparent,
+                Color(0xFFF0ABFC).copy(alpha = 0.28f),
+            ),
         )
     }
 
@@ -829,113 +920,228 @@ fun IosLiquidGlassBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .height(78.dp),
         contentAlignment = Alignment.Center,
     ) {
-        // Outer Hi-Tech Cyber-Medical Floating Glass Capsule Dock
+        // 1. SLEEK FLOATING PILL DOCK BASE (56.dp tall — glass lens protrudes gracefully above & below!)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(68.dp)
+                .height(dockHeightDp)
                 .shadow(
-                    elevation = if (isDark) 20.dp else 12.dp,
+                    elevation = if (isDark) 18.dp else 12.dp,
                     shape = dockShape,
-                    ambientColor = Color(0xFF09061A).copy(alpha = if (isDark) 0.75f else 0.16f),
-                    spotColor = Color(0xFF9333EA).copy(alpha = if (isDark) 0.42f else 0.22f),
+                    ambientColor = Color(0xFF05040D).copy(alpha = if (isDark) 0.80f else 0.16f),
+                    spotColor = Color(0xFF7C3AED).copy(alpha = if (isDark) 0.30f else 0.20f),
                 )
                 .clip(dockShape)
                 .background(dockFillColor)
-                .border(width = 1.dp, brush = dockBorderBrush, shape = dockShape)
-                .padding(horizontal = 6.dp),
+                .border(width = 1.dp, brush = dockBorderBrush, shape = dockShape),
+        )
+
+        // 2. INTERACTIVE CONTENT & OVERSIZED LIQUID GLASS LENS CONTAINER
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 6.dp)
+                .onGloballyPositioned { coordinates ->
+                    rowWidthPx = coordinates.size.width.toFloat()
+                }
+                // Keyed on Unit so gesture coroutine NEVER cancels mid-slide when switching screens!
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val width = size.width.toFloat()
+                        if (width <= 0f) return@awaitEachGesture
+                        val slotW = width / tabs.size.toFloat()
+
+                        isPressed = true
+                        var lastX = down.position.x
+                        var targetTabIdx = (down.position.x / slotW).toInt().coerceIn(0, tabs.lastIndex)
+                        hoveredIndex = targetTabIdx
+
+                        // Immediately switch & glide lens smoothly to touched tab
+                        currentOnSelectIndex(targetTabIdx)
+                        val initialSnapJob = scope.launch {
+                            lensPos.animateTo(
+                                targetValue = targetTabIdx.toFloat(),
+                                animationSpec = spring(dampingRatio = 0.72f, stiffness = 620f),
+                            )
+                        }
+
+                        var didDrag = false
+                        try {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                val change = event.changes.firstOrNull { it.id == down.id }
+                                    ?: event.changes.firstOrNull()
+                                    ?: break
+
+                                if (change.changedToUpIgnoreConsumed() || !change.pressed) {
+                                    break
+                                }
+
+                                val currentX = change.position.x
+                                val dx = currentX - lastX
+                                if (abs(currentX - down.position.x) > 8f) {
+                                    didDrag = true
+                                }
+
+                                if (didDrag) {
+                                    initialSnapJob.cancel()
+                                    change.consume()
+
+                                    // Zero-allocation 120Hz flexible 1:1 liquid tracking under finger
+                                    val continuousIdx = ((currentX / slotW) - 0.5f).coerceIn(
+                                        -0.12f,
+                                        (tabs.lastIndex + 0.12f),
+                                    )
+                                    activeDragPos = continuousIdx
+
+                                    // Dynamic liquid droplet stretch proportional to slide speed
+                                    velocityStretch = (abs(dx) / slotW * 1.6f).coerceIn(0f, 0.18f)
+
+                                    val newTabIdx = (currentX / slotW).toInt().coerceIn(0, tabs.lastIndex)
+                                    if (newTabIdx != targetTabIdx) {
+                                        targetTabIdx = newTabIdx
+                                        hoveredIndex = newTabIdx
+                                        currentOnSelectIndex(newTabIdx)
+                                    }
+                                }
+                                lastX = currentX
+                            }
+                        } finally {
+                            // Guaranteed cleanup: ALWAYS release & spring-lock lens dead-center on target tab
+                            initialSnapJob.cancel()
+                            val releasePos = activeDragPos ?: lensPos.value
+                            activeDragPos = null
+                            isPressed = false
+                            velocityStretch = 0f
+                            val finalTab = targetTabIdx.coerceIn(0, tabs.lastIndex)
+                            hoveredIndex = finalTab
+                            if (finalTab != currentSelectedIndex) {
+                                currentOnSelectIndex(finalTab)
+                            }
+                            scope.launch {
+                                lensPos.snapTo(releasePos)
+                                lensPos.animateTo(
+                                    targetValue = finalTab.toFloat(),
+                                    animationSpec = spring(
+                                        dampingRatio = 0.68f,
+                                        stiffness = 520f,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                },
             contentAlignment = Alignment.CenterStart,
         ) {
-            // 1. EXACT PIXEL-LOCKED SLIDING ACTIVE CAPSULE (64.dp x 48.dp)
+            // 2A. OVERSIZED iOS 26 FLOATING LIQUID GLASS MAGNIFYING LENS
             if (rowWidthPx > 0f) {
                 Box(
                     modifier = Modifier
                         .offset {
-                            val xPx = (animatedIndexState.value * tabSlotWidthPx) +
-                                ((tabSlotWidthPx - pillWidthPx) / 2f)
+                            val renderedPos = activeDragPos ?: lensPos.value
+                            val xPx = (renderedPos * tabSlotWidthPx) + ((tabSlotWidthPx - pillWidthPx) / 2f)
                             IntOffset(xPx.roundToInt(), 0)
                         }
                         .width(pillWidthDp)
                         .height(pillHeightDp)
+                        .graphicsLayer {
+                            val baseScale = pressScaleState.value
+                            val stretch = smoothStretchState.value
+                            scaleX = baseScale + stretch
+                            scaleY = baseScale - (stretch * 0.45f)
+                        }
                         .shadow(
-                            elevation = 12.dp,
-                            shape = pillShape,
-                            ambientColor = Color(0xFF9333EA).copy(alpha = 0.65f),
-                            spotColor = Color(0xFFA855F7).copy(alpha = 0.85f),
+                            elevation = if (isDark) 16.dp else 10.dp,
+                            shape = lensShape,
+                            ambientColor = Color(0xFF0A0618).copy(alpha = 0.65f),
+                            spotColor = Color(0xFFA855F7).copy(alpha = 0.65f),
                         )
-                        .clip(pillShape)
-                        .background(activeCapsuleBrush)
-                        .border(
-                            width = 0.8.dp,
-                            color = Color(0x66E9D5FF),
-                            shape = pillShape,
-                        ),
-                    contentAlignment = Alignment.TopCenter,
+                        .clip(lensShape)
+                        .background(lensFillBrush)
+                        .border(width = 1.4.dp, brush = lensRimBrush, shape = lensShape),
                 ) {
-                    // Bright top neon laser indicator line
+                    // Top crystal meniscus highlight
                     Box(
                         modifier = Modifier
-                            .padding(top = 3.dp)
-                            .width(24.dp)
-                            .height(3.dp)
-                            .clip(laserShape)
-                            .background(Color(0xFFE9D5FF)),
+                            .fillMaxWidth()
+                            .height(14.dp)
+                            .align(Alignment.TopCenter)
+                            .background(topRefractionBrush),
+                    )
+                    // Bottom purple-magenta refractive glow crescent
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(14.dp)
+                            .align(Alignment.BottomCenter)
+                            .background(bottomRefractionBrush),
                     )
                 }
             }
 
-            // 2. EQUAL-WEIGHT TAB ROW WITH CRISP MATERIAL 3 VECTOR ICONS
+            // 2B. EQUAL-WEIGHT TAB ITEMS WITH REAL-TIME LIQUID LENS MAGNIFICATION & MICRO-ANIMATIONS
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .onGloballyPositioned { coordinates ->
-                        rowWidthPx = coordinates.size.width.toFloat()
-                    },
+                modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 tabs.forEachIndexed { index, (name, iconVector) ->
-                    val isSelected = index == selectedTabIndex
-                    val interactionSource = remember { MutableInteractionSource() }
+                    val isActive = if (isPressed) (index == hoveredIndex) else (index == selectedTabIndex)
 
-                    val iconScaleState = animateFloatAsState(
-                        targetValue = if (isSelected) 1.12f else 1.0f,
-                        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-                        label = "HiTechIconScale_$name",
+                    val iconTilt = remember { Animatable(0f) }
+                    LaunchedEffect(isActive) {
+                        if (isActive) {
+                            iconTilt.snapTo(-8f)
+                            iconTilt.animateTo(
+                                targetValue = 0f,
+                                animationSpec = spring(dampingRatio = 0.45f, stiffness = 680f),
+                            )
+                        } else {
+                            iconTilt.snapTo(0f)
+                        }
+                    }
+
+                    val labelAlphaState = animateFloatAsState(
+                        targetValue = if (isActive) 1f else 0.68f,
+                        animationSpec = tween(durationMillis = 140),
+                        label = "LensLabelAlpha_$name",
                     )
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight()
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null,
-                            ) {
-                                triggerTabSelection(index)
-                            },
+                            .fillMaxHeight(),
                         contentAlignment = Alignment.Center,
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.graphicsLayer {
+                                // Real-time smooth optical magnification as the liquid glass lens glides over this tab!
+                                val currentLens = activeDragPos ?: lensPos.value
+                                val proximity = (1f - abs(index.toFloat() - currentLens)).coerceIn(0f, 1f)
+                                val magScale = 1f + (proximity * 0.18f)
+                                scaleX = magScale
+                                scaleY = magScale
+                                translationY = (-2.dp.toPx()) * proximity
+                            },
                         ) {
                             Icon(
                                 imageVector = iconVector,
                                 contentDescription = name,
-                                tint = if (isSelected) {
-                                    Color.White
+                                tint = if (isActive) {
+                                    if (isDark) Color.White else Color(0xFF4C1D95)
                                 } else {
                                     if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
                                 },
                                 modifier = Modifier
                                     .size(21.dp)
                                     .graphicsLayer {
-                                        val s = iconScaleState.value
-                                        scaleX = s
-                                        scaleY = s
+                                        rotationZ = iconTilt.value
                                     },
                             )
 
@@ -943,16 +1149,19 @@ fun IosLiquidGlassBottomNav(
 
                             Text(
                                 text = name,
-                                fontSize = if (isSelected) 11.sp else 10.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) {
-                                    Color(0xFFE9D5FF)
+                                fontSize = if (isActive) 10.5.sp else 9.5.sp,
+                                fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isActive) {
+                                    if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
                                 } else {
                                     Color(0xFF64748B)
                                 },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 softWrap = false,
+                                modifier = Modifier.graphicsLayer {
+                                    alpha = labelAlphaState.value
+                                },
                             )
                         }
                     }
