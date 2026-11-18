@@ -91,7 +91,9 @@ fun WeeklyReportScreen(
     val chartData = report?.chartData ?: emptyList()
 
     LaunchedEffect(Unit) {
-        viewModel.loadWeeklyReport(isPullToRefresh = true)
+        if (report == null) {
+            viewModel.loadWeeklyReport(isPullToRefresh = false)
+        }
     }
 
     // Smooth Line Sweep & Stop Graph Animation
@@ -636,21 +638,6 @@ fun WeeklyReportScreen(
                     viewModel.loadWeeklyReport(endDate = endDate)
                 },
                 onDismissRequest = { showCalendarDialog = false },
-            )
-        }
-
-        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
-        ElementPopUpContainer(
-            delayMillis = 300,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-            IosLiquidGlassBottomNav(
-                selectedTab = selectedTab,
-                onHomeTabClick = onHomeTabClick,
-                onDietTabClick = onDietTabClick,
-                onMedsTabClick = onMedsTabClick,
-                onReportsTabClick = { selectedTab = "Reports" },
-                onSettingsTabClick = onSettingsTabClick,
             )
         }
     }
