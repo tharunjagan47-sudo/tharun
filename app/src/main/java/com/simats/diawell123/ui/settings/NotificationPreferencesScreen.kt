@@ -223,14 +223,14 @@ fun NotificationPreferencesScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             NotificationToggleRow(
-                title = "Dr. Jarvis Voice Assistant",
-                subtitle = "Automatic two-way voice reading & audio speech.",
+                title = "DIVA Voice Assistant",
+                subtitle = "Automatic two-way voice reading & audio speech for DIVA.",
                 icon = "🤖",
                 checked = drJarvisVoiceEnabled,
                 onCheckedChange = {
                     drJarvisVoiceEnabled = it
                     sessionManager.setDrJarvisVoiceEnabled(it)
-                    Toast.makeText(context, if (it) "Dr. Jarvis Voice Assistant enabled" else "Dr. Jarvis Voice Assistant muted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if (it) "DIVA Voice Assistant enabled" else "DIVA Voice Assistant muted", Toast.LENGTH_SHORT).show()
                 },
             )
 
