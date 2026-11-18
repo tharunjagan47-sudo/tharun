@@ -72,7 +72,7 @@ class ChatViewModel(
         val userName = ProfileState.userName.ifBlank { "there" }
         val greeting = ChatMessage(
             sender = ChatSender.AI,
-            text = "Hello $userName! I am Dr. Jarvis, your DiaWell voice & diabetes wellness assistant. ⚡🩺\n\nTap the **🎙️ Mic** for Siri-style Voice Mode: ask about your blood sugar, medications, or diet (e.g. **\"What is my glucose level?\"** or **\"What medications am I taking?\"**), or say **\"Log my fasting sugar 115\"** hands-free!",
+            text = "Hello $userName! I am **DIVA** (DiaWell Intelligent Virtual Assistant), your personal voice & diabetes wellness companion. ⚡🩺\n\nTap the **🎙️ Mic** for Voice Mode: ask about your blood sugar, medications, or diet (e.g. **\"What is my glucose level?\"** or **\"What medications am I taking?\"**), or say **\"Log my fasting sugar 115\"** hands-free!",
             alertType = AlertType.NONE,
             metrics = emptyList()
         )
@@ -145,12 +145,15 @@ class ChatViewModel(
                         )
                     }
 
-                // 4. Query Dr. Jarvis AI conversational backend with patient context & conversation memory
+                // 4. Query DIVA (DiaWell Intelligent Virtual Assistant) backend with patient context & conversation memory
                 val result = repository.sendMessage(trimmed, patientContext, historyList)
 
                 result.fold(
                     onSuccess = { chatResponse ->
-                        val responseText = chatResponse.getCleanResponse()
+                        val rawResponseText = chatResponse.getCleanResponse()
+                        val responseText = rawResponseText
+                            .replace(Regex("\\bDr\\.?\\s*Jarvis\\b", RegexOption.IGNORE_CASE), "DIVA")
+                            .replace(Regex("\\bJarvis\\b", RegexOption.IGNORE_CASE), "DIVA")
                         if (responseText.isNotBlank()) {
                             val alertType = detectAlertType(responseText)
                             val metrics = extractNutritionMetrics(responseText)
@@ -164,7 +167,7 @@ class ChatViewModel(
                             _messages.value = _messages.value + aiMsg
                             onSpokenResponseReady?.invoke(responseText)
                         } else {
-                            val errorMsg = "Dr. Jarvis returned an empty response. Please try rephrasing your question."
+                            val errorMsg = "DIVA returned an empty response. Please try rephrasing your question."
                             _errorMessage.value = errorMsg
                             _messages.value = _messages.value + ChatMessage(
                                 sender = ChatSender.AI,
@@ -175,7 +178,7 @@ class ChatViewModel(
                         }
                     },
                     onFailure = { error ->
-                        val errorMsg = error.localizedMessage ?: "Could not reach Dr. Jarvis."
+                        val errorMsg = error.localizedMessage ?: "Could not reach DIVA."
                         _errorMessage.value = errorMsg
 
                         val errorAiMsg = ChatMessage(
