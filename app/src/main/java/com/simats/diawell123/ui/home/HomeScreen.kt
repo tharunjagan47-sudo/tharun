@@ -82,6 +82,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -800,35 +802,34 @@ fun IosLiquidGlassBottomNav(
     var isPressed by remember { mutableStateOf(false) }
     var hoveredIndex by remember { mutableIntStateOf(selectedTabIndex) }
     var activeDragPos by remember { mutableStateOf<Float?>(null) }
-    var velocityStretch by remember { mutableFloatStateOf(0f) }
 
-    // Continuous 60/120 FPS liquid lens position [0f .. 4f]
-    val lensPos = remember { Animatable(selectedTabIndex.toFloat()) }
-
-    // Sync lens smoothly when tab changes externally (e.g. from screen buttons/back press)
+    // Sync hoveredIndex when tab changes externally (e.g. from screen buttons/back press)
     LaunchedEffect(selectedTabIndex) {
-        hoveredIndex = selectedTabIndex
-        if (!isPressed && activeDragPos == null) {
-            lensPos.animateTo(
-                targetValue = selectedTabIndex.toFloat(),
-                animationSpec = spring(
-                    dampingRatio = 0.72f,
-                    stiffness = 560f,
-                ),
-            )
+        if (!isPressed) {
+            hoveredIndex = selectedTabIndex
         }
     }
 
+    // Target continuous position [0f .. 4f]: follows finger seamlessly during slide, locks to selectedTab on release
+    val targetLensPos = activeDragPos ?: selectedTabIndex.toFloat()
+
+    // Silky critically-damped GPU spring: filters touch digitizer micro-jitter while staying glued to thumb (~8ms lag),
+    // then glides smoothly with juicy elastic liquid settle on release — read strictly inside graphicsLayer!
+    val smoothLensPosState = animateFloatAsState(
+        targetValue = targetLensPos,
+        animationSpec = if (isPressed && activeDragPos != null) {
+            spring(dampingRatio = 0.90f, stiffness = 920f)
+        } else {
+            spring(dampingRatio = 0.76f, stiffness = 420f)
+        },
+        label = "SilkyLiquidLensPos",
+    )
+
     // Smooth liquid inflation when finger presses & slides the glass lens
     val pressScaleState = animateFloatAsState(
-        targetValue = if (isPressed) 1.09f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.62f, stiffness = 580f),
+        targetValue = if (isPressed) 1.10f else 1.0f,
+        animationSpec = spring(dampingRatio = 0.68f, stiffness = 480f),
         label = "LiquidLensPressScale",
-    )
-    val smoothStretchState = animateFloatAsState(
-        targetValue = velocityStretch,
-        animationSpec = spring(dampingRatio = 0.70f, stiffness = 420f),
-        label = "LiquidLensStretch",
     )
 
     val pillWidthDp = 76.dp
@@ -957,20 +958,17 @@ fun IosLiquidGlassBottomNav(
                         val slotW = width / tabs.size.toFloat()
 
                         isPressed = true
-                        var lastX = down.position.x
                         var targetTabIdx = (down.position.x / slotW).toInt().coerceIn(0, tabs.lastIndex)
                         hoveredIndex = targetTabIdx
+                        var settleCommitJob: Job? = null
 
-                        // Immediately switch & glide lens smoothly to touched tab
-                        currentOnSelectIndex(targetTabIdx)
-                        val initialSnapJob = scope.launch {
-                            lensPos.animateTo(
-                                targetValue = targetTabIdx.toFloat(),
-                                animationSpec = spring(dampingRatio = 0.72f, stiffness = 620f),
-                            )
-                        }
+                        // Immediately glide lens toward finger touch point
+                        val initialContinuous = ((down.position.x / slotW) - 0.5f).coerceIn(
+                            -0.08f,
+                            (tabs.lastIndex + 0.08f),
+                        )
+                        activeDragPos = initialContinuous
 
-                        var didDrag = false
                         try {
                             while (true) {
                                 val event = awaitPointerEvent()
@@ -983,77 +981,68 @@ fun IosLiquidGlassBottomNav(
                                 }
 
                                 val currentX = change.position.x
-                                val dx = currentX - lastX
-                                if (abs(currentX - down.position.x) > 8f) {
-                                    didDrag = true
+                                if (abs(currentX - down.position.x) > 6f) {
+                                    change.consume()
                                 }
 
-                                if (didDrag) {
-                                    initialSnapJob.cancel()
-                                    change.consume()
+                                // Pure continuous sub-pixel tracking with soft rubber-band edge resistance
+                                val rawIdx = (currentX / slotW) - 0.5f
+                                val continuousIdx = when {
+                                    rawIdx < 0f -> rawIdx * 0.25f
+                                    rawIdx > tabs.lastIndex -> tabs.lastIndex + (rawIdx - tabs.lastIndex) * 0.25f
+                                    else -> rawIdx
+                                }
+                                activeDragPos = continuousIdx
 
-                                    // Zero-allocation 120Hz flexible 1:1 liquid tracking under finger
-                                    val continuousIdx = ((currentX / slotW) - 0.5f).coerceIn(
-                                        -0.12f,
-                                        (tabs.lastIndex + 0.12f),
-                                    )
-                                    activeDragPos = continuousIdx
+                                val newTabIdx = (currentX / slotW).toInt().coerceIn(0, tabs.lastIndex)
+                                if (newTabIdx != targetTabIdx) {
+                                    targetTabIdx = newTabIdx
+                                    hoveredIndex = newTabIdx
+                                    // Subtle micro-haptic tick as crystal lens crosses each tab
+                                    try {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    } catch (_: Exception) {}
 
-                                    // Dynamic liquid droplet stretch proportional to slide speed
-                                    velocityStretch = (abs(dx) / slotW * 1.6f).coerceIn(0f, 0.18f)
-
-                                    val newTabIdx = (currentX / slotW).toInt().coerceIn(0, tabs.lastIndex)
-                                    if (newTabIdx != targetTabIdx) {
-                                        targetTabIdx = newTabIdx
-                                        hoveredIndex = newTabIdx
-                                        currentOnSelectIndex(newTabIdx)
+                                    // Debounce screen mount during fast sweeps so the glass slide stays 100% locked at 120 FPS;
+                                    // if user pauses briefly (160ms) on a tab, smoothly preview/switch to it live!
+                                    settleCommitJob?.cancel()
+                                    val pendingTab = newTabIdx
+                                    settleCommitJob = scope.launch {
+                                        delay(160)
+                                        currentOnSelectIndex(pendingTab)
                                     }
                                 }
-                                lastX = currentX
                             }
                         } finally {
-                            // Guaranteed cleanup: ALWAYS release & spring-lock lens dead-center on target tab
-                            initialSnapJob.cancel()
-                            val releasePos = activeDragPos ?: lensPos.value
-                            activeDragPos = null
-                            isPressed = false
-                            velocityStretch = 0f
+                            // Guaranteed cleanup: release drag, commit final tab immediately, and spring-lock lens dead-center!
+                            settleCommitJob?.cancel()
                             val finalTab = targetTabIdx.coerceIn(0, tabs.lastIndex)
                             hoveredIndex = finalTab
+                            activeDragPos = null
+                            isPressed = false
                             if (finalTab != currentSelectedIndex) {
                                 currentOnSelectIndex(finalTab)
-                            }
-                            scope.launch {
-                                lensPos.snapTo(releasePos)
-                                lensPos.animateTo(
-                                    targetValue = finalTab.toFloat(),
-                                    animationSpec = spring(
-                                        dampingRatio = 0.68f,
-                                        stiffness = 520f,
-                                    ),
-                                )
                             }
                         }
                     }
                 },
             contentAlignment = Alignment.CenterStart,
         ) {
-            // 2A. OVERSIZED iOS 26 FLOATING LIQUID GLASS MAGNIFYING LENS
+            // 2A. OVERSIZED iOS 26 FLOATING LIQUID GLASS MAGNIFYING LENS (100% GPU sub-pixel translationX!)
             if (rowWidthPx > 0f) {
                 Box(
                     modifier = Modifier
-                        .offset {
-                            val renderedPos = activeDragPos ?: lensPos.value
-                            val xPx = (renderedPos * tabSlotWidthPx) + ((tabSlotWidthPx - pillWidthPx) / 2f)
-                            IntOffset(xPx.roundToInt(), 0)
-                        }
                         .width(pillWidthDp)
                         .height(pillHeightDp)
                         .graphicsLayer {
+                            val currentPos = smoothLensPosState.value
+                            val xPx = (currentPos * tabSlotWidthPx) + ((tabSlotWidthPx - pillWidthPx) / 2f)
+                            val delta = abs(targetLensPos - currentPos)
+                            val stretch = (delta * 0.20f).coerceIn(0f, 0.18f)
                             val baseScale = pressScaleState.value
-                            val stretch = smoothStretchState.value
+                            translationX = xPx
                             scaleX = baseScale + stretch
-                            scaleY = baseScale - (stretch * 0.45f)
+                            scaleY = baseScale - (stretch * 0.42f)
                         }
                         .shadow(
                             elevation = if (isDark) 16.dp else 10.dp,
@@ -1121,8 +1110,8 @@ fun IosLiquidGlassBottomNav(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier.graphicsLayer {
-                                // Real-time smooth optical magnification as the liquid glass lens glides over this tab!
-                                val currentLens = activeDragPos ?: lensPos.value
+                                // Real-time silky optical magnification synced to sub-pixel GPU lens position!
+                                val currentLens = smoothLensPosState.value
                                 val proximity = (1f - abs(index.toFloat() - currentLens)).coerceIn(0f, 1f)
                                 val magScale = 1f + (proximity * 0.18f)
                                 scaleX = magScale
