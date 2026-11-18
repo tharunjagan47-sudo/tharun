@@ -116,7 +116,7 @@ fun SiriVoiceOverlay(
                             .padding(end = 8.dp)
                     ) {
                         Text(
-                            text = "Dr. Jarvis Voice ⚡",
+                            text = "DIVA Voice ⚡",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
@@ -197,7 +197,7 @@ fun SiriVoiceOverlay(
                     val stateBadgeText = when (voiceState) {
                         JarvisVoiceState.LISTENING -> "● LISTENING..."
                         JarvisVoiceState.THINKING -> "⚡ THINKING..."
-                        JarvisVoiceState.SPEAKING -> "🔊 DR. JARVIS SPEAKING"
+                        JarvisVoiceState.SPEAKING -> "🔊 DIVA SPEAKING"
                         JarvisVoiceState.ERROR -> "⚠️ TRY AGAIN"
                         JarvisVoiceState.IDLE -> "🎙️ TAP ORB TO SPEAK"
                     }
@@ -292,7 +292,7 @@ fun SiriVoiceOverlay(
                         ) {
                             Column {
                                 Text(
-                                    text = "DR. JARVIS",
+                                    text = "DIVA",
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFF472B6),
