@@ -1,5 +1,6 @@
 package com.simats.diawell123.ui.home
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -14,11 +15,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -176,7 +180,9 @@ fun HomeScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.loadDashboard(isPullToRefresh = true)
+        if (data == null) {
+            viewModel.loadDashboard(isPullToRefresh = false)
+        }
     }
 
     val lifecycleOwner = context as? LifecycleOwner
@@ -690,21 +696,6 @@ fun HomeScreen(
             }
         }
 
-        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
-        ElementPopUpContainer(
-            delayMillis = 300,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-            IosLiquidGlassBottomNav(
-                selectedTab = selectedTab,
-                onHomeTabClick = { selectedTab = "Home" },
-                onDietTabClick = onDietTabClick,
-                onMedsTabClick = onMedsTabClick,
-                onReportsTabClick = onReportsTabClick,
-                onSettingsTabClick = onSettingsTabClick,
-            )
-        }
-
         if (showStreakDialog) {
             StreakDetailsDialog(
                 streakDays = data?.streakDays ?: 2,
@@ -755,6 +746,7 @@ fun IosLiquidGlassBottomNav(
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
+    val isDark = AppTheme.colors.isDark
     val tabs = remember {
         listOf(
             "Home" to "🏠",
@@ -769,9 +761,18 @@ fun IosLiquidGlassBottomNav(
         tabs.indexOfFirst { it.first == selectedTab }.coerceAtLeast(0)
     }
 
-    var dockWidthPx by remember { mutableFloatStateOf(0f) }
-    var isDragging by remember { mutableStateOf(false) }
-    var dragXOffsetPx by remember { mutableFloatStateOf(0f) }
+    var dragFraction by remember { mutableStateOf<Float?>(null) }
+    val targetIndex = dragFraction ?: selectedIndex.toFloat()
+
+    // Responsive, snappy spring animation — read strictly in graphicsLayer for zero recomposition
+    val animatedTabIndexState = animateFloatAsState(
+        targetValue = targetIndex,
+        animationSpec = spring(
+            dampingRatio = 0.78f,
+            stiffness = 500f,
+        ),
+        label = "LiquidPillSlide",
+    )
 
     fun triggerTabSelection(index: Int) {
         val tabName = tabs.getOrNull(index)?.first ?: return
@@ -789,314 +790,225 @@ fun IosLiquidGlassBottomNav(
         }
     }
 
+    // Pre-allocated hardware-accelerated brushes (zero per-frame allocations)
+    val dockShape = remember { RoundedCornerShape(32.dp) }
+    val pillShape = remember { RoundedCornerShape(26.dp) }
+    val dockFillColor = if (isDark) Color(0xE6181528) else Color(0xF2FFFFFF)
+    val dockBorderBrush = remember(isDark) {
+        Brush.verticalGradient(
+            colors = if (isDark) {
+                listOf(Color.White.copy(alpha = 0.28f), Color.White.copy(alpha = 0.04f))
+            } else {
+                listOf(Color(0x407C3AED), Color(0x147C3AED))
+            },
+        )
+    }
+    val pillFillBrush = remember(isDark) {
+        Brush.linearGradient(
+            colors = if (isDark) {
+                listOf(Color(0x55A78BFA), Color(0x287C3AED))
+            } else {
+                listOf(Color(0x45A78BFA), Color(0x247C3AED))
+            },
+        )
+    }
+    val pillRimColor = if (isDark) Color(0x99C4B5FD) else Color(0x889333EA)
+    val pillGlossBrush = remember(isDark) {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color.White.copy(alpha = if (isDark) 0.26f else 0.55f),
+                Color.Transparent,
+            ),
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        val density = LocalDensity.current
-        val itemWidthPx = if (dockWidthPx > 0f) dockWidthPx / tabs.size else 1f
-
-        // Target Center X of the Active Liquid Bubble
-        val targetActiveXPx = if (isDragging && dockWidthPx > 0f) {
-            dragXOffsetPx.coerceIn(itemWidthPx / 2f, dockWidthPx - itemWidthPx / 2f)
-        } else {
-            (selectedIndex + 0.5f) * itemWidthPx
-        }
-
-        // Animated Fluid Active Center X Position
-        val animatedActiveXPx by animateFloatAsState(
-            targetValue = targetActiveXPx,
-            animationSpec = spring(
-                dampingRatio = 0.68f, // Bouncy Liquid Bubble Motion
-                stiffness = Spring.StiffnessMediumLow,
-            ),
-            label = "fluidActiveXAnimation",
-        )
-
-        // Floating Organic Fluid Liquid Glass Dock Container
+        // Outer iOS 18 Frosted Specular Floating Dock
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(68.dp)
-                .onGloballyPositioned { coordinates ->
-                    dockWidthPx = coordinates.size.width.toFloat()
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { offset ->
-                            isDragging = true
-                            dragXOffsetPx = offset.x
-                            val targetIndex = (offset.x / (dockWidthPx / tabs.size)).toInt().coerceIn(0, tabs.size - 1)
-                            triggerTabSelection(targetIndex)
-                        },
-                        onDrag = { change, _ ->
-                            change.consume()
-                            dragXOffsetPx = change.position.x
-                            val targetIndex = (change.position.x / (dockWidthPx / tabs.size)).toInt().coerceIn(0, tabs.size - 1)
-                            triggerTabSelection(targetIndex)
-                        },
-                        onDragEnd = { isDragging = false },
-                        onDragCancel = { isDragging = false },
-                    )
-                },
-            contentAlignment = Alignment.Center,
+                .height(66.dp)
+                .shadow(
+                    elevation = if (isDark) 18.dp else 12.dp,
+                    shape = dockShape,
+                    ambientColor = Color(0xFF09061A).copy(alpha = if (isDark) 0.65f else 0.16f),
+                    spotColor = Color(0xFF7C3AED).copy(alpha = if (isDark) 0.35f else 0.20f),
+                )
+                .clip(dockShape)
+                .background(dockFillColor)
+                .border(width = 1.dp, brush = dockBorderBrush, shape = dockShape)
+                .padding(4.dp),
         ) {
-            // 1. ORGANIC FLUID LIQUID GLASS CANVAS DOCK (Bulges dynamically around active tab!)
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val w = size.width
-                val h = size.height
-                val centerY = h / 2f
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(tabs.size, selectedTab) {
+                        val slotWidth = size.width / tabs.size.toFloat()
+                        if (slotWidth <= 0f) return@pointerInput
+                        detectDragGestures(
+                            onDragStart = { offset ->
+                                val frac = ((offset.x / slotWidth) - 0.5f).coerceIn(0f, (tabs.size - 1).toFloat())
+                                dragFraction = frac
+                                triggerTabSelection((offset.x / slotWidth).toInt().coerceIn(0, tabs.size - 1))
+                            },
+                            onDrag = { change, _ ->
+                                change.consume()
+                                val frac = ((change.position.x / slotWidth) - 0.5f).coerceIn(0f, (tabs.size - 1).toFloat())
+                                dragFraction = frac
+                                triggerTabSelection((change.position.x / slotWidth).toInt().coerceIn(0, tabs.size - 1))
+                            },
+                            onDragEnd = { dragFraction = null },
+                            onDragCancel = { dragFraction = null },
+                        )
+                    },
+            ) {
+                val tabWidthPx = constraints.maxWidth / tabs.size.toFloat()
+                val tabWidthDp = maxWidth / tabs.size
 
-                val baseHeight = 46.dp.toPx()
-                val bulgeHeight = 60.dp.toPx()
-                val halfBase = baseHeight / 2f
-                val halfBulge = bulgeHeight / 2f
-                val bulgeRadiusPx = itemWidthPx * 0.70f
-
-                // Draw Organic Morphing Liquid Glass Outer Boundary Path
-                val fluidPath = Path().apply {
-                    val steps = 60
-                    val dx = w / steps
-
-                    // Top Organic Curve
-                    val topPoints = ArrayList<Offset>()
-                    for (i in 0..steps) {
-                        val x = i * dx
-                        val distFromActive = abs(x - animatedActiveXPx)
-                        val influence = exp(-((distFromActive / bulgeRadiusPx) * (distFromActive / bulgeRadiusPx)).toDouble()).toFloat()
-                        val currentHalfH = halfBase + (halfBulge - halfBase) * influence
-                        topPoints.add(Offset(x, centerY - currentHalfH))
-                    }
-
-                    // Bottom Organic Curve
-                    val bottomPoints = ArrayList<Offset>()
-                    for (i in 0..steps) {
-                        val x = i * dx
-                        val distFromActive = abs(x - animatedActiveXPx)
-                        val influence = exp(-((distFromActive / bulgeRadiusPx) * (distFromActive / bulgeRadiusPx)).toDouble()).toFloat()
-                        val currentHalfH = halfBase + (halfBulge - halfBase) * influence
-                        bottomPoints.add(Offset(x, centerY + currentHalfH))
-                    }
-
-                    // Build Closed Organic Path
-                    val firstPt = topPoints.first()
-                    moveTo(firstPt.x, firstPt.y)
-                    for (i in 1 until topPoints.size) {
-                        lineTo(topPoints[i].x, topPoints[i].y)
-                    }
-
-                    // Right Cap
-                    arcTo(
-                        rect = Rect(
-                            left = w - baseHeight,
-                            top = centerY - halfBase,
-                            right = w,
-                            bottom = centerY + halfBase,
-                        ),
-                        startAngleDegrees = -90f,
-                        sweepAngleDegrees = 180f,
-                        forceMoveTo = false,
-                    )
-
-                    // Bottom Curve (Right to Left)
-                    for (i in bottomPoints.size - 1 downTo 0) {
-                        lineTo(bottomPoints[i].x, bottomPoints[i].y)
-                    }
-
-                    // Left Cap
-                    arcTo(
-                        rect = Rect(
-                            left = 0f,
-                            top = centerY - halfBase,
-                            right = baseHeight,
-                            bottom = centerY + halfBase,
-                        ),
-                        startAngleDegrees = 90f,
-                        sweepAngleDegrees = 180f,
-                        forceMoveTo = false,
-                    )
-
-                    close()
-                }
-
-                // Glass Ambient Shadow Glow
-                val isDarkNav = AppTheme.colors.isDark
-                drawPath(
-                    path = fluidPath,
-                    brush = Brush.radialGradient(
-                        colors = if (isDarkNav) {
-                            listOf(
-                                Color(0x6600E5FF),
-                                Color(0x33B81D85),
-                                Color.Transparent,
-                            )
-                        } else {
-                            listOf(
-                                Color(0x668E24AA),
-                                Color(0x225363FF),
-                                Color.Transparent,
-                            )
-                        },
-                        center = Offset(animatedActiveXPx, centerY),
-                        radius = bulgeRadiusPx * 1.5f,
-                    ),
-                )
-
-                // Translucent Liquid Glass Background Fill
-                drawPath(
-                    path = fluidPath,
-                    brush = Brush.verticalGradient(
-                        colors = if (isDarkNav) {
-                            listOf(
-                                Color(0xFF1E293B).copy(alpha = 0.95f),
-                                Color(0xFF0F172A).copy(alpha = 0.92f),
-                            )
-                        } else {
-                            listOf(
-                                Color.White.copy(alpha = 0.92f),
-                                Color(0xFFF2E6F5).copy(alpha = 0.88f),
-                            )
-                        },
-                    ),
-                )
-
-                // Luminous Specular Glass Outline Rim
-                drawPath(
-                    path = fluidPath,
-                    brush = Brush.horizontalGradient(
-                        colors = if (isDarkNav) {
-                            listOf(
-                                Color(0xFF334155),
-                                Color(0xFF7E22CE).copy(alpha = 0.50f),
-                                Color(0xFFF0ABFC).copy(alpha = 0.50f),
-                                Color(0xFF334155),
-                            )
-                        } else {
-                            listOf(
-                                Color.White.copy(alpha = 0.95f),
-                                Color(0xFF7E22CE).copy(alpha = 0.60f),
-                                Color(0xFFA855F7).copy(alpha = 0.60f),
-                                Color.White.copy(alpha = 0.95f),
-                            )
-                        },
-                    ),
-                    style = Stroke(width = 1.8.dp.toPx()),
-                )
-            }
-
-            // 2. INNER FLOATING ACTIVE LIQUID GLASS BUTTON PILL (Matches Image EXACTLY!)
-            if (dockWidthPx > 0f) {
-                val pillWidthDp = with(density) { (itemWidthPx - 10.dp.toPx()).toDp() }
-                val pillOffsetDp = with(density) { (animatedActiveXPx - (itemWidthPx - 10.dp.toPx()) / 2f).toDp() }
-
+                // 1. GPU-ACCELERATED LIQUID SLIDING GLASS PILL (Zero layout recomposition!)
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(68.dp),
-                    contentAlignment = Alignment.CenterStart,
+                        .width(tabWidthDp)
+                        .fillMaxHeight()
+                        .graphicsLayer {
+                            val currentIdx = animatedTabIndexState.value
+                            val travelDelta = abs(targetIndex - currentIdx).coerceAtMost(1.5f)
+                            translationX = currentIdx * tabWidthPx
+                            scaleX = 1f + (travelDelta * 0.12f)
+                            scaleY = 1f - (travelDelta * 0.06f)
+                        }
+                        .padding(horizontal = 2.dp, vertical = 1.dp)
+                        .clip(pillShape)
+                        .background(pillFillBrush)
+                        .border(width = 1.dp, color = pillRimColor, shape = pillShape),
                 ) {
+                    // Subtle top specular highlight sheen
                     Box(
                         modifier = Modifier
-                            .offset(x = pillOffsetDp)
-                            .width(pillWidthDp)
-                            .height(50.dp)
-                            .shadow(
-                                elevation = 10.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                ambientColor = Color(0xFF1E1B4B).copy(alpha = 0.45f),
-                                spotColor = Color(0xFFA855F7).copy(alpha = 0.55f),
-                            )
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color(0xFF1E1B4B),
-                                        Color(0xFFA855F7),
-                                    ),
+                            .fillMaxWidth()
+                            .height(22.dp)
+                            .background(pillGlossBrush),
+                    )
+                }
+
+                // 2. TAB ICON BUTTONS WITH SNAPPY GPU MICRO-ANIMATIONS (Zero ripple delay!)
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    tabs.forEachIndexed { index, (name, icon) ->
+                        val isSelected = selectedTab == name
+                        val interactionSource = remember { MutableInteractionSource() }
+
+                        val iconScaleState = animateFloatAsState(
+                            targetValue = if (isSelected) 1.18f else 1.0f,
+                            animationSpec = spring(dampingRatio = 0.6f, stiffness = 600f),
+                            label = "IconScale_$name",
+                        )
+                        val iconLiftState = animateFloatAsState(
+                            targetValue = if (isSelected) -3f else 0f,
+                            animationSpec = spring(dampingRatio = 0.65f, stiffness = 550f),
+                            label = "IconLift_$name",
+                        )
+                        val labelAlphaState = animateFloatAsState(
+                            targetValue = if (isSelected) 1f else 0.70f,
+                            animationSpec = tween(durationMillis = 160),
+                            label = "LabelAlpha_$name",
+                        )
+                        val glowAlphaState = animateFloatAsState(
+                            targetValue = if (isSelected) 1f else 0f,
+                            animationSpec = tween(durationMillis = 180),
+                            label = "GlowAlpha_$name",
+                        )
+                        val iconTilt = remember { Animatable(0f) }
+                        LaunchedEffect(isSelected) {
+                            if (isSelected) {
+                                iconTilt.snapTo(-8f)
+                                iconTilt.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = spring(dampingRatio = 0.42f, stiffness = 700f),
+                                )
+                            } else {
+                                iconTilt.snapTo(0f)
+                            }
+                        }
+
+                        val activeGlowBrush = remember {
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0x55C4B5FD),
+                                    Color.Transparent,
                                 ),
                             )
-                            .border(
-                                width = 1.2.dp,
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = 0.95f),
-                                        Color.White.copy(alpha = 0.30f),
-                                    ),
-                                ),
-                                shape = RoundedCornerShape(20.dp),
-                            ),
-                    ) {
-                        // Glass Top Gloss Highlight Line
+                        }
+
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(22.dp)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.White.copy(alpha = 0.42f),
-                                            Color.White.copy(alpha = 0f),
-                                        ),
-                                    ),
-                                ),
-                        )
-                    }
-                }
-            }
-
-            // 3. TAB ICONS & LABELS LAYER
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                tabs.forEachIndexed { index, (name, icon) ->
-                    val isSelected = selectedTab == name
-
-                    val iconPopScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.12f else 1.0f,
-                        animationSpec = spring(
-                            dampingRatio = 0.55f,
-                            stiffness = Spring.StiffnessLow,
-                        ),
-                        label = "tabPopScale",
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(52.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .clickable { triggerTabSelection(index) },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.graphicsLayer {
-                                scaleX = iconPopScale
-                                scaleY = iconPopScale
-                            },
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null,
+                                ) {
+                                    triggerTabSelection(index)
+                                },
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Text(
-                                text = icon,
-                                fontSize = if (isSelected) 18.sp else 16.sp,
+                            // Soft radial glow bloom behind active icon
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .graphicsLayer {
+                                        alpha = glowAlphaState.value
+                                        scaleX = iconScaleState.value
+                                        scaleY = iconScaleState.value
+                                    }
+                                    .background(activeGlowBrush, CircleShape),
                             )
 
-                            Spacer(modifier = Modifier.height(2.dp))
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                Text(
+                                    text = icon,
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.graphicsLayer {
+                                        val s = iconScaleState.value
+                                        scaleX = s
+                                        scaleY = s
+                                        translationY = iconLiftState.value.dp.toPx()
+                                        rotationZ = iconTilt.value
+                                    },
+                                )
 
-                            Text(
-                                text = name,
-                                fontSize = if (isSelected) 10.sp else 9.5.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                softWrap = false,
-                            )
+                                Spacer(modifier = Modifier.height(1.dp))
+
+                                Text(
+                                    text = name,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) {
+                                        if (isDark) Color.White else Color(0xFF5B21B6)
+                                    } else {
+                                        AppTheme.colors.textSecondary
+                                    },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    softWrap = false,
+                                    modifier = Modifier.graphicsLayer {
+                                        alpha = labelAlphaState.value
+                                        translationY = (iconLiftState.value * 0.35f).dp.toPx()
+                                    },
+                                )
+                            }
                         }
                     }
                 }
