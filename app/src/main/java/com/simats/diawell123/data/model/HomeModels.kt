@@ -62,7 +62,7 @@ data class DashboardData(
  */
 data class HomeAiTip(
     @SerializedName("title")
-    val title: String = "Dr. JARVIS Tip Of The Day ⚡",
+    val title: String = "DIVA Tip Of The Day ⚡",
 
     @SerializedName("tip")
     val tip: String = "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!"
