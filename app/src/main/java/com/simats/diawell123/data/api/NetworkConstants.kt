@@ -20,7 +20,9 @@ object NetworkConstants {
     const val ADB_REVERSE_PHP_BASE_URL = "http://127.0.0.1:8000/diawell_backend/"
     const val EMULATOR_PHP_BASE_URL = "http://10.0.2.2/diawell_backend/"
     const val PHYSICAL_DEVICE_PHP_LAN_URL = "http://127.0.0.1:8080/diawell_backend/"
-    const val DEVTUNNEL_BASE_URL = "http://127.0.0.1:8080/diawell_backend/"
+    const val NGROK_HOST = "popcorn-clothing-pungent.ngrok-free.dev"
+    const val NGROK_BASE_URL = "https://$NGROK_HOST/diawell_backend/"
+    const val DEVTUNNEL_BASE_URL = NGROK_BASE_URL
 
     // -------------------------------------------------------------------------
     // AI Settings (Kept for compatibility)
@@ -39,6 +41,7 @@ object NetworkConstants {
      */
     val AI_CHAT_FALLBACK_URLS: List<String> = listOf(
         "http://127.0.0.1:8080/diawell_backend/ai/chat.php",
+        "${NGROK_BASE_URL}ai/chat.php",
         "http://127.0.0.1/diawell_backend/ai/chat.php",
         "http://127.0.0.1:8000/diawell_backend/ai/chat.php",
         "http://10.0.2.2/diawell_backend/ai/chat.php",
