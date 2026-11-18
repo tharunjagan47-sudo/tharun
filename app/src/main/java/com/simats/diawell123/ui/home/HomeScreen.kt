@@ -570,7 +570,8 @@ fun HomeScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = data?.aiTip?.title ?: "Dr. JARVIS Tip Of The Day ⚡",
+                                            text = (data?.aiTip?.title ?: "DIVA Tip Of The Day ⚡")
+                                                .replace(Regex("Dr\\.?\\s*JARVIS", RegexOption.IGNORE_CASE), "DIVA"),
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFA855F7),
