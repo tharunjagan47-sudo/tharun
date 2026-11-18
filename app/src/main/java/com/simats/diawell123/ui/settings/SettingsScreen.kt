@@ -78,7 +78,9 @@ fun SettingsScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        profileViewModel.loadProfile()
+        if (profileUiState.profile == null) {
+            profileViewModel.loadProfile()
+        }
     }
 
     val currentName = profileUiState.profile?.fullName ?: ProfileState.userName
@@ -350,21 +352,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(88.dp))
             }
-        }
-
-        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
-        ElementPopUpContainer(
-            delayMillis = 300,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-            IosLiquidGlassBottomNav(
-                selectedTab = selectedTab,
-                onHomeTabClick = onHomeTabClick,
-                onDietTabClick = onDietTabClick,
-                onMedsTabClick = onMedsTabClick,
-                onReportsTabClick = onReportsTabClick,
-                onSettingsTabClick = { selectedTab = "Settings" },
-            )
         }
 
         if (showResetDialog) {
