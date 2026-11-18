@@ -22,6 +22,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -29,14 +30,20 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -67,6 +74,7 @@ import com.simats.diawell123.ui.glucose.LogGlucoseScreen
 import com.simats.diawell123.ui.glucose.ReadingDetailsScreen
 import com.simats.diawell123.ui.home.HomeScreen
 import com.simats.diawell123.ui.home.HomeViewModel
+import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.meds.MedicationReminderScreen
 import com.simats.diawell123.ui.meds.MedicationsScreen
 import com.simats.diawell123.ui.meds.MedsViewModel
@@ -263,20 +271,35 @@ class MainActivity : FragmentActivity() {
                     }
                 }
 
-                // Update activity timestamp on screen changes
+                val lastTabRefreshMs = remember { mutableMapOf<String, Long>() }
+                val mainTabOrder = remember {
+                    mapOf(
+                        "home" to 0,
+                        "daily_diet_plan" to 1,
+                        "medications" to 2,
+                        "weekly_report" to 3,
+                        "settings" to 4,
+                    )
+                }
+
+                // Update activity timestamp on screen changes; defer non-blocking refresh until after tab slide settles
                 LaunchedEffect(currentScreen) {
                     sessionManager.updateLastActiveTime()
                     if (currentScreen in listOf("medications", "set_medication_reminder", "medication_reminder")) {
                         checkExactAlarmPermission()
                     }
-                    if (currentScreen == "medications") {
-                        medsViewModel.loadMedications(isPullToRefresh = true)
-                    } else if (currentScreen == "home") {
-                        homeViewModel.loadDashboard(isPullToRefresh = true)
-                    } else if (currentScreen == "weekly_report") {
-                        reportsViewModel.loadWeeklyReport(isPullToRefresh = true)
-                    } else if (currentScreen == "food_log") {
-                        dietViewModel.loadFoodLog()
+                    val now = System.currentTimeMillis()
+                    val lastRefresh = lastTabRefreshMs[currentScreen] ?: 0L
+                    if (now - lastRefresh > 30_000L) {
+                        // Wait 220ms so the 180ms tab switch + liquid glass slide stays locked at 60/120 FPS
+                        delay(220)
+                        lastTabRefreshMs[currentScreen] = System.currentTimeMillis()
+                        when (currentScreen) {
+                            "medications" -> medsViewModel.loadMedications(isPullToRefresh = true)
+                            "home" -> homeViewModel.loadDashboard(isPullToRefresh = true)
+                            "weekly_report" -> reportsViewModel.loadWeeklyReport(isPullToRefresh = true)
+                            "food_log" -> dietViewModel.loadFoodLog()
+                        }
                     }
                 }
 
@@ -297,23 +320,50 @@ class MainActivity : FragmentActivity() {
                     }
                 }
 
-                AnimatedContent(
-                    targetState = currentScreen,
-                    transitionSpec = {
-                        if (initialState == "splash" && (targetState == "home" || targetState == "login" || targetState == "onboarding" || targetState == "app_lock")) {
-                            (fadeIn(animationSpec = tween(700, easing = FastOutSlowInEasing)) +
-                                scaleIn(initialScale = 0.94f, animationSpec = tween(700))) togetherWith
-                                (fadeOut(animationSpec = tween(500)) +
-                                    scaleOut(targetScale = 1.05f, animationSpec = tween(500)))
-                        } else {
-                            (fadeIn(animationSpec = tween(400)) +
-                                slideInHorizontally(animationSpec = tween(400)) { width -> width / 4 }) togetherWith
-                                (fadeOut(animationSpec = tween(300)) +
-                                    slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 4 })
-                        }
-                    },
-                    label = "ScreenTransition",
-                ) { targetScreen ->
+                val activeBottomTab = when (currentScreen) {
+                    "home" -> "Home"
+                    "daily_diet_plan" -> "Diet"
+                    "medications" -> "Meds"
+                    "weekly_report" -> "Reports"
+                    "settings" -> "Settings"
+                    "notifications" -> "Home"
+                    else -> null
+                }
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AnimatedContent(
+                        targetState = currentScreen,
+                        transitionSpec = {
+                            val fromTabIdx = mainTabOrder[initialState]
+                            val toTabIdx = mainTabOrder[targetState]
+                            if (initialState == "splash" && (targetState == "home" || targetState == "login" || targetState == "onboarding" || targetState == "app_lock")) {
+                                (fadeIn(animationSpec = tween(700, easing = FastOutSlowInEasing)) +
+                                    scaleIn(initialScale = 0.94f, animationSpec = tween(700))) togetherWith
+                                    (fadeOut(animationSpec = tween(500)) +
+                                        scaleOut(targetScale = 1.05f, animationSpec = tween(500)))
+                            } else if (fromTabIdx != null && toTabIdx != null) {
+                                val dir = if (toTabIdx >= fromTabIdx) 1 else -1
+                                (fadeIn(animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)) +
+                                    slideInHorizontally(animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)) { width ->
+                                        dir * (width * 0.04f).toInt()
+                                    }) togetherWith
+                                    (fadeOut(animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing)) +
+                                        slideOutHorizontally(animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing)) { width ->
+                                            -dir * (width * 0.04f).toInt()
+                                        })
+                            } else {
+                                (fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) +
+                                    slideInHorizontally(animationSpec = tween(220, easing = FastOutSlowInEasing)) { width ->
+                                        (width * 0.08f).toInt()
+                                    }) togetherWith
+                                    (fadeOut(animationSpec = tween(180, easing = FastOutSlowInEasing)) +
+                                        slideOutHorizontally(animationSpec = tween(180, easing = FastOutSlowInEasing)) { width ->
+                                            -(width * 0.08f).toInt()
+                                        })
+                            }
+                        },
+                        label = "ScreenTransition",
+                    ) { targetScreen ->
                     when (targetScreen) {
                         "splash" -> SplashScreen()
 
@@ -674,6 +724,25 @@ class MainActivity : FragmentActivity() {
                         )
 
                         else -> SplashScreen()
+                    }
+                }
+
+                    // Single persistent GPU-accelerated Liquid Glass Bottom Navigation Dock
+                    // Never torn down across main tab switches so the liquid glass pill glides continuously at 60/120 FPS
+                    AnimatedVisibility(
+                        visible = activeBottomTab != null,
+                        enter = fadeIn(tween(180)) + slideInVertically(tween(200, easing = FastOutSlowInEasing)) { it / 2 },
+                        exit = fadeOut(tween(140)) + slideOutVertically(tween(160)) { it / 2 },
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    ) {
+                        IosLiquidGlassBottomNav(
+                            selectedTab = activeBottomTab ?: "Home",
+                            onHomeTabClick = { currentScreen = "home" },
+                            onDietTabClick = { currentScreen = "daily_diet_plan" },
+                            onMedsTabClick = { currentScreen = "medications" },
+                            onReportsTabClick = { currentScreen = "weekly_report" },
+                            onSettingsTabClick = { currentScreen = "settings" },
+                        )
                     }
                 }
             }
