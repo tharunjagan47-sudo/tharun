@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -90,12 +92,11 @@ fun SettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(AppTheme.colors.background)
-            .systemBarsPadding(),
+            .statusBarsPadding(),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -350,7 +351,7 @@ fun SettingsScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(88.dp))
+                Spacer(modifier = Modifier.height(116.dp).navigationBarsPadding())
             }
         }
 
