@@ -37,7 +37,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,10 +47,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate as drawRotate
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -66,10 +71,9 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-// Instagram Sans Headline font family matching exact branding
-val InstagramSansHeadline = FontFamily(
-    Font(R.font.instagram_sans_headline_bold, FontWeight.Bold),
-    Font(R.font.instagram_sans_headline_regular, FontWeight.Normal),
+// Brush script font family matching the glowing cursive DiaWell wordmark
+val DiaWellScriptFont = FontFamily(
+    Font(R.font.pacifico_regular, FontWeight.Normal),
 )
 
 @Composable
@@ -240,23 +244,12 @@ fun SplashScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
-                // App Title with Exact Instagram Sans Headline Stylized Forms (ss07 + dlig)
-                Text(
-                    text = "DiaWell",
-                    style = TextStyle(
-                        fontFamily = InstagramSansHeadline,
-                        fontSize = 44.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                        textAlign = TextAlign.Center,
-                        letterSpacing = 0.sp,
-                        fontFeatureSettings = "ss07, dlig",
-                    ),
-                )
+                // App Title in glowing cursive script with a small heart replacing the dot on 'i'
+                DiaWellScriptWordmark()
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Primary Health Tagline
                 Text(
@@ -302,6 +295,113 @@ fun SplashScreen(
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DiaWellScriptWordmark(
+    modifier: Modifier = Modifier,
+) {
+    val isDark = AppTheme.colors.isDark
+    var iBox by remember { mutableStateOf<Rect?>(null) }
+
+    val wordmarkBrush = Brush.linearGradient(
+        colors = if (isDark) {
+            listOf(
+                Color(0xFF6D28D9),
+                Color(0xFF9333EA),
+                Color(0xFFC084FC),
+                Color(0xFFF0ABFC),
+                Color(0xFFF5D0FE),
+            )
+        } else {
+            listOf(
+                Color(0xFF5B21B6),
+                Color(0xFF7C3AED),
+                Color(0xFFA855F7),
+                Color(0xFFD946EF),
+            )
+        },
+    )
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        // Unicode U+0131 (dotless 'ı') removes the default dot cleanly so the heart replaces it
+        Text(
+            text = "D\u0131aWell",
+            style = TextStyle(
+                fontFamily = DiaWellScriptFont,
+                fontSize = 50.sp,
+                fontWeight = FontWeight.Normal,
+                brush = wordmarkBrush,
+                textAlign = TextAlign.Center,
+                shadow = Shadow(
+                    color = Color(0xFFA855F7).copy(alpha = if (isDark) 0.58f else 0.30f),
+                    offset = Offset(0f, 0f),
+                    blurRadius = if (isDark) 18f else 10f,
+                ),
+            ),
+            onTextLayout = { layoutResult ->
+                iBox = layoutResult.getBoundingBox(1)
+            },
+        )
+
+        // Small glowing heart replacing the dot above the letter 'i'
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val box = iBox ?: return@Canvas
+            val cx = box.left + box.width * 0.72f
+            val cy = box.top + box.height * 0.305f
+            val hSize = box.height * 0.125f
+
+            // Soft purple-pink neon halo behind the heart
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFE879F9).copy(alpha = if (isDark) 0.55f else 0.25f),
+                        Color(0xFFA855F7).copy(alpha = if (isDark) 0.22f else 0.08f),
+                        Color.Transparent,
+                    ),
+                    center = Offset(cx, cy),
+                    radius = hSize * 1.6f,
+                ),
+                radius = hSize * 1.6f,
+                center = Offset(cx, cy),
+            )
+
+            // Crisp heart path slightly tilted to match cursive script slant
+            drawRotate(degrees = 12f, pivot = Offset(cx, cy)) {
+                val heartPath = Path().apply {
+                    val topY = cy - hSize * 0.22f
+                    val bottomY = cy + hSize * 0.62f
+                    moveTo(cx, bottomY)
+                    cubicTo(
+                        cx - hSize * 0.95f, cy + hSize * 0.08f,
+                        cx - hSize * 0.82f, topY - hSize * 0.55f,
+                        cx, topY + hSize * 0.08f,
+                    )
+                    cubicTo(
+                        cx + hSize * 0.82f, topY - hSize * 0.55f,
+                        cx + hSize * 0.95f, cy + hSize * 0.08f,
+                        cx, bottomY,
+                    )
+                    close()
+                }
+                drawPath(
+                    path = heartPath,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFA855F7),
+                            Color(0xFFE879F9),
+                            Color(0xFFF5D0FE),
+                        ),
+                        start = Offset(cx - hSize, cy - hSize),
+                        end = Offset(cx + hSize, cy + hSize),
+                    ),
                 )
             }
         }
