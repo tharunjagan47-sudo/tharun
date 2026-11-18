@@ -76,9 +76,9 @@ class ChatRepositoryImpl(
             Result.success(
                 ChatResponse(
                     success = true,
-                    model = "dr-jarvis-offline",
+                    model = "diva-offline",
                     response = fallbackReply,
-                    message = "Dr. Jarvis AI"
+                    message = "DIVA (DiaWell Intelligent Virtual Assistant)"
                 )
             )
         }
@@ -105,15 +105,15 @@ class ChatRepositoryImpl(
             }
         }
 
-        // OFFLINE DEMO FALLBACK FOR DR. JARVIS AI (Personal Health RAG)
-        // If cable is unplugged or server is unreachable, Dr. Jarvis answers accurately using live on-device context!
+        // OFFLINE DEMO FALLBACK FOR DIVA (DiaWell Intelligent Virtual Assistant)
+        // If cable is unplugged or server is unreachable, DIVA answers accurately using live on-device context!
         val fallbackReply = OfflineJarvisResponder.generateResponse(request.prompt, request.patientContext, request.history)
         return Result.success(
             ChatResponse(
                 success = true,
-                model = "dr-jarvis-offline",
+                model = "diva-offline",
                 response = fallbackReply,
-                message = "Dr. Jarvis AI (Offline Personal Safe Mode)"
+                message = "DIVA (Offline Personal Safe Mode)"
             )
         )
     }
@@ -129,7 +129,7 @@ class ChatRepositoryImpl(
             return if (body != null && !cleanText.isNullOrBlank()) {
                 Result.success(body)
             } else {
-                val serverMsg = body?.message ?: "Received an empty response from Dr. Jarvis."
+                val serverMsg = body?.message ?: "Received an empty response from DIVA."
                 Result.failure(Exception(serverMsg))
             }
         }
@@ -139,7 +139,7 @@ class ChatRepositoryImpl(
         }
         val errorBody = response.errorBody()?.string()
         val errorMsg = when (code) {
-            500 -> "Internal error in Dr. Jarvis AI backend (HTTP 500): ${errorBody ?: ""}"
+            500 -> "Internal error in DIVA AI backend (HTTP 500): ${errorBody ?: ""}"
             503 -> "Local Ollama service is unavailable. Please verify 'ollama' is running on Port 11434."
             else -> "Network request failed with HTTP $code at $endpointLabel: ${errorBody ?: response.message()}"
         }
