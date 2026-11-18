@@ -290,7 +290,7 @@ fun ChatScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Dr. Jarvis AI",
+                                text = "DIVA",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.textPrimary,
@@ -307,7 +307,7 @@ fun ChatScreen(
                             )
                         }
                         Text(
-                            text = "Diabetes Care • Qwen 2.5",
+                            text = "DiaWell Intelligent Virtual Assistant",
                             fontSize = 11.sp,
                             lineHeight = 14.sp,
                             color = AppTheme.colors.textSecondary,
@@ -570,7 +570,7 @@ fun ChatScreen(
                         onValueChange = { inputText = it },
                         placeholder = {
                             Text(
-                                text = "Ask Dr. Jarvis or tap mic...",
+                                text = "Ask DIVA or tap mic...",
                                 fontSize = 13.sp,
                                 color = AppTheme.colors.textMuted,
                                 maxLines = 1,
@@ -775,7 +775,7 @@ fun ChatMessageItem(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Dr. Jarvis AI ⚡🩺",
+                                text = "DIVA ⚡🩺",
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
@@ -948,7 +948,7 @@ fun NutritionBadgeChip(metric: NutritionMetric) {
  */
 @Composable
 fun DrJarvisThinkingIndicator(pulseScale: Float) {
-    var statusText by remember { mutableStateOf("Dr. Jarvis is reviewing your query...") }
+    var statusText by remember { mutableStateOf("DIVA is reviewing your query...") }
 
     LaunchedEffect(Unit) {
         delay(3500)
@@ -956,7 +956,7 @@ fun DrJarvisThinkingIndicator(pulseScale: Float) {
         delay(5500)
         statusText = "Synthesizing clinical & nutritional facts..."
         delay(7000)
-        statusText = "Formulating Dr. Jarvis AI response..."
+        statusText = "Formulating DIVA response..."
     }
 
     Row(
@@ -1088,7 +1088,7 @@ private fun launchSpeechInput(
         )
         putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-IN")
-        putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to Dr. Jarvis (English / Tanglish)...")
+        putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to DIVA (English / Tanglish)...")
     }
     try {
         launcher.launch(intent)
