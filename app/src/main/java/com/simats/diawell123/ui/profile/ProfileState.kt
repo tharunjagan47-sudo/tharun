@@ -154,6 +154,8 @@ object ProfileState {
             try {
                 val url = URL(photoUrl)
                 val connection = url.openConnection() as HttpURLConnection
+                connection.setRequestProperty("ngrok-skip-browser-warning", "true")
+                connection.setRequestProperty("User-Agent", "DiaWell-Android-Client")
                 connection.connectTimeout = 15000
                 connection.readTimeout = 15000
                 connection.doInput = true
