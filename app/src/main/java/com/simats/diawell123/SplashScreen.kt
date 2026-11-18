@@ -2,14 +2,14 @@ package com.simats.diawell123
 import com.simats.diawell123.ui.theme.AppTheme
 
 import android.content.Context
-import android.media.AudioManager
-import android.media.ToneGenerator
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -64,6 +64,10 @@ import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.sqrt
+
+// Physical constant-friction deceleration matching wheel_spin.wav peg cadence
+private val WheelDecelerationEasing = Easing { u -> 1f - (1f - u) * (1f - u) }
 
 // Instagram Sans Headline font family matching exact branding
 val InstagramSansHeadline = FontFamily(
@@ -78,10 +82,10 @@ fun SplashScreen(
     val context = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
 
-    // 1. Rotation animation: Spins, slows down, and STOPS completely!
+    // 1. Rotation animation: Spins fast immediately, slows down smoothly, and STOPS completely
     val spinRotation = remember { Animatable(0f) }
 
-    // Synchronized Sound Effects & Vibration Feedback Effect
+    // Synchronized Wheel Spinning Sound (R.raw.wheel_spin) & Tactile Haptic Feedback
     LaunchedEffect(Unit) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
@@ -91,76 +95,78 @@ fun SplashScreen(
             context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
         }
 
-        // High-volume system tone generator for audible spin clicks
-        val toneGen = try {
-            ToneGenerator(AudioManager.STREAM_SYSTEM, 80)
-        } catch (_: Exception) {
-            try {
-                ToneGenerator(AudioManager.STREAM_MUSIC, 80)
-            } catch (_: Exception) {
-                null
+        val mediaPlayer = try {
+            MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build(),
+                )
+                context.resources.openRawResourceFd(R.raw.wheel_spin).use { afd ->
+                    setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                }
+                prepare()
+                setVolume(1.0f, 1.0f)
             }
+        } catch (_: Exception) {
+            null
         }
 
-        // Launch Arc Reactor Rotation
-        launch {
-            spinRotation.animateTo(
-                targetValue = 720f, // 2 full spins
-                animationSpec = tween(
-                    durationMillis = 2200,
-                    easing = FastOutSlowInEasing, // Spins, slows down, and comes to a complete STOP
-                ),
-            )
-        }
+        try {
+            val spinDurationMs = 2200
+            val numPegs = 36
 
-        // Synchronized Pulsing Sound & Haptic Ticks that slow down and stop
-        val startTime = System.currentTimeMillis()
-        val duration = 2200L
-
-        while (spinRotation.isRunning) {
-            val elapsed = System.currentTimeMillis() - startTime
-            val progress = (elapsed.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
-
-            if (progress >= 0.94f) break
-
-            // Interval slows down gradually as easing slows down the rotation (45ms -> 280ms)
-            val currentInterval = (45L + (progress * progress * 240L)).toLong()
-
+            // Start realistic wheel spinning sound simultaneously with logo rotation
             try {
-                toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, 25)
+                mediaPlayer?.start()
             } catch (_: Exception) {}
 
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val amplitude = ((1f - (progress * 0.45f)) * 255).toInt().coerceIn(40, 255)
-                    vibrator?.vibrate(VibrationEffect.createOneShot(18L, amplitude))
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator?.vibrate(18L)
+            // Launch Logo Wheel Rotation using identical quadratic friction deceleration
+            val spinJob = launch {
+                spinRotation.animateTo(
+                    targetValue = 720f, // 2 full spins, decelerating smoothly to a complete stop
+                    animationSpec = tween(
+                        durationMillis = spinDurationMs,
+                        easing = WheelDecelerationEasing,
+                    ),
+                )
+            }
+
+            // Light tactile haptic ticks aligned with the exact wheel peg timestamps
+            val startTime = System.currentTimeMillis()
+            for (k in 0 until numPegs) {
+                val yPos = (k + 0.92) / numPegs.toDouble()
+                val u = 1.0 - sqrt((1.0 - yPos).coerceAtLeast(0.0))
+                val targetMs = (u * spinDurationMs).toLong()
+                val waitMs = targetMs - (System.currentTimeMillis() - startTime)
+                if (waitMs > 0L) delay(waitMs)
+
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val vel = (1.0 - u).toFloat().coerceIn(0.15f, 1.0f)
+                        val amplitude = (45 + (vel * 120)).toInt().coerceIn(35, 180)
+                        vibrator?.vibrate(VibrationEffect.createOneShot(10L, amplitude))
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator?.vibrate(10L)
+                    }
+                } catch (_: Exception) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 }
-            } catch (_: Exception) {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
 
-            delay(currentInterval)
+            spinJob.join()
+            // Allow audio tail (2.35s) to decay cleanly to silence
+            delay(180)
+        } finally {
+            try {
+                mediaPlayer?.let {
+                    if (it.isPlaying) it.stop()
+                    it.release()
+                }
+            } catch (_: Exception) {}
         }
-
-        // Final crisp snap confirmation when rotation locks completely
-        try {
-            toneGen?.startTone(ToneGenerator.TONE_PROP_ACK, 70)
-        } catch (_: Exception) {}
-
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator?.vibrate(VibrationEffect.createOneShot(55L, VibrationEffect.DEFAULT_AMPLITUDE))
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator?.vibrate(55L)
-            }
-        } catch (_: Exception) {}
-
-        delay(80)
-        toneGen?.release()
     }
 
     // 2. Subtle ambient breathing pulse for the outer glow rings
@@ -210,15 +216,6 @@ fun SplashScreen(
                 ),
         )
 
-        // Continuous Moving Pulse Wave running OUTSIDE the central logo
-        OutsideEcgPulseCanvas(
-            ecgProgress = ecgProgress,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(130.dp)
-                .align(Alignment.Center),
-        )
-
         // Main Content Column
         Column(
             modifier = Modifier
@@ -235,11 +232,23 @@ fun SplashScreen(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.weight(1f),
             ) {
-                // Spinning DiaWell Central Logo
-                DiaWellLogo(
-                    rotationAngle = spinRotation.value,
-                    modifier = Modifier.size(175.dp),
-                )
+                // Spinning DiaWell Central Logo with Pulse Wave running BEHIND it
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    OutsideEcgPulseCanvas(
+                        ecgProgress = ecgProgress,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(175.dp),
+                    )
+
+                    DiaWellLogo(
+                        rotationAngle = spinRotation.value,
+                        modifier = Modifier.size(175.dp),
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(36.dp))
 
