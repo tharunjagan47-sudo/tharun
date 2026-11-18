@@ -116,6 +116,7 @@ fun DivaTalkingAvatar(
     isSpeaking: Boolean,
     modifier: Modifier = Modifier,
     sizeDp: Int = 152,
+    fullBody: Boolean = false,
 ) {
     val context = LocalContext.current
     val latestIsSpeaking by rememberUpdatedState(isSpeaking)
@@ -124,10 +125,10 @@ fun DivaTalkingAvatar(
 
     val infiniteTransition = rememberInfiniteTransition(label = "DivaFloatTransition")
     val idleFloatY by infiniteTransition.animateFloat(
-        initialValue = -3.5f,
-        targetValue = 3.5f,
+        initialValue = if (fullBody) -5.5f else -3.5f,
+        targetValue = if (fullBody) 5.5f else 3.5f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1900, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 2100, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse,
         ),
         label = "DivaIdleFloat",
@@ -179,19 +180,27 @@ fun DivaTalkingAvatar(
         )
     }
 
-    Box(
-        modifier = modifier
+    val containerModifier = if (fullBody) {
+        modifier
+            .size(sizeDp.dp)
+            .background(Color(0xFF0B0E17))
+    } else {
+        modifier
             .size(sizeDp.dp)
             .clip(CircleShape)
-            .background(Color(0xFF0B0D18))
-            .border(width = 2.dp, brush = rimBrush, shape = CircleShape),
+            .background(Color(0xFF0B0E17))
+            .border(width = 2.dp, brush = rimBrush, shape = CircleShape)
+    }
+
+    Box(
+        modifier = containerModifier,
         contentAlignment = Alignment.Center,
     ) {
         // Static high-res DIVA robot avatar underneath (with gentle floating hover when idle/listening)
         Image(
             painter = painterResource(id = R.drawable.diva_avatar),
             contentDescription = "DIVA Assistant",
-            contentScale = ContentScale.Crop,
+            contentScale = if (fullBody) ContentScale.Fit else ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -209,8 +218,7 @@ fun DivaTalkingAvatar(
                             if (viewWidth <= 0 || viewHeight <= 0 || videoW <= 0 || videoH <= 0) return
                             val viewRatio = viewWidth.toFloat() / viewHeight.toFloat()
                             val videoRatio = videoW.toFloat() / videoH.toFloat()
-                            // Extra 1.16x zoom centers cleanly on DIVA robot and crops out outer edges
-                            val zoom = 1.16f
+                            val zoom = if (fullBody) 1.20f else 1.16f
                             val scaleX: Float
                             val scaleY: Float
                             if (videoRatio > viewRatio) {
@@ -222,6 +230,10 @@ fun DivaTalkingAvatar(
                             }
                             val matrix = Matrix()
                             matrix.setScale(scaleX, scaleY, viewWidth / 2f, viewHeight / 2f)
+                            if (fullBody) {
+                                // Align DIVA's DW chest core and face seamlessly with diva_avatar.png
+                                matrix.postTranslate(0f, -viewHeight * 0.025f)
+                            }
                             setTransform(matrix)
                         }
 
@@ -278,6 +290,24 @@ fun DivaTalkingAvatar(
                 .fillMaxSize()
                 .graphicsLayer { alpha = videoAlpha },
         )
+
+        // Seamless edge feathering in full-body virtual assistant mode so DIVA floats freely with zero hard box edges
+        if (fullBody) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colorStops = arrayOf(
+                                0.00f to Color.Transparent,
+                                0.72f to Color.Transparent,
+                                0.92f to Color(0xCC0B0E17),
+                                1.00f to Color(0xFF0B0E17),
+                            ),
+                        ),
+                    ),
+            )
+        }
     }
 }
 
