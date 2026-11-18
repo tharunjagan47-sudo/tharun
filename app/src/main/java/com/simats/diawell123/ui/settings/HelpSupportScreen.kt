@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simats.diawell123.ui.ai.IronmanDoctorAvatar
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -376,15 +377,7 @@ fun HelpSupportScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(if (AppTheme.colors.isDark) Color(0xFF332050) else Color(0xFFE9D5FF)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "🤖", fontSize = 22.sp)
-                    }
+                    IronmanDoctorAvatar(sizeDp = 42)
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
