@@ -16,8 +16,10 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -412,6 +414,74 @@ fun ChatScreen(
             }
 
             Spacer(modifier = Modifier.height(4.dp))
+
+            // -----------------------------------------------------------------
+            // Live Animated Talking DIVA Stage (appears whenever DIVA speaks aloud in chat!)
+            // -----------------------------------------------------------------
+            AnimatedVisibility(
+                visible = voiceState == JarvisVoiceState.SPEAKING && !isVoiceOverlayOpen,
+                enter = fadeIn(tween(220)) + expandVertically(tween(240)),
+                exit = fadeOut(tween(180)) + shrinkVertically(tween(200)),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF150E2A),
+                                    Color(0xFF1E1338),
+                                    Color(0xFF10192E),
+                                ),
+                            ),
+                        )
+                        .border(1.2.dp, Color(0x88A855F7), RoundedCornerShape(18.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    DivaTalkingAvatar(
+                        isSpeaking = true,
+                        sizeDp = 82,
+                    )
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "🔊 DIVA is speaking...",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00E5FF),
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "DiaWell Intelligent Virtual Assistant",
+                            fontSize = 11.sp,
+                            color = Color(0xFFE9D5FF),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFEF4444).copy(alpha = 0.22f))
+                            .border(1.dp, Color(0xFFEF4444), RoundedCornerShape(12.dp))
+                            .clickable { voiceManager.stopSpeaking() }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "⏹ Stop",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFCA5A5),
+                        )
+                    }
+                }
+            }
 
             // -----------------------------------------------------------------
             // Messages LazyColumn
