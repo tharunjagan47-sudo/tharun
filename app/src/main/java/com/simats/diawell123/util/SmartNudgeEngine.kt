@@ -92,7 +92,7 @@ object SmartNudgeEngine {
             ),
             primaryActionLabel = "🥗 Log My Meal",
             primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_DIET,
-            secondaryActionLabel = "🤖 Ask Dr. Jarvis",
+            secondaryActionLabel = "🤖 Ask DIVA",
             secondaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_AI_CHAT,
             targetScreen = "daily_diet_plan",
         ),
