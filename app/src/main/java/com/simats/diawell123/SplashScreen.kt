@@ -71,9 +71,9 @@ import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-// Brush script font family matching the glowing cursive DiaWell wordmark
-val DiaWellScriptFont = FontFamily(
-    Font(R.font.pacifico_regular, FontWeight.Normal),
+// Rounded geometric sans-serif font matching the sleek DiaWell wordmark
+val DiaWellWordmarkFont = FontFamily(
+    Font(R.font.quicksand_bold, FontWeight.Bold),
 )
 
 @Composable
@@ -335,15 +335,16 @@ fun DiaWellScriptWordmark(
         Text(
             text = "D\u0131aWell",
             style = TextStyle(
-                fontFamily = DiaWellScriptFont,
-                fontSize = 50.sp,
-                fontWeight = FontWeight.Normal,
+                fontFamily = DiaWellWordmarkFont,
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
                 brush = wordmarkBrush,
                 textAlign = TextAlign.Center,
+                letterSpacing = (-0.5).sp,
                 shadow = Shadow(
-                    color = Color(0xFFA855F7).copy(alpha = if (isDark) 0.58f else 0.30f),
+                    color = Color(0xFFA855F7).copy(alpha = if (isDark) 0.32f else 0.20f),
                     offset = Offset(0f, 0f),
-                    blurRadius = if (isDark) 18f else 10f,
+                    blurRadius = if (isDark) 10f else 6f,
                 ),
             ),
             onTextLayout = { layoutResult ->
@@ -354,27 +355,27 @@ fun DiaWellScriptWordmark(
         // Small glowing heart replacing the dot above the letter 'i'
         Canvas(modifier = Modifier.matchParentSize()) {
             val box = iBox ?: return@Canvas
-            val cx = box.left + box.width * 0.72f
-            val cy = box.top + box.height * 0.305f
-            val hSize = box.height * 0.125f
+            val cx = box.left + box.width * 0.50f
+            val cy = box.top + box.height * 0.235f
+            val hSize = box.height * 0.135f
 
-            // Soft purple-pink neon halo behind the heart
+            // Subtle purple-pink glow halo behind the heart
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFE879F9).copy(alpha = if (isDark) 0.55f else 0.25f),
-                        Color(0xFFA855F7).copy(alpha = if (isDark) 0.22f else 0.08f),
+                        Color(0xFFE879F9).copy(alpha = if (isDark) 0.35f else 0.18f),
+                        Color(0xFFA855F7).copy(alpha = if (isDark) 0.14f else 0.06f),
                         Color.Transparent,
                     ),
                     center = Offset(cx, cy),
-                    radius = hSize * 1.6f,
+                    radius = hSize * 1.5f,
                 ),
-                radius = hSize * 1.6f,
+                radius = hSize * 1.5f,
                 center = Offset(cx, cy),
             )
 
-            // Crisp heart path slightly tilted to match cursive script slant
-            drawRotate(degrees = 12f, pivot = Offset(cx, cy)) {
+            // Crisp upright heart matching the rounded geometric font
+            drawRotate(degrees = 0f, pivot = Offset(cx, cy)) {
                 val heartPath = Path().apply {
                     val topY = cy - hSize * 0.22f
                     val bottomY = cy + hSize * 0.62f
@@ -395,9 +396,9 @@ fun DiaWellScriptWordmark(
                     path = heartPath,
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFFA855F7),
-                            Color(0xFFE879F9),
-                            Color(0xFFF5D0FE),
+                            Color(0xFF9333EA),
+                            Color(0xFFC084FC),
+                            Color(0xFFF0ABFC),
                         ),
                         start = Offset(cx - hSize, cy - hSize),
                         end = Offset(cx + hSize, cy + hSize),
