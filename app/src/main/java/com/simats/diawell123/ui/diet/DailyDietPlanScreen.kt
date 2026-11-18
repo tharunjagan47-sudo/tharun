@@ -549,21 +549,6 @@ fun DailyDietPlanScreen(
                 onDismissRequest = { showDatePickerDialog = false },
             )
         }
-
-        // Floating iOS Liquid Glass Bottom Navigation Dock
-        ElementPopUpContainer(
-            delayMillis = 300,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-            IosLiquidGlassBottomNav(
-                selectedTab = selectedTab,
-                onHomeTabClick = onHomeTabClick,
-                onDietTabClick = { selectedTab = "Diet" },
-                onMedsTabClick = onMedsTabClick,
-                onReportsTabClick = onReportsTabClick,
-                onSettingsTabClick = onSettingsTabClick,
-            )
-        }
     }
 }
 
