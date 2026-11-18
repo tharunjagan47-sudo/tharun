@@ -54,6 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -241,15 +242,18 @@ fun SplashScreen(
 
                 Spacer(modifier = Modifier.height(36.dp))
 
-                // App Title with Exact Instagram Sans Headline Font
+                // App Title with Exact Instagram Sans Headline Stylized Forms (ss07 + dlig)
                 Text(
                     text = "DiaWell",
-                    fontFamily = InstagramSansHeadline,
-                    fontSize = 38.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Center,
-                    letterSpacing = 0.5.sp,
+                    style = TextStyle(
+                        fontFamily = InstagramSansHeadline,
+                        fontSize = 44.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.textPrimary,
+                        textAlign = TextAlign.Center,
+                        letterSpacing = 0.sp,
+                        fontFeatureSettings = "ss07, dlig",
+                    ),
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
