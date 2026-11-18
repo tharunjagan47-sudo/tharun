@@ -71,7 +71,7 @@ fun HelpSupportScreen(
         listOf(
             "How do I log glucose?" to "Open Glucose from Quick Actions or the tab bar, enter your reading and time, select Fasting or Post-meal, and save. Follow the routine agreed with your healthcare team.",
             "How do I manage reminders?" to "Go to Settings > Notification Preferences to turn reminders on or off and customize alert sounds and quiet hours.",
-            "How are food suggestions generated?" to "Meal ideas are tailored by JARVIS AI based on your preferred diet, food allergies, and daily glucose levels set in your profile.",
+            "How are food suggestions generated?" to "Meal ideas are tailored by DIVA (DiaWell Intelligent Virtual Assistant) based on your preferred diet, food allergies, and daily glucose levels set in your profile.",
             "How do I export my health records?" to "Navigate to Settings > Privacy and Security > Export Records to generate and share a clinical PDF report or CSV spreadsheet.",
             "Is my data secure and private?" to "Yes, DiaWell encrypts all health data in transit and on server storage. You can delete your account or change data sharing preferences anytime."
         )
@@ -388,7 +388,7 @@ fun HelpSupportScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Ask Dr. Jarvis AI Assistant",
+                            text = "Ask DIVA (DiaWell Virtual Assistant)",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (AppTheme.colors.isDark) Color(0xFFC084FC) else Color(0xFF7E22CE),
