@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -219,12 +220,11 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize()
             .background(AppTheme.colors.background)
-            .systemBarsPadding(),
+            .statusBarsPadding(),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -708,7 +708,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(88.dp))
+                Spacer(modifier = Modifier.height(116.dp).navigationBarsPadding())
             }
         }
 
@@ -842,11 +842,11 @@ fun IosLiquidGlassBottomNav(
     val dockShape = remember { RoundedCornerShape(28.dp) }
     val lensShape = remember { RoundedCornerShape(24.dp) }
 
-    val dockFillColor = if (isDark) Color(0xF20C0E16) else Color(0xF5FFFFFF)
+    val dockFillColor = if (isDark) Color(0xBA141124) else Color(0xDCFFFFFF)
     val dockBorderBrush = remember(isDark) {
         Brush.horizontalGradient(
             colors = if (isDark) {
-                listOf(Color(0x40FFFFFF), Color(0x28A855F7), Color(0x40FFFFFF))
+                listOf(Color(0x45FFFFFF), Color(0x38A855F7), Color(0x45FFFFFF))
             } else {
                 listOf(Color(0x337C3AED), Color(0x18000000), Color(0x337C3AED))
             },
@@ -917,9 +917,21 @@ fun IosLiquidGlassBottomNav(
         )
     }
 
+    val bgColor = AppTheme.colors.background
+    val bottomEdgeFade = remember(bgColor) {
+        Brush.verticalGradient(
+            colorStops = arrayOf(
+                0.00f to Color.Transparent,
+                0.55f to bgColor.copy(alpha = 0.55f),
+                1.00f to bgColor.copy(alpha = 0.90f),
+            ),
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .background(bottomEdgeFade)
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .height(78.dp),
