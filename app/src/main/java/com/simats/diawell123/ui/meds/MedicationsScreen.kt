@@ -68,7 +68,9 @@ fun MedicationsScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.loadMedications(isPullToRefresh = true)
+        if (medsData == null) {
+            viewModel.loadMedications(isPullToRefresh = false)
+        }
     }
 
     val lifecycleOwner = context as? LifecycleOwner
@@ -310,21 +312,6 @@ fun MedicationsScreen(
                         .padding(bottom = 88.dp),
                 )
             }
-        }
-
-        // Floating iOS Liquid Glass Bottom Navigation Dock (Pops Up)
-        ElementPopUpContainer(
-            delayMillis = 300,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-            IosLiquidGlassBottomNav(
-                selectedTab = selectedTab,
-                onHomeTabClick = onHomeTabClick,
-                onDietTabClick = onDietTabClick,
-                onMedsTabClick = { selectedTab = "Meds" },
-                onReportsTabClick = onReportsTabClick,
-                onSettingsTabClick = onSettingsTabClick,
-            )
         }
     }
 }
