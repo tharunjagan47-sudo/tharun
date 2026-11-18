@@ -358,10 +358,10 @@ fun SiriVoiceOverlay(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     val helperHint = when (voiceState) {
-                        JarvisVoiceState.LISTENING -> "Tap Orb when finished speaking"
-                        JarvisVoiceState.SPEAKING -> "Tap Orb to interrupt and speak"
-                        JarvisVoiceState.THINKING -> "Executing & analyzing..."
-                        else -> "Tap the Glowing Orb to speak"
+                        JarvisVoiceState.LISTENING -> "Tap DIVA when finished speaking"
+                        JarvisVoiceState.SPEAKING -> "Tap DIVA to interrupt and speak"
+                        JarvisVoiceState.THINKING -> "DIVA is analyzing..."
+                        else -> "Tap DIVA to speak"
                     }
 
                     Row(
@@ -459,7 +459,7 @@ fun GlowingSiriOrb(
 
     Box(
         modifier = modifier
-            .size(190.dp)
+            .size(224.dp)
             .clip(CircleShape)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -467,23 +467,23 @@ fun GlowingSiriOrb(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val cx = size.width / 2f
             val cy = size.height / 2f
-            val baseRadius = size.minDimension * 0.30f * breathing + (smoothRms * 18f)
+            val baseRadius = size.minDimension * 0.36f * breathing + (smoothRms * 12f)
 
             // Outer ambient glow
             val auraColors = when (voiceState) {
                 JarvisVoiceState.SPEAKING -> listOf(
-                    Color(0xFF00E5FF).copy(alpha = 0.40f),
-                    Color(0xFF4ADE80).copy(alpha = 0.18f),
+                    Color(0xFF00E5FF).copy(alpha = 0.45f),
+                    Color(0xFFA855F7).copy(alpha = 0.25f),
                     Color.Transparent
                 )
                 JarvisVoiceState.THINKING -> listOf(
-                    Color(0xFFFF2E93).copy(alpha = 0.42f),
-                    Color(0xFF8B5CF6).copy(alpha = 0.20f),
+                    Color(0xFFFF2E93).copy(alpha = 0.44f),
+                    Color(0xFF8B5CF6).copy(alpha = 0.22f),
                     Color.Transparent
                 )
                 else -> listOf(
-                    Color(0xFF00E5FF).copy(alpha = 0.35f + smoothRms * 0.25f),
-                    Color(0xFFFF2E93).copy(alpha = 0.22f),
+                    Color(0xFF00E5FF).copy(alpha = 0.36f + smoothRms * 0.26f),
+                    Color(0xFFA855F7).copy(alpha = 0.24f),
                     Color.Transparent
                 )
             }
@@ -491,25 +491,25 @@ fun GlowingSiriOrb(
                 brush = Brush.radialGradient(
                     colors = auraColors,
                     center = Offset(cx, cy),
-                    radius = size.minDimension * 0.49f
+                    radius = size.minDimension * 0.50f
                 )
             )
 
-            // Dual counter-rotating Siri plasma ribbons
+            // Dual counter-rotating Siri plasma ribbons around DIVA
             rotate(degrees = rotationAngle, pivot = Offset(cx, cy)) {
                 drawCircle(
                     brush = Brush.sweepGradient(
                         colors = listOf(
                             Color(0xFF00E5FF),
                             Color(0xFF8B5CF6),
-                            Color(0xFFFF2E93),
+                            Color(0xFFF0ABFC),
                             Color(0xFF38BDF8),
                             Color(0xFF00E5FF)
                         ),
                         center = Offset(cx, cy)
                     ),
-                    radius = baseRadius + 14f,
-                    style = Stroke(width = 4.dp.toPx())
+                    radius = baseRadius + 10f,
+                    style = Stroke(width = 3.5.dp.toPx())
                 )
             }
 
@@ -517,13 +517,13 @@ fun GlowingSiriOrb(
                 val points = 72
                 val ringPath = Path()
                 val amp = if (voiceState == JarvisVoiceState.LISTENING || voiceState == JarvisVoiceState.SPEAKING) {
-                    6f + (smoothRms * 14f)
+                    5f + (smoothRms * 11f)
                 } else {
-                    2.5f
+                    2f
                 }
                 for (i in 0..points) {
                     val theta = (i.toFloat() / points) * 2f * PI.toFloat()
-                    val r = baseRadius + 5f + sin(theta * 5f + wavePhase) * amp
+                    val r = baseRadius + 4f + sin(theta * 5f + wavePhase) * amp
                     val px = cx + r * cos(theta)
                     val py = cy + r * sin(theta)
                     if (i == 0) ringPath.moveTo(px, py) else ringPath.lineTo(px, py)
@@ -532,51 +532,18 @@ fun GlowingSiriOrb(
                 drawPath(
                     path = ringPath,
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
+                        colors = listOf(Color(0xFF00E5FF), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
                     ),
-                    style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round)
+                    style = Stroke(width = 2.8.dp.toPx(), cap = StrokeCap.Round)
                 )
             }
-
-            // Inner Core Sphere
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF1E1B4B),
-                        Color(0xFF0F172A)
-                    ),
-                    center = Offset(cx, cy),
-                    radius = baseRadius * 0.88f
-                ),
-                radius = baseRadius * 0.88f
-            )
-
-            // Reactive Audio Waveform Bars inside Orb during Listening/Speaking
-            if (voiceState == JarvisVoiceState.LISTENING || voiceState == JarvisVoiceState.SPEAKING) {
-                val barCount = 7
-                val spacing = 9.dp.toPx()
-                val startX = cx - ((barCount - 1) * spacing) / 2f
-                for (b in 0 until barCount) {
-                    val weight = 1f - (kotlin.math.abs(b - 3) * 0.18f)
-                    val oscillation = kotlin.math.abs(sin(wavePhase + b * 0.7f))
-                    val barHeight = (10f + (smoothRms * 34f * oscillation * weight)).dp.toPx()
-                        .coerceAtMost(baseRadius * 0.9f)
-                    val bx = startX + b * spacing
-                    drawLine(
-                        color = if (b % 2 == 0) Color(0xFF00E5FF) else Color(0xFFFF80AB),
-                        start = Offset(bx, cy - barHeight / 2f),
-                        end = Offset(bx, cy + barHeight / 2f),
-                        strokeWidth = 3.5.dp.toPx(),
-                        cap = StrokeCap.Round
-                    )
-                }
-            }
         }
 
-        // Center avatar or icon when Idle / Thinking / Error
-        if (voiceState != JarvisVoiceState.LISTENING && voiceState != JarvisVoiceState.SPEAKING) {
-            IronmanDoctorAvatar(sizeDp = 56)
-        }
+        // Animated Talking DIVA Robot: mouth moves & sparkles animate live while SPEAKING!
+        DivaTalkingAvatar(
+            isSpeaking = voiceState == JarvisVoiceState.SPEAKING,
+            sizeDp = 152
+        )
     }
 }
 
