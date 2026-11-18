@@ -146,7 +146,7 @@ object JarvisVoiceCommandHandler {
             readingType = readingType,
             readingDate = todayDate,
             readingTime = nowTime,
-            notes = "Logged hands-free via Dr. Jarvis Voice Assistant"
+            notes = "Logged hands-free via DIVA Voice Assistant"
         )
 
         return result.fold(
@@ -184,7 +184,7 @@ object JarvisVoiceCommandHandler {
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = context,
                             title = "🩸 Blood Sugar Logged: $valInt mg/dL",
-                            message = "Logged $readingType reading ($valInt mg/dL) via Dr. Jarvis Voice Assistant."
+                            message = "Logged $readingType reading ($valInt mg/dL) via DIVA Voice Assistant."
                         )
                     }
                 }
@@ -247,7 +247,7 @@ object JarvisVoiceCommandHandler {
             reminderDate = todayDisplay,
             timing = mealTiming,
             frequency = "Daily",
-            notes = "Scheduled hands-free via Dr. Jarvis Voice Assistant"
+            notes = "Scheduled hands-free via DIVA Voice Assistant"
         )
 
         return result.fold(
@@ -354,7 +354,7 @@ object JarvisVoiceCommandHandler {
             .replace(Regex("\\b\\d+(?:\\.\\d+)?\\s*(?:mg|ml|mcg|g|units?|tablets?|capsules?|drops?)\\b", RegexOption.IGNORE_CASE), " ")
             .replace(Regex("\\b(before|after|with)\\s+(meal|food|breakfast|lunch|dinner)\\b", RegexOption.IGNORE_CASE), " ")
             .replace(Regex("\\b(at\\s+bedtime|bedtime|empty\\s+stomach|from\\s+now|daily|every\\s+day)\\b", RegexOption.IGNORE_CASE), " ")
-            .replace(Regex("^(please\\s+)?(hey\\s+jarvis|dr\\.?\\s+jarvis|jarvis)?\\s*,?\\s*", RegexOption.IGNORE_CASE), "")
+            .replace(Regex("^(please\\s+)?(hey\\s+diva|diva|hey\\s+jarvis|dr\\.?\\s+jarvis|jarvis)?\\s*,?\\s*", RegexOption.IGNORE_CASE), "")
             .replace(Regex("\\b(set|schedule|create|add|please|me|an|a|the|to|for|take|have|my|medication|medicine|tablet|pill|capsule|alarm|reminder|on|at)\\b", RegexOption.IGNORE_CASE), " ")
             .replace(Regex("\\s{2,}"), " ")
             .trim()
