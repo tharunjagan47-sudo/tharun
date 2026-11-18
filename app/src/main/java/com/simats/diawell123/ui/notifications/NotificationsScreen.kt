@@ -198,17 +198,6 @@ fun NotificationsScreen(
                 Spacer(modifier = Modifier.height(88.dp))
             }
         }
-
-        // Floating iOS Liquid Glass Bottom Navigation Dock
-        IosLiquidGlassBottomNav(
-            selectedTab = selectedTab,
-            onHomeTabClick = onHomeTabClick,
-            onDietTabClick = onDietTabClick,
-            onMedsTabClick = onMedsTabClick,
-            onReportsTabClick = onReportsTabClick,
-            onSettingsTabClick = onSettingsTabClick,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
     }
 }
 
