@@ -26,9 +26,17 @@ enum class JarvisVoiceState {
     ERROR
 }
 
+enum class DivaMouthShape {
+    SMILE,
+    HALF_OPEN,
+    WIDE_OPEN,
+    ROUND_O
+}
+
 /**
  * Manages two-way Speech-to-Text (SpeechRecognizer) and Text-to-Speech (TextToSpeech)
- * with Indian-English (en-IN) priority and Tanglish phonetic voice normalization.
+ * with Indian-English (en-IN) priority, Tanglish phonetic voice normalization,
+ * and real-time syllable-synced mouth viseme animation for DIVA.
  */
 class JarvisVoiceManager(context: Context) {
 
@@ -42,6 +50,11 @@ class JarvisVoiceManager(context: Context) {
     private var pendingSpeechText: String? = null
     private var pendingOnDone: (() -> Unit)? = null
 
+    private val utteranceTexts = HashMap<String, String>()
+    private val activeLipSyncRunnables = mutableListOf<Runnable>()
+    private var lipSyncGeneration = 0
+    private var receivedRangeStart = false
+
     private val _voiceState = MutableStateFlow(JarvisVoiceState.IDLE)
     val voiceState: StateFlow<JarvisVoiceState> = _voiceState.asStateFlow()
 
@@ -50,6 +63,12 @@ class JarvisVoiceManager(context: Context) {
 
     private val _rmsLevel = MutableStateFlow(0f)
     val rmsLevel: StateFlow<Float> = _rmsLevel.asStateFlow()
+
+    private val _mouthOpenness = MutableStateFlow(0f)
+    val mouthOpenness: StateFlow<Float> = _mouthOpenness.asStateFlow()
+
+    private val _mouthShape = MutableStateFlow(DivaMouthShape.SMILE)
+    val mouthShape: StateFlow<DivaMouthShape> = _mouthShape.asStateFlow()
 
     private val _voiceError = MutableStateFlow<String?>(null)
     val voiceError: StateFlow<String?> = _voiceError.asStateFlow()
@@ -62,6 +81,128 @@ class JarvisVoiceManager(context: Context) {
 
     init {
         initTextToSpeech()
+    }
+
+    private fun clearLipSyncRunnables() {
+        activeLipSyncRunnables.forEach { mainHandler.removeCallbacks(it) }
+        activeLipSyncRunnables.clear()
+    }
+
+    private fun postLipSync(delayMs: Long, action: () -> Unit) {
+        lateinit var runnable: Runnable
+        runnable = Runnable {
+            activeLipSyncRunnables.remove(runnable)
+            action()
+        }
+        activeLipSyncRunnables.add(runnable)
+        mainHandler.postDelayed(runnable, delayMs)
+    }
+
+    private fun resetLipSync() {
+        lipSyncGeneration++
+        receivedRangeStart = false
+        clearLipSyncRunnables()
+        _mouthOpenness.value = 0f
+        _mouthShape.value = DivaMouthShape.SMILE
+    }
+
+    private fun classifyViseme(segment: String): DivaMouthShape {
+        val lower = segment.lowercase(Locale.ROOT)
+        return when {
+            lower.any { it == 'o' || it == 'u' || it == 'w' } -> DivaMouthShape.ROUND_O
+            lower.any { it == 'a' || it == 'e' || it == 'i' || it == 'y' } -> DivaMouthShape.WIDE_OPEN
+            else -> DivaMouthShape.HALF_OPEN
+        }
+    }
+
+    private fun extractSyllableShapes(word: String): List<DivaMouthShape> {
+        val cleaned = word.lowercase(Locale.ROOT).filter { it.isLetterOrDigit() }
+        if (cleaned.isEmpty()) return listOf(DivaMouthShape.HALF_OPEN)
+
+        val vowelRegex = Regex("[aeiouy]+")
+        val matches = vowelRegex.findAll(cleaned).toList()
+        if (matches.isEmpty()) {
+            return listOf(classifyViseme(cleaned))
+        }
+        return matches.take(3).map { match ->
+            classifyViseme(match.value)
+        }
+    }
+
+    private fun triggerWordLipSync(word: String) {
+        val gen = ++lipSyncGeneration
+        clearLipSyncRunnables()
+
+        val trimmed = word.trim()
+        if (trimmed.isEmpty()) {
+            _mouthOpenness.value = 0.08f
+            _mouthShape.value = DivaMouthShape.SMILE
+            return
+        }
+
+        val syllables = extractSyllableShapes(trimmed)
+        val syllableDurationMs = when {
+            trimmed.length <= 3 -> 115L
+            trimmed.length <= 6 -> 130L
+            else -> 120L
+        }
+
+        syllables.forEachIndexed { idx, shape ->
+            val startDelay = idx * syllableDurationMs
+            val peakOpen = when (shape) {
+                DivaMouthShape.WIDE_OPEN -> 0.94f
+                DivaMouthShape.ROUND_O -> 0.84f
+                DivaMouthShape.HALF_OPEN -> 0.64f
+                DivaMouthShape.SMILE -> 0.25f
+            }
+            val dipOpen = (peakOpen * 0.30f).coerceIn(0.16f, 0.34f)
+
+            // Syllable peak opening
+            postLipSync(startDelay) {
+                if (gen == lipSyncGeneration && _voiceState.value == JarvisVoiceState.SPEAKING) {
+                    _mouthShape.value = shape
+                    _mouthOpenness.value = peakOpen
+                }
+            }
+
+            // Mid-syllable consonant closure dip
+            postLipSync(startDelay + (syllableDurationMs * 0.62f).toLong()) {
+                if (gen == lipSyncGeneration && _voiceState.value == JarvisVoiceState.SPEAKING) {
+                    _mouthOpenness.value = dipOpen
+                }
+            }
+        }
+
+        // Gentle mouth rest between words / punctuation pauses
+        val endDelay = syllables.size * syllableDurationMs + 35L
+        postLipSync(endDelay) {
+            if (gen == lipSyncGeneration && _voiceState.value == JarvisVoiceState.SPEAKING) {
+                _mouthOpenness.value = 0.08f
+                _mouthShape.value = DivaMouthShape.SMILE
+            }
+        }
+    }
+
+    private fun startFallbackLipSyncLoop(gen: Int, step: Int = 0) {
+        if (gen != lipSyncGeneration || receivedRangeStart || _voiceState.value != JarvisVoiceState.SPEAKING) {
+            return
+        }
+        val pattern = listOf(
+            DivaMouthShape.WIDE_OPEN to 0.90f,
+            DivaMouthShape.HALF_OPEN to 0.30f,
+            DivaMouthShape.ROUND_O to 0.82f,
+            DivaMouthShape.HALF_OPEN to 0.24f,
+            DivaMouthShape.WIDE_OPEN to 0.78f,
+            DivaMouthShape.SMILE to 0.10f
+        )
+        val (shape, open) = pattern[step % pattern.size]
+        _mouthShape.value = shape
+        _mouthOpenness.value = open
+
+        val nextDelay = if (step % 6 == 5) 145L else 95L
+        postLipSync(nextDelay) {
+            startFallbackLipSyncLoop(gen, step + 1)
+        }
     }
 
     private fun initTextToSpeech() {
@@ -77,22 +218,58 @@ class JarvisVoiceManager(context: Context) {
                                 if (_voiceState.value != JarvisVoiceState.LISTENING) {
                                     _voiceState.value = JarvisVoiceState.SPEAKING
                                 }
+                                receivedRangeStart = false
+                                val gen = ++lipSyncGeneration
+                                clearLipSyncRunnables()
+                                // Subtle opening breath as DIVA begins speaking
+                                _mouthShape.value = DivaMouthShape.HALF_OPEN
+                                _mouthOpenness.value = 0.38f
+                                // If TTS engine doesn't emit onRangeStart within 220ms, run rhythmic cadence
+                                postLipSync(220L) {
+                                    if (!receivedRangeStart && gen == lipSyncGeneration &&
+                                        _voiceState.value == JarvisVoiceState.SPEAKING
+                                    ) {
+                                        startFallbackLipSyncLoop(gen)
+                                    }
+                                }
+                            }
+                        }
+
+                        override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
+                            mainHandler.post {
+                                if (_voiceState.value != JarvisVoiceState.SPEAKING) return@post
+                                receivedRangeStart = true
+                                val fullText = utteranceId?.let { utteranceTexts[it] }.orEmpty()
+                                val word = if (fullText.isNotEmpty() && start >= 0 && start < fullText.length) {
+                                    val safeEnd = end.coerceIn(start + 1, fullText.length)
+                                    fullText.substring(start, safeEnd)
+                                } else {
+                                    "ah"
+                                }
+                                triggerWordLipSync(word)
                             }
                         }
 
                         override fun onDone(utteranceId: String?) {
                             mainHandler.post {
-                                if (_voiceState.value == JarvisVoiceState.SPEAKING) {
-                                    _voiceState.value = JarvisVoiceState.IDLE
+                                utteranceId?.let { utteranceTexts.remove(it) }
+                                val isIntermediateChunk = utteranceId?.startsWith("jarvis_part_") == true
+                                if (!isIntermediateChunk) {
+                                    resetLipSync()
+                                    if (_voiceState.value == JarvisVoiceState.SPEAKING) {
+                                        _voiceState.value = JarvisVoiceState.IDLE
+                                    }
+                                    pendingOnDone?.invoke()
+                                    pendingOnDone = null
                                 }
-                                pendingOnDone?.invoke()
-                                pendingOnDone = null
                             }
                         }
 
                         @Deprecated("Deprecated in Java")
                         override fun onError(utteranceId: String?) {
                             mainHandler.post {
+                                utteranceId?.let { utteranceTexts.remove(it) }
+                                resetLipSync()
                                 if (_voiceState.value == JarvisVoiceState.SPEAKING) {
                                     _voiceState.value = JarvisVoiceState.IDLE
                                 }
@@ -102,6 +279,8 @@ class JarvisVoiceManager(context: Context) {
 
                         override fun onError(utteranceId: String?, errorCode: Int) {
                             mainHandler.post {
+                                utteranceId?.let { utteranceTexts.remove(it) }
+                                resetLipSync()
                                 if (_voiceState.value == JarvisVoiceState.SPEAKING) {
                                     _voiceState.value = JarvisVoiceState.IDLE
                                 }
@@ -141,8 +320,8 @@ class JarvisVoiceManager(context: Context) {
                 tts.voice = bestMaleVoice
                 tts.setSpeechRate(0.95f)
                 tts.setPitch(0.88f)
-                _activeLocaleLabel.value = "Jarvis Male • ${bestMaleVoice.locale.toLanguageTag()}"
-                Log.d(TAG, "Selected Jarvis male voice: ${bestMaleVoice.name} (${bestMaleVoice.locale})")
+                _activeLocaleLabel.value = "DIVA Voice • ${bestMaleVoice.locale.toLanguageTag()}"
+                Log.d(TAG, "Selected DIVA voice: ${bestMaleVoice.name} (${bestMaleVoice.locale})")
                 return
             }
 
@@ -150,14 +329,14 @@ class JarvisVoiceManager(context: Context) {
             val indianLocale = Locale.Builder().setLanguage("en").setRegion("IN").build()
             val ukResult = tts.setLanguage(Locale.UK)
             if (ukResult >= 0) {
-                _activeLocaleLabel.value = "Jarvis Male • en-GB"
+                _activeLocaleLabel.value = "DIVA Voice • en-GB"
             } else {
                 val inResult = tts.setLanguage(indianLocale)
                 _activeLocaleLabel.value = if (inResult >= 0) {
-                    "Jarvis Male • en-IN"
+                    "DIVA Voice • en-IN"
                 } else {
                     tts.setLanguage(Locale.ENGLISH)
-                    "Jarvis Male • en-US"
+                    "DIVA Voice • en-US"
                 }
             }
             tts.setSpeechRate(0.94f)
@@ -380,6 +559,7 @@ class JarvisVoiceManager(context: Context) {
     fun setIdleState() {
         mainHandler.post {
             _rmsLevel.value = 0f
+            resetLipSync()
             _voiceState.value = JarvisVoiceState.IDLE
         }
     }
@@ -408,22 +588,27 @@ class JarvisVoiceManager(context: Context) {
                     tts.setPitch(0.88f)
                 }
                 pendingOnDone = onDone
+                utteranceTexts.clear()
+                resetLipSync()
                 _voiceState.value = JarvisVoiceState.SPEAKING
 
                 val maxLen = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(1000)
                 if (cleaned.length <= maxLen) {
                     val utteranceId = "jarvis_${UUID.randomUUID()}"
+                    utteranceTexts[utteranceId] = cleaned
                     tts.speak(cleaned, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
                 } else {
                     val chunks = cleaned.chunked(maxLen)
                     chunks.forEachIndexed { idx, chunk ->
                         val mode = if (idx == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
-                        val uid = if (idx == chunks.lastIndex) "jarvis_last_${UUID.randomUUID()}" else "jarvis_part_$idx"
+                        val uid = if (idx == chunks.lastIndex) "jarvis_last_${UUID.randomUUID()}" else "jarvis_part_${idx}_${UUID.randomUUID()}"
+                        utteranceTexts[uid] = chunk
                         tts.speak(chunk, mode, null, uid)
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "TTS speak failed: ${e.message}", e)
+                resetLipSync()
                 _voiceState.value = JarvisVoiceState.IDLE
                 pendingOnDone = null
             }
@@ -435,6 +620,8 @@ class JarvisVoiceManager(context: Context) {
             try {
                 pendingSpeechText = null
                 pendingOnDone = null
+                utteranceTexts.clear()
+                resetLipSync()
                 textToSpeech?.stop()
                 if (_voiceState.value == JarvisVoiceState.SPEAKING) {
                     _voiceState.value = JarvisVoiceState.IDLE
@@ -445,6 +632,8 @@ class JarvisVoiceManager(context: Context) {
 
     fun release() {
         mainHandler.post {
+            utteranceTexts.clear()
+            resetLipSync()
             try {
                 speechRecognizer?.destroy()
                 speechRecognizer = null
