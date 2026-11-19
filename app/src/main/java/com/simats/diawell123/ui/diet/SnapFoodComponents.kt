@@ -359,22 +359,22 @@ fun MealNutritionBreakdownSheet(
     val isDark = AppTheme.colors.isDark
     val context = LocalContext.current
 
-    var selectedMealSlot by remember { mutableStateOf(analysis.mealSlot) }
-    var servingCount by remember { mutableIntStateOf(1) }
-    var dishTitle by remember { mutableStateOf(analysis.detectedDishName) }
-    var dishIcon by remember { mutableStateOf(analysis.icon) }
-    var activeGlycemicScore by remember { mutableFloatStateOf(analysis.glycemicScore) }
-    var activeGlycemicExplanation by remember { mutableStateOf(analysis.glycemicHealthExplanation) }
-    var baseCalories by remember { mutableIntStateOf(analysis.baseCalories) }
-    var baseCarbs by remember { mutableFloatStateOf(analysis.baseCarbs) }
-    var baseProtein by remember { mutableFloatStateOf(analysis.baseProtein) }
-    var baseFat by remember { mutableFloatStateOf(analysis.baseFat) }
-    var baseFiber by remember { mutableFloatStateOf(analysis.baseFiber) }
+    var selectedMealSlot by remember(analysis) { mutableStateOf(analysis.mealSlot) }
+    var servingCount by remember(analysis) { mutableIntStateOf(1) }
+    var dishTitle by remember(analysis) { mutableStateOf(analysis.detectedDishName) }
+    var dishIcon by remember(analysis) { mutableStateOf(analysis.icon) }
+    var activeGlycemicScore by remember(analysis) { mutableFloatStateOf(analysis.glycemicScore) }
+    var activeGlycemicExplanation by remember(analysis) { mutableStateOf(analysis.glycemicHealthExplanation) }
+    var baseCalories by remember(analysis) { mutableIntStateOf(analysis.baseCalories) }
+    var baseCarbs by remember(analysis) { mutableFloatStateOf(analysis.baseCarbs) }
+    var baseProtein by remember(analysis) { mutableFloatStateOf(analysis.baseProtein) }
+    var baseFat by remember(analysis) { mutableFloatStateOf(analysis.baseFat) }
+    var baseFiber by remember(analysis) { mutableFloatStateOf(analysis.baseFiber) }
 
-    var showChangeFoodDialog by remember { mutableStateOf(analysis.needsUserSelection || analysis.detectedDishName.isBlank()) }
+    var showChangeFoodDialog by remember(analysis) { mutableStateOf(analysis.needsUserSelection || analysis.detectedDishName.isBlank()) }
 
     // Mutable list of sub-items
-    val subItems = remember { mutableStateListOf<SnapFoodSubItem>().apply { addAll(analysis.subItems) } }
+    val subItems = remember(analysis) { mutableStateListOf<SnapFoodSubItem>().apply { addAll(analysis.subItems) } }
 
     // Dynamic calculations scaled by active sub-items and servingCount
     val totalCalories = remember(subItems.size, servingCount, baseCalories) {
