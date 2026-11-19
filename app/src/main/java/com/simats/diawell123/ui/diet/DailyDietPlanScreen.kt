@@ -54,7 +54,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.RecommendedFoodItem
-import com.simats.diawell123.data.repository.HealthRecommendationResult
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -76,18 +75,7 @@ fun DailyDietPlanScreen(
 ) {
     val uiState by viewModel.dailyDietState.collectAsState()
     val aiState by viewModel.aiRecommendationsState.collectAsState()
-    val dailyRecState by viewModel.dailyRecommendationState.collectAsState()
     val context = LocalContext.current
-
-    LaunchedEffect(uiState.selectedCategory) {
-        viewModel.refreshDailyRecommendation(context, category = uiState.selectedCategory)
-    }
-
-    LaunchedEffect(dailyRecState.logSuccessMessage) {
-        dailyRecState.logSuccessMessage?.let { msg ->
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     var selectedTab by remember { mutableStateOf("Diet") }
     var showDatePickerDialog by remember { mutableStateOf(false) }
@@ -401,38 +389,25 @@ fun DailyDietPlanScreen(
                     Spacer(modifier = Modifier.height(14.dp))
                 }
 
-                // Prominent Dataset-Driven Daily Rotating AI Food Recommendation Card
-                dailyRecState.recommendation?.let { rec ->
-                    ElementPopUpContainer(delayMillis = 40) {
-                        AiFoodRecommendationForHealthCard(
-                            result = rec,
-                            isLogging = dailyRecState.isMealLogging,
-                            onTryAnotherClick = {
-                                viewModel.cycleNextRecommendation(context)
-                            },
-                            onLogMealClick = {
-                                viewModel.logRecommendedMeal(context, rec.item)
-                            },
-                            onItemClick = {
-                                onMealDetailsClick(rec.item.mealSlot.lowercase(), rec.item.id, rec.item.name)
-                            }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(18.dp))
-                }
-
                 // AI Suggested Daily Meal Plan Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = "📋 Full Personalized Meal Plan",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
+                    Column {
+                        Text(
+                            text = "📋 Personalized Daily Meal Plan",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.textPrimary,
+                        )
+                        Text(
+                            text = "Daily rotating meal combinations (${uiState.selectedDateLabel})",
+                            fontSize = 11.5.sp,
+                            color = AppTheme.colors.textSecondary,
+                        )
+                    }
 
                     if (aiState.isLoading || aiState.isUpdatingInputs) {
                         CircularProgressIndicator(
@@ -1310,391 +1285,6 @@ fun CalendarDatePickerDialog(
             }
         }
     }
-}
-
-/**
- * Prominent AI Food Recommendation For Your Health Card.
- * Powered by the Dataset-Driven Daily Rotating & Non-Repeating AI Food Engine.
- */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun AiFoodRecommendationForHealthCard(
-    result: HealthRecommendationResult,
-    isLogging: Boolean,
-    onTryAnotherClick: () -> Unit,
-    onLogMealClick: () -> Unit,
-    onItemClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val item = result.item
-    val isDark = AppTheme.colors.isDark
-
-    val cardBorderBrush = remember(isDark) {
-        Brush.linearGradient(
-            colors = if (isDark) {
-                listOf(Color(0xFFA855F7), Color(0xFF00E5FF), Color(0x66A855F7))
-            } else {
-                listOf(Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFF00E5FF))
-            }
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.verticalGradient(
-                    colors = if (isDark) {
-                        listOf(Color(0xFF1E1435), Color(0xFF140F24), Color(0xFF0E0C1A))
-                    } else {
-                        listOf(Color(0xFFFAF5FF), Color(0xFFF3E8FF), Color(0xFFFFFFFF))
-                    }
-                )
-            )
-            .border(width = 1.4.dp, brush = cardBorderBrush, shape = RoundedCornerShape(20.dp))
-            .padding(16.dp),
-    ) {
-        Column {
-            // Header: Title & Daily Rotation Badge
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f, fill = false)
-                ) {
-                    Text(
-                        text = "AI Food Recommendation for Your Health",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF581C87),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(6.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            if (isDark) Color(0xFF7E22CE).copy(alpha = 0.35f)
-                            else Color(0xFFE9D5FF)
-                        )
-                        .border(
-                            1.dp,
-                            if (isDark) Color(0xFFA855F7) else Color(0xFFC084FC),
-                            RoundedCornerShape(12.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 3.dp),
-                ) {
-                    Text(
-                        text = result.dailyRotationLabel,
-                        fontSize = 10.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6B21A8),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Badges FlowRow (Glucose status, meal slot, diet type, GL)
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Glucose badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            when {
-                                result.glucoseBadgeText.contains("High") -> Color(0xFFEF4444).copy(alpha = 0.18f)
-                                result.glucoseBadgeText.contains("Stabilizer") -> Color(0xFFF59E0B).copy(alpha = 0.18f)
-                                else -> Color(0xFF10B981).copy(alpha = 0.18f)
-                            }
-                        )
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = result.glucoseBadgeText,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = when {
-                            result.glucoseBadgeText.contains("High") -> if (isDark) Color(0xFFFCA5A5) else Color(0xFFDC2626)
-                            result.glucoseBadgeText.contains("Stabilizer") -> if (isDark) Color(0xFFFDE68A) else Color(0xFFD97706)
-                            else -> if (isDark) Color(0xFF6EE7B7) else Color(0xFF059669)
-                        }
-                    )
-                }
-
-                // Meal slot badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    val slotEmoji = when (item.mealSlot.lowercase()) {
-                        "breakfast" -> "🌅"
-                        "lunch" -> "☀️"
-                        "snack" -> "☕"
-                        else -> "🌙"
-                    }
-                    Text(
-                        text = "$slotEmoji ${item.mealSlot}",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
-                    )
-                }
-
-                // Diet type badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    val dietEmoji = when (item.dietType.lowercase()) {
-                        "vegan" -> "🌿"
-                        "vegetarian" -> "🌱"
-                        else -> "🍗"
-                    }
-                    Text(
-                        text = "$dietEmoji ${item.dietType}",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
-                    )
-                }
-
-                // Glycemic load badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = "🟢 ${item.glycemicLoad} Glycemic Load",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Main Meal Content Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onItemClick() },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = if (isDark) {
-                                    listOf(Color(0xFF3B1D66), Color(0xFF241542))
-                                } else {
-                                    listOf(Color(0xFFEDE9FE), Color(0xFFDDD6FE))
-                                }
-                            )
-                        )
-                        .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(text = item.icon, fontSize = 26.sp)
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = item.name,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                        lineHeight = 19.sp,
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "${item.portion} • ${item.calories} kcal",
-                        fontSize = 11.5.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFFA855F7),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Macros Strip
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isDark) Color(0xFF0F0B1E) else Color.White.copy(alpha = 0.85f))
-                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MacroStatMini("Carbs", "${item.carbsGrams.toInt()}g")
-                MacroDivider()
-                MacroStatMini("Protein", "${item.proteinGrams.toInt()}g")
-                MacroDivider()
-                MacroStatMini("Fiber", "${item.fiberGrams.toInt()}g")
-                MacroDivider()
-                MacroStatMini("Fat", "${item.fatGrams.toInt()}g")
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Personalized Medical & Health Reason Box
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        if (isDark) Color(0xFF181528)
-                        else Color(0xFFF5F3FF)
-                    )
-                    .border(
-                        1.dp,
-                        Color(0xFFA855F7).copy(alpha = if (isDark) 0.35f else 0.25f),
-                        RoundedCornerShape(12.dp)
-                    )
-                    .padding(12.dp)
-            ) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Text(text = "💡", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = result.matchedReason,
-                        fontSize = 11.5.sp,
-                        lineHeight = 16.sp,
-                        color = if (isDark) Color(0xFFE2E8F0) else Color(0xFF334155),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Action Buttons: "Try Another" & "Log This Meal"
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Try Another Button
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isDark) Color(0xFF1E1733) else Color.White)
-                        .border(
-                            1.2.dp,
-                            if (isDark) Color(0xFFA855F7).copy(alpha = 0.6f) else Color(0xFFC084FC),
-                            RoundedCornerShape(12.dp)
-                        )
-                        .clickable { onTryAnotherClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(text = "🔀", fontSize = 12.sp)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Try Another",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF7E22CE)
-                        )
-                    }
-                }
-
-                // Quick Log This Meal Button
-                Box(
-                    modifier = Modifier
-                        .weight(1.3f)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFF00E5FF))
-                            )
-                        )
-                        .clickable(enabled = !isLogging) { onLogMealClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isLogging) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            strokeWidth = 2.dp,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    } else {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(text = "➕", fontSize = 12.sp, color = Color.White)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Log This Meal",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MacroStatMini(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = AppTheme.colors.textPrimary
-        )
-        Text(
-            text = label,
-            fontSize = 9.5.sp,
-            color = AppTheme.colors.textMuted
-        )
-    }
-}
-
-@Composable
-private fun MacroDivider() {
-    Box(
-        modifier = Modifier
-            .width(1.dp)
-            .height(20.dp)
-            .background(AppTheme.colors.border)
-    )
 }
 
 @Preview(showBackground = true, showSystemUi = true)
