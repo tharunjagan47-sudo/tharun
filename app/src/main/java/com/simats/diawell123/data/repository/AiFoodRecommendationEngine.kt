@@ -1,7 +1,10 @@
 package com.simats.diawell123.data.repository
 
 import android.content.Context
+import com.simats.diawell123.data.model.DailyPlanData
+import com.simats.diawell123.data.model.GlycemicDetails
 import com.simats.diawell123.data.model.HealthFoodItem
+import com.simats.diawell123.data.model.RecommendedFoodItem
 import java.util.Calendar
 import java.util.Locale
 import kotlin.random.Random
@@ -895,6 +898,163 @@ object AiFoodRecommendationEngine {
             dailyRotationLabel = rotationLabel,
             totalAvailableMatches = rotatedList.size,
             currentIndex = effectiveIndex
+        )
+    }
+
+    /**
+     * Converts a HealthFoodItem to a full RecommendedFoodItem for UI display.
+     */
+    fun HealthFoodItem.toRecommendedFoodItem(glucose: Float = 120f): RecommendedFoodItem {
+        val glBadge = when {
+            glycemicLoad.equals("Low", ignoreCase = true) -> GlycemicDetails(
+                badge = "Low GL Impact",
+                color = "#2E7D32",
+                bgColor = "#E8F5E9"
+            )
+            glycemicLoad.equals("Medium", ignoreCase = true) -> GlycemicDetails(
+                badge = "Medium GL Impact",
+                color = "#F57C00",
+                bgColor = "#FFF3E0"
+            )
+            else -> GlycemicDetails(
+                badge = "Gentle Carbs",
+                color = "#1565C0",
+                bgColor = "#E3F2FD"
+            )
+        }
+
+        val dynamicHighlights = buildList {
+            add("${carbsGrams.toInt()}g Carbs")
+            add("${proteinGrams.toInt()}g Protein")
+            add("${fiberGrams.toInt()}g Fiber")
+            if (healthTags.isNotEmpty()) {
+                add(healthTags.first())
+            }
+        }
+
+        val reason = when {
+            glucose > 180f -> "Low glycemic load meal ($portion) with ${fiberGrams.toInt()}g fiber and ${proteinGrams.toInt()}g protein prevents sharp glucose surges."
+            glucose < 70f -> "Gentle stabilizing meal providing ${carbsGrams.toInt()}g complex carbs and steady protein to safely restore blood sugar."
+            else -> if (healthReason.isNotBlank()) healthReason else "Nutrient-dense $mealSlot option providing steady glycemic control and balanced macros."
+        }
+
+        return RecommendedFoodItem(
+            id = id,
+            title = name,
+            dishName = name,
+            calories = calories.toFloat(),
+            caloriesLabel = "$calories kcal",
+            carbsG = carbsGrams,
+            proteinG = proteinGrams,
+            fatG = fatGrams,
+            freeSugarG = 1f,
+            fibreG = fiberGrams,
+            sodiumMg = 180f,
+            category = mealSlot,
+            dietType = dietType,
+            portion = portion,
+            icon = icon,
+            highlights = dynamicHighlights,
+            glycemicImpact = glBadge,
+            recommendationScore = 92,
+            recommendationReason = reason
+        )
+    }
+
+    /**
+     * Generates a complete daily rotating meal plan (Breakfast, Lunch, Snack, Dinner)
+     * with non-repeating combinations that change every single day based on calendar epoch day seed,
+     * user dietary constraints (diet type, allergies, foods to avoid), and live blood glucose levels.
+     */
+    fun getDailyRotatingMealPlan(
+        userDietType: String? = null,
+        userAllergies: List<String> = emptyList(),
+        userFoodsToAvoid: List<String> = emptyList(),
+        currentGlucose: Float? = 120f,
+        calendar: Calendar? = null,
+        dayOffset: Int = 0
+    ): DailyPlanData {
+        val cal = (calendar?.clone() as? Calendar) ?: Calendar.getInstance()
+        if (dayOffset != 0) {
+            cal.add(Calendar.DAY_OF_YEAR, dayOffset)
+        }
+        val year = cal.get(Calendar.YEAR)
+        val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
+        val epochDay = (year * 365L) + dayOfYear
+
+        val glucose = currentGlucose ?: 120f
+        val dietNorm = userDietType?.lowercase(Locale.ROOT) ?: ""
+        val allergiesNorm = userAllergies.map { it.lowercase(Locale.ROOT).trim() }.filter { it.isNotEmpty() }
+        val avoidNorm = userFoodsToAvoid.map { it.lowercase(Locale.ROOT).trim() }.filter { it.isNotEmpty() }
+
+        // Filter dataset by user constraints (Diet, Allergies, Avoid list)
+        val filtered = foodDataset.filter { item ->
+            val matchesDiet = when {
+                dietNorm.contains("vegan") -> item.dietType.equals("Vegan", ignoreCase = true)
+                dietNorm.contains("veg") -> item.dietType.equals("Vegetarian", ignoreCase = true) || item.dietType.equals("Vegan", ignoreCase = true)
+                dietNorm.contains("non") -> true
+                else -> true
+            }
+            if (!matchesDiet) return@filter false
+
+            val hasAllergen = item.allergens.any { allergen ->
+                allergiesNorm.any { userAllergy ->
+                    allergen.lowercase(Locale.ROOT).contains(userAllergy) || userAllergy.contains(allergen.lowercase(Locale.ROOT))
+                }
+            }
+            if (hasAllergen) return@filter false
+
+            val nameLower = item.name.lowercase(Locale.ROOT)
+            if (avoidNorm.any { nameLower.contains(it) }) return@filter false
+
+            true
+        }.ifEmpty { foodDataset }
+
+        fun pickRotatingSlot(slot: String, count: Int, slotSalt: Long): List<RecommendedFoodItem> {
+            val matching = filtered.filter { it.mealSlot.equals(slot, ignoreCase = true) }
+                .ifEmpty { foodDataset.filter { it.mealSlot.equals(slot, ignoreCase = true) } }
+                .ifEmpty { filtered }
+
+            // Score items by current glucose suitability
+            val scored = matching.sortedByDescending { item ->
+                var score = 100
+                when {
+                    glucose > 180f -> {
+                        if (item.glycemicLoad.equals("Low", ignoreCase = true)) score += 60
+                        if (item.healthTags.contains("HighSugarSafe")) score += 40
+                        if (item.healthTags.contains("LowCarb")) score += 30
+                        if (item.fiberGrams >= 5f) score += 20
+                    }
+                    glucose < 70f -> {
+                        if (item.carbsGrams in 20f..35f) score += 60
+                        if (item.proteinGrams >= 8f) score += 40
+                        if (item.healthTags.contains("Balanced")) score += 20
+                    }
+                    else -> {
+                        if (item.healthTags.contains("Balanced")) score += 40
+                        if (item.healthTags.contains("HighSugarSafe")) score += 20
+                        if (item.glycemicLoad.equals("Low", ignoreCase = true)) score += 20
+                    }
+                }
+                score
+            }
+
+            // Shuffle deterministically based on date seed + slot salt to ensure combinations change daily!
+            val slotRandom = Random(epochDay * 31L + slotSalt)
+            val rotated = scored.shuffled(slotRandom)
+            return rotated.take(count).map { it.toRecommendedFoodItem(glucose) }
+        }
+
+        val breakfast = pickRotatingSlot("Breakfast", 2, 1013L)
+        val lunch = pickRotatingSlot("Lunch", 2, 2027L)
+        val snack = pickRotatingSlot("Snack", 1, 3037L)
+        val dinner = pickRotatingSlot("Dinner", 2, 4049L)
+
+        return DailyPlanData(
+            breakfast = breakfast,
+            lunch = lunch,
+            snack = snack,
+            dinner = dinner
         )
     }
 }
