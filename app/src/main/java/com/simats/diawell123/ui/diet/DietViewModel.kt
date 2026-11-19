@@ -150,13 +150,25 @@ class DietViewModel(
                 healthFocus = f
             )
             result.onSuccess { data ->
+                val sessionManager = try { SessionManager.getInstance() } catch (_: Exception) { null }
+                val foodPrefs = sessionManager?.getCachedFoodPreferences()
+                val currentCal = _dailyDietState.value.selectedDateCalendar
+                val rotatingPlan = AiFoodRecommendationEngine.getDailyRotatingMealPlan(
+                    userDietType = data.patientContext?.dietaryPreference ?: d,
+                    userAllergies = foodPrefs?.allergies ?: emptyList(),
+                    userFoodsToAvoid = foodPrefs?.foodsToAvoid ?: emptyList(),
+                    currentGlucose = data.patientContext?.currentGlucoseMgDl ?: g,
+                    calendar = currentCal
+                )
+                val finalData = data.copy(dailyPlan = rotatingPlan)
+
                 _aiRecommendationsState.update {
                     it.copy(
                         isLoading = false,
-                        data = data,
-                        activeGlucose = data.patientContext?.currentGlucoseMgDl ?: g ?: it.activeGlucose,
-                        activeDietPreference = data.patientContext?.dietaryPreference ?: d ?: it.activeDietPreference,
-                        activeHealthFocus = data.patientContext?.healthFocus ?: f ?: it.activeHealthFocus
+                        data = finalData,
+                        activeGlucose = finalData.patientContext?.currentGlucoseMgDl ?: g ?: it.activeGlucose,
+                        activeDietPreference = finalData.patientContext?.dietaryPreference ?: d ?: it.activeDietPreference,
+                        activeHealthFocus = finalData.patientContext?.healthFocus ?: f ?: it.activeHealthFocus
                     )
                 }
             }.onFailure { error ->
@@ -310,6 +322,8 @@ class DietViewModel(
                 selectedDateLabel = label
             )
         }
+        loadAiRecommendations()
+        loadFoodLog()
     }
 
     private fun isSameDay(c1: Calendar, c2: Calendar): Boolean {
