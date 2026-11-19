@@ -34,5 +34,6 @@ data class SnapFoodAnalysis(
     val subItems: List<SnapFoodSubItem> = emptyList(),
     val imageBitmap: Bitmap? = null,
     val imageUri: Uri? = null,
-    val icon: String = "🍽️"
+    val icon: String = "🍽️",
+    val needsUserSelection: Boolean = false
 )
