@@ -36,8 +36,8 @@ object SnapFoodAnalyzer {
     private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
-            .readTimeout(75000, TimeUnit.MILLISECONDS)
-            .writeTimeout(30000, TimeUnit.MILLISECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(45, TimeUnit.SECONDS)
             .build()
     }
 
@@ -389,24 +389,12 @@ object SnapFoodAnalyzer {
     ): SnapFoodAnalysis? {
         val base64Image = encodeBitmapToBase64(bitmap) ?: return null
 
-        val prompt = "Look carefully at this food image. Identify the exact dish(es) visible in the photo (Indian or international). Return ONLY a valid JSON object with NO markdown, NO extra text:\n" +
-                "{\n" +
-                "  \"dish_name\": \"Exact name of the food\",\n" +
-                "  \"calories\": 350,\n" +
-                "  \"protein_g\": 12,\n" +
-                "  \"carbs_g\": 45,\n" +
-                "  \"fat_g\": 10,\n" +
-                "  \"fiber_g\": 5,\n" +
-                "  \"health_score\": 7,\n" +
-                "  \"health_reason\": \"Short 1-line diabetes-friendly note\",\n" +
-                "  \"items\": [\n" +
-                "    {\"name\": \"Main item\", \"calories\": 250},\n" +
-                "    {\"name\": \"Side item\", \"calories\": 100}\n" +
-                "  ]\n" +
-                "}"
+        val prompt = "Look very carefully at this food photo. Identify every specific food item visible (recognize Indian dishes like idli, dosa, pongal, poori, chapati, biryani, sambar, chutney, rice, curry as well as snacks and international dishes).\n" +
+                "Calculate realistic estimated total calories, protein_g, carbs_g, fat_g, fiber_g, health_score (1 to 10), 1-line health_reason, and an items array with individual item estimated calories.\n" +
+                "Return ONLY valid JSON with keys: dish_name (string), calories (integer), protein_g (integer), carbs_g (integer), fat_g (integer), fiber_g (integer), health_score (integer 1-10), health_reason (string), items (array of {name: string, calories: integer})."
 
         val jsonPayload = JSONObject().apply {
-            put("model", "moondream")
+            put("model", "qwen2.5vl:3b")
             put("prompt", prompt)
             put("images", JSONArray().apply { put(base64Image) })
             put("stream", false)
@@ -451,7 +439,7 @@ object SnapFoodAnalyzer {
 
     private fun encodeBitmapToBase64(bitmap: Bitmap): String? {
         return try {
-            val maxDim = 512
+            val maxDim = 768
             val scale = (maxDim.toFloat() / maxOf(bitmap.width, bitmap.height)).coerceAtMost(1.0f)
             val scaledBmp = if (scale < 1.0f) {
                 Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
