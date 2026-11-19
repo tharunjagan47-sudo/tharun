@@ -317,6 +317,7 @@ fun MedicationReminderScreen(
                         DiaWellNotificationHelper.stopAlarmSound(context)
                         if (medId > 0) {
                             NotificationManagerCompat.from(context).cancel(medId)
+                            DiaWellNotificationHelper.cancelSnoozeAlarm(context, medId)
                             if (!isDailySchedule) {
                                 DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
                             }
@@ -403,6 +404,7 @@ fun MedicationReminderScreen(
                             DiaWellNotificationHelper.stopAlarmSound(context)
                             if (medId > 0) {
                                 NotificationManagerCompat.from(context).cancel(medId)
+                                DiaWellNotificationHelper.cancelSnoozeAlarm(context, medId)
                                 if (!isDailySchedule) {
                                     DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
                                 }
