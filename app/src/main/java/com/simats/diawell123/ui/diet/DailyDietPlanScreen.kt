@@ -86,6 +86,7 @@ fun DailyDietPlanScreen(
     var showDatePickerDialog by remember { mutableStateOf(false) }
     var showAdjustInputsDialog by remember { mutableStateOf(false) }
     var showSnapFoodCamera by remember { mutableStateOf(false) }
+    var isAnalyzingFood by remember { mutableStateOf(false) }
     var activeSnapFoodAnalysis by remember { mutableStateOf<SnapFoodAnalysis?>(null) }
 
     val patientContext = aiState.data?.patientContext
@@ -624,18 +625,30 @@ fun DailyDietPlanScreen(
                 onDismiss = { showSnapFoodCamera = false },
                 onPhotoCaptured = { bitmap, uri, query ->
                     showSnapFoodCamera = false
+                    isAnalyzingFood = true
                     coroutineScope.launch {
-                        val analysis = SnapFoodAnalyzer.analyzeFood(
-                            context = context,
-                            bitmap = bitmap,
-                            imageUri = uri,
-                            query = query,
-                            userGlucose = aiState.activeGlucose
-                        )
-                        activeSnapFoodAnalysis = analysis
+                        try {
+                            val analysis = SnapFoodAnalyzer.analyzeFood(
+                                context = context,
+                                bitmap = bitmap,
+                                imageUri = uri,
+                                query = query,
+                                userGlucose = aiState.activeGlucose
+                            )
+                            activeSnapFoodAnalysis = analysis
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Analysis error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        } finally {
+                            isAnalyzingFood = false
+                        }
                     }
                 }
             )
+        }
+
+        // Vision AI Loading / Analyzing Dialog
+        if (isAnalyzingFood) {
+            SnapFoodAnalyzingDialog()
         }
 
         // Meal Nutrition Breakdown Sheet with Macro Readout, Stepper, Sub-items, and Done Action
