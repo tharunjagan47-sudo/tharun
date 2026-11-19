@@ -1,17 +1,22 @@
 package com.simats.diawell123.ui.diet
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.AiRecommendationData
 import com.simats.diawell123.data.model.FoodDetailsData
-import com.simats.diawell123.data.model.RecommendedFoodItem
 import com.simats.diawell123.data.model.FoodItem
 import com.simats.diawell123.data.model.FoodLogItem
 import com.simats.diawell123.data.model.FoodLogRequest
+import com.simats.diawell123.data.model.HealthFoodItem
+import com.simats.diawell123.data.model.RecommendedFoodItem
+import com.simats.diawell123.data.repository.AiFoodRecommendationEngine
 import com.simats.diawell123.data.repository.DietRepository
 import com.simats.diawell123.data.repository.DietRepositoryImpl
+import com.simats.diawell123.data.repository.HealthRecommendationResult
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +26,14 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+
+data class DailyRecommendationUiState(
+    val recommendation: HealthRecommendationResult? = null,
+    val isLoading: Boolean = false,
+    val isMealLogging: Boolean = false,
+    val shuffleCount: Int = 0,
+    val logSuccessMessage: String? = null
+)
 
 data class AiRecommendationUiState(
     val isLoading: Boolean = false,
@@ -87,6 +100,9 @@ class DietViewModel(
 
     private val _aiRecommendationsState = MutableStateFlow(AiRecommendationUiState())
     val aiRecommendationsState: StateFlow<AiRecommendationUiState> = _aiRecommendationsState.asStateFlow()
+
+    private val _dailyRecommendationState = MutableStateFlow(DailyRecommendationUiState())
+    val dailyRecommendationState: StateFlow<DailyRecommendationUiState> = _dailyRecommendationState.asStateFlow()
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.e("DietViewModel", "Uncaught exception in DietViewModel", throwable)
@@ -378,6 +394,127 @@ class DietViewModel(
             }.onFailure { error ->
                 _detailsState.update { it.copy(isLogging = false, errorMessage = error.localizedMessage) }
                 // Local fallback update so food is added to state log even offline or on API failure
+                _foodLogState.update { state ->
+                    state.copy(meals = state.meals + newLogItem)
+                }
+                onSuccess()
+            }
+        }
+    }
+
+    /**
+     * Refreshes or cycles the AI Daily Rotating Non-Repeating Food Recommendation.
+     */
+    fun refreshDailyRecommendation(
+        context: Context,
+        category: String? = null,
+        shuffle: Boolean = false
+    ) {
+        val nextShuffle = if (shuffle) {
+            _dailyRecommendationState.value.shuffleCount + 1
+        } else {
+            _dailyRecommendationState.value.shuffleCount
+        }
+
+        val sessionManager = try {
+            SessionManager.getInstance()
+        } catch (_: Exception) {
+            SessionManager.init(context)
+        }
+        val foodPrefs = sessionManager.getCachedFoodPreferences()
+        val user = sessionManager.getUserSession()
+        val currentGlucose = _aiRecommendationsState.value.activeGlucose
+            ?: user?.currentGlucoseMgDl
+            ?: 120f
+        val dietType = foodPrefs?.preferredDiet
+            ?: _aiRecommendationsState.value.activeDietPreference.ifBlank { "Vegetarian" }
+        val allergies = foodPrefs?.allergies ?: emptyList()
+        val foodsToAvoid = foodPrefs?.foodsToAvoid ?: emptyList()
+        val targetCategory = category ?: _dailyDietState.value.selectedCategory
+
+        val result = AiFoodRecommendationEngine.getDailyRecommendation(
+            context = context,
+            userDietType = dietType,
+            userAllergies = allergies,
+            userFoodsToAvoid = foodsToAvoid,
+            currentGlucose = currentGlucose,
+            targetMealSlot = if (targetCategory.equals("All", ignoreCase = true)) null else targetCategory,
+            shuffleOffset = nextShuffle
+        )
+
+        _dailyRecommendationState.update {
+            it.copy(
+                recommendation = result,
+                shuffleCount = nextShuffle,
+                isLoading = false,
+                logSuccessMessage = null
+            )
+        }
+    }
+
+    /**
+     * Cycles to the next eligible non-repeating food recommendation on demand ("Try Another").
+     */
+    fun cycleNextRecommendation(context: Context) {
+        refreshDailyRecommendation(context = context, shuffle = true)
+    }
+
+    /**
+     * Quickly logs the recommended meal item directly into today's diet log.
+     */
+    fun logRecommendedMeal(
+        context: Context,
+        item: HealthFoodItem,
+        onSuccess: () -> Unit = {}
+    ) {
+        viewModelScope.launch(exceptionHandler) {
+            _dailyRecommendationState.update { it.copy(isMealLogging = true) }
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val dateStr = sdf.format(_dailyDietState.value.selectedDateCalendar.time)
+            val timeSdf = SimpleDateFormat("h:mm a", Locale.getDefault())
+            val currentTimeStr = timeSdf.format(Calendar.getInstance().time)
+
+            val cat = item.mealSlot.uppercase()
+            val request = FoodLogRequest(
+                mealCategory = cat,
+                foodName = item.name,
+                portion = item.portion,
+                calories = item.calories,
+                carbsG = item.carbsGrams,
+                proteinG = item.proteinGrams,
+                fatG = item.fatGrams,
+                icon = item.icon,
+                logDate = dateStr,
+                logTime = currentTimeStr
+            )
+
+            val newLogItem = FoodLogItem(
+                id = (System.currentTimeMillis() % 100000).toInt(),
+                category = cat,
+                time = currentTimeStr,
+                title = item.name,
+                portion = item.portion,
+                calories = "${item.calories} kcal",
+                caloriesNum = item.calories,
+                carbsG = item.carbsGrams,
+                proteinG = item.proteinGrams,
+                fatG = item.fatGrams,
+                icon = item.icon
+            )
+
+            val result = dietRepository.logMeal(request)
+            result.onSuccess { loggedItem ->
+                _dailyRecommendationState.update {
+                    it.copy(isMealLogging = false, logSuccessMessage = "Logged ${item.name} to today's plan!")
+                }
+                _foodLogState.update { state ->
+                    state.copy(meals = state.meals + loggedItem)
+                }
+                onSuccess()
+            }.onFailure { error ->
+                _dailyRecommendationState.update {
+                    it.copy(isMealLogging = false, logSuccessMessage = "Logged ${item.name} to today's plan!")
+                }
                 _foodLogState.update { state ->
                     state.copy(meals = state.meals + newLogItem)
                 }
