@@ -20,5 +20,6 @@ data class HealthFoodItem(
     val healthTags: List<String> = emptyList(), // "HighSugarSafe", "LowCarb", "Balanced", "PostWorkout", "LightEvening"
     val healthReason: String = "",
     val portion: String = "1 serving",
-    val icon: String = "🥗"
+    val icon: String = "🥗",
+    val isSouthIndian: Boolean = false
 )
