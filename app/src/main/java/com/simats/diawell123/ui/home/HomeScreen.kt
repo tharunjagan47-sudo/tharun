@@ -764,7 +764,6 @@ fun IosLiquidGlassBottomNav(
 ) {
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
-    val scope = rememberCoroutineScope()
     val isDark = AppTheme.colors.isDark
 
     val tabs = remember {
@@ -801,18 +800,20 @@ fun IosLiquidGlassBottomNav(
 
     var rowWidthPx by remember { mutableFloatStateOf(0f) }
     var isPressed by remember { mutableStateOf(false) }
+    var settledTabIndex by remember { mutableIntStateOf(selectedTabIndex) }
     var hoveredIndex by remember { mutableIntStateOf(selectedTabIndex) }
     var activeDragPos by remember { mutableStateOf<Float?>(null) }
 
-    // Sync hoveredIndex when tab changes externally (e.g. from screen buttons/back press)
+    // Sync settled & hovered indices when tab changes externally (e.g. from screen buttons/back press)
     LaunchedEffect(selectedTabIndex) {
+        settledTabIndex = selectedTabIndex
         if (!isPressed) {
             hoveredIndex = selectedTabIndex
         }
     }
 
-    // Target continuous position [0f .. 4f]: follows finger seamlessly during slide, locks to selectedTab on release
-    val targetLensPos = activeDragPos ?: selectedTabIndex.toFloat()
+    // Target continuous position [0f .. 4f]: follows finger seamlessly during slide, locks to settled tab on release
+    val targetLensPos = activeDragPos ?: settledTabIndex.toFloat()
 
     // Silky critically-damped GPU spring: filters touch digitizer micro-jitter while staying glued to thumb (~8ms lag),
     // then glides smoothly with juicy elastic liquid settle on release — read strictly inside graphicsLayer!
@@ -821,7 +822,7 @@ fun IosLiquidGlassBottomNav(
         animationSpec = if (isPressed && activeDragPos != null) {
             spring(dampingRatio = 0.90f, stiffness = 920f)
         } else {
-            spring(dampingRatio = 0.76f, stiffness = 420f)
+            spring(dampingRatio = 0.78f, stiffness = 440f)
         },
         label = "SilkyLiquidLensPos",
     )
@@ -973,7 +974,6 @@ fun IosLiquidGlassBottomNav(
                         isPressed = true
                         var targetTabIdx = (down.position.x / slotW).toInt().coerceIn(0, tabs.lastIndex)
                         hoveredIndex = targetTabIdx
-                        var settleCommitJob: Job? = null
 
                         // Immediately glide lens toward finger touch point
                         val initialContinuous = ((down.position.x / slotW) - 0.5f).coerceIn(
@@ -1011,25 +1011,16 @@ fun IosLiquidGlassBottomNav(
                                 if (newTabIdx != targetTabIdx) {
                                     targetTabIdx = newTabIdx
                                     hoveredIndex = newTabIdx
-                                    // Subtle micro-haptic tick as crystal lens crosses each tab
+                                    // Subtle micro-haptic tick as crystal lens crosses each tab boundary
                                     try {
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     } catch (_: Exception) {}
-
-                                    // Debounce screen mount during fast sweeps so the glass slide stays 100% locked at 120 FPS;
-                                    // if user pauses briefly (160ms) on a tab, smoothly preview/switch to it live!
-                                    settleCommitJob?.cancel()
-                                    val pendingTab = newTabIdx
-                                    settleCommitJob = scope.launch {
-                                        delay(160)
-                                        currentOnSelectIndex(pendingTab)
-                                    }
                                 }
                             }
                         } finally {
-                            // Guaranteed cleanup: release drag, commit final tab immediately, and spring-lock lens dead-center!
-                            settleCommitJob?.cancel()
+                            // Guaranteed cleanup on release: spring-lock lens to final tab and commit screen change ONLY now!
                             val finalTab = targetTabIdx.coerceIn(0, tabs.lastIndex)
+                            settledTabIndex = finalTab
                             hoveredIndex = finalTab
                             activeDragPos = null
                             isPressed = false
@@ -1092,7 +1083,8 @@ fun IosLiquidGlassBottomNav(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 tabs.forEachIndexed { index, (name, iconVector) ->
-                    val isActive = if (isPressed) (index == hoveredIndex) else (index == selectedTabIndex)
+                    val activeIndex = if (isPressed) hoveredIndex else settledTabIndex
+                    val isActive = (index == activeIndex)
 
                     val iconTilt = remember { Animatable(0f) }
                     LaunchedEffect(isActive) {
