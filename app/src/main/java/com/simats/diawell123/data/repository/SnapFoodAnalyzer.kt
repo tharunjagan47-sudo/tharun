@@ -513,25 +513,44 @@ object SnapFoodAnalyzer {
         val dishName = rawName
         val mealSlot = dataObj.optString("meal_type", dataObj.optString("meal_slot", "Lunch"))
         val calories = dataObj.optInt("calories", 320).coerceAtLeast(50)
-        val carbs = dataObj.optDouble("carbs_g", 38.0).toFloat().coerceAtLeast(0f)
-        val protein = dataObj.optDouble("protein_g", 12.0).toFloat().coerceAtLeast(0f)
-        val fat = dataObj.optDouble("fat_g", 8.0).toFloat().coerceAtLeast(0f)
-        val fiber = dataObj.optDouble("fiber_g", 5.0).toFloat().coerceAtLeast(0f)
+        var carbs = dataObj.optDouble("carbs_g", dataObj.optDouble("carbs", 0.0)).toFloat().coerceAtLeast(0f)
+        var protein = dataObj.optDouble("protein_g", dataObj.optDouble("protein", 0.0)).toFloat().coerceAtLeast(0f)
+        var fat = dataObj.optDouble("fat_g", dataObj.optDouble("fat", 0.0)).toFloat().coerceAtLeast(0f)
+        var fiber = dataObj.optDouble("fiber_g", dataObj.optDouble("fiber", 0.0)).toFloat().coerceAtLeast(0f)
+
+        // If all macros came back 0, compute realistic diabetic macro defaults from calories
+        if (carbs <= 0f && protein <= 0f && fat <= 0f) {
+            carbs = (calories * 0.50f / 4f).coerceAtLeast(10f)
+            protein = (calories * 0.20f / 4f).coerceAtLeast(6f)
+            fat = (calories * 0.30f / 9f).coerceAtLeast(3f)
+            fiber = (carbs * 0.12f).coerceAtLeast(2.5f)
+        }
+
         val score = dataObj.optDouble("health_score", 8.0).toFloat().coerceIn(1.0f, 10.0f)
-        val explanation = dataObj.optString("health_reason", "Nutritionally balanced meal with moderate glycemic impact.")
+        val explanation = dataObj.optString("health_reason", "$dishName calculated for glycemic control.")
 
         val subItems = mutableListOf<SnapFoodSubItem>()
         val itemsArr = dataObj.optJSONArray("items")
-        if (itemsArr != null && itemsArr.length() > 0) {
-            for (i in 0 until itemsArr.length()) {
+        val itemCount = itemsArr?.length() ?: 0
+        if (itemsArr != null && itemCount > 0) {
+            for (i in 0 until itemCount) {
                 val itObj = itemsArr.optJSONObject(i) ?: continue
                 val itName = itObj.optString("name", "Component ${i + 1}").trim()
                 if (itName.isBlank()) continue
-                val itCalories = itObj.optInt("calories", (calories / itemsArr.length()).coerceAtLeast(10))
-                val itCarbs = itObj.optDouble("carbs_g", (carbs / itemsArr.length()).toDouble()).toFloat()
-                val itProtein = itObj.optDouble("protein_g", (protein / itemsArr.length()).toDouble()).toFloat()
-                val itFat = itObj.optDouble("fat_g", (fat / itemsArr.length()).toDouble()).toFloat()
-                val itFiber = itObj.optDouble("fiber_g", (fiber / itemsArr.length()).toDouble()).toFloat()
+                val itCalories = itObj.optInt("calories", (calories / itemCount).coerceAtLeast(10))
+                val ratio = if (calories > 0 && itCalories > 0) (itCalories.toFloat() / calories.toFloat()) else (1f / itemCount.coerceAtLeast(1))
+
+                val rawItCarbs = itObj.optDouble("carbs_g", itObj.optDouble("carbs", 0.0)).toFloat()
+                val itCarbs = if (rawItCarbs > 0f) rawItCarbs else (carbs * ratio)
+
+                val rawItProt = itObj.optDouble("protein_g", itObj.optDouble("protein", 0.0)).toFloat()
+                val itProtein = if (rawItProt > 0f) rawItProt else (protein * ratio)
+
+                val rawItFat = itObj.optDouble("fat_g", itObj.optDouble("fat", 0.0)).toFloat()
+                val itFat = if (rawItFat > 0f) rawItFat else (fat * ratio)
+
+                val rawItFib = itObj.optDouble("fiber_g", itObj.optDouble("fiber", 0.0)).toFloat()
+                val itFiber = if (rawItFib > 0f) rawItFib else (fiber * ratio)
 
                 subItems.add(
                     SnapFoodSubItem(
