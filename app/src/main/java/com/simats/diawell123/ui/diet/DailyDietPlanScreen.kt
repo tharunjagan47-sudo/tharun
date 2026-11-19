@@ -395,7 +395,7 @@ fun DailyDietPlanScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "📋 Personalized Daily Meal Plan",
                             fontSize = 16.sp,
@@ -403,18 +403,42 @@ fun DailyDietPlanScreen(
                             color = AppTheme.colors.textPrimary,
                         )
                         Text(
-                            text = "Daily rotating meal combinations (${uiState.selectedDateLabel})",
+                            text = "Daily South Indian diabetic rotation (${uiState.selectedDateLabel})",
                             fontSize = 11.5.sp,
                             color = AppTheme.colors.textSecondary,
                         )
                     }
 
-                    if (aiState.isLoading || aiState.isUpdatingInputs) {
-                        CircularProgressIndicator(
-                            color = Color(0xFFA855F7),
-                            strokeWidth = 2.dp,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (aiState.isLoading || aiState.isUpdatingInputs) {
+                            CircularProgressIndicator(
+                                color = Color(0xFFA855F7),
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+
+                        // On-Demand "Try Another" shuffle button
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (AppTheme.colors.isDark) Color(0xFF2E1065) else Color(0xFFF3E8FF))
+                                .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+                                .clickable { viewModel.cycleDailyMealPlan() }
+                                .padding(horizontal = 9.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = "🔀", fontSize = 11.sp)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Try Another",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE)
+                                )
+                            }
+                        }
                     }
                 }
 
