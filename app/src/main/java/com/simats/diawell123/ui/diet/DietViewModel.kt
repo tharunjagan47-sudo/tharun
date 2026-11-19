@@ -104,6 +104,14 @@ class DietViewModel(
     private val _dailyRecommendationState = MutableStateFlow(DailyRecommendationUiState())
     val dailyRecommendationState: StateFlow<DailyRecommendationUiState> = _dailyRecommendationState.asStateFlow()
 
+    private val _dailyPlanShuffleOffset = MutableStateFlow(0)
+    val dailyPlanShuffleOffset: StateFlow<Int> = _dailyPlanShuffleOffset.asStateFlow()
+
+    fun cycleDailyMealPlan() {
+        _dailyPlanShuffleOffset.update { it + 1 }
+        loadAiRecommendations()
+    }
+
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.e("DietViewModel", "Uncaught exception in DietViewModel", throwable)
         val msg = throwable.localizedMessage ?: "Network error loading diet data."
@@ -158,7 +166,8 @@ class DietViewModel(
                     userAllergies = foodPrefs?.allergies ?: emptyList(),
                     userFoodsToAvoid = foodPrefs?.foodsToAvoid ?: emptyList(),
                     currentGlucose = data.patientContext?.currentGlucoseMgDl ?: g,
-                    calendar = currentCal
+                    calendar = currentCal,
+                    shuffleOffset = _dailyPlanShuffleOffset.value
                 )
                 val finalData = data.copy(dailyPlan = rotatingPlan)
 
