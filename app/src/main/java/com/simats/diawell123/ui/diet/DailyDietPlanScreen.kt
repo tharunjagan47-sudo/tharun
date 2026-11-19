@@ -622,6 +622,7 @@ fun DailyDietPlanScreen(
                 onPhotoCaptured = { bitmap, uri, query ->
                     showSnapFoodCamera = false
                     val analysis = SnapFoodAnalyzer.analyzeFood(
+                        context = context,
                         bitmap = bitmap,
                         imageUri = uri,
                         query = query,
@@ -636,6 +637,7 @@ fun DailyDietPlanScreen(
         activeSnapFoodAnalysis?.let { analysis ->
             MealNutritionBreakdownSheet(
                 analysis = analysis,
+                userGlucose = aiState.activeGlucose,
                 onDismiss = { activeSnapFoodAnalysis = null },
                 onLogMeal = { dishName, mealType, servings, calories, carbs, protein, fat, fiber, subSummary ->
                     viewModel.logSnapFoodMeal(
