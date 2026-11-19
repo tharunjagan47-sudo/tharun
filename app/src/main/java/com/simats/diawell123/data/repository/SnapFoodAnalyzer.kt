@@ -332,9 +332,45 @@ object SnapFoodAnalyzer {
     }
 
     /**
+     * Silent model pre-warm on screen open: Sends keep-alive ping to analyze_food.php.
+     */
+    suspend fun preWarmModel() = withContext(Dispatchers.IO) {
+        val endpoints = listOf(
+            "${NetworkConstants.BASE_URL}ai/analyze_food.php",
+            "${NetworkConstants.ALT_BASE_URL}ai/analyze_food.php",
+            "http://127.0.0.1:8080/diawell_backend/ai/analyze_food.php",
+            "http://127.0.0.1:8080/DiaWell_backend/ai/analyze_food.php",
+            "http://127.0.0.1/diawell_backend/ai/analyze_food.php",
+            "http://127.0.0.1/DiaWell_backend/ai/analyze_food.php",
+            "http://10.0.2.2/diawell_backend/ai/analyze_food.php"
+        )
+        val jsonPayload = JSONObject().apply {
+            put("warmup", true)
+        }
+        val requestBody = jsonPayload.toString().toRequestBody("application/json".toMediaType())
+
+        for (endpoint in endpoints) {
+            try {
+                val request = Request.Builder()
+                    .url(endpoint)
+                    .post(requestBody)
+                    .build()
+                val response = httpClient.newCall(request).execute()
+                if (response.isSuccessful) {
+                    response.close()
+                    break
+                }
+                response.close()
+            } catch (_: Throwable) {
+                // Try next
+            }
+        }
+    }
+
+    /**
      * Calls PHP Backend `ai/analyze_food.php` to analyze the food image using Vision AI.
      */
-    private fun analyzeWithPhpVisionApi(
+    private suspend fun analyzeWithPhpVisionApi(
         bitmap: Bitmap,
         imageUri: Uri?,
         userGlucose: Float?
@@ -344,7 +380,9 @@ object SnapFoodAnalyzer {
         val endpoints = listOf(
             "${NetworkConstants.BASE_URL}ai/analyze_food.php",
             "http://127.0.0.1:8080/diawell_backend/ai/analyze_food.php",
+            "http://127.0.0.1:8080/DiaWell_backend/ai/analyze_food.php",
             "http://127.0.0.1/diawell_backend/ai/analyze_food.php",
+            "http://127.0.0.1/DiaWell_backend/ai/analyze_food.php",
             "http://10.0.2.2/diawell_backend/ai/analyze_food.php"
         )
 
@@ -382,16 +420,14 @@ object SnapFoodAnalyzer {
     /**
      * Fallback to direct Ollama vision inference on port 11434.
      */
-    private fun analyzeWithDirectOllama(
+    private suspend fun analyzeWithDirectOllama(
         bitmap: Bitmap,
         imageUri: Uri?,
         userGlucose: Float?
     ): SnapFoodAnalysis? {
         val base64Image = encodeBitmapToBase64(bitmap) ?: return null
 
-        val prompt = "Look very carefully at this food photo. Identify every specific food item visible (recognize Indian dishes like idli, dosa, pongal, poori, chapati, biryani, sambar, chutney, rice, curry as well as snacks and international dishes).\n" +
-                "Calculate realistic estimated total calories, protein_g, carbs_g, fat_g, fiber_g, health_score (1 to 10), 1-line health_reason, and an items array with individual item estimated calories.\n" +
-                "Return ONLY valid JSON with keys: dish_name (string), calories (integer), protein_g (integer), carbs_g (integer), fat_g (integer), fiber_g (integer), health_score (integer 1-10), health_reason (string), items (array of {name: string, calories: integer})."
+        val prompt = "Identify all foods and portion sizes in this photo (Indian or international dishes). Compute realistic nutrition totals specifically for what you see. Return ONLY valid JSON with keys: dish_name (string), calories (int), protein_g (int), carbs_g (int), fat_g (int), fiber_g (int), health_score (int 1-10 for diabetes), health_reason (short 1-line string), items (array of {name: string, calories: int})."
 
         val jsonPayload = JSONObject().apply {
             put("model", "qwen2.5vl:3b")
@@ -399,6 +435,12 @@ object SnapFoodAnalyzer {
             put("images", JSONArray().apply { put(base64Image) })
             put("stream", false)
             put("format", "json")
+            put("keep_alive", "30m")
+            put("options", JSONObject().apply {
+                put("temperature", 0.1)
+                put("num_predict", 220)
+                put("num_ctx", 1024)
+            })
         }
         val requestBody = jsonPayload.toString().toRequestBody("application/json".toMediaType())
 
@@ -437,16 +479,16 @@ object SnapFoodAnalyzer {
         return null
     }
 
-    private fun encodeBitmapToBase64(bitmap: Bitmap): String? {
-        return try {
-            val maxDim = 768
+    private suspend fun encodeBitmapToBase64(bitmap: Bitmap): String? = withContext(Dispatchers.Default) {
+        try {
+            val maxDim = 512
             val scale = (maxDim.toFloat() / maxOf(bitmap.width, bitmap.height)).coerceAtMost(1.0f)
             val scaledBmp = if (scale < 1.0f) {
                 Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
             } else bitmap
 
             val stream = ByteArrayOutputStream()
-            scaledBmp.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+            scaledBmp.compress(Bitmap.CompressFormat.JPEG, 80, stream)
             val b64 = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
             if (scaledBmp != bitmap) scaledBmp.recycle()
             b64
