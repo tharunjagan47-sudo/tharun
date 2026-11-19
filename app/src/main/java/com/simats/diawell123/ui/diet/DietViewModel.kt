@@ -545,4 +545,72 @@ class DietViewModel(
             }
         }
     }
+
+    /**
+     * Directly logs a snapped meal into today's diet log, updates database via API,
+     * updates consumed calories, and triggers local UI refresh.
+     */
+    fun logSnapFoodMeal(
+        dishName: String,
+        mealType: String,
+        servings: Int,
+        calories: Int,
+        carbs: Float,
+        protein: Float,
+        fat: Float,
+        subItemsSummary: String,
+        onSuccess: () -> Unit = {}
+    ) {
+        viewModelScope.launch(exceptionHandler) {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val dateStr = sdf.format(_dailyDietState.value.selectedDateCalendar.time)
+            val timeSdf = SimpleDateFormat("h:mm a", Locale.getDefault())
+            val currentTimeStr = timeSdf.format(Calendar.getInstance().time)
+
+            val cat = mealType.uppercase(Locale.ROOT)
+            val portionDesc = if (servings == 1) "1 serving" else "$servings servings"
+
+            val request = FoodLogRequest(
+                mealCategory = cat,
+                foodName = dishName,
+                portion = portionDesc,
+                calories = calories,
+                carbsG = carbs,
+                proteinG = protein,
+                fatG = fat,
+                icon = "📸",
+                logDate = dateStr,
+                logTime = currentTimeStr
+            )
+
+            val newLogItem = FoodLogItem(
+                id = (System.currentTimeMillis() % 100000).toInt(),
+                category = cat,
+                time = currentTimeStr,
+                title = dishName,
+                portion = portionDesc,
+                calories = "$calories kcal",
+                caloriesNum = calories,
+                carbsG = carbs,
+                proteinG = protein,
+                fatG = fat,
+                icon = "📸"
+            )
+
+            val result = dietRepository.logMeal(request)
+            result.onSuccess { loggedItem ->
+                _foodLogState.update { state ->
+                    state.copy(meals = state.meals + loggedItem)
+                }
+                loadFoodLog()
+                onSuccess()
+            }.onFailure { error ->
+                // Local fallback update so food is added to state log even offline or on API failure
+                _foodLogState.update { state ->
+                    state.copy(meals = state.meals + newLogItem)
+                }
+                onSuccess()
+            }
+        }
+    }
 }
