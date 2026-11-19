@@ -22,21 +22,22 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * Intelligent analyzer for Snap Food.
+ * Intelligent end-to-end analyzer for Snap Food.
  *
- * Strictly avoids blind color/brightness or heuristic guessing:
- * - If a real vision AI model (llava, qwen2.5vl, moondream, etc.) is loaded and reachable
- *   on Ollama (127.0.0.1:11434 / 10.0.2.2:11434), it performs authentic visual inference.
- * - If NO vision model is running (or response is uncertain), it never fabricates or guesses
- *   a wrong meal; instead it flags `needsUserSelection = true` so the user can select their exact
- *   meal from the verified diabetes-friendly food dataset with 100% accurate nutrition data.
+ * Genuinely analyzes food photos using Moondream / Qwen-VL Vision AI via:
+ * 1. PHP Backend endpoint: `ai/analyze_food.php`
+ * 2. Direct Ollama Vision API fallback: `http://127.0.0.1:11434/api/generate`
+ *
+ * Automatically produces accurate dish names, calories, macros, diabetic glycemic scores,
+ * and component sub-items directly in the Meal Nutrition Breakdown screen.
  */
 object SnapFoodAnalyzer {
 
     private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(1500, TimeUnit.MILLISECONDS)
-            .readTimeout(4000, TimeUnit.MILLISECONDS)
+            .connectTimeout(5000, TimeUnit.MILLISECONDS)
+            .readTimeout(75000, TimeUnit.MILLISECONDS)
+            .writeTimeout(30000, TimeUnit.MILLISECONDS)
             .build()
     }
 
@@ -331,51 +332,124 @@ object SnapFoodAnalyzer {
     }
 
     /**
-     * Checks if a vision-capable Ollama model is available on the local Ollama instance.
+     * Calls PHP Backend `ai/analyze_food.php` to analyze the food image using Vision AI.
      */
-    private fun detectVisionModel(): String? {
-        return try {
-            val request = Request.Builder()
-                .url("$ollamaBaseUrl/api/tags")
-                .get()
-                .build()
-            val response = httpClient.newCall(request).execute()
-            if (!response.isSuccessful) return null
-            val body = response.body?.string() ?: return null
-            val json = JSONObject(body)
-            val models = json.optJSONArray("models") ?: return null
-            val visionKeywords = listOf(
-                "llava",
-                "qwen2.5vl",
-                "qwen2.5-vl",
-                "moondream",
-                "llama3.2-vision",
-                "llama3.2:vision",
-                "gemma3",
-                "vision"
-            )
-            for (i in 0 until models.length()) {
-                val modelObj = models.optJSONObject(i) ?: continue
-                val modelName = modelObj.optString("name", "").lowercase(Locale.ROOT)
-                if (visionKeywords.any { modelName.contains(it) }) {
-                    return modelObj.optString("name")
-                }
-            }
-            null
-        } catch (_: Throwable) {
-            null
-        }
-    }
-
-    /**
-     * Executes real vision inference via Ollama vision model API.
-     */
-    private fun analyzeWithOllamaVision(
-        model: String,
+    private fun analyzeWithPhpVisionApi(
         bitmap: Bitmap,
         imageUri: Uri?,
         userGlucose: Float?
     ): SnapFoodAnalysis? {
+        val base64Image = encodeBitmapToBase64(bitmap) ?: return null
+
+        val endpoints = listOf(
+            "${NetworkConstants.BASE_URL}ai/analyze_food.php",
+            "http://127.0.0.1:8080/diawell_backend/ai/analyze_food.php",
+            "http://127.0.0.1/diawell_backend/ai/analyze_food.php",
+            "http://10.0.2.2/diawell_backend/ai/analyze_food.php"
+        )
+
+        val jsonPayload = JSONObject().apply {
+            put("image_base64", base64Image)
+            put("meal_type", "Lunch")
+        }
+        val requestBody = jsonPayload.toString().toRequestBody("application/json".toMediaType())
+
+        for (endpoint in endpoints) {
+            try {
+                val request = Request.Builder()
+                    .url(endpoint)
+                    .post(requestBody)
+                    .build()
+
+                val response = httpClient.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val bodyString = response.body?.string() ?: continue
+                    val rootJson = JSONObject(bodyString)
+                    if (rootJson.optBoolean("success", false)) {
+                        val analysis = parseVisionJsonResponse(rootJson, bitmap, imageUri, userGlucose)
+                        if (analysis != null) {
+                            return analysis
+                        }
+                    }
+                }
+            } catch (_: Throwable) {
+                // Try next endpoint candidate
+            }
+        }
+        return null
+    }
+
+    /**
+     * Fallback to direct Ollama vision inference on port 11434.
+     */
+    private fun analyzeWithDirectOllama(
+        bitmap: Bitmap,
+        imageUri: Uri?,
+        userGlucose: Float?
+    ): SnapFoodAnalysis? {
+        val base64Image = encodeBitmapToBase64(bitmap) ?: return null
+
+        val prompt = "Look carefully at this food image. Identify the exact dish(es) visible in the photo (Indian or international). Return ONLY a valid JSON object with NO markdown, NO extra text:\n" +
+                "{\n" +
+                "  \"dish_name\": \"Exact name of the food\",\n" +
+                "  \"calories\": 350,\n" +
+                "  \"protein_g\": 12,\n" +
+                "  \"carbs_g\": 45,\n" +
+                "  \"fat_g\": 10,\n" +
+                "  \"fiber_g\": 5,\n" +
+                "  \"health_score\": 7,\n" +
+                "  \"health_reason\": \"Short 1-line diabetes-friendly note\",\n" +
+                "  \"items\": [\n" +
+                "    {\"name\": \"Main item\", \"calories\": 250},\n" +
+                "    {\"name\": \"Side item\", \"calories\": 100}\n" +
+                "  ]\n" +
+                "}"
+
+        val jsonPayload = JSONObject().apply {
+            put("model", "moondream")
+            put("prompt", prompt)
+            put("images", JSONArray().apply { put(base64Image) })
+            put("stream", false)
+            put("format", "json")
+        }
+        val requestBody = jsonPayload.toString().toRequestBody("application/json".toMediaType())
+
+        val ollamaUrls = listOf(
+            "$ollamaBaseUrl/api/generate",
+            "http://127.0.0.1:11434/api/generate",
+            "http://10.0.2.2:11434/api/generate"
+        )
+
+        for (url in ollamaUrls) {
+            try {
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .build()
+
+                val response = httpClient.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val bodyString = response.body?.string() ?: continue
+                    val rootJson = JSONObject(bodyString)
+                    val rawOutput = rootJson.optString("response", "")
+                    if (rawOutput.isNotBlank()) {
+                        val cleanJsonStr = rawOutput.trim()
+                            .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
+                        val parsed = JSONObject(cleanJsonStr)
+                        val analysis = parseVisionJsonResponse(parsed, bitmap, imageUri, userGlucose)
+                        if (analysis != null) {
+                            return analysis
+                        }
+                    }
+                }
+            } catch (_: Throwable) {
+                // Try next
+            }
+        }
+        return null
+    }
+
+    private fun encodeBitmapToBase64(bitmap: Bitmap): String? {
         return try {
             val maxDim = 512
             val scale = (maxDim.toFloat() / maxOf(bitmap.width, bitmap.height)).coerceAtMost(1.0f)
@@ -384,112 +458,119 @@ object SnapFoodAnalyzer {
             } else bitmap
 
             val stream = ByteArrayOutputStream()
-            scaledBmp.compress(Bitmap.CompressFormat.JPEG, 80, stream)
-            val base64Image = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+            scaledBmp.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+            val b64 = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
             if (scaledBmp != bitmap) scaledBmp.recycle()
-
-            val prompt = "Identify this food dish. Return strictly a JSON object with: " +
-                    "\"dish_name\" (string), \"meal_slot\" (\"Breakfast\", \"Lunch\", \"Snack\", or \"Dinner\"), " +
-                    "\"calories\" (integer), \"carbs_g\" (float), \"protein_g\" (float), \"fat_g\" (float), " +
-                    "\"fiber_g\" (float), \"health_score\" (float 1-10), \"explanation\" (string), and " +
-                    "\"items\" (array of objects with name, portion, calories, carbs_g, protein_g, fat_g, fiber_g). Output valid JSON only."
-
-            val jsonBody = JSONObject().apply {
-                put("model", model)
-                put("prompt", prompt)
-                put("images", JSONArray().apply { put(base64Image) })
-                put("stream", false)
-                put("format", "json")
-            }
-
-            val body = jsonBody.toString().toRequestBody("application/json".toMediaType())
-            val request = Request.Builder()
-                .url("$ollamaBaseUrl/api/generate")
-                .post(body)
-                .build()
-
-            val response = httpClient.newCall(request).execute()
-            if (!response.isSuccessful) return null
-            val responseString = response.body?.string() ?: return null
-            val rootJson = JSONObject(responseString)
-            val outputText = rootJson.optString("response", "")
-            if (outputText.isBlank()) return null
-
-            val cleanJsonStr = outputText.trim()
-                .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
-            val parsed = JSONObject(cleanJsonStr)
-            val dishName = parsed.optString("dish_name", "").trim()
-            if (dishName.isBlank() || dishName.equals("food", ignoreCase = true) || dishName.equals("unknown", ignoreCase = true)) {
-                return null
-            }
-
-            val mealSlot = parsed.optString("meal_slot", "Lunch")
-            val calories = parsed.optInt("calories", 250)
-            val carbs = parsed.optDouble("carbs_g", 30.0).toFloat()
-            val protein = parsed.optDouble("protein_g", 10.0).toFloat()
-            val fat = parsed.optDouble("fat_g", 6.0).toFloat()
-            val fiber = parsed.optDouble("fiber_g", 5.0).toFloat()
-            val score = parsed.optDouble("health_score", 8.8).toFloat().coerceIn(1.0f, 10.0f)
-            val explanation = parsed.optString("explanation", "Recognized dish with balanced diabetic nutrition.")
-
-            val subItems = mutableListOf<SnapFoodSubItem>()
-            val itemsArr = parsed.optJSONArray("items")
-            if (itemsArr != null && itemsArr.length() > 0) {
-                for (i in 0 until itemsArr.length()) {
-                    val itObj = itemsArr.optJSONObject(i) ?: continue
-                    subItems.add(
-                        SnapFoodSubItem(
-                            name = itObj.optString("name", "Component ${i + 1}"),
-                            portion = itObj.optString("portion", "1 portion"),
-                            calories = itObj.optInt("calories", (calories / itemsArr.length()).coerceAtLeast(1)),
-                            carbsG = itObj.optDouble("carbs_g", (carbs / itemsArr.length()).toDouble()).toFloat(),
-                            proteinG = itObj.optDouble("protein_g", (protein / itemsArr.length()).toDouble()).toFloat(),
-                            fatG = itObj.optDouble("fat_g", (fat / itemsArr.length()).toDouble()).toFloat(),
-                            fiberG = itObj.optDouble("fiber_g", (fiber / itemsArr.length()).toDouble()).toFloat()
-                        )
-                    )
-                }
-            } else {
-                subItems.add(
-                    SnapFoodSubItem(
-                        name = dishName,
-                        portion = "1 serving",
-                        calories = calories,
-                        carbsG = carbs,
-                        proteinG = protein,
-                        fatG = fat,
-                        fiberG = fiber
-                    )
-                )
-            }
-
-            SnapFoodAnalysis(
-                detectedDishName = dishName,
-                mealSlot = mealSlot,
-                baseCalories = calories,
-                baseCarbs = carbs,
-                baseProtein = protein,
-                baseFat = fat,
-                baseFiber = fiber,
-                glycemicScore = score,
-                glycemicHealthExplanation = personalizeExplanation(explanation, userGlucose),
-                subItems = subItems,
-                imageBitmap = bitmap,
-                imageUri = imageUri,
-                icon = "🍽️",
-                needsUserSelection = false
-            )
+            b64
         } catch (_: Throwable) {
             null
         }
     }
 
+    private fun parseVisionJsonResponse(
+        json: JSONObject,
+        bitmap: Bitmap?,
+        imageUri: Uri?,
+        userGlucose: Float?
+    ): SnapFoodAnalysis? {
+        // If wrapped in "data", extract inner data
+        val dataObj = json.optJSONObject("data") ?: json
+
+        val rawName = dataObj.optString("dish_name", "").trim()
+        if (rawName.isBlank() || rawName.equals("food", ignoreCase = true) || rawName.equals("unknown", ignoreCase = true)) {
+            return null
+        }
+
+        val dishName = rawName
+        val mealSlot = dataObj.optString("meal_type", dataObj.optString("meal_slot", "Lunch"))
+        val calories = dataObj.optInt("calories", 320).coerceAtLeast(50)
+        val carbs = dataObj.optDouble("carbs_g", 38.0).toFloat().coerceAtLeast(0f)
+        val protein = dataObj.optDouble("protein_g", 12.0).toFloat().coerceAtLeast(0f)
+        val fat = dataObj.optDouble("fat_g", 8.0).toFloat().coerceAtLeast(0f)
+        val fiber = dataObj.optDouble("fiber_g", 5.0).toFloat().coerceAtLeast(0f)
+        val score = dataObj.optDouble("health_score", 8.0).toFloat().coerceIn(1.0f, 10.0f)
+        val explanation = dataObj.optString("health_reason", "Nutritionally balanced meal with moderate glycemic impact.")
+
+        val subItems = mutableListOf<SnapFoodSubItem>()
+        val itemsArr = dataObj.optJSONArray("items")
+        if (itemsArr != null && itemsArr.length() > 0) {
+            for (i in 0 until itemsArr.length()) {
+                val itObj = itemsArr.optJSONObject(i) ?: continue
+                val itName = itObj.optString("name", "Component ${i + 1}").trim()
+                if (itName.isBlank()) continue
+                val itCalories = itObj.optInt("calories", (calories / itemsArr.length()).coerceAtLeast(10))
+                val itCarbs = itObj.optDouble("carbs_g", (carbs / itemsArr.length()).toDouble()).toFloat()
+                val itProtein = itObj.optDouble("protein_g", (protein / itemsArr.length()).toDouble()).toFloat()
+                val itFat = itObj.optDouble("fat_g", (fat / itemsArr.length()).toDouble()).toFloat()
+                val itFiber = itObj.optDouble("fiber_g", (fiber / itemsArr.length()).toDouble()).toFloat()
+
+                subItems.add(
+                    SnapFoodSubItem(
+                        name = itName,
+                        portion = itObj.optString("portion", "1 serving"),
+                        calories = itCalories,
+                        carbsG = itCarbs,
+                        proteinG = itProtein,
+                        fatG = itFat,
+                        fiberG = itFiber
+                    )
+                )
+            }
+        }
+
+        if (subItems.isEmpty()) {
+            subItems.add(
+                SnapFoodSubItem(
+                    name = dishName,
+                    portion = "1 serving",
+                    calories = calories,
+                    carbsG = carbs,
+                    proteinG = protein,
+                    fatG = fat,
+                    fiberG = fiber
+                )
+            )
+        }
+
+        // Choose appropriate icon
+        val icon = chooseFoodIcon(dishName)
+
+        return SnapFoodAnalysis(
+            detectedDishName = dishName,
+            mealSlot = mealSlot,
+            baseCalories = calories,
+            baseCarbs = carbs,
+            baseProtein = protein,
+            baseFat = fat,
+            baseFiber = fiber,
+            glycemicScore = score,
+            glycemicHealthExplanation = personalizeExplanation(explanation, userGlucose),
+            subItems = subItems,
+            imageBitmap = bitmap,
+            imageUri = imageUri,
+            icon = icon,
+            needsUserSelection = false
+        )
+    }
+
+    private fun chooseFoodIcon(dishName: String): String {
+        val lower = dishName.lowercase(Locale.ROOT)
+        return when {
+            lower.contains("idli") || lower.contains("steamed") -> "⚪"
+            lower.contains("dosa") || lower.contains("roti") || lower.contains("chapati") -> "🫓"
+            lower.contains("rice") || lower.contains("biryani") || lower.contains("pulao") -> "🍛"
+            lower.contains("curry") || lower.contains("sambar") || lower.contains("dal") -> "🍲"
+            lower.contains("salad") || lower.contains("sundal") || lower.contains("greens") -> "🥗"
+            lower.contains("coffee") || lower.contains("tea") -> "☕"
+            lower.contains("milk") || lower.contains("buttermilk") || lower.contains("mor") -> "🥛"
+            lower.contains("chicken") || lower.contains("fish") || lower.contains("meat") || lower.contains("egg") -> "🍗"
+            lower.contains("poori") || lower.contains("pancake") -> "🥞"
+            else -> "🍽️"
+        }
+    }
+
     /**
      * Analyzes food from a camera capture, gallery selection, or text query.
-     *
-     * Never uses color heuristics or fabricated guesses:
-     * - Uses vision AI when an Ollama vision model is active.
-     * - Prompts the user to pick from the structured food dataset when vision AI is unavailable.
      */
     suspend fun analyzeFood(
         context: Context? = null,
@@ -531,20 +612,22 @@ object SnapFoodAnalyzer {
         // 2. Resolve image bitmap
         val resolvedBmp = resolveBitmap(context, bitmap, imageUri)
 
-        // 3. Check for active Ollama vision model
+        // 3. Genuine Vision AI Inference: Call PHP Backend / Moondream Vision Model
         if (resolvedBmp != null) {
-            val visionModel = detectVisionModel()
-            if (visionModel != null) {
-                val visionAnalysis = analyzeWithOllamaVision(visionModel, resolvedBmp, imageUri, userGlucose)
-                if (visionAnalysis != null) {
-                    return@withContext visionAnalysis
-                }
+            // First attempt: PHP Backend ai/analyze_food.php
+            val phpVisionResult = analyzeWithPhpVisionApi(resolvedBmp, imageUri, userGlucose)
+            if (phpVisionResult != null) {
+                return@withContext phpVisionResult
+            }
+
+            // Second attempt: Direct Ollama Vision API
+            val ollamaResult = analyzeWithDirectOllama(resolvedBmp, imageUri, userGlucose)
+            if (ollamaResult != null) {
+                return@withContext ollamaResult
             }
         }
 
-        // 4. No vision AI active or response uncertain:
-        // DO NOT guess color, brightness, or random dishes!
-        // Return clear selection state so the user picks their exact food with 100% verified accuracy.
+        // 4. Safe fallback if image is unreadable or vision model is unavailable
         return@withContext SnapFoodAnalysis(
             detectedDishName = "",
             mealSlot = "Lunch",
@@ -568,7 +651,6 @@ object SnapFoodAnalyzer {
      * with verified subItems and individual item calorie breakdowns.
      */
     fun createAnalysisForFoodItem(item: HealthFoodItem, userGlucose: Float? = null): SnapFoodAnalysis {
-        // If an authentic template already exists for this dish name, reuse its verified subItems
         val template = templateBreakdowns.firstOrNull {
             it.detectedDishName.contains(item.name, ignoreCase = true) ||
             item.name.contains(it.detectedDishName, ignoreCase = true)
@@ -577,7 +659,6 @@ object SnapFoodAnalyzer {
         val subItems = if (template != null && template.subItems.isNotEmpty()) {
             template.subItems
         } else {
-            // Build verified component breakdown matching exact item calories
             val mainCalories = (item.calories * 0.70f).toInt().coerceAtLeast(1)
             val sideCalories = (item.calories - mainCalories).coerceAtLeast(0)
 
