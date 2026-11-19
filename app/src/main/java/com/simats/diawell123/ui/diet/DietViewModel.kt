@@ -602,12 +602,18 @@ class DietViewModel(
                 _foodLogState.update { state ->
                     state.copy(meals = state.meals + loggedItem)
                 }
+                _dailyDietState.update { current ->
+                    current.copy(consumedCalories = current.consumedCalories + calories)
+                }
                 loadFoodLog()
                 onSuccess()
             }.onFailure { error ->
                 // Local fallback update so food is added to state log even offline or on API failure
                 _foodLogState.update { state ->
                     state.copy(meals = state.meals + newLogItem)
+                }
+                _dailyDietState.update { current ->
+                    current.copy(consumedCalories = current.consumedCalories + calories)
                 }
                 onSuccess()
             }
