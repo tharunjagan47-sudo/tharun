@@ -264,7 +264,9 @@ object JarvisVoiceCommandHandler {
                     medName = savedMed.name.ifBlank { medName },
                     dose = savedMed.dose.ifBlank { extractedDose },
                     triggerAtMillis = triggerMillis,
-                    userId = resolvedUserId
+                    userId = resolvedUserId,
+                    isDaily = true,
+                    repeatType = "Daily"
                 )
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
