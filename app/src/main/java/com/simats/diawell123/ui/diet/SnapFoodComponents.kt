@@ -39,6 +39,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -79,6 +80,11 @@ fun SnapFoodCameraOverlay(
     val context = LocalContext.current
     var isFlashOn by remember { mutableStateOf(false) }
     var isAnalyzing by remember { mutableStateOf(false) }
+
+    // Silent model pre-warm on screen open so qwen2.5vl:3b is warm before shutter/picker tap
+    LaunchedEffect(Unit) {
+        SnapFoodAnalyzer.preWarmModel()
+    }
 
     // System camera capture launcher
     val cameraLauncher = rememberLauncherForActivityResult(
