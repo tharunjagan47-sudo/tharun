@@ -4,6 +4,8 @@ import com.simats.diawell123.ui.theme.AppTheme
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.DiawellApplication
+import com.simats.diawell123.data.local.MedicationAlarmStorage
 import com.simats.diawell123.data.model.CatalogMedicationItem
 import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.data.model.MedicationsData
@@ -51,7 +53,7 @@ data class SetReminderUiState(
     val reminderDateText: String = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date()),
     val selectedTime: String = "8:00 AM",
     val selectedTiming: String = "After Meal",
-    val selectedFrequency: String = "Once",
+    val selectedFrequency: String = "Daily",
     val notes: String = "",
     val isSaving: Boolean = false,
     val isSuccess: Boolean = false,
@@ -202,6 +204,14 @@ class MedsViewModel(
                 val result = repository.getMedications(date = targetDate)
                 result.fold(
                     onSuccess = { data ->
+                        try {
+                            MedicationAlarmStorage.syncFromMedicationsList(
+                                context = DiawellApplication.instance,
+                                meds = data.medications,
+                                userId = data.userId
+                            )
+                        } catch (_: Exception) {}
+
                         _listState.update {
                             it.copy(
                                 isLoading = false,
