@@ -337,7 +337,6 @@ object SnapFoodAnalyzer {
     suspend fun preWarmModel() = withContext(Dispatchers.IO) {
         val endpoints = listOf(
             "${NetworkConstants.BASE_URL}ai/analyze_food.php",
-            "${NetworkConstants.ALT_BASE_URL}ai/analyze_food.php",
             "http://127.0.0.1:8080/diawell_backend/ai/analyze_food.php",
             "http://127.0.0.1:8080/DiaWell_backend/ai/analyze_food.php",
             "http://127.0.0.1/diawell_backend/ai/analyze_food.php",
