@@ -1251,3 +1251,62 @@ private fun MacroBox(label: String, value: String, accentColor: Color, modifier:
         }
     }
 }
+
+/**
+ * Animated analyzing overlay shown while Moondream Vision AI processes the captured meal photo.
+ */
+@Composable
+fun SnapFoodAnalyzingDialog() {
+    val isDark = AppTheme.colors.isDark
+    Dialog(
+        onDismissRequest = { /* Modal during analysis */ },
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.88f)
+                .clip(RoundedCornerShape(22.dp))
+                .background(if (isDark) Color(0xFF1B1330) else Color.White)
+                .border(1.5.dp, Color(0xFFA855F7).copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+                .padding(26.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier.size(76.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(76.dp),
+                        color = Color(0xFFA855F7),
+                        strokeWidth = 4.dp
+                    )
+                    Text(text = "🥗", fontSize = 30.sp)
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = "Analyzing Food with Vision AI",
+                    fontSize = 16.5.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = AppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Moondream Vision AI is identifying dishes, calories & diabetic macros...",
+                    fontSize = 12.sp,
+                    color = AppTheme.colors.textMuted,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 17.sp
+                )
+            }
+        }
+    }
+}
