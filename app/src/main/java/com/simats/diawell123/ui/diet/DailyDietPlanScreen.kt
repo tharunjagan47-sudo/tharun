@@ -156,7 +156,10 @@ fun DailyDietPlanScreen(
                                     .background(
                                         Brush.horizontalGradient(listOf(Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFF00E5FF)))
                                     )
-                                    .clickable { showSnapFoodCamera = true }
+                                    .clickable {
+                                        showSnapFoodCamera = true
+                                        coroutineScope.launch { SnapFoodAnalyzer.preWarmModel() }
+                                    }
                                     .padding(vertical = 9.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
