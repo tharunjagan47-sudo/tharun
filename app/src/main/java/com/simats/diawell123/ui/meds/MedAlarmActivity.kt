@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
+import com.simats.diawell123.data.local.MedicationAlarmStorage
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.MedicationStatusUpdater
@@ -111,7 +112,11 @@ class MedAlarmActivity : ComponentActivity() {
                         isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
-                        if (!isDaily) {
+                        // Cancel any pending snooze without cancelling tomorrow's daily alarm
+                        DiaWellNotificationHelper.cancelSnoozeAlarm(this, medId)
+                        val persisted = MedicationAlarmStorage.getReminder(this, medId)
+                        val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+                        if (!effectiveDaily) {
                             DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
                         }
                         DiaWellNotificationHelper.showGeneralNotification(
@@ -137,7 +142,9 @@ class MedAlarmActivity : ComponentActivity() {
                         isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
-                        DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5, userId, isDaily)
+                        val persisted = MedicationAlarmStorage.getReminder(this, medId)
+                        val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+                        DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5, userId, effectiveDaily)
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
                             title = "⏰ Medication Snoozed",
@@ -162,7 +169,11 @@ class MedAlarmActivity : ComponentActivity() {
                         isHandlingAction = true
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
-                        if (!isDaily) {
+                        // Cancel any pending snooze without cancelling tomorrow's daily alarm
+                        DiaWellNotificationHelper.cancelSnoozeAlarm(this, medId)
+                        val persisted = MedicationAlarmStorage.getReminder(this, medId)
+                        val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+                        if (!effectiveDaily) {
                             DiaWellNotificationHelper.cancelMedicationAlarm(this, medId)
                         }
                         DiaWellNotificationHelper.showGeneralNotification(
