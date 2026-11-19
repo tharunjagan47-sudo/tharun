@@ -88,7 +88,9 @@ fun SetMedicationReminderScreen(
         dateFormatter.format(cal.time)
     }
 
-    var isDailySchedule by remember { mutableStateOf(false) }
+    var isDailySchedule by remember(reminderState.selectedFrequency) {
+        mutableStateOf(reminderState.selectedFrequency.equals("Daily", ignoreCase = true) || reminderState.selectedFrequency.isBlank())
+    }
     var reminderDateText by remember { mutableStateOf(todayDateText) }
     var selectedTime by remember(reminderState.selectedTime) {
         mutableStateOf(reminderState.selectedTime.ifBlank { "8:00 PM" })
