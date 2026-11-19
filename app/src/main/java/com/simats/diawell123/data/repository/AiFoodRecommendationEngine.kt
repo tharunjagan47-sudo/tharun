@@ -21,7 +21,7 @@ data class HealthRecommendationResult(
 /**
  * Dataset-Driven Daily Rotating & Non-Repeating AI Food Recommendation Engine.
  * Matches user allergies, dietary preferences (Veg/Non-Veg/Vegan), and live glucose levels
- * while ensuring daily variety through deterministic epoch-day seeding and recent history suppression.
+ * while prioritizing authentic South Indian diabetic-friendly meals and ensuring daily rotation.
  */
 object AiFoodRecommendationEngine {
 
@@ -30,29 +30,120 @@ object AiFoodRecommendationEngine {
     private const val MAX_RECENT_HISTORY = 10
 
     /**
-     * Comprehensive diabetes-friendly health food dataset across all meal slots and diet preferences.
+     * Comprehensive diabetes-friendly health food dataset with strong South Indian representation.
      */
     val foodDataset: List<HealthFoodItem> = listOf(
         // ==================== BREAKFAST ====================
         HealthFoodItem(
             id = 101,
-            name = "Ragi Vegetable Idli with Mint Chutney",
+            name = "Ragi Idli with Sambar",
             mealSlot = "Breakfast",
-            calories = 180,
+            calories = 185,
             carbsGrams = 28f,
-            proteinGrams = 6f,
-            fiberGrams = 5.5f,
-            fatGrams = 3f,
+            proteinGrams = 6.5f,
+            fiberGrams = 6f,
+            fatGrams = 2.5f,
             glycemicLoad = "Low",
             dietType = "Vegan",
             allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Finger millet provides slow-digesting polyphenols and complex carbs that prevent morning glucose spikes.",
-            portion = "2 idlis with 2 tbsp chutney",
-            icon = "🥣"
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Finger millet (ragi) provides slow-digesting polyphenols and complex carbs that prevent morning glucose spikes.",
+            portion = "2 ragi idlis with 1 bowl vegetable sambar",
+            icon = "🥣",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 102,
+            name = "Moong Dal Pesarattu with Mint Chutney",
+            mealSlot = "Breakfast",
+            calories = 215,
+            carbsGrams = 22f,
+            proteinGrams = 13f,
+            fiberGrams = 6.5f,
+            fatGrams = 4f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = emptyList(),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
+            healthReason = "Whole green gram provides high plant protein and resistant starch, yielding a remarkably flat post-meal glucose response.",
+            portion = "2 pesarattus with 2 tbsp mint-coriander chutney",
+            icon = "🥞",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 103,
+            name = "Oats & Rava Upma with Mixed Vegetables",
+            mealSlot = "Breakfast",
+            calories = 205,
+            carbsGrams = 30f,
+            proteinGrams = 7f,
+            fiberGrams = 5.5f,
+            fatGrams = 4f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = listOf("Gluten"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Beta-glucan soluble fiber paired with carrots, beans, and mustard tempering blunts carbohydrate absorption speed.",
+            portion = "1 medium bowl (220g)",
+            icon = "🍲",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 104,
+            name = "Kambu (Pearl Millet) Dosa with Tomato Chutney",
+            mealSlot = "Breakfast",
+            calories = 190,
+            carbsGrams = 27f,
+            proteinGrams = 6f,
+            fiberGrams = 5.5f,
+            fatGrams = 3.5f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = emptyList(),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
+            healthReason = "Pearl millet (kambu) has high mineral magnesium content and a very low glycemic load that supports insulin receptor sensitivity.",
+            portion = "2 dosas with 2 tbsp tomato chutney",
+            icon = "🫓",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 105,
+            name = "Semi-Boiled Egg Whites with Steamed Idli & Sambar",
+            mealSlot = "Breakfast",
+            calories = 195,
+            carbsGrams = 22f,
+            proteinGrams = 15f,
+            fiberGrams = 3.5f,
+            fatGrams = 2.5f,
+            glycemicLoad = "Low",
+            dietType = "Non-Vegetarian",
+            allergens = listOf("Eggs"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "PostWorkout", "Balanced"),
+            healthReason = "Traditional soft steamed idlis paired with bioavailable albumin egg protein slow gastric emptying and prevent insulin spikes.",
+            portion = "2 idlis + 3 boiled egg whites + 1/2 bowl sambar",
+            icon = "🍳",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 106,
+            name = "Foxtail Millet (Thinai) Pongal with Low-Fat Chutney",
+            mealSlot = "Breakfast",
+            calories = 210,
+            carbsGrams = 29f,
+            proteinGrams = 7.5f,
+            fiberGrams = 6.5f,
+            fatGrams = 4f,
+            glycemicLoad = "Low",
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Thinai millet cooked with yellow moong dal, ginger, and crushed pepper provides continuous, sustained morning energy.",
+            portion = "1 medium bowl + 1 tbsp coriander chutney",
+            icon = "🥣",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 107,
             name = "Sprouted Moong Dal Chilla with Paneer",
             mealSlot = "Breakfast",
             calories = 220,
@@ -66,27 +157,11 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "Balanced"),
             healthReason = "High plant protein and active dietary fiber stabilize fasting sugar and sustain morning satiety.",
             portion = "2 chillas",
-            icon = "🥞"
+            icon = "🥞",
+            isSouthIndian = false
         ),
         HealthFoodItem(
-            id = 103,
-            name = "Steel-Cut Oats Upma with Mixed Veggies",
-            mealSlot = "Breakfast",
-            calories = 210,
-            carbsGrams = 32f,
-            proteinGrams = 7f,
-            fiberGrams = 6f,
-            fatGrams = 4f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = listOf("Gluten"),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Beta-glucan soluble fiber forms a natural gel in the gut, substantially flattening post-meal glucose absorption.",
-            portion = "1 medium bowl",
-            icon = "🍲"
-        ),
-        HealthFoodItem(
-            id = 104,
+            id = 108,
             name = "Spinach & Egg White Scramble with Multigrain Toast",
             mealSlot = "Breakfast",
             calories = 195,
@@ -100,625 +175,590 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
             healthReason = "Ultra-low carbohydrate load with pure bioavailable albumin protein protects morning insulin sensitivity.",
             portion = "3 whites scrambled + 1 toast",
-            icon = "🍳"
+            icon = "🍳",
+            isSouthIndian = false
         ),
         HealthFoodItem(
-            id = 105,
+            id = 109,
             name = "Tofu & Bell Pepper Bhurji with Avocado",
             mealSlot = "Breakfast",
             calories = 205,
             carbsGrams = 10f,
             proteinGrams = 15f,
             fiberGrams = 5f,
-            fatGrams = 9f,
+            fatGrams = 8f,
             glycemicLoad = "Low",
             dietType = "Vegan",
             allergens = listOf("Soy"),
             healthTags = listOf("HighSugarSafe", "LowCarb"),
-            healthReason = "Soy isoflavones and heart-healthy monounsaturated fats optimize cellular glucose uptake.",
-            portion = "1 bowl with 2 slices avocado",
-            icon = "🥗"
+            healthReason = "Near-zero glycemic load meal combining soy isoflavones and heart-healthy monounsaturated fats.",
+            portion = "1 bowl (200g)",
+            icon = "🥗",
+            isSouthIndian = false
         ),
         HealthFoodItem(
-            id = 106,
+            id = 110,
             name = "Methi (Fenugreek) Thepla with Low-Fat Curd",
             mealSlot = "Breakfast",
-            calories = 210,
+            calories = 190,
             carbsGrams = 26f,
-            proteinGrams = 8f,
-            fiberGrams = 5f,
-            fatGrams = 5f,
+            proteinGrams = 7f,
+            fiberGrams = 5.5f,
+            fatGrams = 4f,
             glycemicLoad = "Low",
             dietType = "Vegetarian",
             allergens = listOf("Gluten", "Dairy"),
             healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Fenugreek galactomannan delays carbohydrate absorption and stimulates basal insulin activity.",
-            portion = "2 thin theplas + 1/2 cup curd",
-            icon = "🫓"
-        ),
-        HealthFoodItem(
-            id = 107,
-            name = "Boiled Eggs with Sautéed Mushrooms & Tomatoes",
-            mealSlot = "Breakfast",
-            calories = 180,
-            carbsGrams = 6f,
-            proteinGrams = 14f,
-            fiberGrams = 2.5f,
-            fatGrams = 10f,
-            glycemicLoad = "Low",
-            dietType = "Non-Vegetarian",
-            allergens = listOf("Eggs"),
-            healthTags = listOf("HighSugarSafe", "LowCarb"),
-            healthReason = "Near-zero glycemic impact with rich choline and antioxidant ergothioneine for steady morning energy.",
-            portion = "2 whole eggs + 1/2 cup veggies",
-            icon = "🥚"
-        ),
-        HealthFoodItem(
-            id = 108,
-            name = "Chia Seed & Almond Milk Pudding with Cinnamon",
-            mealSlot = "Breakfast",
-            calories = 170,
-            carbsGrams = 12f,
-            proteinGrams = 6f,
-            fiberGrams = 8f,
-            fatGrams = 9f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = listOf("Nuts"),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "Balanced"),
-            healthReason = "Mucilaginous soluble fiber paired with cinnamaldehyde naturally promotes insulin receptor responsiveness.",
-            portion = "1 jar (150g)",
-            icon = "🍨"
-        ),
-        HealthFoodItem(
-            id = 109,
-            name = "Foxtail Millet Pongal with Low-Fat Chutney",
-            mealSlot = "Breakfast",
-            calories = 230,
-            carbsGrams = 34f,
-            proteinGrams = 7f,
-            fiberGrams = 5f,
-            fatGrams = 5f,
-            glycemicLoad = "Medium",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("Balanced"),
-            healthReason = "Traditional anti-inflammatory millet rich in resistant starch for smooth, prolonged glucose release.",
-            portion = "1 cup cooked pongal",
-            icon = "🥣"
-        ),
-        HealthFoodItem(
-            id = 110,
-            name = "Soya Chunks & Vegetable Poha",
-            mealSlot = "Breakfast",
-            calories = 225,
-            carbsGrams = 28f,
-            proteinGrams = 12f,
-            fiberGrams = 4.5f,
-            fatGrams = 4f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = listOf("Soy"),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "High-density plant protein balances the light glycemic index of flattened rice.",
-            portion = "1 medium plate",
-            icon = "🍚"
+            healthReason = "Fenugreek alkaloid trigonelline has clinically proven hypoglycemic properties that enhance insulin sensitivity.",
+            portion = "2 theplas with 1/2 cup curd",
+            icon = "🫓",
+            isSouthIndian = false
         ),
 
         // ==================== LUNCH ====================
         HealthFoodItem(
             id = 201,
-            name = "Brown Rice & Palak Dal with Cucumber Salad",
+            name = "Brown/Matta Rice with Drumstick Sambar, Keerai Poriyal & Curd",
             mealSlot = "Lunch",
             calories = 320,
-            carbsGrams = 44f,
-            proteinGrams = 14f,
+            carbsGrams = 42f,
+            proteinGrams = 13f,
             fiberGrams = 8.5f,
             fatGrams = 5f,
             glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("Balanced", "HighSugarSafe"),
-            healthReason = "Folate-rich spinach and whole lentils blunt carbohydrate breakdown and support hepatic glucose regulation.",
-            portion = "1 cup brown rice + 1 cup dal",
-            icon = "🍛"
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Unpolished red matta rice paired with drumstick toor dal and amaranth keerai poriyal prevents sharp postprandial glycemic excursions.",
+            portion = "1 small cup rice + 1 cup sambar + 1 cup keerai + 1/2 cup curd",
+            icon = "🍛",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 202,
-            name = "Grilled Herb Chicken Breast with Steamed Broccoli",
-            mealSlot = "Lunch",
-            calories = 340,
-            carbsGrams = 16f,
-            proteinGrams = 38f,
-            fiberGrams = 6f,
-            fatGrams = 8f,
-            glycemicLoad = "Low",
-            dietType = "Non-Vegetarian",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
-            healthReason = "Lean poultry protein maximizes post-meal thermogenesis without placing any strain on insulin reserves.",
-            portion = "150g chicken + 1 cup broccoli",
-            icon = "🍗"
-        ),
-        HealthFoodItem(
-            id = 203,
-            name = "Paneer Tikka with Grilled Bell Peppers & Roti",
-            mealSlot = "Lunch",
-            calories = 330,
-            carbsGrams = 26f,
-            proteinGrams = 18f,
-            fiberGrams = 6f,
-            fatGrams = 12f,
-            glycemicLoad = "Low",
-            dietType = "Vegetarian",
-            allergens = listOf("Dairy", "Gluten"),
-            healthTags = listOf("LowCarb", "Balanced"),
-            healthReason = "Slow-digesting casein protein and fiber prevent rapid gastric emptying and postprandial glycemic spikes.",
-            portion = "5 paneer cubes + 1 roti",
-            icon = "🍢"
-        ),
-        HealthFoodItem(
-            id = 204,
-            name = "Soya Chunks & Vegetable Biryani with Flax Raita",
+            name = "Foxtail Millet (Thinai) Sambar Rice with Keerai Poriyal & Curd",
             mealSlot = "Lunch",
             calories = 310,
             carbsGrams = 38f,
-            proteinGrams = 17f,
+            proteinGrams = 14f,
             fiberGrams = 9f,
+            fatGrams = 4.5f,
+            glycemicLoad = "Low",
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced", "LowCarb"),
+            healthReason = "Foxtail millet delivers complex amylose starch that digests slowly, sustaining balanced glucose levels for 4+ hours.",
+            portion = "1 bowl thinai sambar + 1 cup keerai poriyal + curd",
+            icon = "🍲",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 203,
+            name = "Lemon Coriander Millet Rice with Vendakkai (Okra) Fry & Buttermilk",
+            mealSlot = "Lunch",
+            calories = 290,
+            carbsGrams = 36f,
+            proteinGrams = 9f,
+            fiberGrams = 7f,
             fatGrams = 6f,
             glycemicLoad = "Low",
             dietType = "Vegetarian",
-            allergens = listOf("Soy", "Dairy"),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Omega-3 alpha-linolenic acid in flaxseed reduces systemic insulin resistance alongside wholesome soy protein.",
-            portion = "1 plate biryani + 1/2 cup raita",
-            icon = "🥘"
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Okra (vendakkai) contains soluble mucilage fiber that delays carbohydrate absorption, while ginger neer mor aids metabolic gut balance.",
+            portion = "1 bowl millet rice + 1 cup shallow okra fry + 1 glass neer mor",
+            icon = "🍋",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 204,
+            name = "Pepper Rasam with Cabbage-Beans Poriyal & Grilled Paneer",
+            mealSlot = "Lunch",
+            calories = 280,
+            carbsGrams = 18f,
+            proteinGrams = 17f,
+            fiberGrams = 7.5f,
+            fatGrams = 9f,
+            glycemicLoad = "Low",
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
+            healthReason = "Piperine-rich South Indian pepper rasam stimulates natural digestive enzymes, while paneer protein keeps carbohydrate intake low.",
+            portion = "1 bowl rasam + 1 cup cabbage beans poriyal + 100g tawa paneer",
+            icon = "🧀",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 205,
-            name = "Pan-Seared Salmon Fillet with Asparagus & Cauli-Mash",
+            name = "Pepper Rasam with Cabbage-Beans Poriyal & Grilled Chicken",
             mealSlot = "Lunch",
-            calories = 360,
-            carbsGrams = 8f,
-            proteinGrams = 32f,
-            fiberGrams = 4.5f,
-            fatGrams = 18f,
+            calories = 275,
+            carbsGrams = 14f,
+            proteinGrams = 28f,
+            fiberGrams = 6.5f,
+            fatGrams = 5f,
             glycemicLoad = "Low",
             dietType = "Non-Vegetarian",
-            allergens = listOf("Seafood"),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
-            healthReason = "Marine EPA & DHA fatty acids reduce vascular inflammation and stabilize cellular insulin signaling.",
-            portion = "1 fillet (140g) + 1 cup greens",
-            icon = "🐟"
+            allergens = emptyList(),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "PostWorkout"),
+            healthReason = "Pure lean chicken protein paired with traditional cumin-pepper rasam and fibrous vegetables keeps glucose completely steady.",
+            portion = "1 bowl rasam + 1 cup poriyal + 150g grilled chicken",
+            icon = "🍗",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 206,
-            name = "Horse Gram (Kollu) Sambar with Red Rice & Cabbage",
+            name = "Horse Gram (Kollu) Sambar with Red Rice & Cabbage Poriyal",
             mealSlot = "Lunch",
-            calories = 305,
-            carbsGrams = 42f,
-            proteinGrams = 13f,
-            fiberGrams = 10f,
+            calories = 310,
+            carbsGrams = 40f,
+            proteinGrams = 14f,
+            fiberGrams = 9f,
             fatGrams = 4f,
             glycemicLoad = "Low",
             dietType = "Vegan",
             allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Phenolic compounds in horse gram significantly reduce intestinal alpha-glucosidase activity.",
-            portion = "3/4 cup red rice + 1 cup sambar",
-            icon = "🍲"
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Kollu (horse gram) has traditional Ayurvedic prominence for enhancing insulin sensitivity and reducing insulin resistance.",
+            portion = "1 cup kollu sambar + 1 small cup red rice + cabbage poriyal",
+            icon = "🥣",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 207,
-            name = "Chickpea & Grilled Mediterranean Salad with Olive Oil",
+            name = "South Indian Spiced Fish Curry with Samai (Little Millet) Rice",
             mealSlot = "Lunch",
-            calories = 290,
+            calories = 320,
             carbsGrams = 32f,
-            proteinGrams = 12f,
-            fiberGrams = 9f,
-            fatGrams = 10f,
+            proteinGrams = 26f,
+            fiberGrams = 6f,
+            fatGrams = 6.5f,
             glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("Balanced", "HighSugarSafe"),
-            healthReason = "Extra virgin olive oil oleic acid paired with legume fiber maintains flat glycemic curves.",
-            portion = "1 large salad bowl",
-            icon = "🥗"
+            dietType = "Non-Vegetarian",
+            allergens = listOf("Seafood"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Omega-3 rich fish curry prepared with fenugreek and tomato simmer paired with little millet gives steady glycemic control.",
+            portion = "1 bowl fish curry (1 fillet) + 1 small bowl samai rice",
+            icon = "🐟",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 208,
-            name = "Egg Curry (2 Boiled Eggs) with Millet Roti",
+            name = "Paneer Tikka with Grilled Bell Peppers & Roti",
             mealSlot = "Lunch",
-            calories = 315,
-            carbsGrams = 22f,
-            proteinGrams = 16f,
-            fiberGrams = 6f,
-            fatGrams = 13f,
+            calories = 310,
+            carbsGrams = 24f,
+            proteinGrams = 19f,
+            fiberGrams = 6.5f,
+            fatGrams = 11f,
             glycemicLoad = "Low",
-            dietType = "Non-Vegetarian",
-            allergens = listOf("Eggs"),
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy", "Gluten"),
             healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "High satiety index with zero sugar spikes from refined wheat or high-starch fillers.",
-            portion = "2 eggs in gravy + 1 millet roti",
-            icon = "🍛"
+            healthReason = "High dairy calcium and casein protein combined with non-starchy peppers create a slow, gradual glycemic release.",
+            portion = "6 paneer cubes + 1 roti",
+            icon = "🧀",
+            isSouthIndian = false
         ),
         HealthFoodItem(
             id = 209,
-            name = "Rajma (Kidney Beans) Masala with Cauliflower Rice",
+            name = "Soya Chunks & Vegetable Biryani with Flax Raita",
             mealSlot = "Lunch",
-            calories = 270,
-            carbsGrams = 28f,
-            proteinGrams = 14f,
-            fiberGrams = 11f,
+            calories = 295,
+            carbsGrams = 36f,
+            proteinGrams = 20f,
+            fiberGrams = 8f,
             fatGrams = 5f,
             glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "LowCarb"),
-            healthReason = "Very high soluble fiber and resistant starch nourish gut microbiota that produce insulin-sensitizing short-chain fatty acids.",
-            portion = "1 cup rajma + 1 cup cauli-rice",
-            icon = "🫘"
+            dietType = "Vegetarian",
+            allergens = listOf("Soy", "Dairy"),
+            healthTags = listOf("HighSugarSafe", "Balanced"),
+            healthReason = "Textured soy protein absorbs cooking broth, reducing overall net starch content while supplying complete essential amino acids.",
+            portion = "1 medium bowl + 1/2 cup raita",
+            icon = "🍚",
+            isSouthIndian = false
         ),
         HealthFoodItem(
             id = 210,
-            name = "Grilled Tofu Steak with Mushroom Pepper Sauce",
+            name = "Pan-Seared Salmon Fillet with Cauli-Mash & Asparagus",
             mealSlot = "Lunch",
-            calories = 280,
-            carbsGrams = 12f,
-            proteinGrams = 22f,
-            fiberGrams = 6f,
-            fatGrams = 12f,
+            calories = 315,
+            carbsGrams = 8f,
+            proteinGrams = 28f,
+            fiberGrams = 4.5f,
+            fatGrams = 13f,
             glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = listOf("Soy"),
+            dietType = "Non-Vegetarian",
+            allergens = listOf("Seafood"),
             healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
-            healthReason = "Minimal net carbohydrates and rich micronutrients optimal for postprandial glucose recovery.",
-            portion = "150g tofu + 1 cup stir-fry",
-            icon = "🥩"
+            healthReason = "Zero net glycemic impact meal rich in anti-inflammatory EPA and DHA omega-3 fatty acids for cardiovascular health.",
+            portion = "1 fillet (180g) + 1 cup cauli-mash",
+            icon = "🐟",
+            isSouthIndian = false
         ),
 
-        // ==================== SNACKS ====================
+        // ==================== SNACK ====================
         HealthFoodItem(
             id = 301,
-            name = "Roasted Chana (Bengal Gram) with Chaat Masala",
+            name = "Boiled Chickpeas / Moong Sundal",
             mealSlot = "Snack",
-            calories = 130,
+            calories = 140,
             carbsGrams = 18f,
-            proteinGrams = 7f,
-            fiberGrams = 5f,
+            proteinGrams = 8f,
+            fiberGrams = 6.5f,
             fatGrams = 3f,
             glycemicLoad = "Low",
             dietType = "Vegan",
             allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Crunchy legume protein with very slow digestion prevents late-afternoon energy crashes.",
-            portion = "1/2 cup (40g)",
-            icon = "🥜"
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
+            healthReason = "Traditional temple-style sundal tempered with mustard, curry leaves, and minimal coconut provides satiating slow carbs and fiber.",
+            portion = "1 small cup (100g)",
+            icon = "🥗",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 302,
+            name = "Roasted Fox Nuts (Makhana) & Peanuts",
+            mealSlot = "Snack",
+            calories = 155,
+            carbsGrams = 15f,
+            proteinGrams = 6f,
+            fiberGrams = 4f,
+            fatGrams = 7f,
+            glycemicLoad = "Low",
+            dietType = "Vegetarian",
+            allergens = listOf("Nuts"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
+            healthReason = "Crunchy makhana and roasted groundnuts tossed in turmeric and curry leaves stabilize mid-day hunger without glucose spikes.",
+            portion = "1/2 cup (40g)",
+            icon = "🥜",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 303,
+            name = "Sprouted Moong Salad with Lemon & Black Salt",
+            mealSlot = "Snack",
+            calories = 120,
+            carbsGrams = 16f,
+            proteinGrams = 9f,
+            fiberGrams = 6f,
+            fatGrams = 1.5f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = emptyList(),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
+            healthReason = "Sprouted whole moong contains active enzymes, vitamin C, and soluble fiber that keep pre-dinner blood sugar level.",
+            portion = "1 medium bowl (150g)",
+            icon = "🌱",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 304,
+            name = "Masala Buttermilk (Neer Mor) with Ginger & Curry Leaves",
+            mealSlot = "Snack",
+            calories = 65,
+            carbsGrams = 5f,
+            proteinGrams = 4f,
+            fiberGrams = 1f,
+            fatGrams = 1.5f,
+            glycemicLoad = "Low",
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
+            healthReason = "Traditional South Indian spiced buttermilk hydrates, delivers digestive probiotics, and has near-zero glycemic impact.",
+            portion = "1 tall glass (250ml)",
+            icon = "🥛",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 305,
+            name = "Unsweetened South Indian Filter Coffee",
+            mealSlot = "Snack",
+            calories = 55,
+            carbsGrams = 4f,
+            proteinGrams = 3f,
+            fiberGrams = 0.5f,
+            fatGrams = 2f,
+            glycemicLoad = "Low",
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
+            healthReason = "Rich chicory filter decoction with low-fat cow's milk and zero sugar delivers antioxidants without raising blood glucose.",
+            portion = "1 davarah tumbler (120ml)",
+            icon = "☕",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 306,
+            name = "Roasted Chana (Bengal Gram) with Curry Leaves",
+            mealSlot = "Snack",
+            calories = 135,
+            carbsGrams = 16f,
+            proteinGrams = 8.5f,
+            fiberGrams = 5.5f,
+            fatGrams = 2.5f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = emptyList(),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
+            healthReason = "Low glycemic index whole roasted chickpeas satisfy afternoon salt cravings while keeping glucose flat.",
+            portion = "1/2 cup (50g)",
+            icon = "🧆",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 307,
+            name = "Boiled Egg White Chaat with Onion & Lemon",
+            mealSlot = "Snack",
+            calories = 110,
+            carbsGrams = 4f,
+            proteinGrams = 14f,
+            fiberGrams = 1.5f,
+            fatGrams = 1f,
+            glycemicLoad = "Low",
+            dietType = "Non-Vegetarian",
+            allergens = listOf("Eggs"),
+            healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
+            healthReason = "Pure protein snack with near-zero sugar content, perfect for preventing pre-dinner hypoglycemia without adding excess calories.",
+            portion = "3 whites chopped",
+            icon = "🥚",
+            isSouthIndian = false
+        ),
+        HealthFoodItem(
+            id = 308,
             name = "Greek Yogurt with Toasted Walnuts & Cinnamon",
             mealSlot = "Snack",
             calories = 150,
             carbsGrams = 8f,
             proteinGrams = 12f,
             fiberGrams = 2f,
-            fatGrams = 7f,
+            fatGrams = 6f,
             glycemicLoad = "Low",
             dietType = "Vegetarian",
             allergens = listOf("Dairy", "Nuts"),
             healthTags = listOf("HighSugarSafe", "LowCarb"),
-            healthReason = "Probiotics support microbiome health while dairy protein dampens hunger hormones.",
-            portion = "1 cup yogurt + 4 walnut halves",
-            icon = "🥣"
+            healthReason = "Cinnamon contains cinnamaldehyde which mimics insulin, while walnuts contribute cardioprotective alpha-linolenic acid.",
+            portion = "1 small bowl (120g)",
+            icon = "🥣",
+            isSouthIndian = false
         ),
         HealthFoodItem(
-            id = 303,
-            name = "Sprouted Kala Chana Sundal",
-            mealSlot = "Snack",
-            calories = 140,
-            carbsGrams = 20f,
-            proteinGrams = 8f,
-            fiberGrams = 6f,
-            fatGrams = 3f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Sprouting increases bioavailability of enzymes and vitamins while further lowering glycemic impact.",
-            portion = "3/4 cup sundal",
-            icon = "🥗"
-        ),
-        HealthFoodItem(
-            id = 304,
-            name = "Boiled Egg White Chaat with Onion & Lemon",
-            mealSlot = "Snack",
-            calories = 90,
-            carbsGrams = 3f,
-            proteinGrams = 12f,
-            fiberGrams = 1f,
-            fatGrams = 1f,
-            glycemicLoad = "Low",
-            dietType = "Non-Vegetarian",
-            allergens = listOf("Eggs"),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
-            healthReason = "Pure bioavailable protein with zero carbohydrate impact to curb hunger before dinner.",
-            portion = "3 egg whites diced with spices",
-            icon = "🥚"
-        ),
-        HealthFoodItem(
-            id = 305,
-            name = "Mixed Roasted Seeds (Pumpkin, Sunflower, Flax)",
-            mealSlot = "Snack",
-            calories = 145,
-            carbsGrams = 6f,
-            proteinGrams = 6f,
-            fiberGrams = 4f,
-            fatGrams = 10f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "LowCarb"),
-            healthReason = "Magnesium-dense seeds help optimize insulin action and cellular glucose metabolism.",
-            portion = "2 tablespoons (25g)",
-            icon = "🌻"
-        ),
-        HealthFoodItem(
-            id = 306,
-            name = "Cucumber & Carrot Slices with Roasted Garlic Hummus",
-            mealSlot = "Snack",
-            calories = 120,
-            carbsGrams = 14f,
-            proteinGrams = 4f,
-            fiberGrams = 4.5f,
-            fatGrams = 5f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Hydrating, alkalizing raw vegetables with chickpea tahini for sustained micronutrient delivery.",
-            portion = "1 cup crudites + 2 tbsp hummus",
-            icon = "🥕"
-        ),
-        HealthFoodItem(
-            id = 307,
-            name = "Sautéed Edamame with Himalayan Pink Salt",
-            mealSlot = "Snack",
-            calories = 135,
-            carbsGrams = 9f,
-            proteinGrams = 11f,
-            fiberGrams = 5f,
-            fatGrams = 5f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = listOf("Soy"),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
-            healthReason = "Whole green soybeans deliver complete plant protein and natural plant sterols.",
-            portion = "1 cup in pods",
-            icon = "🫛"
-        ),
-        HealthFoodItem(
-            id = 308,
+            id = 309,
             name = "Fresh Guava Slices with Black Salt",
             mealSlot = "Snack",
             calories = 70,
             carbsGrams = 14f,
-            proteinGrams = 2f,
+            proteinGrams = 2.5f,
             fiberGrams = 5.5f,
-            fatGrams = 0.5f,
+            fatGrams = 1f,
             glycemicLoad = "Low",
             dietType = "Vegan",
             allergens = emptyList(),
             healthTags = listOf("HighSugarSafe", "Balanced"),
-            healthReason = "Very high in vitamin C and insoluble skin pectin that slows sugar absorption compared to tropical fruits.",
+            healthReason = "Very low glycemic index (GI 12) fruit packed with 4x the vitamin C of an orange and high pectin soluble fiber.",
             portion = "1 medium guava sliced",
-            icon = "🍈"
-        ),
-        HealthFoodItem(
-            id = 309,
-            name = "Masala Buttermilk (Chaas) with Ginger & Curry Leaves",
-            mealSlot = "Snack",
-            calories = 60,
-            carbsGrams = 5f,
-            proteinGrams = 3f,
-            fiberGrams = 1f,
-            fatGrams = 1.5f,
-            glycemicLoad = "Low",
-            dietType = "Vegetarian",
-            allergens = listOf("Dairy"),
-            healthTags = listOf("HighSugarSafe", "LightEvening"),
-            healthReason = "Hydrating probiotic electrolyte drink that aids digestive transit with negligible carbs.",
-            portion = "1 tall glass (250ml)",
-            icon = "🥛"
+            icon = "🍐",
+            isSouthIndian = false
         ),
         HealthFoodItem(
             id = 310,
-            name = "Steamed Methi Muthia (Non-Fried) with Green Chutney",
+            name = "Mixed Roasted Seeds (Pumpkin, Sunflower, Flax)",
             mealSlot = "Snack",
-            calories = 125,
-            carbsGrams = 18f,
-            proteinGrams = 4f,
+            calories = 135,
+            carbsGrams = 6f,
+            proteinGrams = 6f,
             fiberGrams = 4f,
-            fatGrams = 3f,
+            fatGrams = 9f,
             glycemicLoad = "Low",
             dietType = "Vegan",
-            allergens = listOf("Gluten"),
-            healthTags = listOf("Balanced"),
-            healthReason = "Bitter fenugreek greens provide natural trigonelline, supporting healthy lipid and glycemic profiles.",
-            portion = "3 steamed pieces",
-            icon = "🥟"
+            allergens = emptyList(),
+            healthTags = listOf("HighSugarSafe", "LowCarb"),
+            healthReason = "Abundant magnesium and lignans assist glucose cellular uptake and modulate post-snack insulin demand.",
+            portion = "2 tbsp (25g)",
+            icon = "🌻",
+            isSouthIndian = false
         ),
 
         // ==================== DINNER ====================
         HealthFoodItem(
             id = 401,
-            name = "Bottle Gourd (Lauki) & Moong Dal Soup",
+            name = "Multigrain Chapati with Lauki (Bottle Gourd) & Chana Dal Kootu",
             mealSlot = "Dinner",
-            calories = 160,
-            carbsGrams = 18f,
-            proteinGrams = 8f,
-            fiberGrams = 5f,
-            fatGrams = 3f,
+            calories = 240,
+            carbsGrams = 32f,
+            proteinGrams = 10f,
+            fiberGrams = 7.5f,
+            fatGrams = 4.5f,
             glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "LightEvening"),
-            healthReason = "Ultra-light hydration and gentle digestion prevent the nocturnal glucose dawn phenomenon.",
-            portion = "1 large soup bowl",
-            icon = "🥣"
+            dietType = "Vegetarian",
+            allergens = listOf("Gluten"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LightEvening", "Balanced"),
+            healthReason = "High-water-content bottle gourd combined with chana dal provides a light, easily digestible evening meal that supports overnight glucose control.",
+            portion = "2 phulkas with 1 cup lauki kootu",
+            icon = "🫓",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 402,
-            name = "Grilled Lemon Pepper Fish with French Beans",
+            name = "Broken Wheat (Godhumai Rava / Dalia) Khichdi with Mixed Veggies",
             mealSlot = "Dinner",
-            calories = 260,
-            carbsGrams = 6f,
-            proteinGrams = 28f,
-            fiberGrams = 4f,
-            fatGrams = 10f,
+            calories = 220,
+            carbsGrams = 30f,
+            proteinGrams = 8f,
+            fiberGrams = 7f,
+            fatGrams = 4f,
             glycemicLoad = "Low",
-            dietType = "Non-Vegetarian",
-            allergens = listOf("Seafood"),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
-            healthReason = "High-protein low-carb evening plate prevents overnight glycemic surges and restless sleep.",
-            portion = "140g fish + 1 cup beans",
-            icon = "🐟"
+            dietType = "Vegan",
+            allergens = listOf("Gluten"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LightEvening", "Balanced"),
+            healthReason = "Cracked whole wheat retains germ and aleurone layers, yielding an ultra-low glycemic response that prevents fasting hyperglycemia (Dawn Phenomenon).",
+            portion = "1 medium bowl (250g)",
+            icon = "🍲",
+            isSouthIndian = true
         ),
         HealthFoodItem(
             id = 403,
+            name = "South Indian Spiced Grilled Fish with Stir-Fried Keerai",
+            mealSlot = "Dinner",
+            calories = 230,
+            carbsGrams = 5f,
+            proteinGrams = 30f,
+            fiberGrams = 4.5f,
+            fatGrams = 6.5f,
+            glycemicLoad = "Low",
+            dietType = "Non-Vegetarian",
+            allergens = listOf("Seafood"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "LightEvening"),
+            healthReason = "Seared fish fillet in South Indian turmeric-garlic rub with local greens keeps carbohydrates minimal before bedtime.",
+            portion = "1 seared fillet (180g) + 1 cup spinach poriyal",
+            icon = "🐟",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 404,
+            name = "Grilled Chicken with Stir-Fried Vendakkai & Greens",
+            mealSlot = "Dinner",
+            calories = 245,
+            carbsGrams = 6f,
+            proteinGrams = 32f,
+            fiberGrams = 5f,
+            fatGrams = 6f,
+            glycemicLoad = "Low",
+            dietType = "Non-Vegetarian",
+            allergens = emptyList(),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "LightEvening"),
+            healthReason = "High lean poultry protein with soluble okra fiber ensures prolonged satiety and prevents midnight hypoglycemia or morning spikes.",
+            portion = "150g spiced chicken breast + 1 cup okra & spinach",
+            icon = "🍗",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 405,
+            name = "Ragi Dosa with Tomato-Onion Chutney & Veggie Soup",
+            mealSlot = "Dinner",
+            calories = 210,
+            carbsGrams = 28f,
+            proteinGrams = 6f,
+            fiberGrams = 6f,
+            fatGrams = 4f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = emptyList(),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LightEvening", "Balanced"),
+            healthReason = "Crisp calcium-rich finger millet dosa digests gently, avoiding overnight liver glycogen dump and morning insulin surges.",
+            portion = "2 thin ragi dosas + 1 cup clear veggie soup",
+            icon = "🥞",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 406,
+            name = "Kollu (Horse Gram) Rasam with Steamed Veggies & 2 Egg Whites",
+            mealSlot = "Dinner",
+            calories = 170,
+            carbsGrams = 12f,
+            proteinGrams = 16f,
+            fiberGrams = 4f,
+            fatGrams = 2f,
+            glycemicLoad = "Low",
+            dietType = "Non-Vegetarian",
+            allergens = listOf("Eggs"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "LightEvening"),
+            healthReason = "Calorie-controlled dinner providing soothing horse gram polyphenols and clean protein for overnight muscular & glycemic repair.",
+            portion = "1 large bowl rasam + steamed beans/carrots + 2 whites",
+            icon = "🥣",
+            isSouthIndian = true
+        ),
+        HealthFoodItem(
+            id = 407,
             name = "Sautéed Paneer & Broccoli Stir-Fry with Garlic",
             mealSlot = "Dinner",
-            calories = 250,
-            carbsGrams = 10f,
-            proteinGrams = 16f,
+            calories = 240,
+            carbsGrams = 8f,
+            proteinGrams = 18f,
             fiberGrams = 5f,
-            fatGrams = 14f,
+            fatGrams = 11f,
             glycemicLoad = "Low",
             dietType = "Vegetarian",
             allergens = listOf("Dairy"),
             healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
-            healthReason = "Slow-release casein protein maintains steady blood sugar throughout the 8-hour fasting window.",
-            portion = "1 plate (150g)",
-            icon = "🥦"
-        ),
-        HealthFoodItem(
-            id = 404,
-            name = "Mixed Vegetable Clear Soup with Black Chana",
-            mealSlot = "Dinner",
-            calories = 180,
-            carbsGrams = 22f,
-            proteinGrams = 9f,
-            fiberGrams = 7f,
-            fatGrams = 3f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "LightEvening"),
-            healthReason = "Warm antioxidant-rich broth with whole legume fiber quenches late-night cravings.",
-            portion = "1.5 cups soup",
-            icon = "🍲"
-        ),
-        HealthFoodItem(
-            id = 405,
-            name = "Grilled Chicken & Spinach Wrap in Lettuce Leaves",
-            mealSlot = "Dinner",
-            calories = 230,
-            carbsGrams = 5f,
-            proteinGrams = 26f,
-            fiberGrams = 3f,
-            fatGrams = 8f,
-            glycemicLoad = "Low",
-            dietType = "Non-Vegetarian",
-            allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
-            healthReason = "Replaces high-carb flatbreads with crisp lettuce leaves to keep evening insulin demands minimal.",
-            portion = "2 lettuce wraps",
-            icon = "🥬"
-        ),
-        HealthFoodItem(
-            id = 406,
-            name = "Ragi Dosa with Tomato-Onion Chutney",
-            mealSlot = "Dinner",
-            calories = 190,
-            carbsGrams = 30f,
-            proteinGrams = 5f,
-            fiberGrams = 4f,
-            fatGrams = 4f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = emptyList(),
-            healthTags = listOf("Balanced", "LightEvening"),
-            healthReason = "Calcium and iron-rich finger millet fermented for low glycemic index and gentle nighttime transit.",
-            portion = "1 thin dosa + 2 tbsp chutney",
-            icon = "🥞"
-        ),
-        HealthFoodItem(
-            id = 407,
-            name = "Tofu & Bok Choy Clear Noodle Soup (Shirataki)",
-            mealSlot = "Dinner",
-            calories = 150,
-            carbsGrams = 8f,
-            proteinGrams = 14f,
-            fiberGrams = 6f,
-            fatGrams = 6f,
-            glycemicLoad = "Low",
-            dietType = "Vegan",
-            allergens = listOf("Soy"),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
-            healthReason = "Glucomannan konjac noodles provide zero-glycemic volume with comforting warm amino-acid broth.",
-            portion = "1 large ramen bowl",
-            icon = "🍜"
+            healthReason = "Broccoli contains sulforaphane which reduces hepatic glucose output, coupled with slow-digesting paneer casein.",
+            portion = "1 medium plate (220g)",
+            icon = "🥦",
+            isSouthIndian = false
         ),
         HealthFoodItem(
             id = 408,
-            name = "Baked Zucchini Boats with Spiced Moong Dal",
+            name = "Mixed Vegetable Clear Soup with Black Chana",
             mealSlot = "Dinner",
             calories = 175,
-            carbsGrams = 16f,
+            carbsGrams = 22f,
             proteinGrams = 9f,
-            fiberGrams = 5f,
-            fatGrams = 4f,
+            fiberGrams = 7f,
+            fatGrams = 2f,
             glycemicLoad = "Low",
             dietType = "Vegan",
             allergens = emptyList(),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
-            healthReason = "Low calorie density with generous potassium to support healthy nocturnal blood pressure.",
-            portion = "2 stuffed zucchini halves",
-            icon = "🥒"
+            healthTags = listOf("HighSugarSafe", "LightEvening", "Balanced"),
+            healthReason = "Calorie-controlled, high-volume broth that stretches the stomach wall, stimulating natural satiety peptides (GLP-1).",
+            portion = "1 large bowl (300ml)",
+            icon = "🍲",
+            isSouthIndian = false
         ),
         HealthFoodItem(
             id = 409,
-            name = "Sautéed Mushroom & Asparagus with Scrambled Whites",
-            mealSlot = "Dinner",
-            calories = 165,
-            carbsGrams = 7f,
-            proteinGrams = 18f,
-            fiberGrams = 3.5f,
-            fatGrams = 4f,
-            glycemicLoad = "Low",
-            dietType = "Non-Vegetarian",
-            allergens = listOf("Eggs"),
-            healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
-            healthReason = "Lean protein with minimal digestive load supports deep restorative sleep and pancreatic rest.",
-            portion = "1 plate (200g)",
-            icon = "🍳"
-        ),
-        HealthFoodItem(
-            id = 410,
             name = "Moong Dal & Spinach Khichdi with Flaxseed",
             mealSlot = "Dinner",
-            calories = 220,
-            carbsGrams = 32f,
-            proteinGrams = 10f,
-            fiberGrams = 6f,
-            fatGrams = 4f,
+            calories = 210,
+            carbsGrams = 28f,
+            proteinGrams = 9.5f,
+            fiberGrams = 6.5f,
+            fatGrams = 3.5f,
             glycemicLoad = "Low",
             dietType = "Vegan",
             allergens = emptyList(),
             healthTags = listOf("Balanced", "LightEvening"),
             healthReason = "Balanced 2:1 lentil-to-grain ratio ensures steady, non-spiking overnight glucose release.",
             portion = "1 medium bowl (200g)",
-            icon = "🍲"
+            icon = "🍲",
+            isSouthIndian = false
+        ),
+        HealthFoodItem(
+            id = 410,
+            name = "Tofu & Bok Choy Clear Noodle Soup (Shirataki)",
+            mealSlot = "Dinner",
+            calories = 160,
+            carbsGrams = 6f,
+            proteinGrams = 14f,
+            fiberGrams = 5f,
+            fatGrams = 5f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = listOf("Soy"),
+            healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
+            healthReason = "Shirataki konjac noodles contain zero-calorie glucomannan fiber that stabilizes nighttime sugar without heavy carbs.",
+            portion = "1 large bowl (300ml)",
+            icon = "🍜",
+            isSouthIndian = false
         )
     )
 
@@ -743,20 +783,7 @@ object AiFoodRecommendationEngine {
     }
 
     /**
-     * Determines current meal slot from system clock if no category filter is applied.
-     */
-    fun resolveCurrentMealSlot(): String {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        return when (hour) {
-            in 5..10 -> "Breakfast"
-            in 11..15 -> "Lunch"
-            in 16..18 -> "Snack"
-            else -> "Dinner"
-        }
-    }
-
-    /**
-     * Computes the personalized daily rotating non-repeating food recommendation.
+     * Selects a single daily rotating recommendation matching constraints with on-demand shuffle.
      */
     fun getDailyRecommendation(
         context: Context,
@@ -767,18 +794,22 @@ object AiFoodRecommendationEngine {
         targetMealSlot: String? = null,
         shuffleOffset: Int = 0
     ): HealthRecommendationResult {
-        // 1. Normalize user constraints
-        val allergiesNorm = userAllergies.map { it.trim().lowercase(Locale.ROOT) }.filter { it.isNotEmpty() }
-        val avoidNorm = userFoodsToAvoid.map { it.trim().lowercase(Locale.ROOT) }.filter { it.isNotEmpty() }
-        val dietNorm = userDietType?.trim()?.lowercase(Locale.ROOT) ?: ""
-
-        val slot = if (!targetMealSlot.isNullOrBlank() && !targetMealSlot.equals("All", ignoreCase = true)) {
-            targetMealSlot
-        } else {
-            resolveCurrentMealSlot()
+        // 1. Determine active meal slot based on current hour if not explicitly set
+        val slot = targetMealSlot ?: run {
+            val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            when (hour) {
+                in 5..10 -> "Breakfast"
+                in 11..15 -> "Lunch"
+                in 16..18 -> "Snack"
+                else -> "Dinner"
+            }
         }
 
-        // 2. Filter dataset by hard constraints
+        // 2. Strict User Constraint Filtering
+        val dietNorm = userDietType?.lowercase(Locale.ROOT) ?: ""
+        val allergiesNorm = userAllergies.map { it.lowercase(Locale.ROOT).trim() }.filter { it.isNotEmpty() }
+        val avoidNorm = userFoodsToAvoid.map { it.lowercase(Locale.ROOT).trim() }.filter { it.isNotEmpty() }
+
         var candidates = foodDataset.filter { item ->
             // Filter by Diet Type
             val matchesDiet = when {
@@ -816,10 +847,14 @@ object AiFoodRecommendationEngine {
         val slotMatches = candidates.filter { it.mealSlot.equals(slot, ignoreCase = true) }
         val slotPool = if (slotMatches.isNotEmpty()) slotMatches else candidates
 
-        // 4. Glucose-based prioritization & scoring
+        // 4. Prioritization & scoring (South Indian preference + Glucose level)
         val glucose = currentGlucose ?: 120f
         val prioritizedPool = slotPool.sortedByDescending { item ->
             var score = 100
+            // Prioritize South Indian diabetic-friendly meals by default for Chennai familiarity
+            if (item.isSouthIndian || item.healthTags.contains("SouthIndian")) {
+                score += 50
+            }
             when {
                 glucose > 180f -> {
                     // Elevated glucose: Reward Low GL, HighSugarSafe, LowCarb, and High Fiber
@@ -924,11 +959,15 @@ object AiFoodRecommendationEngine {
         }
 
         val dynamicHighlights = buildList {
+            if (isSouthIndian) {
+                add("South Indian")
+            }
             add("${carbsGrams.toInt()}g Carbs")
             add("${proteinGrams.toInt()}g Protein")
             add("${fiberGrams.toInt()}g Fiber")
-            if (healthTags.isNotEmpty()) {
-                add(healthTags.first())
+            val primaryTag = healthTags.firstOrNull { it != "SouthIndian" }
+            if (primaryTag != null) {
+                add(primaryTag)
             }
         }
 
@@ -956,7 +995,7 @@ object AiFoodRecommendationEngine {
             icon = icon,
             highlights = dynamicHighlights,
             glycemicImpact = glBadge,
-            recommendationScore = 92,
+            recommendationScore = if (isSouthIndian) 96 else 90,
             recommendationReason = reason
         )
     }
@@ -964,7 +1003,8 @@ object AiFoodRecommendationEngine {
     /**
      * Generates a complete daily rotating meal plan (Breakfast, Lunch, Snack, Dinner)
      * with non-repeating combinations that change every single day based on calendar epoch day seed,
-     * user dietary constraints (diet type, allergies, foods to avoid), and live blood glucose levels.
+     * user dietary constraints (diet type, allergies, foods to avoid), and live blood glucose levels,
+     * strongly prioritizing South Indian diabetic-friendly foods.
      */
     fun getDailyRotatingMealPlan(
         userDietType: String? = null,
@@ -972,7 +1012,8 @@ object AiFoodRecommendationEngine {
         userFoodsToAvoid: List<String> = emptyList(),
         currentGlucose: Float? = 120f,
         calendar: Calendar? = null,
-        dayOffset: Int = 0
+        dayOffset: Int = 0,
+        shuffleOffset: Int = 0
     ): DailyPlanData {
         val cal = (calendar?.clone() as? Calendar) ?: Calendar.getInstance()
         if (dayOffset != 0) {
@@ -1015,9 +1056,13 @@ object AiFoodRecommendationEngine {
                 .ifEmpty { foodDataset.filter { it.mealSlot.equals(slot, ignoreCase = true) } }
                 .ifEmpty { filtered }
 
-            // Score items by current glucose suitability
+            // Score items by current glucose suitability & South Indian preference
             val scored = matching.sortedByDescending { item ->
                 var score = 100
+                // Strong priority bonus for authentic South Indian diabetic dishes
+                if (item.isSouthIndian || item.healthTags.contains("SouthIndian")) {
+                    score += 50
+                }
                 when {
                     glucose > 180f -> {
                         if (item.glycemicLoad.equals("Low", ignoreCase = true)) score += 60
@@ -1039,9 +1084,10 @@ object AiFoodRecommendationEngine {
                 score
             }
 
-            // Shuffle deterministically based on date seed + slot salt to ensure combinations change daily!
-            val slotRandom = Random(epochDay * 31L + slotSalt)
-            val rotated = scored.shuffled(slotRandom)
+            // Shuffle deterministically based on date seed + slot salt + on-demand shuffleOffset
+            val slotRandom = Random((epochDay + shuffleOffset) * 31L + slotSalt)
+            val candidatePool = scored.take((count * 3).coerceAtLeast(6))
+            val rotated = candidatePool.shuffled(slotRandom)
             return rotated.take(count).map { it.toRecommendedFoodItem(glucose) }
         }
 
