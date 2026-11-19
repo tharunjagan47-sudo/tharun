@@ -429,7 +429,7 @@ object SnapFoodAnalyzer {
         val prompt = "Identify all foods and portion sizes in this photo (Indian or international dishes). Compute realistic nutrition totals specifically for what you see. Return ONLY valid JSON with keys: dish_name (string), calories (int), protein_g (int), carbs_g (int), fat_g (int), fiber_g (int), health_score (int 1-10 for diabetes), health_reason (short 1-line string), items (array of {name: string, calories: int})."
 
         val jsonPayload = JSONObject().apply {
-            put("model", "moondream")
+            put("model", "qwen2.5vl:3b")
             put("prompt", prompt)
             put("images", JSONArray().apply { put(base64Image) })
             put("stream", false)
@@ -437,9 +437,8 @@ object SnapFoodAnalyzer {
             put("keep_alive", "30m")
             put("options", JSONObject().apply {
                 put("temperature", 0.1)
-                put("num_predict", 90)
-                put("num_ctx", 512)
-                put("num_thread", 8)
+                put("num_predict", 220)
+                put("num_ctx", 1024)
             })
         }
         val requestBody = jsonPayload.toString().toRequestBody("application/json".toMediaType())
@@ -481,14 +480,14 @@ object SnapFoodAnalyzer {
 
     private suspend fun encodeBitmapToBase64(bitmap: Bitmap): String? = withContext(Dispatchers.Default) {
         try {
-            val maxDim = 360
+            val maxDim = 512
             val scale = (maxDim.toFloat() / maxOf(bitmap.width, bitmap.height)).coerceAtMost(1.0f)
             val scaledBmp = if (scale < 1.0f) {
                 Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
             } else bitmap
 
             val stream = ByteArrayOutputStream()
-            scaledBmp.compress(Bitmap.CompressFormat.JPEG, 75, stream)
+            scaledBmp.compress(Bitmap.CompressFormat.JPEG, 80, stream)
             val b64 = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
             if (scaledBmp != bitmap) scaledBmp.recycle()
             b64
