@@ -37,7 +37,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,6 +80,7 @@ fun DailyDietPlanScreen(
     val uiState by viewModel.dailyDietState.collectAsState()
     val aiState by viewModel.aiRecommendationsState.collectAsState()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     var selectedTab by remember { mutableStateOf("Diet") }
     var showDatePickerDialog by remember { mutableStateOf(false) }
@@ -621,14 +624,16 @@ fun DailyDietPlanScreen(
                 onDismiss = { showSnapFoodCamera = false },
                 onPhotoCaptured = { bitmap, uri, query ->
                     showSnapFoodCamera = false
-                    val analysis = SnapFoodAnalyzer.analyzeFood(
-                        context = context,
-                        bitmap = bitmap,
-                        imageUri = uri,
-                        query = query,
-                        userGlucose = aiState.activeGlucose
-                    )
-                    activeSnapFoodAnalysis = analysis
+                    coroutineScope.launch {
+                        val analysis = SnapFoodAnalyzer.analyzeFood(
+                            context = context,
+                            bitmap = bitmap,
+                            imageUri = uri,
+                            query = query,
+                            userGlucose = aiState.activeGlucose
+                        )
+                        activeSnapFoodAnalysis = analysis
+                    }
                 }
             )
         }
