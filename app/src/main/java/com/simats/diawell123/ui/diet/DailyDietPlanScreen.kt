@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.RecommendedFoodItem
+import com.simats.diawell123.data.model.SnapFoodAnalysis
+import com.simats.diawell123.data.repository.SnapFoodAnalyzer
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -80,6 +82,8 @@ fun DailyDietPlanScreen(
     var selectedTab by remember { mutableStateOf("Diet") }
     var showDatePickerDialog by remember { mutableStateOf(false) }
     var showAdjustInputsDialog by remember { mutableStateOf(false) }
+    var showSnapFoodCamera by remember { mutableStateOf(false) }
+    var activeSnapFoodAnalysis by remember { mutableStateOf<SnapFoodAnalysis?>(null) }
 
     val patientContext = aiState.data?.patientContext
     val currentGlucose = aiState.activeGlucose ?: patientContext?.currentGlucoseMgDl ?: 120f
@@ -140,6 +144,30 @@ fun DailyDietPlanScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            // 📸 Prominent Snap Food Button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1.15f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        Brush.horizontalGradient(listOf(Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFF00E5FF)))
+                                    )
+                                    .clickable { showSnapFoodCamera = true }
+                                    .padding(vertical = 9.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = "📸", fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Snap Food",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    )
+                                }
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -158,7 +186,7 @@ fun DailyDietPlanScreen(
                             }
                             Box(
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .weight(0.95f)
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(Color(0xFFF2EFF6))
                                     .clickable { onExploreFoodClick() }
@@ -397,8 +425,8 @@ fun DailyDietPlanScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "📋 Personalized Daily Meal Plan",
-                            fontSize = 16.sp,
+                            text = "📋 AI Food Recommendation for Your Health",
+                            fontSize = 15.5.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
                         )
@@ -584,6 +612,47 @@ fun DailyDietPlanScreen(
                     viewModel.setSpecificDate(year, month, day)
                 },
                 onDismissRequest = { showDatePickerDialog = false },
+            )
+        }
+
+        // Snap Food Camera & Framing Overlay
+        if (showSnapFoodCamera) {
+            SnapFoodCameraOverlay(
+                onDismiss = { showSnapFoodCamera = false },
+                onPhotoCaptured = { bitmap, uri, query ->
+                    showSnapFoodCamera = false
+                    val analysis = SnapFoodAnalyzer.analyzeFood(
+                        bitmap = bitmap,
+                        imageUri = uri,
+                        query = query,
+                        userGlucose = aiState.activeGlucose
+                    )
+                    activeSnapFoodAnalysis = analysis
+                }
+            )
+        }
+
+        // Meal Nutrition Breakdown Sheet with Macro Readout, Stepper, Sub-items, and Done Action
+        activeSnapFoodAnalysis?.let { analysis ->
+            MealNutritionBreakdownSheet(
+                analysis = analysis,
+                onDismiss = { activeSnapFoodAnalysis = null },
+                onLogMeal = { dishName, mealType, servings, calories, carbs, protein, fat, fiber, subSummary ->
+                    viewModel.logSnapFoodMeal(
+                        dishName = dishName,
+                        mealType = mealType,
+                        servings = servings,
+                        calories = calories,
+                        carbs = carbs,
+                        protein = protein,
+                        fat = fat,
+                        subItemsSummary = subSummary,
+                        onSuccess = {
+                            Toast.makeText(context, "✅ Logged $dishName ($calories kcal) to today's diet log!", Toast.LENGTH_LONG).show()
+                        }
+                    )
+                    activeSnapFoodAnalysis = null
+                }
             )
         }
     }
