@@ -630,20 +630,9 @@ class DietRepositoryImpl(
             scoredItems
         }
 
-        val breakfastList = scoredItems.filter { it.category.equals("Breakfast", ignoreCase = true) }.take(2)
-            .ifEmpty { scoredItems.take(2) }
-        val lunchList = scoredItems.filter { it.category.equals("Lunch", ignoreCase = true) }.take(2)
-            .ifEmpty { scoredItems.drop(2).take(2) }
-        val snackList = scoredItems.filter { it.category.equals("Snack", ignoreCase = true) }.take(2)
-            .ifEmpty { scoredItems.drop(4).take(2) }
-        val dinnerList = scoredItems.filter { it.category.equals("Dinner", ignoreCase = true) }.take(2)
-            .ifEmpty { scoredItems.drop(6).take(2) }
-
-        val dailyPlan = DailyPlanData(
-            breakfast = breakfastList,
-            lunch = lunchList,
-            snack = snackList,
-            dinner = dinnerList
+        val dailyPlan = AiFoodRecommendationEngine.getDailyRotatingMealPlan(
+            userDietType = diet,
+            currentGlucose = glucose
         )
 
         val patientContext = PatientContext(
