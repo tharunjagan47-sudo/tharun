@@ -582,7 +582,7 @@ fun MealNutritionBreakdownSheet(
                             color = AppTheme.colors.textPrimary
                         )
                         Text(
-                            text = "Scales calories & all macros",
+                            text = "Scales total calories",
                             fontSize = 10.5.sp,
                             color = AppTheme.colors.textMuted
                         )
@@ -671,18 +671,7 @@ fun MealNutritionBreakdownSheet(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // 5. 4-Column Macro Breakdown Cards (Protein, Fat, Carbs, Fiber)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    MacroBox("Protein", "${totalProtein.toInt()}g", Color(0xFF3B82F6), Modifier.weight(1f))
-                    MacroBox("Fat", "${totalFat.toInt()}g", Color(0xFFF59E0B), Modifier.weight(1f))
-                    MacroBox("Carbs", "${totalCarbs.toInt()}g", Color(0xFF10B981), Modifier.weight(1f))
-                    MacroBox("Fiber", "${totalFiber.toInt()}g", Color(0xFFA855F7), Modifier.weight(1f))
-                }
 
-                Spacer(modifier = Modifier.height(14.dp))
 
                 // 6. Glycemic & Health Score Banner
                 Box(
@@ -801,8 +790,8 @@ fun MealNutritionBreakdownSheet(
                                     color = AppTheme.colors.textPrimary
                                 )
                                 Text(
-                                    text = "${subItem.portion} • ${subItem.carbsG.toInt()}g Carbs • ${subItem.proteinG.toInt()}g Protein",
-                                    fontSize = 10.5.sp,
+                                    text = subItem.portion,
+                                    fontSize = 11.sp,
                                     color = AppTheme.colors.textMuted
                                 )
                             }
@@ -1229,34 +1218,6 @@ private fun ChangeFoodDialog(
     }
 }
 
-@Composable
-private fun MacroBox(label: String, value: String, accentColor: Color, modifier: Modifier = Modifier) {
-    val isDark = AppTheme.colors.isDark
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (isDark) Color(0xFF140F24) else Color(0xFFF8FAFC))
-            .border(1.dp, accentColor.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-            .padding(vertical = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = value,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = accentColor
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = label,
-                fontSize = 10.5.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = AppTheme.colors.textMuted
-            )
-        }
-    }
-}
 
 /**
  * Animated analyzing overlay shown while Moondream Vision AI processes the captured meal photo.
