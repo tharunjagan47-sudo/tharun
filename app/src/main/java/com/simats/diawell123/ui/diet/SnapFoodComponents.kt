@@ -371,7 +371,7 @@ fun MealNutritionBreakdownSheet(
     var baseFat by remember { mutableFloatStateOf(analysis.baseFat) }
     var baseFiber by remember { mutableFloatStateOf(analysis.baseFiber) }
 
-    var showChangeFoodDialog by remember { mutableStateOf(false) }
+    var showChangeFoodDialog by remember { mutableStateOf(analysis.needsUserSelection || analysis.detectedDishName.isBlank()) }
 
     // Mutable list of sub-items
     val subItems = remember { mutableStateListOf<SnapFoodSubItem>().apply { addAll(analysis.subItems) } }
@@ -530,10 +530,10 @@ fun MealNutritionBreakdownSheet(
                             color = Color(0xFFA855F7)
                         )
                         Text(
-                            text = dishTitle,
+                            text = if (dishTitle.isNotBlank()) dishTitle else "Tap to Select Snapped Food",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = AppTheme.colors.textPrimary,
+                            color = if (dishTitle.isNotBlank()) AppTheme.colors.textPrimary else Color(0xFFA855F7),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -843,6 +843,11 @@ fun MealNutritionBreakdownSheet(
                             )
                         )
                         .clickable {
+                            if (dishTitle.isBlank() || totalCalories <= 0) {
+                                Toast.makeText(context, "Please select what you snapped first", Toast.LENGTH_SHORT).show()
+                                showChangeFoodDialog = true
+                                return@clickable
+                            }
                             val subSummary = subItems.joinToString(", ") { "${it.name} (${it.calories * servingCount} kcal)" }
                             onLogMeal(
                                 dishTitle,
@@ -875,8 +880,16 @@ fun MealNutritionBreakdownSheet(
     if (showChangeFoodDialog) {
         ChangeFoodDialog(
             currentDish = dishTitle,
+            imageBitmap = analysis.imageBitmap,
+            isInitialSelection = analysis.needsUserSelection || dishTitle.isBlank(),
             userGlucose = userGlucose,
-            onDismiss = { showChangeFoodDialog = false },
+            onDismiss = {
+                if (dishTitle.isBlank()) {
+                    onDismiss()
+                } else {
+                    showChangeFoodDialog = false
+                }
+            },
             onFoodSelected = { newAnalysis ->
                 dishTitle = newAnalysis.detectedDishName
                 dishIcon = newAnalysis.icon
@@ -905,6 +918,8 @@ fun MealNutritionBreakdownSheet(
 @Composable
 private fun ChangeFoodDialog(
     currentDish: String,
+    imageBitmap: Bitmap? = null,
+    isInitialSelection: Boolean = false,
     userGlucose: Float?,
     onDismiss: () -> Unit,
     onFoodSelected: (SnapFoodAnalysis) -> Unit
@@ -913,7 +928,7 @@ private fun ChangeFoodDialog(
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
 
-    val categories = listOf("All", "South Indian", "Breakfast", "Lunch", "Snack", "Dinner")
+    val categories = listOf("All", "Breakfast", "Lunch", "Snack", "Dinner", "South Indian")
     val allDataset = remember { SnapFoodAnalyzer.getAllSelectableFoods() }
 
     val filteredFoods = remember(searchQuery, selectedCategory) {
@@ -964,14 +979,61 @@ private fun ChangeFoodDialog(
                         Text(text = "✕", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
                     }
 
-                    Text(
-                        text = "Change Food Item",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = if (isInitialSelection || currentDish.isBlank()) "Select What You Snapped" else "Change Food Item",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.textPrimary
+                        )
+                        Text(
+                            text = "100% verified diabetic nutrition",
+                            fontSize = 11.sp,
+                            color = Color(0xFFA855F7),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
 
                     Spacer(modifier = Modifier.size(38.dp))
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Snapped Photo Preview Card
+                imageBitmap?.let { bmp ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (isDark) Color(0xFF23163D) else Color(0xFFF3E8FF))
+                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(14.dp))
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            bitmap = bmp.asImageBitmap(),
+                            contentDescription = "Snapped food",
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(10.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "📸 Snapped Photo",
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA855F7)
+                            )
+                            Text(
+                                text = "Select your matching meal below for accurate carbs & calories",
+                                fontSize = 11.sp,
+                                color = AppTheme.colors.textSecondary
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
