@@ -625,6 +625,7 @@ fun DailyDietPlanScreen(
                 onDismiss = { showSnapFoodCamera = false },
                 onPhotoCaptured = { bitmap, uri, query ->
                     showSnapFoodCamera = false
+                    activeSnapFoodAnalysis = null
                     isAnalyzingFood = true
                     coroutineScope.launch {
                         try {
