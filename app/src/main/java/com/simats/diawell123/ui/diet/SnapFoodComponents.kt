@@ -384,29 +384,24 @@ fun MealNutritionBreakdownSheet(
 
     // Dynamic calculations scaled by active sub-items and servingCount
     val totalCalories = remember(subItems.size, servingCount, baseCalories) {
-        val sum = subItems.sumOf { it.calories }
-        val base = if (sum > 0) sum else baseCalories
-        (base * servingCount).coerceAtLeast(100)
+        val base = if (subItems.isNotEmpty()) subItems.sumOf { it.calories } else baseCalories
+        base * servingCount
     }
     val totalCarbs = remember(subItems.size, servingCount, baseCarbs) {
-        val sum = subItems.map { it.carbsG }.sum()
-        val base = if (sum > 0f) sum else baseCarbs
-        (base * servingCount).coerceAtLeast(10f)
+        val base = if (subItems.isNotEmpty()) subItems.map { it.carbsG }.sum() else baseCarbs
+        base * servingCount
     }
     val totalProtein = remember(subItems.size, servingCount, baseProtein) {
-        val sum = subItems.map { it.proteinG }.sum()
-        val base = if (sum > 0f) sum else baseProtein
-        (base * servingCount).coerceAtLeast(5f)
+        val base = if (subItems.isNotEmpty()) subItems.map { it.proteinG }.sum() else baseProtein
+        base * servingCount
     }
     val totalFat = remember(subItems.size, servingCount, baseFat) {
-        val sum = subItems.map { it.fatG }.sum()
-        val base = if (sum > 0f) sum else baseFat
-        (base * servingCount).coerceAtLeast(3f)
+        val base = if (subItems.isNotEmpty()) subItems.map { it.fatG }.sum() else baseFat
+        base * servingCount
     }
     val totalFiber = remember(subItems.size, servingCount, baseFiber) {
-        val sum = subItems.map { it.fiberG }.sum()
-        val base = if (sum > 0f) sum else baseFiber
-        (base * servingCount).coerceAtLeast(2f)
+        val base = if (subItems.isNotEmpty()) subItems.map { it.fiberG }.sum() else baseFiber
+        base * servingCount
     }
 
     Dialog(
