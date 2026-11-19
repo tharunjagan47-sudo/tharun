@@ -6,8 +6,14 @@ import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.util.DiaWellNotificationHelper
 
 class DiawellApplication : Application() {
+    companion object {
+        lateinit var instance: DiawellApplication
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
+        instance = this
         
         // Global uncaught exception safeguard across all worker threads
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
