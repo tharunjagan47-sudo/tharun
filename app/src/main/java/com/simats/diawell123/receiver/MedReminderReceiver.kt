@@ -7,15 +7,18 @@ import android.os.PowerManager
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
+import com.simats.diawell123.data.local.MedicationAlarmStorage
 import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.MedicationStatusUpdater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 /**
  * BroadcastReceiver triggered when an AlarmManager clock event fires
- * or when the user interacts with the notification actions (Taken, Snooze, Skip).
+ * or when the user interacts with notification actions (Taken, Snooze, Skip),
+ * or when the device boots / restarts / updates.
  */
 class MedReminderReceiver : BroadcastReceiver() {
 
@@ -30,16 +33,23 @@ class MedReminderReceiver : BroadcastReceiver() {
         val alarmHour = intent.getIntExtra("hour", -1)
         val alarmMinute = intent.getIntExtra("minute", -1)
 
-        Log.d("MedReminderReceiver", "Broadcast received: action=$action, medId=$medId, medName=$medName, userId=$userId, isDaily=$isDaily")
+        Log.d("MedReminderReceiver", "Broadcast received: action=$action, medId=$medId, medName=$medName, userId=$userId, isDaily=$isDaily, hour=$alarmHour, min=$alarmMinute")
 
         when (action) {
             DiaWellNotificationHelper.ACTION_TAKEN -> {
                 Log.d("MedReminderReceiver", "Action TAKEN received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
-                if (!isDaily) {
+
+                // Cancel only any pending snooze alarm; preserve tomorrow's repeating daily alarm!
+                DiaWellNotificationHelper.cancelSnoozeAlarm(context, medId)
+
+                val persisted = MedicationAlarmStorage.getReminder(context, medId)
+                val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+                if (!effectiveDaily) {
                     DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
                 }
+
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "✅ Dose Completed",
@@ -67,7 +77,12 @@ class MedReminderReceiver : BroadcastReceiver() {
                 Log.d("MedReminderReceiver", "Action SNOOZE received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
-                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId, isDaily)
+
+                val persisted = MedicationAlarmStorage.getReminder(context, medId)
+                val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+
+                // Snooze with separate requestCode so tomorrow's daily alarm is NEVER overwritten
+                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId, effectiveDaily)
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "⏰ Medication Snoozed",
@@ -96,9 +111,16 @@ class MedReminderReceiver : BroadcastReceiver() {
                 Log.d("MedReminderReceiver", "Action SKIP received for medId=$medId")
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
-                if (!isDaily) {
+
+                // Cancel only any pending snooze alarm; preserve tomorrow's repeating daily alarm!
+                DiaWellNotificationHelper.cancelSnoozeAlarm(context, medId)
+
+                val persisted = MedicationAlarmStorage.getReminder(context, medId)
+                val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+                if (!effectiveDaily) {
                     DiaWellNotificationHelper.cancelMedicationAlarm(context, medId)
                 }
+
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "⏭️ Dose Skipped",
@@ -128,9 +150,14 @@ class MedReminderReceiver : BroadcastReceiver() {
                 NotificationManagerCompat.from(context).cancel(medId)
             }
 
-            Intent.ACTION_BOOT_COMPLETED -> {
-                Log.d("MedReminderReceiver", "Device rebooted (BOOT_COMPLETED received). Rescheduling daily routine reminders.")
+            Intent.ACTION_BOOT_COMPLETED,
+            "android.intent.action.LOCKED_BOOT_COMPLETED",
+            "android.intent.action.MY_PACKAGE_REPLACED",
+            "android.intent.action.QUICKBOOT_POWERON",
+            "com.htc.intent.action.QUICKBOOT_POWERON" -> {
+                Log.d("MedReminderReceiver", "Device reboot / power on / app update received ($action). Restoring all alarms.")
                 DiaWellNotificationHelper.scheduleDailyHealthReminders(context)
+                DiaWellNotificationHelper.rescheduleAllActiveMedications(context)
             }
 
             DiaWellNotificationHelper.ACTION_DAILY_ROUTINE_REMINDER -> {
@@ -151,7 +178,37 @@ class MedReminderReceiver : BroadcastReceiver() {
             DiaWellNotificationHelper.ACTION_MED_REMINDER -> {
                 Log.d("MedReminderReceiver", "Scheduled alarm time arrived for medId=$medId!")
 
-                // Keep CPU awake for 30s to guarantee screen wake and loud audio playback
+                val persisted = MedicationAlarmStorage.getReminder(context, medId)
+                val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+                val isActive = persisted?.isActive != false
+
+                val resolvedHour = when {
+                    alarmHour in 0..23 -> alarmHour
+                    persisted != null && persisted.hour in 0..23 -> persisted.hour
+                    else -> Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                }
+                val resolvedMinute = when {
+                    alarmMinute in 0..59 -> alarmMinute
+                    persisted != null && persisted.minute in 0..59 -> persisted.minute
+                    else -> Calendar.getInstance().get(Calendar.MINUTE)
+                }
+
+                // 1. FIRST: If the reminder is Daily/recurring and active, IMMEDIATELY reschedule the NEXT occurrence for tomorrow
+                // This guarantees the daily chain is never broken even if the phone powers off or the dose is taken/skipped.
+                if (effectiveDaily && isActive) {
+                    DiaWellNotificationHelper.scheduleNextDailyMedicationAlarm(
+                        context = context,
+                        medId = medId,
+                        medName = medName,
+                        dose = medDose,
+                        hour = resolvedHour,
+                        minute = resolvedMinute,
+                        userId = userId
+                    )
+                    Log.d("MedReminderReceiver", "Self-rescheduled next daily occurrence for medId=$medId at tomorrow $resolvedHour:$resolvedMinute")
+                }
+
+                // 2. THEN: Keep CPU awake for 30s to guarantee screen wake and loud audio playback
                 val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
                 val wakeLock = powerManager?.newWakeLock(
                     PowerManager.PARTIAL_WAKE_LOCK,
@@ -163,7 +220,7 @@ class MedReminderReceiver : BroadcastReceiver() {
                     Log.w("MedReminderReceiver", "WakeLock acquire failed: ${e.message}")
                 }
 
-                // Trigger full-screen alarm activity + loud looping audio + insistent notification
+                // 3. Trigger full-screen alarm activity + loud looping audio + insistent notification for TODAY'S dose
                 DiaWellNotificationHelper.triggerMedicationAlarm(
                     context = context,
                     medId = medId,
@@ -171,21 +228,8 @@ class MedReminderReceiver : BroadcastReceiver() {
                     dosage = medDose,
                     scheduledTime = scheduledTime,
                     userId = userId,
-                    isDaily = isDaily
+                    isDaily = effectiveDaily
                 )
-
-                // Automatically reschedule tomorrow ONLY when frequency is Daily
-                if (isDaily && alarmHour in 0..23 && alarmMinute in 0..59) {
-                    DiaWellNotificationHelper.scheduleNextDailyMedicationAlarm(
-                        context = context,
-                        medId = medId,
-                        medName = medName,
-                        dose = medDose,
-                        hour = alarmHour,
-                        minute = alarmMinute,
-                        userId = userId
-                    )
-                }
             }
 
             else -> {
