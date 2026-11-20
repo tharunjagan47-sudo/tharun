@@ -60,6 +60,14 @@ fun PatientProfileScreen(
     var currentGlucoseReading by remember { mutableStateOf("128 mg/dL") }
     var targetFastingGlucose by remember { mutableStateOf("120 mg/dL") }
 
+    LaunchedEffect(Unit) {
+        viewModel.clearError()
+        val savedName = com.simats.diawell123.data.local.SessionManager.getInstance().getFullName()
+        if (!savedName.isNullOrBlank()) {
+            ProfileState.userName = savedName
+        }
+    }
+
     LaunchedEffect(uiState.profile) {
         uiState.profile?.let { p ->
             p.diabetesType?.let { selectedDiabetesType = it }
