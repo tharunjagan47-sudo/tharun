@@ -196,10 +196,16 @@ fun HealthPreferencesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.White)
+                            .background(
+                                if (isSelected) {
+                                    if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.5f) else Color(0xFFF5F3FF)
+                                } else {
+                                    if (AppTheme.colors.isDark) Color(0xFF1E1B2E) else Color.White
+                                }
+                            )
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else (if (AppTheme.colors.isDark) Color(0xFF383256) else AppTheme.colors.border),
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedHealthFocus = title }
@@ -244,10 +250,16 @@ fun HealthPreferencesScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isChecked) Color(0xFFA855F7) else Color.White)
+                            .background(
+                                if (isChecked) {
+                                    Color(0xFFA855F7)
+                                } else {
+                                    if (AppTheme.colors.isDark) Color(0xFF25213D) else Color(0xFFEDE9FE)
+                                }
+                            )
                             .border(
                                 width = 1.dp,
-                                color = if (isChecked) Color(0xFFA855F7) else AppTheme.colors.border,
+                                color = if (isChecked) Color(0xFFA855F7) else (if (AppTheme.colors.isDark) Color(0xFF4A416D) else Color(0xFFDDD6FE)),
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable {
@@ -258,8 +270,8 @@ fun HealthPreferencesScreen(
                         Text(
                             text = if (isChecked) "✓ $dietName" else "+ $dietName",
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isChecked) Color.White else AppTheme.colors.textPrimary,
+                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isChecked) Color.White else (if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF334155)),
                         )
                     }
                 }
@@ -286,10 +298,16 @@ fun HealthPreferencesScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isChecked) Color(0xFFE53935) else Color.White)
+                            .background(
+                                if (isChecked) {
+                                    Color(0xFFE53935)
+                                } else {
+                                    if (AppTheme.colors.isDark) Color(0xFF25213D) else Color(0xFFEDE9FE)
+                                }
+                            )
                             .border(
                                 width = 1.dp,
-                                color = if (isChecked) Color(0xFFE53935) else AppTheme.colors.border,
+                                color = if (isChecked) Color(0xFFE53935) else (if (AppTheme.colors.isDark) Color(0xFF4A416D) else Color(0xFFDDD6FE)),
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable {
@@ -300,8 +318,8 @@ fun HealthPreferencesScreen(
                         Text(
                             text = if (isChecked) "⚠️ $allergyName" else "+ $allergyName",
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isChecked) Color.White else AppTheme.colors.textPrimary,
+                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isChecked) Color.White else (if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF334155)),
                         )
                     }
                 }
@@ -331,10 +349,16 @@ fun HealthPreferencesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.White)
+                            .background(
+                                if (isSelected) {
+                                    if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.5f) else Color(0xFFF5F3FF)
+                                } else {
+                                    if (AppTheme.colors.isDark) Color(0xFF1E1B2E) else Color.White
+                                }
+                            )
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
+                                color = if (isSelected) Color(0xFFA855F7) else (if (AppTheme.colors.isDark) Color(0xFF383256) else AppTheme.colors.border),
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedActivityLevel = level }
@@ -411,7 +435,7 @@ fun HealthPreferencesScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White.copy(alpha = 0.96f))
+                    .background(if (AppTheme.colors.isDark) Color(0xFF0F0E17).copy(alpha = 0.96f) else Color.White.copy(alpha = 0.96f))
                     .clickable(enabled = false) {}, // Intercept clicks during loading
                 contentAlignment = Alignment.Center,
             ) {

@@ -20,6 +20,7 @@ import com.simats.diawell123.data.repository.GlucoseRepository
 import com.simats.diawell123.data.repository.GlucoseRepositoryImpl
 import com.simats.diawell123.data.repository.MedsRepository
 import com.simats.diawell123.data.repository.MedsRepositoryImpl
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.ui.profile.ProfileState
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,15 +69,49 @@ class ChatViewModel(
         initWelcomeMessage()
     }
 
+    private fun resolveActiveUserName(context: Context? = null): String {
+        val sessionName = try {
+            val sm = if (context != null) SessionManager.init(context) else SessionManager.getInstance()
+            sm.getFullName()?.takeIf { it.isNotBlank() } ?: sm.getUserSession()?.fullName?.takeIf { it.isNotBlank() }
+        } catch (_: Exception) { null }
+
+        return sessionName
+            ?: ProfileState.userName.takeIf { it.isNotBlank() && !it.equals("Mary Jane", ignoreCase = true) && !it.equals("User", ignoreCase = true) }
+            ?: "there"
+    }
+
+    private fun buildWelcomeText(name: String): String {
+        return "Hello $name! I am **DIVA** (DiaWell Intelligent Virtual Assistant), your personal voice & diabetes wellness companion. ⚡🩺\n\nTap the **🎙️ Mic** for Voice Mode: ask about your blood sugar, medications, or diet (e.g. **\"What is my glucose level?\"** or **\"What medications am I taking?\"**), or say **\"Log my fasting sugar 115\"** hands-free!"
+    }
+
     private fun initWelcomeMessage() {
-        val userName = ProfileState.userName.ifBlank { "there" }
+        val userName = resolveActiveUserName()
         val greeting = ChatMessage(
             sender = ChatSender.AI,
-            text = "Hello $userName! I am **DIVA** (DiaWell Intelligent Virtual Assistant), your personal voice & diabetes wellness companion. ⚡🩺\n\nTap the **🎙️ Mic** for Voice Mode: ask about your blood sugar, medications, or diet (e.g. **\"What is my glucose level?\"** or **\"What medications am I taking?\"**), or say **\"Log my fasting sugar 115\"** hands-free!",
+            text = buildWelcomeText(userName),
             alertType = AlertType.NONE,
             metrics = emptyList()
         )
         _messages.value = listOf(greeting)
+    }
+
+    fun refreshWelcomeMessage(context: Context? = null) {
+        val activeName = resolveActiveUserName(context)
+        val currentMsgs = _messages.value
+        val welcomeText = buildWelcomeText(activeName)
+
+        if (currentMsgs.isEmpty()) {
+            _messages.value = listOf(
+                ChatMessage(
+                    sender = ChatSender.AI,
+                    text = welcomeText,
+                    alertType = AlertType.NONE,
+                    metrics = emptyList()
+                )
+            )
+        } else if (currentMsgs.first().sender == ChatSender.AI && currentMsgs.first().text.contains("DIVA")) {
+            _messages.value = listOf(currentMsgs.first().copy(text = welcomeText)) + currentMsgs.drop(1)
+        }
     }
 
     /**

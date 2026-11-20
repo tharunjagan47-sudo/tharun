@@ -131,6 +131,10 @@ fun ChatScreen(
         messages.lastOrNull { it.sender == ChatSender.AI }?.text ?: ""
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.refreshWelcomeMessage(context)
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             voiceManager.release()

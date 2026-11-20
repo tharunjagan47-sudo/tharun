@@ -62,7 +62,8 @@ fun PatientProfileScreen(
 
     LaunchedEffect(Unit) {
         viewModel.clearError()
-        val savedName = com.simats.diawell123.data.local.SessionManager.getInstance().getFullName()
+        val sm = com.simats.diawell123.data.local.SessionManager.getInstance()
+        val savedName = sm.getFullName()?.takeIf { it.isNotBlank() } ?: sm.getUserSession()?.fullName?.takeIf { it.isNotBlank() }
         if (!savedName.isNullOrBlank()) {
             ProfileState.userName = savedName
         }
@@ -316,20 +317,22 @@ fun IosLiquidGlassSlider(
                 .clip(RoundedCornerShape(32.dp))
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.90f),
-                            Color(0xFFF3EAF4).copy(alpha = 0.85f),
-                        ),
+                        colors = if (AppTheme.colors.isDark) {
+                            listOf(
+                                Color(0xFF1E1B2E),
+                                Color(0xFF161424),
+                            )
+                        } else {
+                            listOf(
+                                Color(0xFFFFFFFF),
+                                Color(0xFFF8F5FA),
+                            )
+                        },
                     ),
                 )
                 .border(
-                    width = 1.5.dp,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White,
-                            Color.White.copy(alpha = 0.4f),
-                        ),
-                    ),
+                    width = 1.2.dp,
+                    color = if (AppTheme.colors.isDark) Color(0xFF383256) else Color(0xFFE5DDF0),
                     shape = RoundedCornerShape(32.dp),
                 )
                 .padding(vertical = 8.dp, horizontal = 6.dp),
@@ -342,7 +345,7 @@ fun IosLiquidGlassSlider(
                         .width(36.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(Color(0xFFC7BDC9)),
+                        .background(if (AppTheme.colors.isDark) Color(0xFF4C3E6D) else Color(0xFFCBD5E1)),
                 )
 
                 LazyRow(
@@ -398,10 +401,16 @@ fun IosLiquidGlassSlider(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(24.dp))
-                                    .background(Color.White.copy(alpha = 0.65f))
+                                    .background(
+                                        if (AppTheme.colors.isDark) {
+                                            Color(0xFF2A2440)
+                                        } else {
+                                            Color(0xFFEDE9FE)
+                                        }
+                                    )
                                     .border(
                                         width = 1.dp,
-                                        color = Color.White.copy(alpha = 0.9f),
+                                        color = if (AppTheme.colors.isDark) Color(0xFF4A416D) else Color(0xFFDDD6FE),
                                         shape = RoundedCornerShape(24.dp),
                                     )
                                     .clickable { onItemSelected(item) }
@@ -412,7 +421,7 @@ fun IosLiquidGlassSlider(
                                     text = item,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = AppTheme.colors.textPrimary,
+                                    color = if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF334155),
                                 )
                             }
                         }

@@ -31,8 +31,20 @@ object ProfileState {
 
     private var appContext: Context? = null
 
-    var userName by mutableStateOf("Mary Jane")
-    var userEmail by mutableStateOf("mary.jane@example.com")
+    var userName by mutableStateOf(
+        try {
+            SessionManager.getInstance().getFullName()?.takeIf { it.isNotBlank() } ?: "User"
+        } catch (_: Exception) {
+            "User"
+        }
+    )
+    var userEmail by mutableStateOf(
+        try {
+            SessionManager.getInstance().getUserSession()?.email?.takeIf { it.isNotBlank() } ?: ""
+        } catch (_: Exception) {
+            ""
+        }
+    )
     var profileImageBitmap by mutableStateOf<ImageBitmap?>(null)
 
     /**
@@ -50,11 +62,14 @@ object ProfileState {
                 SessionManager.init(appCtx)
             }
 
-            val session = sessionManager.getUserSession()
-            if (session != null) {
-                session.fullName?.takeIf { it.isNotBlank() }?.let { userName = it }
-                session.email?.takeIf { it.isNotBlank() }?.let { userEmail = it }
+            val fullName = sessionManager.getFullName()?.takeIf { it.isNotBlank() }
+                ?: sessionManager.getUserSession()?.fullName?.takeIf { it.isNotBlank() }
+            if (!fullName.isNullOrBlank()) {
+                userName = fullName
             }
+
+            val session = sessionManager.getUserSession()
+            session?.email?.takeIf { it.isNotBlank() }?.let { userEmail = it }
 
             val effectiveUserId = userId ?: sessionManager.getUserId()
 
