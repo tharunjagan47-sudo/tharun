@@ -115,6 +115,9 @@ data class UpdateProfileResponse(
  * Patient Details (patientdetails.php POST)
  */
 data class PatientDetailsRequest(
+    @SerializedName("user_id")
+    val userId: Int? = null,
+
     @SerializedName("diabetes_type")
     val diabetesType: String = "Type 2",
 
@@ -149,6 +152,9 @@ data class PatientDetailsResponse(
  * Health Preferences (healthpreferences.php POST)
  */
 data class HealthPreferencesRequest(
+    @SerializedName("user_id")
+    val userId: Int? = null,
+
     @SerializedName("health_focus")
     val healthFocus: String? = null,
 
