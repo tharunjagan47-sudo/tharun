@@ -62,7 +62,7 @@ import com.simats.diawell123.ui.auth.AppLockScreen
 import com.simats.diawell123.ui.auth.ForgotPasswordScreen
 import com.simats.diawell123.ui.auth.LoginScreen
 import com.simats.diawell123.ui.auth.SignUpScreen
-import com.simats.diawell123.ui.components.DiaWellSmartSidebar
+import com.simats.diawell123.ui.components.DiaWellAssistiveButton
 import com.simats.diawell123.ui.diet.DailyDietPlanScreen
 import com.simats.diawell123.ui.diet.DietViewModel
 import com.simats.diawell123.ui.diet.ExploreFoodScreen
@@ -752,8 +752,8 @@ class MainActivity : FragmentActivity() {
                         )
                     }
 
-                    // Smart Sidebar (Floating Quick-Action Edge Dock)
-                    val isSidebarVisible = sessionManager.isLoggedIn() && currentScreen in listOf(
+                    // iOS AssistiveTouch-style Floating Quick-Action Button
+                    val isAssistiveButtonVisible = sessionManager.isLoggedIn() && currentScreen in listOf(
                         "home",
                         "daily_diet_plan",
                         "medications",
@@ -766,8 +766,8 @@ class MainActivity : FragmentActivity() {
                         "activity_tracking"
                     )
 
-                    DiaWellSmartSidebar(
-                        visible = isSidebarVisible,
+                    DiaWellAssistiveButton(
+                        visible = isAssistiveButtonVisible,
                         onDivaAiClick = {
                             currentScreen = "ai_chatbot"
                         },
