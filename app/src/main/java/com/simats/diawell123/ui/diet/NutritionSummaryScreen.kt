@@ -80,7 +80,7 @@ fun NutritionSummaryScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "${ProfileState.userName} • Illustrative sample data",
+                    text = "${ProfileState.userName} • Daily Nutrition Summary",
                     fontSize = 11.sp,
                     color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     fontWeight = FontWeight.Medium,

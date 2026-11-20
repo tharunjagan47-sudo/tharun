@@ -107,7 +107,7 @@ fun ExploreFoodScreen(
                                     color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
-                                    text = "Search from 1000+ dishes & nutrition database",
+                                    text = "Search from 1000+ healthy dishes & nutrition info",
                                     fontSize = 12.sp,
                                     color = AppTheme.colors.textSecondary,
                                 )

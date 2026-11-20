@@ -336,7 +336,7 @@ fun SettingsScreen(
                 // App Version Text
                 ElementPopUpContainer(delayMillis = 280) {
                     Text(
-                        text = "DiaWell Version 1.0.0 (Build 123)\nConnected to Local PHP Backend",
+                        text = "DiaWell Version 1.0.0 (Build 123)",
                         fontSize = 11.sp,
                         color = AppTheme.colors.textMuted,
                         textAlign = TextAlign.Center,
@@ -345,7 +345,7 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .clickable {
-                                Toast.makeText(context, "DiaWell v1.0.0 (Build 123) is up to date.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "DiaWell v1.0.0 is up to date.", Toast.LENGTH_SHORT).show()
                             }
                             .padding(vertical = 4.dp),
                     )

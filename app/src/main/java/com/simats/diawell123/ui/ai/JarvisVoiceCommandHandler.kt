@@ -202,7 +202,7 @@ object JarvisVoiceCommandHandler {
                 )
             },
             onFailure = { error ->
-                val errMsg = "I couldn't save your blood sugar reading right now: ${error.message ?: "Server unreachable"}."
+                val errMsg = "I couldn't save your blood sugar reading right now. Please try again."
                 VoiceActionResult.Executed(displayReply = "⚠️ $errMsg", spokenReply = errMsg)
             }
         )
@@ -287,7 +287,7 @@ object JarvisVoiceCommandHandler {
                 VoiceActionResult.Executed(displayReply = displayMsg, spokenReply = spokenMsg)
             },
             onFailure = { error ->
-                val errMsg = "I couldn't schedule that medication reminder: ${error.message ?: "Server error"}."
+                val errMsg = "I couldn't schedule that medication reminder right now. Please try again."
                 VoiceActionResult.Executed(displayReply = "⚠️ $errMsg", spokenReply = errMsg)
             }
         )

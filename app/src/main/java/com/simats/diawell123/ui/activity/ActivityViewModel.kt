@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.simats.diawell123.util.toCleanErrorMessage
 
 data class ActivityTrackingUiState(
     val isLoading: Boolean = false,
@@ -97,7 +98,7 @@ class ActivityViewModel(
                         _trackingState.update {
                             it.copy(
                                 isLoading = false,
-                                errorMessage = error.message ?: "Failed to load personalized activity recommendations."
+                                errorMessage = error.toCleanErrorMessage("Unable to load workout recommendations.")
                             )
                         }
                     }
@@ -107,7 +108,7 @@ class ActivityViewModel(
                 _trackingState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = e.localizedMessage ?: "Failed to load recommendations."
+                        errorMessage = e.toCleanErrorMessage("Unable to load workout recommendations.")
                     )
                 }
             }
@@ -162,7 +163,7 @@ class ActivityViewModel(
                         _trackingState.update {
                             it.copy(
                                 isLoggingWorkout = false,
-                                errorMessage = error.message ?: "Failed to log workout."
+                                errorMessage = error.toCleanErrorMessage("Unable to save workout right now.")
                             )
                         }
                     }
@@ -172,7 +173,7 @@ class ActivityViewModel(
                 _trackingState.update {
                     it.copy(
                         isLoggingWorkout = false,
-                        errorMessage = e.localizedMessage ?: "Failed to log workout."
+                        errorMessage = e.toCleanErrorMessage("Unable to save workout right now.")
                     )
                 }
             }
@@ -204,7 +205,7 @@ class ActivityViewModel(
                         _historyState.update {
                             it.copy(
                                 isLoading = false,
-                                errorMessage = error.message ?: "Failed to load activity history."
+                                errorMessage = error.toCleanErrorMessage("Unable to load activity history.")
                             )
                         }
                     }
@@ -214,7 +215,7 @@ class ActivityViewModel(
                 _historyState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = e.localizedMessage ?: "Failed to load activity history."
+                        errorMessage = e.toCleanErrorMessage("Unable to load activity history.")
                     )
                 }
             }

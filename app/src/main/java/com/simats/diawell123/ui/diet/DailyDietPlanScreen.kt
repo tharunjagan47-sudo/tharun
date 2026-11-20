@@ -156,7 +156,7 @@ fun DailyDietPlanScreen(
                                     color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
-                                    text = "AI-matched Indian foods for your health",
+                                    text = "Personalized meals for your health",
                                     fontSize = 12.sp,
                                     color = AppTheme.colors.textSecondary,
                                 )
@@ -358,7 +358,7 @@ fun DailyDietPlanScreen(
                                     color = Color(0xFFC62828),
                                 )
                                 Text(
-                                    text = "AI prioritized ultra-low carbohydrate Indian dishes (<10g) with high dietary fibre to safely stabilize your blood sugar.",
+                                    text = "Prioritized low-carbohydrate dishes (<10g) with high dietary fibre to safely stabilize your blood sugar.",
                                     fontSize = 11.sp,
                                     color = Color(0xFF424242),
                                     lineHeight = 15.sp,
@@ -387,7 +387,7 @@ fun DailyDietPlanScreen(
                                     color = Color(0xFFE65100),
                                 )
                                 Text(
-                                    text = "AI selected low-glycemic, high-fibre dishes with satiating lean protein to slow glucose release.",
+                                    text = "Selected low-glycemic, high-fibre dishes with satiating lean protein to slow glucose release.",
                                     fontSize = 11.sp,
                                     color = Color(0xFF424242),
                                     lineHeight = 15.sp,
@@ -628,7 +628,7 @@ fun DailyDietPlanScreen(
                             )
                             activeSnapFoodAnalysis = analysis
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Analysis error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Unable to analyze photo right now. Please try again.", Toast.LENGTH_SHORT).show()
                         } finally {
                             isAnalyzingFood = false
                         }
@@ -864,7 +864,7 @@ fun AdjustHealthInputsDialog(
                     color = AppTheme.colors.textPrimary,
                 )
                 Text(
-                    text = "AI recommendations dynamically adapt to these parameters.",
+                    text = "Meal recommendations dynamically adapt to these parameters.",
                     fontSize = 11.sp,
                     color = AppTheme.colors.textSecondary,
                 )
@@ -1437,7 +1437,7 @@ fun AiFoodRecommendationForHealthCard(
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
                     Text(
-                        text = "✨ AI Recommendation",
+                        text = "✨ Recommended For You",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF581C87),

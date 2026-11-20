@@ -1028,16 +1028,7 @@ fun NutritionBadgeChip(metric: NutritionMetric) {
  */
 @Composable
 fun DrJarvisThinkingIndicator(pulseScale: Float) {
-    var statusText by remember { mutableStateOf("DIVA is reviewing your query...") }
-
-    LaunchedEffect(Unit) {
-        delay(3500)
-        statusText = "Consulting verified diabetes datasets..."
-        delay(5500)
-        statusText = "Synthesizing clinical & nutritional facts..."
-        delay(7000)
-        statusText = "Formulating DIVA response..."
-    }
+    val statusText = "DIVA is typing..."
 
     Row(
         modifier = Modifier

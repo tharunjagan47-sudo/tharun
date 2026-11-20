@@ -1,5 +1,7 @@
 package com.simats.diawell123.ui.profile
+import android.util.Log
 import com.simats.diawell123.ui.theme.AppTheme
+import com.simats.diawell123.util.toCleanErrorMessage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -77,10 +79,11 @@ class ProfileViewModel(
                     }
                 },
                 onFailure = { error ->
+                    Log.w("ProfileViewModel", "Profile pre-fetch silent fallback: ${error.message}")
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = error.message
+                            errorMessage = null
                         )
                     }
                 }
@@ -137,7 +140,7 @@ class ProfileViewModel(
                         it.copy(
                             isSaving = false,
                             isSuccess = false,
-                            errorMessage = error.message ?: "Failed to update profile."
+                            errorMessage = error.toCleanErrorMessage("Unable to update profile. Please try again.")
                         )
                     }
                 }
@@ -181,7 +184,7 @@ class ProfileViewModel(
                         it.copy(
                             isSaving = false,
                             isSuccess = false,
-                            errorMessage = error.message ?: "Failed to save patient details."
+                            errorMessage = error.toCleanErrorMessage("Unable to save patient details. Please try again.")
                         )
                     }
                 }
@@ -216,7 +219,7 @@ class ProfileViewModel(
                         it.copy(
                             isSaving = false,
                             isSuccess = false,
-                            errorMessage = error.message ?: "Failed to save health preferences."
+                            errorMessage = error.toCleanErrorMessage("Unable to save health preferences. Please try again.")
                         )
                     }
                 }

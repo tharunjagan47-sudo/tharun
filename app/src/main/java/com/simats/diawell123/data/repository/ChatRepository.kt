@@ -137,11 +137,9 @@ class ChatRepositoryImpl(
         if (code == 404) {
             return null
         }
-        val errorBody = response.errorBody()?.string()
         val errorMsg = when (code) {
-            500 -> "Internal error in DIVA AI backend (HTTP 500): ${errorBody ?: ""}"
-            503 -> "Local Ollama service is unavailable. Please verify 'ollama' is running on Port 11434."
-            else -> "Network request failed with HTTP $code at $endpointLabel: ${errorBody ?: response.message()}"
+            500, 502, 503, 504 -> "DIVA is currently busy. Please try again in a moment."
+            else -> "Unable to reach DIVA right now. Please check your connection and try again."
         }
         return Result.failure(Exception(errorMsg))
     }

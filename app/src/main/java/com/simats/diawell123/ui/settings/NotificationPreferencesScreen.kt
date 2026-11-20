@@ -351,7 +351,7 @@ fun NotificationPreferencesScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Preferences automatically sync with your DiaWell profile.",
+                text = "Preferences are automatically saved to your profile.",
                 fontSize = 11.sp,
                 color = AppTheme.colors.textMuted,
                 textAlign = TextAlign.Center,

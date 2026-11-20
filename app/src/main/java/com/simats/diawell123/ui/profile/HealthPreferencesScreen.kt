@@ -157,7 +157,14 @@ fun HealthPreferencesScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            if (uiState.errorMessage != null) {
+            val userFacingError = uiState.errorMessage?.let { err ->
+                if (err.contains("User not specified", ignoreCase = true) || err.contains("log in", ignoreCase = true)) {
+                    null // suppress during onboarding pre-fill
+                } else {
+                    err
+                }
+            }
+            if (userFacingError != null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -168,7 +175,7 @@ fun HealthPreferencesScreen(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = uiState.errorMessage ?: "Failed to save preferences.",
+                        text = userFacingError,
                         fontSize = 12.sp,
                         color = Color(0xFFD32F2F)
                     )
@@ -270,8 +277,8 @@ fun HealthPreferencesScreen(
                         Text(
                             text = if (isChecked) "✓ $dietName" else "+ $dietName",
                             fontSize = 12.sp,
-                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isChecked) Color.White else (if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF334155)),
+                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
+                            color = if (isChecked) Color.White else (if (AppTheme.colors.isDark) Color(0xFFF8FAFC) else Color(0xFF4C1D95)),
                         )
                     }
                 }
@@ -318,8 +325,8 @@ fun HealthPreferencesScreen(
                         Text(
                             text = if (isChecked) "⚠️ $allergyName" else "+ $allergyName",
                             fontSize = 12.sp,
-                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isChecked) Color.White else (if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF334155)),
+                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
+                            color = if (isChecked) Color.White else (if (AppTheme.colors.isDark) Color(0xFFF8FAFC) else Color(0xFF4C1D95)),
                         )
                     }
                 }
@@ -385,7 +392,7 @@ fun HealthPreferencesScreen(
                     .padding(12.dp),
             ) {
                 Text(
-                    text = "Your health preferences guide AI recommendation models to suggest balanced, personalized meal and exercise plans tailored for your diabetes management.",
+                    text = "Your preferences help personalize meal and activity suggestions for balanced daily sugar control.",
                     fontSize = 12.sp,
                     color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     lineHeight = 17.sp,
@@ -440,7 +447,7 @@ fun HealthPreferencesScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 AiSpeechOrbLoadingView(
-                    statusText = "Setting up your DiaWell Health AI...",
+                    statusText = "Personalizing your health plan...",
                 )
             }
         }

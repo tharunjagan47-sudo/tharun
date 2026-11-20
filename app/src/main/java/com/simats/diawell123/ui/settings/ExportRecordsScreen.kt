@@ -194,7 +194,7 @@ fun ExportRecordsScreen(
                     Text(text = "🏥", fontSize = 22.sp)
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "Compiles your real MySQL glucose logs, medications, meals, and workouts into a doctor-ready clinical summary.",
+                        text = "Generates a clean health summary of your glucose readings, medications, meals, and workouts for your doctor.",
                         fontSize = 12.sp,
                         color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                         lineHeight = 16.sp,

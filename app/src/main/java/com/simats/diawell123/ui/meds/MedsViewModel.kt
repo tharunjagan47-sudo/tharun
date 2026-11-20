@@ -13,6 +13,7 @@ import com.simats.diawell123.data.repository.MedsRepository
 import com.simats.diawell123.data.repository.MedsRepositoryImpl
 import com.simats.diawell123.util.MedStatusChangedEvent
 import com.simats.diawell123.util.MedicationStatusUpdater
+import com.simats.diawell123.util.toCleanErrorMessage
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -226,7 +227,7 @@ class MedsViewModel(
                             it.copy(
                                 isLoading = false,
                                 isRefreshing = false,
-                                errorMessage = error.message ?: "Failed to load medications."
+                                errorMessage = error.toCleanErrorMessage("Unable to load medications.")
                             )
                         }
                     }
@@ -237,7 +238,7 @@ class MedsViewModel(
                     it.copy(
                         isLoading = false,
                         isRefreshing = false,
-                        errorMessage = e.localizedMessage ?: "Failed to load medications."
+                        errorMessage = e.toCleanErrorMessage("Unable to load medications.")
                     )
                 }
             }
@@ -387,7 +388,7 @@ class MedsViewModel(
                             it.copy(
                                 isSaving = false,
                                 isSuccess = false,
-                                errorMessage = error.message ?: "Failed to set medication reminder."
+                                errorMessage = error.toCleanErrorMessage("Unable to save medication reminder.")
                             )
                         }
                     }
@@ -398,7 +399,7 @@ class MedsViewModel(
                     it.copy(
                         isSaving = false,
                         isSuccess = false,
-                        errorMessage = e.localizedMessage ?: "Failed to save medication reminder."
+                        errorMessage = e.toCleanErrorMessage("Unable to save medication reminder.")
                     )
                 }
             }

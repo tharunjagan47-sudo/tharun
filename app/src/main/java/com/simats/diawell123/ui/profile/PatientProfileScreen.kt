@@ -63,9 +63,12 @@ fun PatientProfileScreen(
     LaunchedEffect(Unit) {
         viewModel.clearError()
         val sm = com.simats.diawell123.data.local.SessionManager.getInstance()
-        val savedName = sm.getFullName()?.takeIf { it.isNotBlank() } ?: sm.getUserSession()?.fullName?.takeIf { it.isNotBlank() }
+        val savedName = sm.getFullName()?.takeIf { it.isNotBlank() && !it.equals("Mary Jane", ignoreCase = true) }
+            ?: sm.getUserSession()?.fullName?.takeIf { it.isNotBlank() && !it.equals("Mary Jane", ignoreCase = true) }
         if (!savedName.isNullOrBlank()) {
             ProfileState.userName = savedName
+        } else if (ProfileState.userName.equals("Mary Jane", ignoreCase = true)) {
+            ProfileState.userName = "Patient"
         }
     }
 
@@ -139,6 +142,8 @@ fun PatientProfileScreen(
             Spacer(modifier = Modifier.height(14.dp))
 
             // Profile Tag
+            val displayProfileName = ProfileState.userName.takeIf { it.isNotBlank() && !it.equals("Mary Jane", ignoreCase = true) }
+                ?: "Patient"
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -147,14 +152,21 @@ fun PatientProfileScreen(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
-                    text = "Profile • ${ProfileState.userName}",
+                    text = "Profile • $displayProfileName",
                     fontSize = 12.sp,
                     color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
                     fontWeight = FontWeight.Medium,
                 )
             }
 
-            if (uiState.errorMessage != null) {
+            val userFacingError = uiState.errorMessage?.let { err ->
+                if (err.contains("User not specified", ignoreCase = true) || err.contains("log in", ignoreCase = true)) {
+                    null // suppress during onboarding pre-fill
+                } else {
+                    err
+                }
+            }
+            if (userFacingError != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
@@ -165,7 +177,7 @@ fun PatientProfileScreen(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = uiState.errorMessage ?: "Failed to save details.",
+                        text = userFacingError,
                         fontSize = 12.sp,
                         color = Color(0xFFD32F2F)
                     )
@@ -324,15 +336,15 @@ fun IosLiquidGlassSlider(
                             )
                         } else {
                             listOf(
-                                Color(0xFFFFFFFF),
-                                Color(0xFFF8F5FA),
+                                Color(0xFFF1F5F9),
+                                Color(0xFFE2E8F0),
                             )
                         },
                     ),
                 )
                 .border(
                     width = 1.2.dp,
-                    color = if (AppTheme.colors.isDark) Color(0xFF383256) else Color(0xFFE5DDF0),
+                    color = if (AppTheme.colors.isDark) Color(0xFF383256) else Color(0xFFCBD5E1),
                     shape = RoundedCornerShape(32.dp),
                 )
                 .padding(vertical = 8.dp, horizontal = 6.dp),
@@ -345,7 +357,7 @@ fun IosLiquidGlassSlider(
                         .width(36.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(if (AppTheme.colors.isDark) Color(0xFF4C3E6D) else Color(0xFFCBD5E1)),
+                        .background(if (AppTheme.colors.isDark) Color(0xFF4C3E6D) else Color(0xFF94A3B8)),
                 )
 
                 LazyRow(
@@ -397,20 +409,20 @@ fun IosLiquidGlassSlider(
                                 )
                             }
                         } else {
-                            // Unselected Frosted Glass Pill
+                            // Unselected Frosted Glass Pill (High contrast in both dark & light modes)
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(24.dp))
                                     .background(
                                         if (AppTheme.colors.isDark) {
-                                            Color(0xFF2A2440)
+                                            Color(0xFF2D264A)
                                         } else {
-                                            Color(0xFFEDE9FE)
+                                            Color(0xFFDDD6FE)
                                         }
                                     )
                                     .border(
                                         width = 1.dp,
-                                        color = if (AppTheme.colors.isDark) Color(0xFF4A416D) else Color(0xFFDDD6FE),
+                                        color = if (AppTheme.colors.isDark) Color(0xFF564C7D) else Color(0xFFC4B5FD),
                                         shape = RoundedCornerShape(24.dp),
                                     )
                                     .clickable { onItemSelected(item) }
@@ -420,8 +432,8 @@ fun IosLiquidGlassSlider(
                                 Text(
                                     text = item,
                                     fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = if (AppTheme.colors.isDark) Color(0xFFE2E8F0) else Color(0xFF334155),
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF8FAFC) else Color(0xFF4C1D95),
                                 )
                             }
                         }

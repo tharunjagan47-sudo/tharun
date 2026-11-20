@@ -12,6 +12,7 @@ import com.simats.diawell123.data.repository.HomeRepository
 import com.simats.diawell123.data.repository.HomeRepositoryImpl
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.util.MedicationStatusUpdater
+import com.simats.diawell123.util.toCleanErrorMessage
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +41,7 @@ class HomeViewModel(
             it.copy(
                 isLoading = false,
                 isRefreshing = false,
-                errorMessage = throwable.localizedMessage ?: "Unable to connect to service. Please retry."
+                errorMessage = throwable.toCleanErrorMessage("Unable to refresh dashboard. Pull down to retry.")
             )
         }
     }
@@ -111,7 +112,7 @@ class HomeViewModel(
                             it.copy(
                                 isLoading = false,
                                 isRefreshing = false,
-                                errorMessage = error.message ?: "Failed to load dashboard data."
+                                errorMessage = error.toCleanErrorMessage("Unable to refresh dashboard. Pull down to retry.")
                             )
                         }
                     }
@@ -122,7 +123,7 @@ class HomeViewModel(
                     it.copy(
                         isLoading = false,
                         isRefreshing = false,
-                        errorMessage = e.localizedMessage ?: "Network error loading dashboard."
+                        errorMessage = e.toCleanErrorMessage("Unable to refresh dashboard. Pull down to retry.")
                     )
                 }
             }

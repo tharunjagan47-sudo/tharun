@@ -290,7 +290,7 @@ fun SnapFoodCameraOverlay(
                                     try {
                                         galleryLauncher.launch("image/*")
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Gallery error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Unable to load photo from gallery.", Toast.LENGTH_SHORT).show()
                                     }
                                 },
                             contentAlignment = Alignment.Center
@@ -313,7 +313,7 @@ fun SnapFoodCameraOverlay(
                                     try {
                                         cameraLauncher.launch(null)
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Camera error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Unable to capture photo.", Toast.LENGTH_SHORT).show()
                                     }
                                 },
                             contentAlignment = Alignment.Center
@@ -1258,7 +1258,7 @@ fun SnapFoodAnalyzingDialog() {
                 Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
-                    text = "Analyzing Food with Vision AI",
+                    text = "Analyzing meal...",
                     fontSize = 16.5.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = AppTheme.colors.textPrimary,
@@ -1268,7 +1268,7 @@ fun SnapFoodAnalyzingDialog() {
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Moondream Vision AI is identifying dishes, calories & diabetic macros...",
+                    text = "Estimating ingredients, calories, and diabetic nutrition...",
                     fontSize = 12.sp,
                     color = AppTheme.colors.textMuted,
                     textAlign = TextAlign.Center,

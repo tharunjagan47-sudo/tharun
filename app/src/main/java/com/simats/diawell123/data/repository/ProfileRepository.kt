@@ -153,8 +153,11 @@ class ProfileRepositoryImpl(
         targetGlucose: Float?
     ): Result<ProfileData> = withContext(Dispatchers.IO) {
         try {
+            val safeUserId = getSessionManager()?.getUserId()
+                ?: getSessionManager()?.getUserSession()?.userId?.takeIf { it > 0 }
+                ?: 1
             val request = PatientDetailsRequest(
-                userId = getSessionManager()?.getUserId(),
+                userId = safeUserId,
                 diabetesType = diabetesType,
                 age = age,
                 heightCm = heightCm,
@@ -189,8 +192,11 @@ class ProfileRepositoryImpl(
         activityLevel: String?
     ): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
+            val safeUserId = getSessionManager()?.getUserId()
+                ?: getSessionManager()?.getUserSession()?.userId?.takeIf { it > 0 }
+                ?: 1
             val request = HealthPreferencesRequest(
-                userId = getSessionManager()?.getUserId(),
+                userId = safeUserId,
                 healthFocus = healthFocus,
                 dietaryPreferences = dietaryPreferences,
                 allergies = allergies,

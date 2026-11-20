@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.simats.diawell123.util.toCleanErrorMessage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -93,13 +94,13 @@ class GlucoseViewModel(
                     _historyState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = error.localizedMessage ?: "Failed to load glucose history."
+                            errorMessage = error.toCleanErrorMessage("Unable to load glucose history.")
                         )
                     }
                 }
             } catch (e: Exception) {
                 Log.e("GlucoseViewModel", "Exception loading history", e)
-                _historyState.update { it.copy(isLoading = false, errorMessage = e.localizedMessage ?: "Failed to load history.") }
+                _historyState.update { it.copy(isLoading = false, errorMessage = e.toCleanErrorMessage("Unable to load glucose history.")) }
             }
         }
     }
@@ -166,7 +167,7 @@ class GlucoseViewModel(
                         it.copy(
                             isLoading = false,
                             isSuccess = false,
-                            errorMessage = error.localizedMessage ?: "Failed to save reading."
+                            errorMessage = error.toCleanErrorMessage("Unable to save reading. Please try again.")
                         )
                     }
                 }
@@ -176,7 +177,7 @@ class GlucoseViewModel(
                     it.copy(
                         isLoading = false,
                         isSuccess = false,
-                        errorMessage = e.localizedMessage ?: "Failed to save reading."
+                        errorMessage = e.toCleanErrorMessage("Unable to save reading. Please try again.")
                     )
                 }
             }

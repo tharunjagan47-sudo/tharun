@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.simats.diawell123.util.toCleanErrorMessage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -114,7 +115,7 @@ class DietViewModel(
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.e("DietViewModel", "Uncaught exception in DietViewModel", throwable)
-        val msg = throwable.localizedMessage ?: "Network error loading diet data."
+        val msg = throwable.toCleanErrorMessage("Unable to load meal recommendations right now.")
         _dailyDietState.update { it.copy(isLoading = false, errorMessage = msg) }
         _detailsState.update { it.copy(isLoading = false, isLogging = false, errorMessage = msg) }
         _foodLogState.update { it.copy(isLoading = false, errorMessage = msg) }
@@ -184,7 +185,7 @@ class DietViewModel(
                 _aiRecommendationsState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = error.localizedMessage
+                        errorMessage = error.toCleanErrorMessage("Unable to load meal recommendations right now.")
                     )
                 }
             }
@@ -222,7 +223,7 @@ class DietViewModel(
                 _aiRecommendationsState.update {
                     it.copy(
                         isUpdatingInputs = false,
-                        errorMessage = error.localizedMessage
+                        errorMessage = error.toCleanErrorMessage("Unable to update preferences right now.")
                     )
                 }
                 loadAiRecommendations(
@@ -252,7 +253,7 @@ class DietViewModel(
                 _dailyDietState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = error.localizedMessage
+                        errorMessage = error.toCleanErrorMessage("Unable to load dishes right now.")
                     )
                 }
             }
@@ -277,7 +278,7 @@ class DietViewModel(
                     state.copy(
                         isLoading = false,
                         meals = emptyList(),
-                        errorMessage = error.localizedMessage
+                        errorMessage = error.toCleanErrorMessage("Unable to load food log.")
                     )
                 }
             }

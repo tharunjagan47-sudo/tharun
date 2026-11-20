@@ -55,12 +55,12 @@ class ChatViewModel(
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.e("ChatViewModel", "Uncaught exception in ChatViewModel: ${throwable.message}", throwable)
-        val errorMsg = throwable.localizedMessage ?: "Unable to complete AI query."
-        _errorMessage.value = errorMsg
         _isLoading.value = false
+        val cleanMsg = "Something went wrong while connecting. Please check your network and try again."
+        _errorMessage.value = cleanMsg
         _messages.value = _messages.value + ChatMessage(
             sender = ChatSender.AI,
-            text = "⚠️ $errorMsg\n\nPlease check your network connection or tap Retry.",
+            text = cleanMsg,
             isError = true
         )
     }
@@ -213,26 +213,38 @@ class ChatViewModel(
                         }
                     },
                     onFailure = { error ->
-                        val errorMsg = error.localizedMessage ?: "Could not reach DIVA."
-                        _errorMessage.value = errorMsg
+                        val rawMsg = error.localizedMessage.orEmpty()
+                        val cleanMsg = when {
+                            rawMsg.contains("timed out", true) || rawMsg.contains("Timeout", true) ->
+                                "DIVA took a little too long to respond. Please try asking again."
+                            rawMsg.contains("Failed to connect", true) || rawMsg.contains("ConnectException", true) || rawMsg.contains("unreachable", true) ->
+                                "Unable to connect right now. Please check your network and try again."
+                            rawMsg.contains("HTTP 5", true) || rawMsg.contains("Ollama", true) ->
+                                "DIVA is currently busy. Please try again in a moment."
+                            rawMsg.isNotBlank() && !rawMsg.contains("Exception") && !rawMsg.contains("127.0.0.1") && rawMsg.length < 80 ->
+                                rawMsg
+                            else ->
+                                "Something went wrong. Please check your connection and try again."
+                        }
+                        _errorMessage.value = cleanMsg
 
                         val errorAiMsg = ChatMessage(
                             sender = ChatSender.AI,
-                            text = "⚠️ $errorMsg\n\nPlease check your network connection or tap Retry.",
+                            text = cleanMsg,
                             isError = true
                         )
                         _messages.value = _messages.value + errorAiMsg
-                        onSpokenResponseReady?.invoke(errorMsg)
                         onErrorCallback?.invoke()
                     }
                 )
             } catch (t: Throwable) {
-                val errorMsg = t.localizedMessage ?: "An unexpected error occurred."
-                _errorMessage.value = errorMsg
+                Log.e("ChatViewModel", "Chat turn error", t)
+                val cleanMsg = "Something went wrong. Please check your connection and try again."
+                _errorMessage.value = cleanMsg
 
                 val errorAiMsg = ChatMessage(
                     sender = ChatSender.AI,
-                    text = "⚠️ $errorMsg\n\nPlease check your network connection or tap Retry.",
+                    text = cleanMsg,
                     isError = true
                 )
                 _messages.value = _messages.value + errorAiMsg
