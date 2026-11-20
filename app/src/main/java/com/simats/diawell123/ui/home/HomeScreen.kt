@@ -102,6 +102,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.ai.IronmanDoctorAvatar
 import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.components.aiRotatingBorder
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.AppTheme
@@ -555,7 +556,7 @@ fun HomeScreen(
                                         Brush.linearGradient(listOf(Color(0xFFFAF5FF), Color(0xFFF3E8FF)))
                                     },
                                 )
-                                .border(1.5.dp, if (AppTheme.colors.isDark) AppTheme.colors.border else AppTheme.colors.border, RoundedCornerShape(18.dp))
+                                .aiRotatingBorder(strokeWidth = 1.6.dp, shape = RoundedCornerShape(18.dp), durationMillis = 3500)
                                 .clickable { onDietChatbotClick() }
                                 .padding(16.dp),
                         ) {

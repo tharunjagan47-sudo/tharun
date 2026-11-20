@@ -66,6 +66,7 @@ import com.simats.diawell123.data.model.HealthFoodItem
 import com.simats.diawell123.data.model.SnapFoodAnalysis
 import com.simats.diawell123.data.model.SnapFoodSubItem
 import com.simats.diawell123.data.repository.SnapFoodAnalyzer
+import com.simats.diawell123.ui.components.aiRotatingBorder
 import com.simats.diawell123.ui.theme.AppTheme
 
 /**
@@ -1234,7 +1235,7 @@ fun SnapFoodAnalyzingDialog() {
                 .fillMaxWidth(0.88f)
                 .clip(RoundedCornerShape(22.dp))
                 .background(if (isDark) Color(0xFF1B1330) else Color.White)
-                .border(1.5.dp, Color(0xFFA855F7).copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+                .aiRotatingBorder(strokeWidth = 2.dp, shape = RoundedCornerShape(22.dp), durationMillis = 2600)
                 .padding(26.dp),
             contentAlignment = Alignment.Center
         ) {
