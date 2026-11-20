@@ -532,14 +532,14 @@ fun IosLiquidGlassButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 54.dp)
+            .heightIn(min = 52.dp)
             .shadow(
-                elevation = 14.dp,
-                shape = RoundedCornerShape(27.dp),
+                elevation = 8.dp,
+                shape = RoundedCornerShape(26.dp),
                 spotColor = (gradientColors.getOrNull(2) ?: gradientColors.firstOrNull() ?: Color(0xFFA855F7)).copy(alpha = 0.55f),
                 ambientColor = (gradientColors.firstOrNull() ?: Color(0xFF1E1B4B)).copy(alpha = 0.35f),
             )
-            .clip(RoundedCornerShape(27.dp))
+            .clip(RoundedCornerShape(26.dp))
             .background(
                 brush = Brush.horizontalGradient(
                     colors = gradientColors,
@@ -548,7 +548,7 @@ fun IosLiquidGlassButton(
             .clickable { onClick() },
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        Canvas(modifier = Modifier.matchParentSize()) {
             val width = size.width
             val height = size.height
 
@@ -570,9 +570,9 @@ fun IosLiquidGlassButton(
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .matchParentSize()
                 .padding(1.2.dp)
-                .clip(RoundedCornerShape(26.dp))
+                .clip(RoundedCornerShape(25.dp))
                 .border(
                     width = 1.2.dp,
                     brush = Brush.verticalGradient(
@@ -581,7 +581,7 @@ fun IosLiquidGlassButton(
                             Color.White.copy(alpha = 0.15f),
                         ),
                     ),
-                    shape = RoundedCornerShape(26.dp),
+                    shape = RoundedCornerShape(25.dp),
                 ),
         )
 
