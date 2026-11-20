@@ -43,7 +43,7 @@ fun FoodOnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -56,10 +56,10 @@ fun FoodOnboardingScreen(
             ) {
                 // Food Illustration
                 FoodIllustration(
-                    modifier = Modifier.size(260.dp)
+                    modifier = Modifier.size(240.dp)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 // Badge
                 OnboardingBadge(text = "EAT WITH CONFIDENCE")
@@ -98,7 +98,7 @@ fun FoodOnboardingScreen(
             ) {
                 OnboardingPageIndicator(pageCount = 3, currentPage = 0)
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 OnboardingGradientButton(
                     text = "→  Next",
