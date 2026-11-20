@@ -78,6 +78,8 @@ fun DailyDietPlanScreen(
     onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
     onSettingsTabClick: () -> Unit = {},
+    initialOpenSnapFood: Boolean = false,
+    onSnapFoodConsumed: () -> Unit = {},
 ) {
     val uiState by viewModel.dailyDietState.collectAsState()
     val aiState by viewModel.aiRecommendationsState.collectAsState()
@@ -85,22 +87,19 @@ fun DailyDietPlanScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(uiState.selectedCategory) {
-        viewModel.refreshDailyRecommendation(context, category = uiState.selectedCategory)
-    }
-
-    LaunchedEffect(dailyRecState.logSuccessMessage) {
-        dailyRecState.logSuccessMessage?.let { msg ->
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-        }
-    }
-
     var selectedTab by remember { mutableStateOf("Diet") }
     var showDatePickerDialog by remember { mutableStateOf(false) }
     var showAdjustInputsDialog by remember { mutableStateOf(false) }
     var showSnapFoodCamera by remember { mutableStateOf(false) }
     var isAnalyzingFood by remember { mutableStateOf(false) }
     var activeSnapFoodAnalysis by remember { mutableStateOf<SnapFoodAnalysis?>(null) }
+
+    LaunchedEffect(initialOpenSnapFood) {
+        if (initialOpenSnapFood) {
+            showSnapFoodCamera = true
+            onSnapFoodConsumed()
+        }
+    }
 
     val patientContext = aiState.data?.patientContext
     val currentGlucose = aiState.activeGlucose ?: patientContext?.currentGlucoseMgDl ?: 120f

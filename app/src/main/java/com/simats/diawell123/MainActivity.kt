@@ -62,6 +62,7 @@ import com.simats.diawell123.ui.auth.AppLockScreen
 import com.simats.diawell123.ui.auth.ForgotPasswordScreen
 import com.simats.diawell123.ui.auth.LoginScreen
 import com.simats.diawell123.ui.auth.SignUpScreen
+import com.simats.diawell123.ui.components.DiaWellSmartSidebar
 import com.simats.diawell123.ui.diet.DailyDietPlanScreen
 import com.simats.diawell123.ui.diet.DietViewModel
 import com.simats.diawell123.ui.diet.ExploreFoodScreen
@@ -152,6 +153,7 @@ class MainActivity : FragmentActivity() {
                 var selectedMealCategory by remember { mutableStateOf("breakfast") }
                 var selectedFoodId by remember { mutableStateOf<Int?>(null) }
                 var selectedDishName by remember { mutableStateOf<String?>(null) }
+                var launchSnapFoodInDiet by remember { mutableStateOf(false) }
 
                 val dietViewModel: DietViewModel = viewModel()
                 val glucoseViewModel: GlucoseViewModel = viewModel()
@@ -462,6 +464,8 @@ class MainActivity : FragmentActivity() {
 
                         "daily_diet_plan" -> DailyDietPlanScreen(
                             viewModel = dietViewModel,
+                            initialOpenSnapFood = launchSnapFoodInDiet,
+                            onSnapFoodConsumed = { launchSnapFoodInDiet = false },
                             onBackClick = { currentScreen = "home" },
                             onMealDetailsClick = { category, foodId, dishName ->
                                 selectedMealCategory = category
@@ -747,6 +751,40 @@ class MainActivity : FragmentActivity() {
                             onSettingsTabClick = { currentScreen = "settings" },
                         )
                     }
+
+                    // Smart Sidebar (Floating Quick-Action Edge Dock)
+                    val isSidebarVisible = sessionManager.isLoggedIn() && currentScreen in listOf(
+                        "home",
+                        "daily_diet_plan",
+                        "medications",
+                        "weekly_report",
+                        "settings",
+                        "notifications",
+                        "glucose_history",
+                        "food_log",
+                        "activity_history",
+                        "activity_tracking"
+                    )
+
+                    DiaWellSmartSidebar(
+                        visible = isSidebarVisible,
+                        onDivaAiClick = {
+                            currentScreen = "ai_chatbot"
+                        },
+                        onSnapFoodClick = {
+                            launchSnapFoodInDiet = true
+                            currentScreen = "daily_diet_plan"
+                        },
+                        onLogGlucoseClick = {
+                            currentScreen = "log_glucose"
+                        },
+                        onLogMealClick = {
+                            currentScreen = "food_log"
+                        },
+                        onActivityClick = {
+                            currentScreen = "activity_tracking"
+                        }
+                    )
                 }
             }
         }
