@@ -152,6 +152,7 @@ class ProfileRepositoryImpl(
     ): Result<ProfileData> = withContext(Dispatchers.IO) {
         try {
             val request = PatientDetailsRequest(
+                userId = getSessionManager()?.getUserId(),
                 diabetesType = diabetesType,
                 age = age,
                 heightCm = heightCm,
@@ -187,6 +188,7 @@ class ProfileRepositoryImpl(
     ): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
             val request = HealthPreferencesRequest(
+                userId = getSessionManager()?.getUserId(),
                 healthFocus = healthFocus,
                 dietaryPreferences = dietaryPreferences,
                 allergies = allergies,
