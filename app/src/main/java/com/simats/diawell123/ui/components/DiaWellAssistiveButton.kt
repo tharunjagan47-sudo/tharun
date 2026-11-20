@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.theme.AppTheme
 import kotlinx.coroutines.delay
@@ -92,7 +94,7 @@ fun DiaWellAssistiveButton(
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize().zIndex(100f)) {
         val screenWidthPx = with(density) { maxWidth.toPx() }
         val screenHeightPx = with(density) { maxHeight.toPx() }
 
@@ -149,7 +151,8 @@ fun DiaWellAssistiveButton(
         AnimatedVisibility(
             visible = isExpanded,
             enter = fadeIn(tween(180)),
-            exit = fadeOut(tween(140))
+            exit = fadeOut(tween(140)),
+            modifier = Modifier.zIndex(110f)
         ) {
             Box(
                 modifier = Modifier
@@ -178,7 +181,9 @@ fun DiaWellAssistiveButton(
                 targetScale = 0.85f,
                 animationSpec = tween(140)
             ) + fadeOut(tween(120)),
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier
+                .align(Alignment.Center)
+                .zIndex(120f)
         ) {
             AssistiveTouchGlassMenu(
                 isDark = isDark,
@@ -217,8 +222,6 @@ fun DiaWellAssistiveButton(
         // -------------------------------------------------------------
         // 3. DRAGGABLE FLOATING BUTTON (DiaWell Logo + Glass Ring)
         // -------------------------------------------------------------
-        var totalDragDistance by remember { mutableFloatStateOf(0f) }
-
         Box(
             modifier = Modifier
                 .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
@@ -254,16 +257,22 @@ fun DiaWellAssistiveButton(
                     shape = CircleShape
                 )
                 .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            lastInteractionMs = System.currentTimeMillis()
+                            isExpanded = true
+                        }
+                    )
+                }
+                .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = {
                             isDragging = true
                             lastInteractionMs = System.currentTimeMillis()
-                            totalDragDistance = 0f
                         },
                         onDrag = { change, dragAmount ->
                             change.consume()
                             lastInteractionMs = System.currentTimeMillis()
-                            totalDragDistance += abs(dragAmount.x) + abs(dragAmount.y)
 
                             val newX = (offsetX.value + dragAmount.x)
                                 .coerceIn(edgePaddingPx, screenWidthPx - buttonSizePx - edgePaddingPx)
@@ -279,27 +288,22 @@ fun DiaWellAssistiveButton(
                             isDragging = false
                             lastInteractionMs = System.currentTimeMillis()
 
-                            // If drag movement is tiny, treat as a Tap!
-                            if (totalDragDistance < 14f) {
-                                isExpanded = true
+                            // Magnetic Edge Snapping: spring to Left or Right edge
+                            val snapToLeft = (offsetX.value + buttonSizePx / 2f) < (screenWidthPx / 2f)
+                            val targetX = if (snapToLeft) {
+                                edgePaddingPx
                             } else {
-                                // Magnetic Edge Snapping: spring to Left or Right edge
-                                val snapToLeft = (offsetX.value + buttonSizePx / 2f) < (screenWidthPx / 2f)
-                                val targetX = if (snapToLeft) {
-                                    edgePaddingPx
-                                } else {
-                                    screenWidthPx - buttonSizePx - edgePaddingPx
-                                }
+                                screenWidthPx - buttonSizePx - edgePaddingPx
+                            }
 
-                                coroutineScope.launch {
-                                    offsetX.animateTo(
-                                        targetValue = targetX,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        )
+                            coroutineScope.launch {
+                                offsetX.animateTo(
+                                    targetValue = targetX,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow
                                     )
-                                }
+                                )
                             }
                         },
                         onDragCancel = {
