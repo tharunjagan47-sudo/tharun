@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.api.ApiClient
+import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.DashboardData
 import com.simats.diawell123.data.model.UpdateProfileRequest
 import com.simats.diawell123.data.repository.HomeRepository
@@ -26,7 +27,8 @@ data class HomeUiState(
 )
 
 class HomeViewModel(
-    private val repository: HomeRepository = HomeRepositoryImpl()
+    private val repository: HomeRepository = HomeRepositoryImpl(),
+    private val sessionManager: SessionManager = SessionManager.getInstance()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -77,6 +79,14 @@ class HomeViewModel(
                         data.profile?.name?.let { name ->
                             if (name.isNotBlank()) {
                                 ProfileState.userName = name
+                            }
+                        }
+
+                        // Synchronize user profile picture (Base64)
+                        data.profile?.profilePic?.let { base64 ->
+                            if (base64.isNotBlank()) {
+                                sessionManager.saveUserPfp(data.userId, base64)
+                                ProfileState.setProfilePicFromBase64(base64, data.userId)
                             }
                         }
 

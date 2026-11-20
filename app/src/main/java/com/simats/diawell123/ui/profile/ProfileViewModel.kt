@@ -54,6 +54,14 @@ class ProfileViewModel(
                     // Synchronize shared ProfileState
                     ProfileState.userName = data.fullName
                     ProfileState.userEmail = data.email
+                    // Synchronize profile picture
+                    data.profilePic?.let { base64 ->
+                        if (base64.isNotBlank()) {
+                            sessionManager.saveUserPfp(data.userId, base64)
+                            ProfileState.setProfilePicFromBase64(base64, data.userId)
+                        }
+                    }
+
                     data.profilePhotoUrl?.let { url ->
                         if (url.isNotBlank() && ProfileState.profileImageBitmap == null) {
                             ProfileState.loadPhotoFromUrl(url, data.userId)
@@ -273,6 +281,34 @@ class ProfileViewModel(
                             isSaving = false,
                             isSuccess = false,
                             errorMessage = error.message ?: "Failed to save food preferences."
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun uploadProfilePic(userId: Int, base64: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUploadingPhoto = true, errorMessage = null) }
+            val result = repository.updateProfilePic(userId, base64)
+            result.fold(
+                onSuccess = { pic ->
+                    sessionManager.saveUserPfp(userId, pic)
+                    ProfileState.setProfilePicFromBase64(pic, userId)
+                    _uiState.update {
+                        it.copy(
+                            isUploadingPhoto = false,
+                            profile = it.profile?.copy(profilePic = pic)
+                        )
+                    }
+                    onSuccess()
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            isUploadingPhoto = false,
+                            errorMessage = error.message ?: "Failed to upload profile picture."
                         )
                     }
                 }

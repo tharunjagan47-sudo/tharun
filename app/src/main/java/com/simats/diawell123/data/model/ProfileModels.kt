@@ -58,6 +58,9 @@ data class ProfileData(
     @SerializedName("profile_photo_url")
     val profilePhotoUrl: String? = null,
 
+    @SerializedName("profile_pic")
+    val profilePic: String? = null,
+
     @SerializedName("current_glucose_mg_dl")
     val currentGlucoseMgDl: Float? = null,
 
@@ -258,4 +261,44 @@ data class UploadPhotoData(
     @SerializedName("photo_url")
     val photoUrl: String = ""
 )
+
+/**
+ * Base64 Profile Picture Sync
+ */
+data class UpdateProfilePicRequest(
+    @SerializedName("user_id")
+    val userId: Int,
+
+    @SerializedName("profile_pic")
+    val profilePic: String
+)
+
+data class UpdateProfilePicResponse(
+    @SerializedName("success")
+    val success: Boolean = false,
+
+    @SerializedName("status")
+    val status: String? = null,
+
+    @SerializedName("message")
+    val message: String = "",
+
+    @SerializedName("data")
+    val data: UpdateProfilePicData? = null,
+
+    @SerializedName("profile_pic")
+    val profilePic: String? = null
+)
+
+data class UpdateProfilePicData(
+    @SerializedName("status")
+    val status: String? = null,
+
+    @SerializedName("user_id")
+    val userId: Int? = null,
+
+    @SerializedName("profile_pic")
+    val profilePic: String? = null
+)
+
 

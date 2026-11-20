@@ -61,6 +61,8 @@ interface ProfileRepository {
     ): Result<FoodPreferencesData>
 
     suspend fun uploadProfilePhoto(photoFile: File): Result<UploadPhotoData>
+
+    suspend fun updateProfilePic(userId: Int, base64: String): Result<String>
 }
 
 class ProfileRepositoryImpl(
@@ -293,6 +295,32 @@ class ProfileRepositoryImpl(
             } else {
                 val errorMsg = parseErrorMessage(response.errorBody()?.string())
                     ?: "Failed to upload photo (${response.code()})."
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateProfilePic(userId: Int, base64: String): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateProfilePic(
+                com.simats.diawell123.data.model.UpdateProfilePicRequest(
+                    userId = userId,
+                    profilePic = base64
+                )
+            )
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (body.success) {
+                    val pic = body.data?.profilePic ?: body.profilePic ?: base64
+                    Result.success(pic)
+                } else {
+                    Result.failure(Exception(body.message.ifEmpty { "Failed to update profile pic." }))
+                }
+            } else {
+                val errorMsg = parseErrorMessage(response.errorBody()?.string())
+                    ?: "Failed to update profile pic (${response.code()})."
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {

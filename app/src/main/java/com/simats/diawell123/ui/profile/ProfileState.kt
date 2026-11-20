@@ -58,10 +58,21 @@ object ProfileState {
 
             val effectiveUserId = userId ?: sessionManager.getUserId()
 
-            // 1. Try to load saved avatar from local disk cache immediately
-            val loaded = loadFromDisk(appCtx, effectiveUserId)
+            // 1. Try to load per-user Base64 cached avatar from SharedPreferences
+            var loaded = false
+            if (effectiveUserId != null) {
+                val cachedPfp = sessionManager.getUserPfp(effectiveUserId)
+                if (!cachedPfp.isNullOrBlank()) {
+                    loaded = setProfilePicFromBase64(cachedPfp, effectiveUserId, appCtx)
+                }
+            }
 
-            // 2. If not found locally on disk, try downloading from profilePhotoUrl if available
+            // 2. Fallback to local disk cache file
+            if (!loaded) {
+                loaded = loadFromDisk(appCtx, effectiveUserId)
+            }
+
+            // 3. Fallback to downloading from profilePhotoUrl if available
             if (!loaded) {
                 val photoUrl = session?.profilePhotoUrl
                 if (!photoUrl.isNullOrBlank()) {
@@ -190,6 +201,31 @@ object ProfileState {
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load profile photo from URL: ${e.message}")
             }
+        }
+    }
+
+    /**
+     * Decodes a Base64 JPEG string into an ImageBitmap, updates memory state, and optionally saves to disk.
+     */
+    fun setProfilePicFromBase64(base64Str: String?, userId: Int? = null, context: Context? = null): Boolean {
+        if (base64Str.isNullOrBlank()) return false
+        return try {
+            val cleanBase64 = if (base64Str.contains(",")) base64Str.substringAfter(",") else base64Str
+            val bytes = android.util.Base64.decode(cleanBase64, android.util.Base64.NO_WRAP)
+            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            if (bitmap != null) {
+                profileImageBitmap = bitmap.asImageBitmap()
+                val ctx = context ?: appContext
+                if (userId != null && ctx != null) {
+                    saveProfileBitmap(ctx, bitmap, userId)
+                }
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error decoding base64 avatar: ${e.message}", e)
+            false
         }
     }
 

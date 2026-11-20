@@ -93,7 +93,10 @@ data class HomeProfile(
     val diabetesType: String = "Type 2",
 
     @SerializedName("photo_url")
-    val photoUrl: String? = null
+    val photoUrl: String? = null,
+
+    @SerializedName("profile_pic")
+    val profilePic: String? = null
 )
 
 /**

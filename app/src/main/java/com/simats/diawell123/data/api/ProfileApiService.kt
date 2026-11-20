@@ -53,5 +53,10 @@ interface ProfileApiService {
         @Part photo: MultipartBody.Part,
         @Query("user_id") userId: Int? = null
     ): Response<UploadProfilePhotoResponse>
+
+    @POST("update_profile_pic.php")
+    suspend fun updateProfilePic(
+        @Body request: com.simats.diawell123.data.model.UpdateProfilePicRequest
+    ): Response<com.simats.diawell123.data.model.UpdateProfilePicResponse>
 }
 

@@ -53,6 +53,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +64,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -118,6 +122,45 @@ fun EditProfileScreen(
     val ageRange = remember { (18..80).map { "$it years" } }
     val heightRange = remember { (140..210).filter { it % 5 == 0 }.map { "$it cm" } }
     val weightRange = remember { (40..140).filter { it % 5 == 0 || it == 68 }.map { "$it kg" } }
+    val coroutineScope = rememberCoroutineScope()
+
+    val processAndUploadBitmap: (Bitmap) -> Unit = { rawBitmap ->
+        coroutineScope.launch {
+            try {
+                val sessionManager = try {
+                    SessionManager.getInstance()
+                } catch (_: Exception) {
+                    SessionManager.init(context)
+                }
+                val userId = sessionManager.getUserId() ?: 0
+
+                // 1. Resize to 256x256, compress to JPEG (quality = 75) on Dispatchers.Default, Base64 encode
+                val (scaledBitmap, base64) = withContext(Dispatchers.Default) {
+                    val scaled = Bitmap.createScaledBitmap(rawBitmap, 256, 256, true)
+                    val stream = java.io.ByteArrayOutputStream()
+                    scaled.compress(Bitmap.CompressFormat.JPEG, 75, stream)
+                    val bytes = stream.toByteArray()
+                    val b64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                    Pair(scaled, b64)
+                }
+
+                // 2. Update UI state and save in local cache
+                ProfileState.saveProfileBitmap(context, scaledBitmap, userId)
+                if (userId > 0) {
+                    sessionManager.saveUserPfp(userId, base64)
+                    // 3. Send to update_profile_pic.php with logged-in user_id
+                    viewModel.uploadProfilePic(userId, base64) {
+                        Toast.makeText(context, "Profile picture updated successfully!", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Profile picture saved locally.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Error updating photo: ${e.localizedMessage ?: "Unknown"}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     val handlePickedUri: (Uri?) -> Unit = { uri: Uri? ->
         if (uri != null) {
@@ -128,20 +171,7 @@ fun EditProfileScreen(
                     @Suppress("DEPRECATION")
                     MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 }
-                val sessionManager = try {
-                    SessionManager.getInstance()
-                } catch (_: Exception) {
-                    SessionManager.init(context)
-                }
-                ProfileState.saveProfileBitmap(context, bitmap, sessionManager.getUserId())
-
-                // Upload to server
-                val tempFile = uriToFile(context, uri)
-                if (tempFile != null) {
-                    viewModel.uploadProfilePhoto(tempFile) {
-                        Toast.makeText(context, "Profile picture updated successfully!", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                processAndUploadBitmap(bitmap)
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(context, "Error loading image: ${e.localizedMessage ?: "Unknown"}", Toast.LENGTH_SHORT).show()
@@ -183,24 +213,7 @@ fun EditProfileScreen(
         contract = ActivityResultContracts.TakePicturePreview(),
     ) { bitmap: Bitmap? ->
         if (bitmap != null) {
-            try {
-                val sessionManager = try {
-                    SessionManager.getInstance()
-                } catch (_: Exception) {
-                    SessionManager.init(context)
-                }
-                ProfileState.saveProfileBitmap(context, bitmap, sessionManager.getUserId())
-
-                val tempFile = bitmapToFile(context, bitmap)
-                if (tempFile != null) {
-                    viewModel.uploadProfilePhoto(tempFile) {
-                        Toast.makeText(context, "Profile picture captured and updated!", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(context, "Error saving photo: ${e.localizedMessage ?: "Unknown"}", Toast.LENGTH_SHORT).show()
-            }
+            processAndUploadBitmap(bitmap)
         }
     }
 

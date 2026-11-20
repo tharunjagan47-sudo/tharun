@@ -81,6 +81,9 @@ data class UserData(
     @SerializedName("profile_photo_url")
     val profilePhotoUrl: String? = null,
 
+    @SerializedName("profile_pic")
+    val profilePic: String? = null,
+
     @SerializedName("is_profile_completed")
     val isProfileCompleted: Boolean? = null,
 

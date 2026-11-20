@@ -95,6 +95,11 @@ class SessionManager private constructor(context: Context) {
             putFloat(KEY_TARGET_GLUCOSE, user.targetGlucoseMgDl ?: -1f)
             putString(KEY_PROFILE_PHOTO, user.profilePhoto.orEmpty())
             putString(KEY_PROFILE_PHOTO_URL, user.profilePhotoUrl.orEmpty())
+            user.userId?.let { uid ->
+                user.profilePic?.takeIf { it.isNotBlank() }?.let { pic ->
+                    putString("pfp_$uid", pic)
+                }
+            }
             putBoolean(KEY_IS_PROFILE_COMPLETED, user.isProfileCompleted ?: false)
             putString(KEY_AUTH_TOKEN, user.token.orEmpty())
             if (!cookie.isNullOrBlank()) {
@@ -199,6 +204,18 @@ class SessionManager private constructor(context: Context) {
         prefs.edit().putString(KEY_PROFILE_PHOTO, path).apply()
     }
 
+    fun saveUserPfp(userId: Int, base64: String) {
+        prefs.edit().putString("pfp_$userId", base64).apply()
+    }
+
+    fun getUserPfp(userId: Int): String? {
+        return prefs.getString("pfp_$userId", null)
+    }
+
+    fun clearUserPfp(userId: Int) {
+        prefs.edit().remove("pfp_$userId").apply()
+    }
+
     fun getFullName(): String? = prefs.getString(KEY_FULL_NAME, null)
 
     /**
@@ -216,6 +233,7 @@ class SessionManager private constructor(context: Context) {
      * Retains onboarding completion so user lands on Login screen instead of onboarding.
      */
     fun clearSession(reason: String? = null) {
+        com.simats.diawell123.ui.profile.ProfileState.clear()
         prefs.edit().apply {
             putBoolean(KEY_IS_LOGGED_IN, false)
             remove(KEY_USER_ID)
