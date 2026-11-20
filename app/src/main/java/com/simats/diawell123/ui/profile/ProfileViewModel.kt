@@ -35,10 +35,17 @@ class ProfileViewModel(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadProfile()
+        if (sessionManager.isLoggedIn() && sessionManager.getUserId() != null) {
+            loadProfile()
+        }
     }
 
     fun loadProfile() {
+        val currentUserId = sessionManager.getUserId()
+        if (currentUserId == null) {
+            _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = it.profile == null, errorMessage = null) }
             val result = repository.getProfile()
