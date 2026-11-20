@@ -103,6 +103,10 @@ fun HealthPreferencesScreen(
         )
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.clearError()
+    }
+
     // Smooth 3D Saturn AI Orb Loading Transition into Home Screen
     LaunchedEffect(isSavingAndLoading) {
         if (isSavingAndLoading) {
