@@ -221,55 +221,7 @@ fun DailyDietPlanScreen(
                             onAdjustClick = { showAdjustInputsDialog = true }
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Unified Search Bar
-                        OutlinedTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = { viewModel.onDailyDietSearchChanged(it) },
-                            leadingIcon = {
-                                Text(
-                                    text = "🔍",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 12.dp, end = 4.dp),
-                                )
-                            },
-                            trailingIcon = {
-                                if (uiState.searchQuery.isNotEmpty()) {
-                                    Text(
-                                        text = "✕",
-                                        fontSize = 15.sp,
-                                        color = AppTheme.colors.textMuted,
-                                        modifier = Modifier
-                                            .clickable { viewModel.onDailyDietSearchChanged("") }
-                                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                                    )
-                                }
-                            },
-                            placeholder = {
-                                Text(
-                                    text = "Search foods, recipes or ingredients...",
-                                    fontSize = 13.sp,
-                                    color = AppTheme.colors.textMuted,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            },
-                            singleLine = true,
-                            shape = RoundedCornerShape(14.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = AppTheme.colors.textPrimary,
-                                unfocusedTextColor = AppTheme.colors.textPrimary,
-                                cursorColor = Color(0xFFA855F7),
-                                focusedContainerColor = AppTheme.colors.inputBackground,
-                                unfocusedContainerColor = AppTheme.colors.inputBackground,
-                                focusedBorderColor = Color(0xFFA855F7),
-                                unfocusedBorderColor = AppTheme.colors.inputBorder,
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         // Category Filter Pills
                         Row(
@@ -484,7 +436,7 @@ fun DailyDietPlanScreen(
                 val recommendations = aiState.data?.recommendations ?: emptyList()
                 val isAllCategory = uiState.selectedCategory.equals("All", ignoreCase = true)
 
-                if (isAllCategory && uiState.searchQuery.isBlank() && dailyPlan != null && 
+                if (isAllCategory && dailyPlan != null && 
                     (dailyPlan.breakfast.isNotEmpty() || dailyPlan.lunch.isNotEmpty() || dailyPlan.dinner.isNotEmpty())) {
 
                     // Structured Complete Day Plan: Breakfast, Lunch, Snack, Dinner
@@ -529,15 +481,8 @@ fun DailyDietPlanScreen(
                     }
 
                 } else {
-                    // Category-Filtered or Search-Filtered Recommendations
-                    val filtered = if (uiState.searchQuery.isBlank()) {
-                        recommendations
-                    } else {
-                        recommendations.filter {
-                            it.title.contains(uiState.searchQuery, ignoreCase = true) ||
-                            it.category.contains(uiState.searchQuery, ignoreCase = true)
-                        }
-                    }
+                    // Category-Filtered Recommendations
+                    val filtered = recommendations
 
                     if (filtered.isNotEmpty()) {
                         filtered.forEachIndexed { index, rec ->

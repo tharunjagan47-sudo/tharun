@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -103,7 +104,7 @@ fun ExploreFoodScreen(
                                     color = AppTheme.colors.textPrimary,
                                 )
                                 Text(
-                                    text = "AI-powered recommendations & 1000+ dish dataset",
+                                    text = "Search from 1000+ dishes & nutrition database",
                                     fontSize = 12.sp,
                                     color = AppTheme.colors.textSecondary,
                                 )
@@ -223,97 +224,112 @@ fun ExploreFoodScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // AI Recommendations Section
+                // Search Results / Search Prompt (AI recommendations removed, only searched food shown)
                 ElementPopUpContainer(delayMillis = 140) {
                     Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+                        val query = uiState.searchQuery.trim()
+                        if (query.isBlank()) {
+                            // Empty state prompting user to search
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    text = "🔍",
+                                    fontSize = 44.sp,
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Search for Any Food",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Type in the search bar above to view dishes, calories, and macros.",
+                                    fontSize = 13.sp,
+                                    color = AppTheme.colors.textSecondary,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 18.sp,
+                                    modifier = Modifier.padding(horizontal = 24.dp),
+                                )
+                                Spacer(modifier = Modifier.height(18.dp))
+                                Text(
+                                    text = "Popular Searches:",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppTheme.colors.textMuted,
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                                ) {
+                                    listOf("Dosa", "Idli", "Chapati", "Dal", "Paneer", "Salad", "Oats", "Egg", "Rice").forEach { dish ->
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .background(AppTheme.colors.secondaryBackground)
+                                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                                                .clickable { viewModel.onDailyDietSearchChanged(dish) }
+                                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                        ) {
+                                            Text(
+                                                text = dish,
+                                                fontSize = 12.sp,
+                                                color = AppTheme.colors.textPrimary,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
                             Text(
-                                text = "✨ AI Recommended for You",
+                                text = "Search Results (${uiState.filteredMeals.size} found)",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.textPrimary,
                             )
 
-                            if (aiState.isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = Color(0xFFA855F7),
-                                )
-                            }
-                        }
+                            Spacer(modifier = Modifier.height(10.dp))
 
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        val recommendations = aiState.data?.recommendations ?: emptyList()
-                        if (recommendations.isNotEmpty()) {
-                            recommendations.take(4).forEach { rec ->
-                                AiRecommendedFoodCard(
-                                    item = rec,
-                                    onClick = { onMealDetailsClick(rec.category.lowercase(), rec.id, rec.title) },
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                            }
-                        } else if (!aiState.isLoading) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                                    .padding(12.dp),
-                            ) {
-                                Text(
-                                    text = "Analyzing your profile and nutritional dataset to rank optimal meals...",
-                                    fontSize = 12.sp,
-                                    color = AppTheme.colors.textSecondary,
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Explore Meals List from Dataset
-                ElementPopUpContainer(delayMillis = 200) {
-                    Column {
-                        Text(
-                            text = "Explore meals (${uiState.filteredMeals.size} available)",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        if (uiState.filteredMeals.isNotEmpty()) {
-                            uiState.filteredMeals.forEach { meal ->
-                                ExploreMealCard(
-                                    icon = meal.icon,
-                                    category = meal.category.uppercase(),
-                                    name = meal.title,
-                                    serving = "${meal.portion} • ${meal.calories}",
-                                    macros = "C:${meal.carbsG.toInt()}g • P:${meal.proteinG.toInt()}g • F:${meal.fatG.toInt()}g",
-                                    onClick = { onMealDetailsClick(meal.category.lowercase(), meal.id, meal.title) },
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                            }
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 24.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "No matching dishes found in nutrition dataset.",
-                                    fontSize = 13.sp,
-                                    color = AppTheme.colors.textSecondary,
-                                )
+                            if (uiState.filteredMeals.isNotEmpty()) {
+                                uiState.filteredMeals.forEach { meal ->
+                                    ExploreMealCard(
+                                        icon = meal.icon,
+                                        category = meal.category.uppercase(),
+                                        name = meal.title,
+                                        serving = "${meal.portion} • ${meal.calories}",
+                                        macros = "C:${meal.carbsG.toInt()}g • P:${meal.proteinG.toInt()}g • F:${meal.fatG.toInt()}g",
+                                        onClick = { onMealDetailsClick(meal.category.lowercase(), meal.id, meal.title) },
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "🍽️",
+                                            fontSize = 32.sp,
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = "No matching dishes found for \"$query\"",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = AppTheme.colors.textSecondary,
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
