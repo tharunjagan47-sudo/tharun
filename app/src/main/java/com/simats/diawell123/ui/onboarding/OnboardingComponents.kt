@@ -34,7 +34,7 @@ fun OnboardingTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(top = 16.dp, bottom = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -122,6 +122,8 @@ fun OnboardingGradientButton(
     IosLiquidGlassButton(
         text = text,
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp),
     )
 }
