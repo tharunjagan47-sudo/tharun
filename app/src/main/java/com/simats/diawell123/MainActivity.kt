@@ -376,6 +376,9 @@ class MainActivity : FragmentActivity() {
 
                         "signup" -> SignUpScreen(
                             onSignUpSuccess = {
+                                ProfileState.init(applicationContext, sessionManager.getUserId())
+                                profileViewModel.clearError()
+                                profileViewModel.loadProfile()
                                 sessionManager.setAppUnlocked(true)
                                 currentScreen = "patient_profile"
                             },
