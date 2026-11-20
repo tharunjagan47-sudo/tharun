@@ -45,7 +45,7 @@ fun MedicationOnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -58,10 +58,10 @@ fun MedicationOnboardingScreen(
             ) {
                 // Medication Illustration
                 MedicationIllustration(
-                    modifier = Modifier.size(260.dp)
+                    modifier = Modifier.size(240.dp)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 // Badge
                 OnboardingBadge(text = "BUILD A DAILY ROUTINE")
@@ -100,7 +100,7 @@ fun MedicationOnboardingScreen(
             ) {
                 OnboardingPageIndicator(pageCount = 3, currentPage = 1)
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 OnboardingGradientButton(
                     text = "→  Next",
