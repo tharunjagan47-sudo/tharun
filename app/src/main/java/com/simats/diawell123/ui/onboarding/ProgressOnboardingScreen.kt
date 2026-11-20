@@ -46,7 +46,7 @@ fun ProgressOnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -59,10 +59,10 @@ fun ProgressOnboardingScreen(
             ) {
                 // Progress Illustration
                 ProgressIllustration(
-                    modifier = Modifier.size(260.dp)
+                    modifier = Modifier.size(240.dp)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 // Badge
                 OnboardingBadge(text = "SEE YOUR PROGRESS")
@@ -101,7 +101,7 @@ fun ProgressOnboardingScreen(
             ) {
                 OnboardingPageIndicator(pageCount = 3, currentPage = 2)
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 OnboardingGradientButton(
                     text = "→  Get Started",
