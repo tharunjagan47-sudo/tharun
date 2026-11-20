@@ -821,47 +821,6 @@ fun SetMedicationReminderScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Test Notification Now Button (for instant project review demonstration)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(AppTheme.colors.secondaryBackground)
-                    .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(14.dp))
-                    .clickable {
-                        val existingMed = listState.data?.medications?.lastOrNull {
-                            it.name.equals(activeName.trim(), ignoreCase = true)
-                        }
-                        val testMedId = existingMed?.id?.takeIf { it > 0 } ?: 9999
-                        val resolvedUserId = try {
-                            SessionManager.init(context.applicationContext)
-                            SessionManager.getInstance().getUserId() ?: -1
-                        } catch (_: Exception) { -1 }
-
-                        DiaWellNotificationHelper.triggerMedicationAlarm(
-                            context = context,
-                            medId = testMedId,
-                            medName = existingMed?.name?.ifBlank { activeName } ?: activeName,
-                            dosage = "$activeDose • $selectedTiming",
-                            scheduledTime = existingMed?.reminderTime?.ifBlank { selectedTime } ?: selectedTime,
-                            userId = resolvedUserId,
-                            isDaily = isDailySchedule
-                        )
-                    }
-                    .padding(vertical = 10.dp, horizontal = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "🔔 Test Full-Screen Alarm Now",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFA855F7)
-                )
-            }
-
             Spacer(modifier = Modifier.height(48.dp))
         }
 
