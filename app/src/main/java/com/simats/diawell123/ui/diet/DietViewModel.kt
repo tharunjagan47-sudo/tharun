@@ -426,6 +426,69 @@ class DietViewModel(
     }
 
     /**
+     * Logs any custom food or searched meal directly into the user's food log.
+     */
+    fun logCustomMeal(
+        category: String,
+        title: String,
+        portion: String,
+        calories: Int,
+        carbs: Float = 25f,
+        protein: Float = 10f,
+        fat: Float = 5f,
+        icon: String = "🥗",
+        onSuccess: () -> Unit = {}
+    ) {
+        viewModelScope.launch(exceptionHandler) {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val dateStr = sdf.format(_dailyDietState.value.selectedDateCalendar.time)
+            val timeSdf = SimpleDateFormat("h:mm a", Locale.getDefault())
+            val currentTimeStr = timeSdf.format(Calendar.getInstance().time)
+
+            val cat = category.uppercase()
+            val request = FoodLogRequest(
+                mealCategory = cat,
+                foodName = title,
+                portion = portion,
+                calories = calories,
+                carbsG = carbs,
+                proteinG = protein,
+                fatG = fat,
+                icon = icon,
+                logDate = dateStr,
+                logTime = currentTimeStr
+            )
+
+            val newLogItem = FoodLogItem(
+                id = (System.currentTimeMillis() % 100000).toInt(),
+                category = cat,
+                time = currentTimeStr,
+                title = title,
+                portion = portion,
+                calories = "$calories kcal",
+                caloriesNum = calories,
+                carbsG = carbs,
+                proteinG = protein,
+                fatG = fat,
+                icon = icon
+            )
+
+            val result = dietRepository.logMeal(request)
+            result.onSuccess { loggedItem ->
+                _foodLogState.update { state ->
+                    state.copy(meals = state.meals + loggedItem)
+                }
+                onSuccess()
+            }.onFailure {
+                _foodLogState.update { state ->
+                    state.copy(meals = state.meals + newLogItem)
+                }
+                onSuccess()
+            }
+        }
+    }
+
+    /**
      * Refreshes or cycles the AI Daily Rotating Non-Repeating Food Recommendation.
      */
     fun refreshDailyRecommendation(

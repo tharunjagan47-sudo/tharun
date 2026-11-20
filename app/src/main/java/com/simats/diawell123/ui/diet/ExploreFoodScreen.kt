@@ -35,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +56,7 @@ fun ExploreFoodScreen(
     onBackClick: () -> Unit = {},
     onMealDetailsClick: (category: String, foodId: Int?, dishName: String?) -> Unit = { _, _, _ -> },
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.dailyDietState.collectAsState()
     val aiState by viewModel.aiRecommendationsState.collectAsState()
 
@@ -305,6 +308,22 @@ fun ExploreFoodScreen(
                                         serving = "${meal.portion} • ${meal.calories}",
                                         macros = "C:${meal.carbsG.toInt()}g • P:${meal.proteinG.toInt()}g • F:${meal.fatG.toInt()}g",
                                         onClick = { onMealDetailsClick(meal.category.lowercase(), meal.id, meal.title) },
+                                        onAddClick = {
+                                            val calNum = meal.calories.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 250
+                                            viewModel.logCustomMeal(
+                                                category = meal.category,
+                                                title = meal.title,
+                                                portion = meal.portion,
+                                                calories = calNum,
+                                                carbs = meal.carbsG,
+                                                protein = meal.proteinG,
+                                                fat = meal.fatG,
+                                                icon = meal.icon,
+                                                onSuccess = {
+                                                    Toast.makeText(context, "Added ${meal.title} to your food log!", Toast.LENGTH_SHORT).show()
+                                                }
+                                            )
+                                        }
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
                                 }
@@ -502,6 +521,7 @@ fun ExploreMealCard(
     serving: String,
     macros: String,
     onClick: () -> Unit = {},
+    onAddClick: (() -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
@@ -517,10 +537,13 @@ fun ExploreMealCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(text = icon, fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(12.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = category,
                         fontSize = 10.sp,
@@ -547,16 +570,24 @@ fun ExploreMealCard(
                 }
             }
 
-            Text(
-                text = "+ Add",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFA855F7),
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
                     .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-            )
+                    .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                    .clickable { onAddClick?.invoke() }
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "+ Add",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFA855F7),
+                )
+            }
         }
     }
 }

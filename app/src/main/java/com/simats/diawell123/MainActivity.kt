@@ -173,6 +173,7 @@ class MainActivity : FragmentActivity() {
                 var selectedTabletName by remember { mutableStateOf("Metformin") }
                 var selectedTabletDose by remember { mutableStateOf("500 mg • 1 Tablet") }
                 var exportReturnScreen by remember { mutableStateOf("privacy_security") }
+                var exploreFoodReturnScreen by remember { mutableStateOf("daily_diet_plan") }
 
                 val sessionManager = remember {
                     try {
@@ -475,7 +476,10 @@ class MainActivity : FragmentActivity() {
                                 currentScreen = "food_details"
                             },
                             onFoodLogClick = { currentScreen = "food_log" },
-                            onExploreFoodClick = { currentScreen = "explore_food" },
+                            onExploreFoodClick = {
+                                exploreFoodReturnScreen = "daily_diet_plan"
+                                currentScreen = "explore_food"
+                            },
                             onHomeTabClick = { currentScreen = "home" },
                             onDietTabClick = { currentScreen = "daily_diet_plan" },
                             onMedsTabClick = { currentScreen = "medications" },
@@ -485,7 +489,7 @@ class MainActivity : FragmentActivity() {
 
                         "explore_food" -> ExploreFoodScreen(
                             viewModel = dietViewModel,
-                            onBackClick = { currentScreen = "daily_diet_plan" },
+                            onBackClick = { currentScreen = exploreFoodReturnScreen },
                             onMealDetailsClick = { category, foodId, dishName ->
                                 selectedMealCategory = category
                                 selectedFoodId = foodId
@@ -499,14 +503,17 @@ class MainActivity : FragmentActivity() {
                             foodId = selectedFoodId,
                             dishName = selectedDishName,
                             viewModel = dietViewModel,
-                            onBackClick = { currentScreen = "daily_diet_plan" },
+                            onBackClick = { currentScreen = exploreFoodReturnScreen },
                             onAddToFoodLogClick = { currentScreen = "food_log" },
                         )
 
                         "food_log" -> FoodLogScreen(
                             viewModel = dietViewModel,
                             onBackClick = { currentScreen = "home" },
-                            onAddFoodClick = { currentScreen = "explore_food" },
+                            onAddFoodClick = {
+                                exploreFoodReturnScreen = "food_log"
+                                currentScreen = "explore_food"
+                            },
                             onNutritionSummaryClick = { currentScreen = "nutrition_summary" },
                         )
 

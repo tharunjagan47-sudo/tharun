@@ -101,6 +101,16 @@ fun DailyDietPlanScreen(
         }
     }
 
+    LaunchedEffect(uiState.selectedCategory) {
+        viewModel.refreshDailyRecommendation(context, category = uiState.selectedCategory)
+    }
+
+    LaunchedEffect(dailyRecState.logSuccessMessage) {
+        dailyRecState.logSuccessMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     val patientContext = aiState.data?.patientContext
     val currentGlucose = aiState.activeGlucose ?: patientContext?.currentGlucoseMgDl ?: 120f
     val currentDietPref = aiState.activeDietPreference.ifBlank { patientContext?.dietaryPreference ?: "Vegetarian" }
@@ -1427,7 +1437,7 @@ fun AiFoodRecommendationForHealthCard(
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
                     Text(
-                        text = "AI Food Recommendation...",
+                        text = "✨ AI Recommendation",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF581C87),
