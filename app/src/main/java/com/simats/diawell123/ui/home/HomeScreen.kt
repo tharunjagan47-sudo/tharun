@@ -665,51 +665,6 @@ fun HomeScreen(
                     }
                 }
 
-
-                // 5. Vibrant Quick Actions
-                ElementPopUpContainer(delayMillis = 240) {
-                    Column {
-                        Text(
-                            text = "Quick Actions",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        FloatingBubbleContainer(phaseOffsetMs = 250) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                VibrantQuickActionButton(
-                                    title = "Log Glucose",
-                                    icon = "🩸",
-                                    gradientColors = listOf(Color(0xFFE53935), Color(0xFFFF5722)),
-                                    onClick = onLogGlucoseClick,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                VibrantQuickActionButton(
-                                    title = "Log Meal",
-                                    icon = "🥗",
-                                    gradientColors = listOf(Color(0xFF2E7D32), Color(0xFF4CAF50)),
-                                    onClick = onTrackFoodClick,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                VibrantQuickActionButton(
-                                    title = "Activity",
-                                    icon = "🏃‍♂️",
-                                    gradientColors = listOf(Color(0xFF00E5FF), Color(0xFF00838F)),
-                                    onClick = onActivityTrackingClick,
-                                    modifier = Modifier.weight(1f),
-                                )
-                            }
-                        }
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(116.dp).navigationBarsPadding())
             }
         }
