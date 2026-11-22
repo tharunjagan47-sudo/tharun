@@ -25,21 +25,32 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -97,6 +108,7 @@ import java.util.Locale
 /**
  * Main Dr. Jarvis AI Chat Screen with Diabetes Visual Styling and Speech-to-Text.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChatScreen(
     modifier: Modifier = Modifier,
@@ -104,6 +116,8 @@ fun ChatScreen(
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val isKeyboardOpen = WindowInsets.isImeVisible
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -161,10 +175,23 @@ fun ChatScreen(
         )
     }
 
-    // Auto-scroll to bottom on new messages or loading change
+    // Auto-scroll to bottom on new messages, loading change, or keyboard open
     LaunchedEffect(messages.size, isLoading) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
+        }
+    }
+
+    LaunchedEffect(isKeyboardOpen) {
+        if (isKeyboardOpen && messages.isNotEmpty()) {
+            delay(120)
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
+
+    LaunchedEffect(inputText) {
+        if (inputText.isNotEmpty() && messages.isNotEmpty()) {
+            listState.scrollToItem(messages.size - 1)
         }
     }
 
@@ -253,8 +280,9 @@ fun ChatScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
+                .statusBarsPadding()
+                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
+                .imeNestedScroll()
         ) {
 
             // -----------------------------------------------------------------
@@ -369,52 +397,58 @@ fun ChatScreen(
             }
 
             // -----------------------------------------------------------------
-            // Clinical Safety Disclaimer + Siri Voice Mode Action Strip
+            // Clinical Safety Disclaimer + Siri Voice Mode Action Strip (hides during typing)
             // -----------------------------------------------------------------
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(AppTheme.colors.elevatedSurface)
-                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            AnimatedVisibility(
+                visible = !isKeyboardOpen,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.elevatedSurface)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    Text(text = "🩺", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Wellness & diet guidance. Consult your doctor for med edits.",
-                        fontSize = 11.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
-                        lineHeight = 15.sp,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
-                                )
-                            )
-                            .clickable { startVoiceInput() }
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Text(text = "🩺", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "🎙️ Voice",
+                            text = "Wellness & diet guidance. Consult your doctor for med edits.",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            maxLines = 1,
-                            softWrap = false
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
+                            lineHeight = 15.sp,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 8.dp)
                         )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
+                                    )
+                                )
+                                .clickable { startVoiceInput() }
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎙️ Voice",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
                     }
                 }
             }
@@ -498,7 +532,13 @@ fun ChatScreen(
                 state = listState,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        focusManager.clearFocus()
+                    },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -568,41 +608,47 @@ fun ChatScreen(
             }
 
             // -----------------------------------------------------------------
-            // Quick Prompt Suggestion Chips
+            // Quick Prompt Suggestion Chips (collapses when keyboard is open to maximize chat view)
             // -----------------------------------------------------------------
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            AnimatedVisibility(
+                visible = !isKeyboardOpen && messages.size <= 2,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
             ) {
-                val suggestions = listOf(
-                    "🌾 3 high-fibre Indian foods",
-                    "🚶 Walking MET value for 30 mins",
-                    "🚨 What to do if glucose < 70 mg/dL?",
-                    "🥗 Low carbohydrate snacks"
-                )
-                suggestions.forEach { prompt ->
-                    val cleanPrompt = prompt.substringAfter(" ")
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(AppTheme.colors.elevatedSurface)
-                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                            .clickable { submitQuery(cleanPrompt, fromVoice = false) }
-                            .padding(horizontal = 12.dp, vertical = 7.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = prompt,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
-                            maxLines = 1,
-                            softWrap = false
-                        )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val suggestions = listOf(
+                        "🌾 3 high-fibre Indian foods",
+                        "🚶 Walking MET value for 30 mins",
+                        "🚨 What to do if glucose < 70 mg/dL?",
+                        "🥗 Low carbohydrate snacks"
+                    )
+                    suggestions.forEach { prompt ->
+                        val cleanPrompt = prompt.substringAfter(" ")
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(AppTheme.colors.elevatedSurface)
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                                .clickable { submitQuery(cleanPrompt, fromVoice = false) }
+                                .padding(horizontal = 12.dp, vertical = 7.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = prompt,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
                     }
                 }
             }
@@ -619,7 +665,7 @@ fun ChatScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -656,7 +702,7 @@ fun ChatScreen(
                             )
                         },
                         singleLine = false,
-                        maxLines = 3,
+                        maxLines = 4,
                         shape = RoundedCornerShape(24.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = AppTheme.colors.textPrimary,
@@ -664,11 +710,12 @@ fun ChatScreen(
                             focusedContainerColor = AppTheme.colors.inputBackground,
                             unfocusedContainerColor = AppTheme.colors.inputBackground,
                             focusedBorderColor = Color(0xFFA855F7),
-                            unfocusedBorderColor = AppTheme.colors.inputBorder
+                            unfocusedBorderColor = AppTheme.colors.inputBorder,
+                            cursorColor = Color(0xFFA855F7)
                         ),
                         modifier = Modifier
                             .weight(1f)
-                            .heightIn(min = 46.dp)
+                            .heightIn(min = 46.dp, max = 120.dp)
                     )
 
                     // Send Button with Crisp Centered Vector Arrow
