@@ -68,7 +68,7 @@ fun NotificationsScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar
@@ -82,7 +82,7 @@ fun NotificationsScreen(
 
                     Text(
                         text = "Notifications",
-                        fontSize = 20.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
                     )
@@ -213,11 +213,11 @@ fun NotificationItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(if (isUnread) Color(0xFFF5F3FF) else Color.White)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (isUnread) (if (AppTheme.colors.isDark) Color(0x33A855F7) else Color(0xFFF5F3FF)) else AppTheme.colors.cardBackground)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .padding(14.dp),
+            .padding(16.dp),
     ) {
         Column {
             Text(
