@@ -260,7 +260,7 @@ fun MedAlarmScreen(
                 )
             )
             .systemBarsPadding()
-            .padding(24.dp)
+            .padding(20.dp)
     ) {
         Column(
             modifier = Modifier
