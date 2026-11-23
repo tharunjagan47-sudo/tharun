@@ -30,6 +30,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Emergency
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Help
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -144,7 +154,12 @@ fun HelpSupportScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(22.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
@@ -176,7 +191,12 @@ fun HelpSupportScreen(
                         .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = "💬", fontSize = 28.sp)
+                    Icon(
+                        imageVector = Icons.Rounded.Help,
+                        contentDescription = null,
+                        tint = Color(0xFFA855F7),
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -206,21 +226,25 @@ fun HelpSupportScreen(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 leadingIcon = {
-                    Text(
-                        text = "🔍",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+                    Icon(
+                        imageVector = Icons.Rounded.Search,
+                        contentDescription = "Search",
+                        tint = AppTheme.colors.textMuted,
+                        modifier = Modifier
+                            .padding(start = 12.dp, end = 4.dp)
+                            .size(20.dp),
                     )
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        Text(
-                            text = "✕",
-                            fontSize = 15.sp,
-                            color = AppTheme.colors.textMuted,
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Clear",
+                            tint = AppTheme.colors.textMuted,
                             modifier = Modifier
                                 .clickable { searchQuery = "" }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                                .size(18.dp),
                         )
                     }
                 },
@@ -319,7 +343,12 @@ fun HelpSupportScreen(
                             .background(Color(0xFFFFCDD2)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "🚨", fontSize = 22.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.Emergency,
+                            contentDescription = null,
+                            tint = Color(0xFFC62828),
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
@@ -438,7 +467,12 @@ fun HelpSupportScreen(
                             .background(AppTheme.colors.secondaryBackground),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✉️", fontSize = 20.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.Email,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
@@ -513,10 +547,11 @@ fun FaqAccordionItem(
                     lineHeight = 18.sp,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isExpanded) "▲" else "▼",
-                    fontSize = 11.sp,
-                    color = AppTheme.colors.textMuted,
+                Icon(
+                    imageVector = if (isExpanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                    contentDescription = null,
+                    tint = AppTheme.colors.textMuted,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
