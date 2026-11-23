@@ -34,7 +34,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CenterFocusStrong
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Coffee
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.FlashOn
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.PhotoCamera
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.WbSunny
+import androidx.compose.material.icons.rounded.WbTwilight
+import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -139,17 +156,31 @@ fun SnapFoodCameraOverlay(
                             .clickable { onDismiss() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Close",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
 
                     // Header title & tips
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "📸 Snap Food",
-                            color = Color.White,
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.CenterFocusStrong,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Snap Food",
+                                color = Color.White,
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Text(
                             text = "AI Nutrition & Macro Scanner",
                             color = Color(0xFFC084FC),
@@ -169,7 +200,12 @@ fun SnapFoodCameraOverlay(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "⚡", color = Color.White, fontSize = 16.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.FlashOn,
+                            contentDescription = "Flash",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
 
@@ -205,7 +241,12 @@ fun SnapFoodCameraOverlay(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Text(text = "🍽️", fontSize = 48.sp)
+                                Icon(
+                                    imageVector = Icons.Rounded.Restaurant,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(48.dp)
+                                )
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
                                     text = "Align meal within frame",
@@ -295,7 +336,12 @@ fun SnapFoodCameraOverlay(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "🖼️", fontSize = 20.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.Image,
+                                contentDescription = "Gallery",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
 
                         // Shutter Button
@@ -436,7 +482,12 @@ fun MealNutritionBreakdownSheet(
                             .clickable { onDismiss() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Close",
+                            tint = AppTheme.colors.textPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
 
                     Text(
@@ -454,7 +505,12 @@ fun MealNutritionBreakdownSheet(
                             .background(Color(0xFFA855F7).copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = dishIcon, fontSize = 20.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.Restaurant,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
 
@@ -491,7 +547,13 @@ fun MealNutritionBreakdownSheet(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf("Breakfast" to "🌅", "Lunch" to "☀️", "Snack" to "☕", "Dinner" to "🌙").forEach { (slot, emoji) ->
+                    val slots = listOf(
+                        "Breakfast" to Icons.Rounded.WbTwilight,
+                        "Lunch" to Icons.Rounded.WbSunny,
+                        "Snack" to Icons.Rounded.Coffee,
+                        "Dinner" to Icons.Rounded.DarkMode
+                    )
+                    slots.forEach { (slot, vectorIcon) ->
                         val isSelected = selectedMealSlot.equals(slot, ignoreCase = true)
                         Box(
                             modifier = Modifier
@@ -511,12 +573,21 @@ fun MealNutritionBreakdownSheet(
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "$emoji $slot",
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else AppTheme.colors.textSecondary
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = vectorIcon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) Color.White else AppTheme.colors.textSecondary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = slot,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) Color.White else AppTheme.colors.textSecondary
+                                )
+                            }
                         }
                     }
                 }
@@ -553,12 +624,21 @@ fun MealNutritionBreakdownSheet(
                             .clickable { showChangeFoodDialog = true }
                             .padding(horizontal = 10.dp, vertical = 7.dp)
                     ) {
-                        Text(
-                            text = "🔄 Change Food",
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6B21A8)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = null,
+                                tint = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6B21A8),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Change Food",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6B21A8)
+                            )
+                        }
                     }
                 }
 
@@ -655,12 +735,21 @@ fun MealNutritionBreakdownSheet(
                             letterSpacing = 1.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "🔥 $totalCalories kcal",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.LocalFireDepartment,
+                                contentDescription = null,
+                                tint = Color(0xFFFF5722),
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "$totalCalories kcal",
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Scaled for $servingCount ${if (servingCount == 1) "serving" else "servings"}",
@@ -703,16 +792,29 @@ fun MealNutritionBreakdownSheet(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "🏆 Glycemic & Health Score",
-                                fontSize = 12.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = when {
-                                    activeGlycemicScore >= 8.5f -> if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857)
-                                    activeGlycemicScore >= 7.0f -> if (isDark) Color(0xFFFDE68A) else Color(0xFFB45309)
-                                    else -> if (isDark) Color(0xFFFCA5A5) else Color(0xFFB91C1C)
-                                }
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.WorkspacePremium,
+                                    contentDescription = null,
+                                    tint = when {
+                                        activeGlycemicScore >= 8.5f -> if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857)
+                                        activeGlycemicScore >= 7.0f -> if (isDark) Color(0xFFFDE68A) else Color(0xFFB45309)
+                                        else -> if (isDark) Color(0xFFFCA5A5) else Color(0xFFB91C1C)
+                                    },
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Glycemic & Health Score",
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = when {
+                                        activeGlycemicScore >= 8.5f -> if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857)
+                                        activeGlycemicScore >= 7.0f -> if (isDark) Color(0xFFFDE68A) else Color(0xFFB45309)
+                                        else -> if (isDark) Color(0xFFFCA5A5) else Color(0xFFB91C1C)
+                                    }
+                                )
+                            }
 
                             Text(
                                 text = "$activeGlycemicScore / 10",
@@ -818,7 +920,12 @@ fun MealNutritionBreakdownSheet(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "✕", fontSize = 11.sp, color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = "Remove",
+                                        tint = Color(0xFFEF4444),
+                                        modifier = Modifier.size(14.dp)
+                                    )
                                 }
                             }
                         }
@@ -859,12 +966,21 @@ fun MealNutritionBreakdownSheet(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "✅ Done • Log to Today's Diet",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Log to Today's Diet",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -972,7 +1088,12 @@ private fun ChangeFoodDialog(
                             .clickable { onDismiss() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Close",
+                            tint = AppTheme.colors.textPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1016,12 +1137,21 @@ private fun ChangeFoodDialog(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "📸 Snapped Photo",
-                                fontSize = 12.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFA855F7)
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.PhotoCamera,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Snapped Photo",
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFA855F7)
+                                )
+                            }
                             Text(
                                 text = "Select your matching meal below for accurate carbs & calories",
                                 fontSize = 11.sp,
@@ -1102,7 +1232,12 @@ private fun ChangeFoodDialog(
                             .padding(horizontal = 14.dp, vertical = 10.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "✏️", fontSize = 16.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(18.dp)
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
@@ -1154,7 +1289,20 @@ private fun ChangeFoodDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = item.icon, fontSize = 24.sp)
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Restaurant,
+                                        contentDescription = null,
+                                        tint = Color(0xFFA855F7),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1252,7 +1400,12 @@ fun SnapFoodAnalyzingDialog() {
                         color = Color(0xFFA855F7),
                         strokeWidth = 4.dp
                     )
-                    Text(text = "🥗", fontSize = 30.sp)
+                    Icon(
+                        imageVector = Icons.Rounded.Restaurant,
+                        contentDescription = null,
+                        tint = Color(0xFFA855F7),
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
