@@ -17,9 +17,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -98,10 +104,13 @@ fun SearchMedicationScreen(
                     viewModel.searchMedications(it)
                 },
                 leadingIcon = {
-                    Text(
-                        text = "🔍",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+                    Icon(
+                        imageVector = Icons.Rounded.Search,
+                        contentDescription = "Search",
+                        tint = AppTheme.colors.textMuted,
+                        modifier = Modifier
+                            .padding(start = 12.dp, end = 4.dp)
+                            .size(20.dp),
                     )
                 },
                 placeholder = {
@@ -124,16 +133,17 @@ fun SearchMedicationScreen(
                                 .padding(end = 4.dp)
                         )
                     } else if (searchQuery.isNotEmpty()) {
-                        Text(
-                            text = "✕",
-                            fontSize = 15.sp,
-                            color = AppTheme.colors.textMuted,
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Clear",
+                            tint = AppTheme.colors.textMuted,
                             modifier = Modifier
                                 .clickable {
                                     searchQuery = ""
                                     viewModel.searchMedications("")
                                 }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                                .size(18.dp),
                         )
                     }
                 },
@@ -228,11 +238,20 @@ fun SearchMedicationScreen(
                                 modifier = Modifier.weight(1f).padding(end = 8.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
-                                Text(
-                                    text = tablet.icon.ifBlank { "💊" },
-                                    fontSize = 28.sp,
-                                    modifier = Modifier.padding(top = 2.dp)
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Medication,
+                                        contentDescription = null,
+                                        tint = Color(0xFFA855F7),
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
