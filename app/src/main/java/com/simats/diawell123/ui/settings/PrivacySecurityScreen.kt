@@ -22,6 +22,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Article
+import androidx.compose.material.icons.rounded.Backspace
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Fingerprint
+import androidx.compose.material.icons.rounded.InsertChart
+import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Pin
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -36,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -103,13 +117,13 @@ fun PrivacySecurityScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Change Password Row
-            PrivacyLinkRow(icon = "🔑", title = "Change Password", onClick = onChangePasswordClick)
+            PrivacyLinkRow(vectorIcon = Icons.Rounded.Key, title = "Change Password", onClick = onChangePasswordClick)
 
             Spacer(modifier = Modifier.height(10.dp))
 
             // App Lock Toggle Row
             PrivacyToggleRow(
-                icon = "🔒",
+                vectorIcon = Icons.Rounded.Lock,
                 title = "App Lock",
                 subtitle = "Require passcode on open",
                 checked = privacyState.appLock,
@@ -119,7 +133,7 @@ fun PrivacySecurityScreen(
                             showSetPinDialog = true
                         } else {
                             viewModel.toggleAppLock(true)
-                            Toast.makeText(context, "App Lock enabled (Passcode required on open) ✓", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "App Lock enabled (Passcode required on open)", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         viewModel.toggleAppLock(false)
@@ -131,7 +145,7 @@ fun PrivacySecurityScreen(
             if (privacyState.appLock) {
                 Spacer(modifier = Modifier.height(10.dp))
                 PrivacyLinkRow(
-                    icon = "🔢",
+                    vectorIcon = Icons.Rounded.Pin,
                     title = "Change 4-Digit Passcode",
                     onClick = { showSetPinDialog = true }
                 )
@@ -141,7 +155,7 @@ fun PrivacySecurityScreen(
 
             // Biometric Unlock Toggle Row
             PrivacyToggleRow(
-                icon = "👆",
+                vectorIcon = Icons.Rounded.Fingerprint,
                 title = "Biometric Unlock",
                 subtitle = "Use Fingerprint or Face ID",
                 checked = privacyState.biometricUnlock,
@@ -157,12 +171,12 @@ fun PrivacySecurityScreen(
                                     title = "Confirm Biometric Unlock",
                                     subtitle = "Verify your fingerprint or face to activate",
                                     onSuccess = {
-                                        Toast.makeText(context, "Biometric Unlock enabled and verified! ✓", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Biometric Unlock enabled and verified!", Toast.LENGTH_SHORT).show()
                                     },
                                     onError = { _, _ -> }
                                 )
                             } else {
-                                Toast.makeText(context, "Biometric Unlock enabled! ✓", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Biometric Unlock enabled!", Toast.LENGTH_SHORT).show()
                             }
                         } else {
                             val msg = BiometricHelper.getBiometricStatusMessage(context)
@@ -179,7 +193,7 @@ fun PrivacySecurityScreen(
 
             // Data and AI Preferences Toggle Row
             PrivacyToggleRow(
-                icon = "📊",
+                vectorIcon = Icons.Rounded.InsertChart,
                 title = "Data and AI Preferences",
                 subtitle = "Use anonymized data for general AI suggestions",
                 checked = privacyState.dataAiPrefs,
@@ -191,9 +205,9 @@ fun PrivacySecurityScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            PrivacyLinkRow(icon = "📄", title = "Privacy Policy", onClick = onPrivacyPolicyClick)
+            PrivacyLinkRow(vectorIcon = Icons.Rounded.Description, title = "Privacy Policy", onClick = onPrivacyPolicyClick)
             Spacer(modifier = Modifier.height(10.dp))
-            PrivacyLinkRow(icon = "📜", title = "Terms of Use", onClick = onTermsOfUseClick)
+            PrivacyLinkRow(vectorIcon = Icons.Rounded.Article, title = "Terms of Use", onClick = onTermsOfUseClick)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -207,9 +221,9 @@ fun PrivacySecurityScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            PrivacyLinkRow(icon = "📥", title = "Export Records", onClick = onExportRecordsClick)
+            PrivacyLinkRow(vectorIcon = Icons.Rounded.Download, title = "Export Records", onClick = onExportRecordsClick)
             Spacer(modifier = Modifier.height(10.dp))
-            PrivacyLinkRow(icon = "🗑️", title = "Delete Account", isDestructive = true, onClick = onDeleteAccountClick)
+            PrivacyLinkRow(vectorIcon = Icons.Rounded.Delete, title = "Delete Account", isDestructive = true, onClick = onDeleteAccountClick)
 
             Spacer(modifier = Modifier.height(100.dp))
         }
@@ -222,7 +236,7 @@ fun PrivacySecurityScreen(
                 sessionManager.setAppLockPin(pin)
                 viewModel.toggleAppLock(true)
                 showSetPinDialog = false
-                Toast.makeText(context, "4-digit passcode saved! App Lock is now active. ✓", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "4-digit passcode saved! App Lock is now active.", Toast.LENGTH_SHORT).show()
             }
         )
     }
@@ -411,7 +425,12 @@ fun SetAppLockPinDialog(
                             ) { handleBackspace() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "⌫", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Icon(
+                            imageVector = Icons.Rounded.Backspace,
+                            contentDescription = "Backspace",
+                            tint = AppTheme.colors.textPrimary,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                 }
 
@@ -427,7 +446,8 @@ fun SetAppLockPinDialog(
 
 @Composable
 fun PrivacyLinkRow(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     title: String,
     isDestructive: Boolean = false,
     onClick: () -> Unit = {},
@@ -435,9 +455,9 @@ fun PrivacyLinkRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -447,23 +467,46 @@ fun PrivacyLinkRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = icon, fontSize = 18.sp)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(if (isDestructive) Color(0xFFEF4444).copy(alpha = 0.12f) else Color(0xFF7C3AED).copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (vectorIcon != null) {
+                        Icon(
+                            imageVector = vectorIcon,
+                            contentDescription = null,
+                            tint = if (isDestructive) Color(0xFFEF4444) else Color(0xFFA855F7),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    } else if (icon.isNotEmpty()) {
+                        Text(text = icon, fontSize = 16.sp)
+                    }
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = title,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isDestructive) Color(0xFFD32F2F) else AppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isDestructive) Color(0xFFEF4444) else AppTheme.colors.textPrimary,
                 )
             }
-            Text(text = "›", fontSize = 18.sp, color = AppTheme.colors.textMuted)
+            Icon(
+                imageVector = Icons.Rounded.ChevronRight,
+                contentDescription = null,
+                tint = AppTheme.colors.textMuted,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
 
 @Composable
 fun PrivacyToggleRow(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     title: String,
     subtitle: String,
     checked: Boolean,
@@ -472,10 +515,10 @@ fun PrivacyToggleRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
-            .padding(12.dp),
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+            .padding(14.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -486,18 +529,35 @@ fun PrivacyToggleRow(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f),
             ) {
-                Text(text = icon, fontSize = 20.sp)
-                Spacer(modifier = Modifier.width(10.dp))
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF7C3AED).copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (vectorIcon != null) {
+                        Icon(
+                            imageVector = vectorIcon,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    } else if (icon.isNotEmpty()) {
+                        Text(text = icon, fontSize = 16.sp)
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
                         text = title,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = AppTheme.colors.textPrimary,
                     )
                     Text(
                         text = subtitle,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         color = AppTheme.colors.textSecondary,
                     )
                 }
