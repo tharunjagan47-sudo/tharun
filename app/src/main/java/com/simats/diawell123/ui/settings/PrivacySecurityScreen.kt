@@ -76,7 +76,7 @@ fun PrivacySecurityScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -91,50 +91,13 @@ fun PrivacySecurityScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Privacy and Security",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Settings",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Banner Card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                    .padding(14.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "🛡️", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column {
-                        Text(
-                            text = "Your choices, your control",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Good design privacy – these controls let you change security or data settings.",
-                            fontSize = 11.sp,
-                            color = AppTheme.colors.textSecondary,
-                            lineHeight = 15.sp,
-                        )
-                    }
-                }
+                Text(
+                    text = "Privacy & Security",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -248,18 +211,7 @@ fun PrivacySecurityScreen(
             Spacer(modifier = Modifier.height(10.dp))
             PrivacyLinkRow(icon = "🗑️", title = "Delete Account", isDestructive = true, onClick = onDeleteAccountClick)
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Review your data preferences regularly. All privacy settings are active and securely synchronized with your DiaWell account.",
-                fontSize = 11.sp,
-                color = AppTheme.colors.textMuted,
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-            )
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 
