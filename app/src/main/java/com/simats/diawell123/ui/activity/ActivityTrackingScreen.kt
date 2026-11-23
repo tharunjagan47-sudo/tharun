@@ -40,8 +40,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.DirectionsBike
+import androidx.compose.material.icons.rounded.DirectionsRun
+import androidx.compose.material.icons.rounded.DirectionsWalk
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -374,7 +387,12 @@ fun ActivityTrackingScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "🎉", fontSize = 24.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -409,12 +427,24 @@ fun ActivityTrackingScreen(
                         .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
                         .padding(12.dp),
                 ) {
-                    Text(
-                        text = "⚠️ ${trackingState.errorMessage}",
-                        fontSize = 12.sp,
-                        color = Color(0xFFC62828),
-                        lineHeight = 16.sp
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFC62828),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = trackingState.errorMessage ?: "",
+                            fontSize = 12.sp,
+                            color = Color(0xFFC62828),
+                            lineHeight = 16.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
 
@@ -424,7 +454,7 @@ fun ActivityTrackingScreen(
             val activityOptions = if (trackingState.recommendations.isNotEmpty()) {
                 trackingState.recommendations.map { it.activity to it.icon }
             } else {
-                listOf("Walking" to "🚶", "Cycling" to "🚴", "Running" to "🏃")
+                listOf("Walking" to "", "Cycling" to "", "Running" to "")
             }
 
             ElementPopUpContainer(delayMillis = 60) {
@@ -432,8 +462,13 @@ fun ActivityTrackingScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    activityOptions.forEach { (type, icon) ->
+                    activityOptions.forEach { (type, _) ->
                         val isSelected = trackingState.selectedActivity.equals(type, ignoreCase = true)
+                        val actOptVector = when {
+                            type.contains("walk", ignoreCase = true) -> Icons.Rounded.DirectionsWalk
+                            type.contains("cycl", ignoreCase = true) || type.contains("bike", ignoreCase = true) -> Icons.Rounded.DirectionsBike
+                            else -> Icons.Rounded.DirectionsRun
+                        }
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -465,9 +500,16 @@ fun ActivityTrackingScreen(
                                 .padding(vertical = 4.dp, horizontal = 4.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = icon, fontSize = 16.sp)
-                                Spacer(modifier = Modifier.width(6.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = actOptVector,
+                                    contentDescription = type,
+                                    tint = if (isSelected) Color.White else Color(0xFF0D9488),
+                                    modifier = Modifier.size(18.dp)
+                                )
                                 Text(
                                     text = type,
                                     fontSize = 13.sp,
@@ -619,21 +661,21 @@ fun ActivityTrackingScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         ActivityStatBox(
-                            icon = "📍",
+                            vectorIcon = Icons.Rounded.LocationOn,
                             title = "Distance",
                             value = "${String.format("%.2f", distanceCoveredKm)} km",
                             modifier = Modifier.weight(1f),
                         )
 
                         ActivityStatBox(
-                            icon = "🔥",
+                            vectorIcon = Icons.Rounded.LocalFireDepartment,
                             title = "Calories",
                             value = "$caloriesBurned kcal",
                             modifier = Modifier.weight(1f),
                         )
 
                         ActivityStatBox(
-                            icon = "❤️",
+                            vectorIcon = Icons.Rounded.Favorite,
                             title = "Heart Rate",
                             value = liveCyclingHeartRate,
                             modifier = Modifier.weight(1f),
@@ -646,21 +688,21 @@ fun ActivityTrackingScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         ActivityStatBox(
-                            icon = "📍",
+                            vectorIcon = Icons.Rounded.LocationOn,
                             title = "Distance",
                             value = "${String.format("%.2f", distanceCoveredKm)} km",
                             modifier = Modifier.weight(1f),
                         )
 
                         ActivityStatBox(
-                            icon = "🔥",
+                            vectorIcon = Icons.Rounded.LocalFireDepartment,
                             title = "Calories",
                             value = "$caloriesBurned kcal",
                             modifier = Modifier.weight(1f),
                         )
 
                         ActivityStatBox(
-                            icon = if (isRunning) "👟" else "👣",
+                            vectorIcon = Icons.Rounded.DirectionsWalk,
                             title = "Steps",
                             value = String.format("%,d", liveSteps),
                             modifier = Modifier.weight(1f),
@@ -682,7 +724,12 @@ fun ActivityTrackingScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.Top) {
-                        Text(text = "⚡", fontSize = 20.sp, modifier = Modifier.padding(top = 2.dp))
+                        Icon(
+                            imageVector = Icons.Rounded.AutoAwesome,
+                            contentDescription = null,
+                            tint = Color(0xFF0D9488),
+                            modifier = Modifier.size(18.dp).padding(top = 2.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -707,9 +754,14 @@ fun ActivityTrackingScreen(
                                         .clip(RoundedCornerShape(10.dp))
                                         .background(if (AppTheme.colors.isDark) Color(0xFF134E4A).copy(alpha = 0.5f) else Color(0xFFE8F5E9))
                                         .padding(8.dp)
-                                ) {
+                                    ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(text = "🛡", fontSize = 14.sp)
+                                        Icon(
+                                            imageVector = Icons.Rounded.Security,
+                                            contentDescription = null,
+                                            tint = Color(0xFF2E7D32),
+                                            modifier = Modifier.size(14.dp)
+                                        )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
                                             text = safetyNote,
@@ -736,13 +788,13 @@ fun ActivityTrackingScreen(
                 ) {
                     if (isTrackingActive) {
                         IosLiquidGlassButton(
-                            text = "⏸ Pause Activity",
+                            text = "Pause Activity",
                             onClick = { isTrackingActive = false },
                             modifier = Modifier.weight(1f),
                         )
 
                         IosLiquidGlassButton(
-                            text = if (trackingState.isLoggingWorkout) "Saving..." else "✓ Complete",
+                            text = if (trackingState.isLoggingWorkout) "Saving..." else "Complete",
                             onClick = {
                                 isTrackingActive = false
                                 val actName = trackingState.selectedActivity
@@ -770,7 +822,7 @@ fun ActivityTrackingScreen(
                                     }
                                     DiaWellNotificationHelper.showGeneralNotification(
                                         context = context,
-                                        title = "🏃 Activity Logged!",
+                                        title = "Activity Logged!",
                                         message = summaryMsg
                                     )
                                     showCompletedBanner = true
@@ -780,7 +832,7 @@ fun ActivityTrackingScreen(
                         )
                     } else {
                         IosLiquidGlassButton(
-                            text = if (elapsedSeconds > 0) "▶ Resume Activity" else "▶ Start ${trackingState.selectedActivity}",
+                            text = if (elapsedSeconds > 0) "Resume Activity" else "Start ${trackingState.selectedActivity}",
                             onClick = { isTrackingActive = true },
                             modifier = Modifier.fillMaxWidth(),
                         )
@@ -795,7 +847,7 @@ fun ActivityTrackingScreen(
 
 /**
  * Custom Canvas & Vector Animated Progress Track
- * Horizontal dashed baseline track with moving figure icon (🚶, 🏃, 🚴) smoothly
+ * Horizontal dashed baseline track with moving vector icon smoothly
  * advancing from fraction = 0f to fraction = 1.0f as real steps/workout progress.
  * The icon is flipped horizontally (scaleX = -1f) so it moves forward towards the right.
  * Styled in DiaWell's dark neon/teal theme (#0D9488).
@@ -807,10 +859,10 @@ fun WorkoutProgressTrack(
     modifier: Modifier = Modifier,
     isDark: Boolean = AppTheme.colors.isDark
 ) {
-    val figureIcon = when {
-        activityType.equals("Cycling", ignoreCase = true) -> "🚴"
-        activityType.equals("Running", ignoreCase = true) -> "🏃"
-        else -> "🚶"
+    val figureVector = when {
+        activityType.equals("Cycling", ignoreCase = true) -> Icons.Rounded.DirectionsBike
+        activityType.equals("Running", ignoreCase = true) -> Icons.Rounded.DirectionsRun
+        else -> Icons.Rounded.DirectionsWalk
     }
 
     val animatedProgress by animateFloatAsState(
@@ -905,7 +957,7 @@ fun WorkoutProgressTrack(
                     )
                 }
 
-                // Moving figure icon (🚶, 🏃, 🚴) smoothly advancing forward
+                // Moving figure icon smoothly advancing forward
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val paddingXDp = 12.dp
                     val iconWidthDp = 22.dp
@@ -916,13 +968,14 @@ fun WorkoutProgressTrack(
                         modifier = Modifier
                             .offset(x = iconOffsetXDp)
                             .align(Alignment.CenterStart)
-                            .size(iconWidthDp)
-                            .scale(scaleX = -1f, scaleY = 1f),
+                            .size(iconWidthDp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = figureIcon,
-                            fontSize = 18.sp
+                        Icon(
+                            imageVector = figureVector,
+                            contentDescription = activityType,
+                            tint = trackAccent,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -1008,7 +1061,8 @@ fun CyclingScreen(
 
 @Composable
 fun ActivityStatBox(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     title: String,
     value: String,
     modifier: Modifier = Modifier,
@@ -1022,8 +1076,17 @@ fun ActivityStatBox(
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = icon, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(2.dp))
+            if (vectorIcon != null) {
+                Icon(
+                    imageVector = vectorIcon,
+                    contentDescription = title,
+                    tint = Color(0xFF0D9488),
+                    modifier = Modifier.size(18.dp)
+                )
+            } else if (icon.isNotBlank()) {
+                Text(text = icon, fontSize = 16.sp)
+            }
+            Spacer(modifier = Modifier.height(3.dp))
             Text(
                 text = title,
                 fontSize = 9.5.sp,
