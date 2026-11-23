@@ -23,7 +23,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Lightbulb
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -62,7 +68,6 @@ fun ExploreFoodScreen(
 
     val patientContext = aiState.data?.patientContext
     val userPrefText = buildString {
-        append("🥗 ")
         append(patientContext?.dietaryPreference ?: "Vegetarian")
         if (!patientContext?.diabetesType.isNullOrBlank()) {
             append(" • ")
@@ -116,21 +121,23 @@ fun ExploreFoodScreen(
                             value = uiState.searchQuery,
                             onValueChange = { viewModel.onDailyDietSearchChanged(it) },
                             leadingIcon = {
-                                Text(
-                                    text = "🔍",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+                                Icon(
+                                    imageVector = Icons.Rounded.Search,
+                                    contentDescription = "Search",
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.padding(start = 12.dp, end = 4.dp).size(20.dp),
                                 )
                             },
                             trailingIcon = {
                                 if (uiState.searchQuery.isNotEmpty()) {
-                                    Text(
-                                        text = "✕",
-                                        fontSize = 15.sp,
-                                        color = AppTheme.colors.textMuted,
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = "Clear",
+                                        tint = AppTheme.colors.textMuted,
                                         modifier = Modifier
                                             .clickable { viewModel.onDailyDietSearchChanged("") }
-                                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                                            .size(18.dp),
                                     )
                                 }
                             },
@@ -234,10 +241,20 @@ fun ExploreFoodScreen(
                                     .padding(vertical = 32.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
-                                Text(
-                                    text = "🔍",
-                                    fontSize = 44.sp,
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFA855F7).copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Search,
+                                        contentDescription = null,
+                                        tint = Color(0xFFA855F7),
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
                                     text = "Search for Any Food",
@@ -330,10 +347,20 @@ fun ExploreFoodScreen(
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(
-                                            text = "🍽️",
-                                            fontSize = 32.sp,
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .size(56.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFA855F7).copy(alpha = 0.12f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Restaurant,
+                                                contentDescription = null,
+                                                tint = Color(0xFFA855F7),
+                                                modifier = Modifier.size(28.dp)
+                                            )
+                                        }
                                         Spacer(modifier = Modifier.height(8.dp))
                                         Text(
                                             text = "No matching dishes found for \"$query\"",
@@ -457,12 +484,23 @@ fun AiRecommendedFoodCard(
 
             if (item.recommendationReason.isNotBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "💡 ${item.recommendationReason}",
-                    fontSize = 11.sp,
-                    color = Color(0xFF2E7D32),
-                    lineHeight = 15.sp,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Lightbulb,
+                        contentDescription = null,
+                        tint = Color(0xFF2E7D32),
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Text(
+                        text = item.recommendationReason,
+                        fontSize = 11.sp,
+                        color = Color(0xFF2E7D32),
+                        lineHeight = 15.sp,
+                    )
+                }
             }
 
             if (item.highlights.isNotEmpty()) {
