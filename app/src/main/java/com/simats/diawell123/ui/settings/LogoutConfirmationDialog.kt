@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Logout
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -59,11 +62,16 @@ fun LogoutConfirmationDialog(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                        .border(1.dp, AppTheme.colors.border, CircleShape),
+                        .background(Color(0xFF7C3AED).copy(alpha = 0.15f))
+                        .border(1.dp, Color(0xFF7C3AED).copy(alpha = 0.3f), CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = "➔", fontSize = 28.sp, color = Color(0xFFA855F7))
+                    Icon(
+                        imageVector = Icons.Rounded.Logout,
+                        contentDescription = "Logout",
+                        tint = Color(0xFFA855F7),
+                        modifier = Modifier.size(30.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
