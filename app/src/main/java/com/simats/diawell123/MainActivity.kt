@@ -145,11 +145,46 @@ class MainActivity : FragmentActivity() {
 
     override fun onStop() {
         super.onStop()
-        lastBackgroundTimestamp = System.currentTimeMillis()
+        if (!isChangingConfigurations) {
+            lastBackgroundTimestamp = System.currentTimeMillis()
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        Log.d("MainActivity", "onConfigurationChanged: orientation=${newConfig.orientation}")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("hasShownSplash", DiawellApplication.hasShownSplash)
+        outState.putString("savedCurrentScreen", DiawellApplication.currentScreen)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if (savedInstanceState.getBoolean("hasShownSplash", false)) {
+            DiawellApplication.hasShownSplash = true
+        }
+        savedInstanceState.getString("savedCurrentScreen")?.let {
+            if (it.isNotBlank() && it != "splash") {
+                DiawellApplication.currentScreen = it
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean("hasShownSplash", false)) {
+                DiawellApplication.hasShownSplash = true
+            }
+            savedInstanceState.getString("savedCurrentScreen")?.let {
+                if (it.isNotBlank() && it != "splash") {
+                    DiawellApplication.currentScreen = it
+                }
+            }
+        }
         handleIncomingIntentExtras(intent)
         DiaWellNotificationHelper.createNotificationChannels(applicationContext)
         SmartNudgeEngine.scheduleAllDailyNudges(applicationContext)
@@ -159,8 +194,17 @@ class MainActivity : FragmentActivity() {
                 val configuration = LocalConfiguration.current
                 val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-                var hasShownSplash by rememberSaveable { mutableStateOf(false) }
-                var currentScreen by rememberSaveable { mutableStateOf("splash") }
+                val initialHasShownSplash = DiawellApplication.hasShownSplash
+                var hasShownSplash by rememberSaveable { mutableStateOf(initialHasShownSplash) }
+                var currentScreen by rememberSaveable {
+                    mutableStateOf(
+                        if (initialHasShownSplash) {
+                            DiawellApplication.currentScreen.takeIf { it != "splash" } ?: "home"
+                        } else {
+                            "splash"
+                        }
+                    )
+                }
                 var screenBeforeLock by rememberSaveable { mutableStateOf("home") }
                 var selectedMealCategory by rememberSaveable { mutableStateOf("breakfast") }
                 var selectedFoodId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -299,6 +343,9 @@ class MainActivity : FragmentActivity() {
 
                 // Update activity timestamp on screen changes; defer non-blocking refresh until after tab slide settles
                 LaunchedEffect(currentScreen) {
+                    if (currentScreen != "splash") {
+                        DiawellApplication.currentScreen = currentScreen
+                    }
                     sessionManager.updateLastActiveTime()
                     if (currentScreen in listOf("medications", "set_medication_reminder", "medication_reminder")) {
                         checkExactAlarmPermission()
@@ -320,9 +367,11 @@ class MainActivity : FragmentActivity() {
 
                 // Splash screen initial routing based on saved persistent authentication session
                 LaunchedEffect(Unit) {
-                    if (hasShownSplash) {
+                    if (hasShownSplash || DiawellApplication.hasShownSplash) {
+                        hasShownSplash = true
+                        DiawellApplication.hasShownSplash = true
                         if (currentScreen == "splash") {
-                            currentScreen = if (sessionManager.isLoggedIn()) {
+                            currentScreen = DiawellApplication.currentScreen.takeIf { it != "splash" } ?: if (sessionManager.isLoggedIn()) {
                                 if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) "app_lock" else "home"
                             } else if (sessionManager.isOnboardingCompleted()) "login" else "onboarding"
                         }
@@ -330,6 +379,7 @@ class MainActivity : FragmentActivity() {
                     }
                     delay(2600) // Splash duration matching logo spin, audio clicks, and settle
                     hasShownSplash = true
+                    DiawellApplication.hasShownSplash = true
                     if (sessionManager.isLoggedIn()) {
                         if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) {
                             screenBeforeLock = "home"
@@ -342,6 +392,7 @@ class MainActivity : FragmentActivity() {
                     } else {
                         currentScreen = "onboarding"
                     }
+                    DiawellApplication.currentScreen = currentScreen
                 }
 
                 val activeBottomTab = when (currentScreen) {
