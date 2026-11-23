@@ -12,6 +12,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.material3.LocalTextStyle
 import androidx.core.view.WindowCompat
 
 /**
@@ -155,7 +157,10 @@ fun Diawell123Theme(
         }
     }
 
-    CompositionLocalProvider(LocalAppColors provides appColors) {
+    CompositionLocalProvider(
+        LocalAppColors provides appColors,
+        LocalTextStyle provides TextStyle(fontFamily = SfProRounded),
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
