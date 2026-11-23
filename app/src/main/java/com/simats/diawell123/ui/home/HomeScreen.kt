@@ -868,7 +868,7 @@ fun IosLiquidGlassBottomNav(
         )
     }
 
-    val bgColor = AppTheme.colors.background
+    val bgColor = if (AppTheme.colors.isDark) Color(0xFF000000) else AppTheme.colors.background
     val bottomEdgeFade = remember(bgColor) {
         Brush.verticalGradient(
             colorStops = arrayOf(

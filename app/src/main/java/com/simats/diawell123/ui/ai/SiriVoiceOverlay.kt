@@ -1,5 +1,6 @@
 package com.simats.diawell123.ui.ai
 
+import com.simats.diawell123.ui.components.DiaWellAmbientBackground
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -88,124 +89,9 @@ fun SiriVoiceOverlay(
         enter = fadeIn(tween(260)) + scaleIn(initialScale = 0.96f, animationSpec = tween(260)),
         exit = fadeOut(tween(220)) + scaleOut(targetScale = 0.96f, animationSpec = tween(220))
     ) {
-        // Ambient Gradient Motion Transitions (Smooth continuous breathing movement behind robot)
-        val ambientTransition = rememberInfiniteTransition(label = "VoiceAmbientGradientMotion")
-        val phase1 by ambientTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = (2f * PI).toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 14000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "phase1"
-        )
-        val phase2 by ambientTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = (2f * PI).toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 18000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "phase2"
-        )
-        val pulseScale by ambientTransition.animateFloat(
-            initialValue = 0.94f,
-            targetValue = 1.06f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 8000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "pulseScale"
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF000000))
+        DiaWellAmbientBackground(
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Half-faded atmospheric ambient top-half gradient background with gentle motion
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val w = size.width
-                val h = size.height
-
-                val offsetX1 = w * (0.16f + 0.08f * sin(phase1))
-                val offsetY1 = h * (0.07f + 0.04f * cos(phase1))
-                val radius1 = w * (0.95f * pulseScale)
-
-                val offsetX2 = w * (0.84f - 0.08f * cos(phase2))
-                val offsetY2 = h * (0.11f + 0.05f * sin(phase2))
-                val radius2 = w * (0.90f * (2f - pulseScale))
-
-                // 1. Broad Top-Half Ambient Horizontal Glow with subtle lateral drift (Emerald Teal to Royal Purple)
-                drawRect(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF0D9488).copy(alpha = 0.58f), // Deep Teal / Emerald on left
-                            Color(0xFF6366F1).copy(alpha = 0.40f), // Soft Indigo blend
-                            Color(0xFF7C3AED).copy(alpha = 0.58f), // Royal Purple on right (DiaWell theme)
-                        ),
-                        startX = -w * 0.10f + w * 0.10f * sin(phase1),
-                        endX = w * 1.10f + w * 0.10f * sin(phase1)
-                    ),
-                    size = androidx.compose.ui.geometry.Size(w, h * 0.50f)
-                )
-
-                // 2. High-saturation Top-Left Radial Bloom (Emerald & Teal - matching screenshot!)
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF10B981).copy(alpha = 0.65f),
-                            Color(0xFF0D9488).copy(alpha = 0.45f),
-                            Color(0xFF064E3B).copy(alpha = 0.18f),
-                            Color.Transparent
-                        ),
-                        center = Offset(offsetX1, offsetY1),
-                        radius = radius1
-                    )
-                )
-
-                // 3. High-saturation Top-Right Radial Bloom (Royal Purple & Deep Violet)
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFA855F7).copy(alpha = 0.62f),
-                            Color(0xFF7C3AED).copy(alpha = 0.45f),
-                            Color(0xFF4C1D95).copy(alpha = 0.18f),
-                            Color.Transparent
-                        ),
-                        center = Offset(offsetX2, offsetY2),
-                        radius = radius2
-                    )
-                )
-
-                // 4. Floating central atmospheric aura behind the robot
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF7C3AED).copy(alpha = 0.32f),
-                            Color(0xFF4C1D95).copy(alpha = 0.12f),
-                            Color.Transparent
-                        ),
-                        center = Offset(w * (0.50f + 0.05f * sin(phase2)), h * (0.24f + 0.03f * cos(phase1))),
-                        radius = w * 0.85f
-                    )
-                )
-
-                // 5. Half-faded smooth atmospheric diffusion into pure obsidian black by ~48-55%
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.0f to Color.Transparent,
-                            0.20f to Color.Transparent,
-                            0.35f to Color(0xFF000000).copy(alpha = 0.35f),
-                            0.48f to Color(0xFF000000).copy(alpha = 0.85f),
-                            0.55f to Color(0xFF000000),
-                            1.0f to Color(0xFF000000)
-                        )
-                    )
-                )
-            }
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()

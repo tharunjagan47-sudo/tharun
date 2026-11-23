@@ -63,6 +63,7 @@ import com.simats.diawell123.ui.auth.AppLockScreen
 import com.simats.diawell123.ui.auth.ForgotPasswordScreen
 import com.simats.diawell123.ui.auth.LoginScreen
 import com.simats.diawell123.ui.auth.SignUpScreen
+import com.simats.diawell123.ui.components.DiaWellAmbientBackground
 import com.simats.diawell123.ui.components.DiaWellAssistiveButton
 import com.simats.diawell123.ui.diet.DailyDietPlanScreen
 import com.simats.diawell123.ui.diet.DietViewModel
@@ -335,6 +336,10 @@ class MainActivity : FragmentActivity() {
                 }
 
                 Box(modifier = Modifier.fillMaxSize()) {
+                    if (currentScreen != "splash") {
+                        DiaWellAmbientBackground()
+                    }
+
                     AnimatedContent(
                         targetState = currentScreen,
                         transitionSpec = {
