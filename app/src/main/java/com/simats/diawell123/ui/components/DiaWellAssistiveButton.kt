@@ -102,8 +102,8 @@ fun DiaWellAssistiveButton(
         val buttonSizePx = with(density) { buttonSizeDp.toPx() }
         val edgePaddingPx = with(density) { 12.dp.toPx() }
 
-        val minYPx = with(density) { 80.dp.toPx() }
-        val maxYPx = (screenHeightPx - with(density) { 150.dp.toPx() }).coerceAtLeast(minYPx)
+        val minYPx = with(density) { 50.dp.toPx() }
+        val maxYPx = (screenHeightPx - buttonSizePx - edgePaddingPx).coerceAtLeast(minYPx)
 
         // Initial docked position: Right edge, middle of screen
         val initialXPx = (screenWidthPx - buttonSizePx - edgePaddingPx).coerceAtLeast(edgePaddingPx)
@@ -117,15 +117,16 @@ fun DiaWellAssistiveButton(
         var isIdle by remember { mutableStateOf(false) }
         var lastInteractionMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
-        // Keep offsetX anchored within screen on orientation/size updates
-        LaunchedEffect(screenWidthPx) {
+        // Automatically re-clamp and re-snap offsetX and offsetY inside screen bounds whenever orientation changes
+        LaunchedEffect(screenWidthPx, screenHeightPx) {
             val isNearRight = offsetX.value > screenWidthPx / 2f
             val targetX = if (isNearRight) {
                 screenWidthPx - buttonSizePx - edgePaddingPx
             } else {
                 edgePaddingPx
             }
-            offsetX.snapTo(targetX.coerceAtLeast(edgePaddingPx))
+            offsetX.snapTo(targetX.coerceIn(edgePaddingPx, (screenWidthPx - buttonSizePx - edgePaddingPx).coerceAtLeast(edgePaddingPx)))
+            offsetY.snapTo(offsetY.value.coerceIn(minYPx, maxYPx))
         }
 
         // Idle Auto-Dim Timer (dims to 0.45f after 3 seconds of no interaction)
