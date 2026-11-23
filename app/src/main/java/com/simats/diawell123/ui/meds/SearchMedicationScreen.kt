@@ -64,7 +64,7 @@ fun SearchMedicationScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -79,19 +79,13 @@ fun SearchMedicationScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Search Medicine Catalog",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Over 70,000+ common Indian medicines & diabetic therapies.",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                }
+                Text(
+                    text = "Search Medications",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -334,7 +328,7 @@ fun SearchMedicationScreen(
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
