@@ -134,7 +134,7 @@ fun FoodPreferencesSettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -149,19 +149,13 @@ fun FoodPreferencesSettingsScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Food Preferences",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Settings",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                }
+                Text(
+                    text = "Food Preferences",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -421,36 +415,11 @@ fun FoodPreferencesSettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Info Callout Box
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                    .padding(14.dp),
-            ) {
-                Column {
-                    Text(
-                        text = "Meal ideas, shaped around you",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "DiaWell AI uses your preferences for general nutrition guidance, not medical advice. Check for allergies and ingredients independently; suggestions do not guarantee allergy safety.",
-                        fontSize = 11.sp,
-                        color = AppTheme.colors.textSecondary,
-                        lineHeight = 16.sp,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(100.dp))
 
             // Save Food Preferences Button
             IosLiquidGlassButton(
-                text = if (uiState.isSaving) "Saving Preferences..." else "Save Food Preferences",
+                text = if (uiState.isSaving) "Saving..." else "Save Preferences",
                 onClick = {
                     val allergiesSelected = allergies.filter { it.second }.map { it.first }
                     val stylesSelected = preferredStyles.filter { it.second }.map { it.first }
@@ -468,7 +437,7 @@ fun FoodPreferencesSettingsScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(100.dp))
 
             // Add Common Allergies Dialog
             if (showAddAllergyDialog) {
