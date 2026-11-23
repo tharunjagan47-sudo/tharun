@@ -9,6 +9,8 @@ class DiawellApplication : Application() {
     companion object {
         lateinit var instance: DiawellApplication
             private set
+        var hasShownSplash: Boolean = false
+        var currentScreen: String = "home"
     }
 
     override fun onCreate() {
