@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +36,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -221,11 +223,14 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize()
             .background(AppTheme.colors.background)
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .displayCutoutPadding(),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .widthIn(max = 1100.dp)
+                .align(Alignment.TopCenter)
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -1105,6 +1110,125 @@ fun IosLiquidGlassBottomNav(
                                 modifier = Modifier.graphicsLayer {
                                     alpha = labelAlphaState.value
                                 },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Slim left-side NavigationRail for landscape orientation and tablet screen widths.
+ * Matches DiaWell's Obsidian & Royal Purple glass aesthetic without wasting vertical screen space.
+ */
+@Composable
+fun DiaWellLiquidGlassNavRail(
+    selectedTab: String,
+    onHomeTabClick: () -> Unit = {},
+    onDietTabClick: () -> Unit = {},
+    onMedsTabClick: () -> Unit = {},
+    onReportsTabClick: () -> Unit = {},
+    onSettingsTabClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    val isDark = AppTheme.colors.isDark
+    val tabs = remember {
+        listOf(
+            "Home" to Icons.Rounded.Home,
+            "Diet" to Icons.Rounded.Restaurant,
+            "Meds" to Icons.Rounded.Medication,
+            "Reports" to Icons.Rounded.Assessment,
+            "Settings" to Icons.Rounded.Settings,
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .displayCutoutPadding()
+            .padding(start = 12.dp, top = 8.dp, bottom = 8.dp)
+            .width(68.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(64.dp)
+                .shadow(
+                    elevation = if (isDark) 16.dp else 10.dp,
+                    shape = RoundedCornerShape(28.dp),
+                    ambientColor = Color(0xFF05040D).copy(alpha = if (isDark) 0.80f else 0.16f),
+                    spotColor = Color(0xFF7C3AED).copy(alpha = if (isDark) 0.30f else 0.20f),
+                )
+                .clip(RoundedCornerShape(28.dp))
+                .background(if (isDark) Color(0xDE141124) else Color(0xDCFFFFFF))
+                .border(
+                    width = 1.dp,
+                    brush = Brush.verticalGradient(
+                        colors = if (isDark) listOf(Color(0x45FFFFFF), Color(0x38A855F7), Color(0x45FFFFFF))
+                        else listOf(Color(0x337C3AED), Color(0x18000000), Color(0x337C3AED))
+                    ),
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .padding(vertical = 12.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceEvenly,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                tabs.forEach { (name, iconVector) ->
+                    val isActive = (name == selectedTab)
+                    Box(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                if (isActive) {
+                                    if (isDark) Color(0x40A855F7) else Color(0x297C3AED)
+                                } else Color.Transparent
+                            )
+                            .border(
+                                width = if (isActive) 1.2.dp else 0.dp,
+                                color = if (isActive) Color(0xFFA855F7) else Color.Transparent,
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .clickable {
+                                when (name) {
+                                    "Home" -> onHomeTabClick()
+                                    "Diet" -> onDietTabClick()
+                                    "Meds" -> onMedsTabClick()
+                                    "Reports" -> onReportsTabClick()
+                                    "Settings" -> onSettingsTabClick()
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = iconVector,
+                                contentDescription = name,
+                                tint = if (isActive) {
+                                    if (isDark) Color.White else Color(0xFF4C1D95)
+                                } else {
+                                    if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                },
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = name,
+                                fontSize = 9.sp,
+                                fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isActive) {
+                                    if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
+                                } else Color(0xFF64748B),
+                                maxLines = 1,
                             )
                         }
                     }
