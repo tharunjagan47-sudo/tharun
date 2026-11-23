@@ -198,14 +198,12 @@ fun DivaTalkingAvatar(
     }
 
     val containerModifier = if (fullBody) {
-        modifier
-            .size(sizeDp.dp)
-            .background(Color(0xFF0B0E17))
+        modifier.size(sizeDp.dp)
     } else {
         modifier
             .size(sizeDp.dp)
             .clip(CircleShape)
-            .background(Color(0xFF0B0E17))
+            .background(Color(0xFF0B0D18))
             .border(width = 2.dp, brush = rimBrush, shape = CircleShape)
     }
 
@@ -296,31 +294,13 @@ fun DivaTalkingAvatar(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            // Base High-Res DIVA Robot Illustration
+            // Base High-Res DIVA Robot Illustration (clean transparent cutout for virtual hologram look)
             Image(
-                painter = painterResource(id = R.drawable.diva_avatar),
+                painter = painterResource(id = if (fullBody) R.drawable.diva_robot_cutout else R.drawable.diva_avatar),
                 contentDescription = "DIVA Assistant",
                 contentScale = if (fullBody) ContentScale.Fit else ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-
-            // Seamless Edge Feathering (locked to image so no frame edges ever show while floating)
-            if (fullBody) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.radialGradient(
-                                colorStops = arrayOf(
-                                    0.00f to Color.Transparent,
-                                    0.72f to Color.Transparent,
-                                    0.92f to Color(0xCC0B0E17),
-                                    1.00f to Color(0xFF0B0E17),
-                                ),
-                            ),
-                        ),
-                )
-            }
 
             // Live Procedural Face Visor Animation (Blinking Eyes + Speech-Synced Glowing Cyan Mouth)
             Canvas(modifier = Modifier.fillMaxSize()) {

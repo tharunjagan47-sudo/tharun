@@ -600,27 +600,6 @@ fun GlowingSiriOrb(
             .size(stageSizeDp.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Ambient soft royal purple & violet halo aura directly behind the robot element
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val cx = size.width * 0.5f
-            val cy = size.height * 0.46f
-            val haloRadius = size.minDimension * 0.58f * breathing
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF8B5CF6).copy(alpha = 0.38f),
-                        Color(0xFF7C3AED).copy(alpha = 0.22f),
-                        Color(0xFF4C1D95).copy(alpha = 0.08f),
-                        Color.Transparent
-                    ),
-                    center = Offset(cx, cy),
-                    radius = haloRadius
-                ),
-                radius = haloRadius,
-                center = Offset(cx, cy)
-            )
-        }
-
         // LARGE FULL-BODY VIRTUAL ASSISTANT DIVA ROBOT + SYNCHRONIZED DW CHEST VOICE ORB
         DivaTalkingAvatar(
             isSpeaking = voiceState == JarvisVoiceState.SPEAKING,
