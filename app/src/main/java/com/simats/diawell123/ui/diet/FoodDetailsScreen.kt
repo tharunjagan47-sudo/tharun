@@ -28,7 +28,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Healing
+import androidx.compose.material.icons.rounded.MedicalServices
+import androidx.compose.material.icons.rounded.Spa
+import androidx.compose.material.icons.rounded.TrendingDown
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -188,7 +194,12 @@ fun FoodDetailsScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "📉", fontSize = 22.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.TrendingDown,
+                            contentDescription = null,
+                            tint = giColor,
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -297,22 +308,44 @@ fun FoodDetailsScreen(
                         ) {
                             Column {
                                 if (healthBenefitsText.isNotBlank()) {
-                                    Text(
-                                        text = "🌱 $healthBenefitsText",
-                                        fontSize = 12.sp,
-                                        color = AppTheme.colors.textPrimary,
-                                        lineHeight = 17.sp,
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.Top,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Spa,
+                                            contentDescription = null,
+                                            tint = Color(0xFF2E7D32),
+                                            modifier = Modifier.size(15.dp).padding(top = 1.dp)
+                                        )
+                                        Text(
+                                            text = healthBenefitsText,
+                                            fontSize = 12.sp,
+                                            color = AppTheme.colors.textPrimary,
+                                            lineHeight = 17.sp,
+                                        )
+                                    }
                                 }
                                 if (diabeticGuidanceText.isNotBlank()) {
                                     if (healthBenefitsText.isNotBlank()) Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "🩺 $diabeticGuidanceText",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF7E22CE),
-                                        lineHeight = 17.sp,
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.Top,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.MedicalServices,
+                                            contentDescription = null,
+                                            tint = Color(0xFF7E22CE),
+                                            modifier = Modifier.size(15.dp).padding(top = 1.dp)
+                                        )
+                                        Text(
+                                            text = diabeticGuidanceText,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color(0xFF7E22CE),
+                                            lineHeight = 17.sp,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -374,11 +407,11 @@ fun FoodDetailsScreen(
                             carbsFallback = carbsFloat,
                             proteinFallback = proteinFloat,
                             fatFallback = fatFloat,
-                            iconFallback = displayDetails?.icon ?: "🥗",
+                            iconFallback = displayDetails?.icon ?: "",
                             onSuccess = {
                                 DiaWellNotificationHelper.showGeneralNotification(
                                     context = context,
-                                    title = "🥗 Meal Logged Successfully",
+                                    title = "Meal Logged Successfully",
                                     message = "Recorded $title ($calInt kcal)."
                                 )
                                 onAddToFoodLogClick()
@@ -660,7 +693,7 @@ private data class MealDetailsData(
 private fun rememberMealDetailsForCategory(category: String): MealDetailsData {
     return when (category.lowercase()) {
         "breakfast" -> MealDetailsData(
-            icon = "🥣",
+            icon = "",
             title = "Oatmeal Bowl & Berries",
             calories = "340",
             portion = "1 Medium Bowl (250g)",
@@ -678,7 +711,7 @@ private fun rememberMealDetailsForCategory(category: String): MealDetailsData {
             ),
         )
         "lunch" -> MealDetailsData(
-            icon = "🥗",
+            icon = "",
             title = "Grilled Chicken & Quinoa Salad",
             calories = "480",
             portion = "1 Large Bowl (350g)",
@@ -696,7 +729,7 @@ private fun rememberMealDetailsForCategory(category: String): MealDetailsData {
             ),
         )
         "dinner" -> MealDetailsData(
-            icon = "🐟",
+            icon = "",
             title = "Baked Salmon & Steamed Broccoli",
             calories = "420",
             portion = "1 Plate (300g)",
@@ -713,7 +746,7 @@ private fun rememberMealDetailsForCategory(category: String): MealDetailsData {
             ),
         )
         else -> MealDetailsData(
-            icon = "🥑",
+            icon = "",
             title = "Avocado & Roasted Chickpea Bowl",
             calories = "290",
             portion = "1 Serving (200g)",
