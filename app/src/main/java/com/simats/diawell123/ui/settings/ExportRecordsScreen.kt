@@ -94,7 +94,7 @@ fun ExportRecordsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -109,20 +109,13 @@ fun ExportRecordsScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Export Clinical Records",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Generate hospital-grade PDF or CSV health summaries.",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                        lineHeight = 16.sp,
-                    )
-                }
+                Text(
+                    text = "Export Records",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -329,7 +322,7 @@ fun ExportRecordsScreen(
             }
 
             IosLiquidGlassButton(
-                text = if (exportState.isLoading) "Generating $selectedFormat Report..." else "Generate & Preview Report",
+                text = if (exportState.isLoading) "Generating Report..." else "Generate Report",
                 onClick = {
                     if (exportState.isLoading) return@IosLiquidGlassButton
                     if (!includeGlucose && !includeMeals && !includeMedications && !includeActivity) {
@@ -356,18 +349,7 @@ fun ExportRecordsScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Generated clinical reports stay private on your device unless you choose to share them.",
-                fontSize = 11.sp,
-                color = AppTheme.colors.textMuted,
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-            )
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
