@@ -113,7 +113,7 @@ fun LogGlucoseScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -132,14 +132,9 @@ fun LogGlucoseScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Log Glucose",
-                            fontSize = 20.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
-                        )
-                        Text(
-                            text = "Keep an active record of your blood sugar.",
-                            fontSize = 12.sp,
-                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
@@ -173,7 +168,7 @@ fun LogGlucoseScreen(
                                 color = Color(0xFF2E7D32),
                             )
                             Text(
-                                text = "Your reading has been recorded and synced.",
+                                text = "Your reading has been recorded.",
                                 fontSize = 11.sp,
                                 color = Color(0xFF1B5E20),
                             )
@@ -471,7 +466,7 @@ fun LogGlucoseScreen(
                     }
                 } else {
                     IosLiquidGlassButton(
-                        text = "✓  Save Reading",
+                        text = "Save Reading",
                         onClick = {
                             val vFloat = uiState.readingValue.toFloatOrNull() ?: 0f
                             viewModel.logGlucose(
@@ -496,7 +491,7 @@ fun LogGlucoseScreen(
                 lineHeight = 16.sp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 100.dp),
             )
         }
     }
