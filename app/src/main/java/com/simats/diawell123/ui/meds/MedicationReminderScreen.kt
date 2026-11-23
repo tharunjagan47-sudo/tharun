@@ -86,7 +86,7 @@ fun MedicationReminderScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -102,23 +102,13 @@ fun MedicationReminderScreen(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Text(
-                    text = "Medication reminder",
-                    fontSize = 20.sp,
+                    text = "Medication Reminder",
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = AppTheme.colors.textPrimary,
                     modifier = Modifier.weight(1f),
                 )
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "$medName • Scheduled reminder",
-                fontSize = 11.sp,
-                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start,
-            )
 
             Spacer(modifier = Modifier.height(28.dp))
 
@@ -447,16 +437,7 @@ fun MedicationReminderScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "For dose changes or missed dose advice, ask your pharmacist or clinician if you are unsure.",
-                fontSize = 11.sp,
-                color = AppTheme.colors.textMuted,
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp,
-                modifier = Modifier.padding(bottom = 24.dp),
-            )
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
