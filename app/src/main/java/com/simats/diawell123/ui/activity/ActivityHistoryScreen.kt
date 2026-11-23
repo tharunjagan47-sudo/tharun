@@ -21,7 +21,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DirectionsBike
+import androidx.compose.material.icons.rounded.DirectionsRun
+import androidx.compose.material.icons.rounded.DirectionsWalk
+import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -123,7 +132,7 @@ fun ActivityHistoryScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Workout Summary & Care Log 🏆",
+                            text = "Workout Summary & Care Log",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -259,6 +268,11 @@ fun ActivityHistoryCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val actIcon = when {
+                        item.type.contains("walk", ignoreCase = true) -> Icons.Rounded.DirectionsWalk
+                        item.type.contains("cycl", ignoreCase = true) || item.type.contains("bike", ignoreCase = true) -> Icons.Rounded.DirectionsBike
+                        else -> Icons.Rounded.DirectionsRun
+                    }
                     Box(
                         modifier = Modifier
                             .size(42.dp)
@@ -266,7 +280,12 @@ fun ActivityHistoryCard(
                             .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFDEEF7)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = item.icon.ifBlank { "🏃" }, fontSize = 20.sp)
+                        Icon(
+                            imageVector = actIcon,
+                            contentDescription = item.type,
+                            tint = Color(0xFFB81D85),
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -312,24 +331,42 @@ fun ActivityHistoryCard(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(
-                    text = "⏱ ${item.durationMins} mins",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.textPrimary,
-                )
-                Text(
-                    text = "📍 ${String.format("%.2f", item.distanceKm)} km",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.textPrimary,
-                )
-                Text(
-                    text = "🔥 ${item.caloriesKcal} kcal",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.textPrimary,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(Icons.Rounded.Schedule, contentDescription = null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(13.dp))
+                    Text(
+                        text = "${item.durationMins} mins",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary,
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(Icons.Rounded.LocationOn, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(13.dp))
+                    Text(
+                        text = "${String.format("%.2f", item.distanceKm)} km",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary,
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(Icons.Rounded.LocalFireDepartment, contentDescription = null, tint = Color(0xFFF97316), modifier = Modifier.size(13.dp))
+                    Text(
+                        text = "${item.caloriesKcal} kcal",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary,
+                    )
+                }
             }
 
             // Glucose Effect Line if recorded
@@ -348,12 +385,18 @@ fun ActivityHistoryCard(
 
                     val diff = item.glucoseBefore - item.glucoseAfter
                     val diffText = if (diff > 0) " (-${diff} mg/dL)" else ""
-                    Text(
-                        text = "🩸 ${item.glucoseBefore} ➔ ${item.glucoseAfter} mg/dL$diffText",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB81D85),
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(Icons.Rounded.WaterDrop, contentDescription = null, tint = Color(0xFFB81D85), modifier = Modifier.size(13.dp))
+                        Text(
+                            text = "${item.glucoseBefore} → ${item.glucoseAfter} mg/dL$diffText",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFB81D85),
+                        )
+                    }
                 }
             }
         }
