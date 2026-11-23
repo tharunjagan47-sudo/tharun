@@ -96,7 +96,7 @@ fun PatientProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 22.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -108,12 +108,6 @@ fun PatientProfileScreen(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.colors.textPrimary,
-            )
-
-            Text(
-                text = "Scroll and select your patient profile details below.",
-                fontSize = 13.sp,
-                color = AppTheme.colors.textSecondary,
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -250,7 +244,7 @@ fun PatientProfileScreen(
 
             // Continue Button
             IosLiquidGlassButton(
-                text = if (uiState.isSaving) "Saving Details..." else "→  Continue to Step 2 (Health Preferences)",
+                text = if (uiState.isSaving) "Saving..." else "Continue",
                 onClick = {
                     val ageNum = age.replace(Regex("[^0-9]"), "").toIntOrNull()
                     val heightNum = height.replace(Regex("[^0-9.]"), "").toFloatOrNull()
