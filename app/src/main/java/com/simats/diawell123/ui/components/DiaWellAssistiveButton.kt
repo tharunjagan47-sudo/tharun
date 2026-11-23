@@ -32,7 +32,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DirectionsRun
+import androidx.compose.material.icons.rounded.PhotoCamera
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.WaterDrop
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -396,8 +406,15 @@ private fun AssistiveTouchGlassMenu(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Icon(
+                    imageVector = Icons.Rounded.Bolt,
+                    contentDescription = null,
+                    tint = if (isDark) Color(0xFFC084FC) else Color(0xFF7C3AED),
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "⚡ DiaWell Quick Actions",
+                    text = "DiaWell Quick Actions",
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
@@ -413,7 +430,7 @@ private fun AssistiveTouchGlassMenu(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AssistiveMenuItem(
-                    icon = "🤖",
+                    icon = Icons.Rounded.AutoAwesome,
                     label = "DIVA AI",
                     badgeBrush = Brush.linearGradient(listOf(Color(0xFF7E22CE), Color(0xFFA855F7))),
                     isDark = isDark,
@@ -421,7 +438,7 @@ private fun AssistiveTouchGlassMenu(
                 )
 
                 AssistiveMenuItem(
-                    icon = "📸",
+                    icon = Icons.Rounded.PhotoCamera,
                     label = "Snap Food",
                     badgeBrush = Brush.linearGradient(listOf(Color(0xFF0284C7), Color(0xFF00E5FF))),
                     isDark = isDark,
@@ -429,7 +446,7 @@ private fun AssistiveTouchGlassMenu(
                 )
 
                 AssistiveMenuItem(
-                    icon = "🩸",
+                    icon = Icons.Rounded.WaterDrop,
                     label = "Glucose",
                     badgeBrush = Brush.linearGradient(listOf(Color(0xFFDC2626), Color(0xFFF43F5E))),
                     isDark = isDark,
@@ -446,7 +463,7 @@ private fun AssistiveTouchGlassMenu(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AssistiveMenuItem(
-                    icon = "🥗",
+                    icon = Icons.Rounded.Restaurant,
                     label = "Log Meal",
                     badgeBrush = Brush.linearGradient(listOf(Color(0xFF059669), Color(0xFF10B981))),
                     isDark = isDark,
@@ -454,7 +471,7 @@ private fun AssistiveTouchGlassMenu(
                 )
 
                 AssistiveMenuItem(
-                    icon = "🏃",
+                    icon = Icons.Rounded.DirectionsRun,
                     label = "Activity",
                     badgeBrush = Brush.linearGradient(listOf(Color(0xFFD97706), Color(0xFFF59E0B))),
                     isDark = isDark,
@@ -462,7 +479,7 @@ private fun AssistiveTouchGlassMenu(
                 )
 
                 AssistiveMenuItem(
-                    icon = "✕",
+                    icon = Icons.Rounded.Close,
                     label = "Close",
                     badgeBrush = Brush.linearGradient(
                         if (isDark) listOf(Color(0xFF2E2248), Color(0xFF1D1433))
@@ -478,7 +495,7 @@ private fun AssistiveTouchGlassMenu(
 
 @Composable
 private fun AssistiveMenuItem(
-    icon: String,
+    icon: ImageVector,
     label: String,
     badgeBrush: Brush,
     isDark: Boolean,
@@ -511,9 +528,11 @@ private fun AssistiveMenuItem(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = icon,
-                fontSize = 22.sp
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
             )
         }
 
