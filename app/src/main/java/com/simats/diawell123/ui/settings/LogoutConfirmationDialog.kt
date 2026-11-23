@@ -48,10 +48,10 @@ fun LogoutConfirmationDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.88f)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(20.dp))
                 .background(AppTheme.colors.cardBackground)
-                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(24.dp))
-                .padding(24.dp),
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                .padding(20.dp),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 // Exit Icon Circle
