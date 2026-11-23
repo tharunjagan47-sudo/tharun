@@ -20,7 +20,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Store
+import androidx.compose.material.icons.rounded.Style
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -120,7 +128,12 @@ fun MedicationReminderScreen(
                     .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = "💊", fontSize = 42.sp)
+                Icon(
+                    imageVector = Icons.Rounded.Medication,
+                    contentDescription = null,
+                    tint = Color(0xFFA855F7),
+                    modifier = Modifier.size(46.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -231,29 +244,41 @@ fun MedicationReminderScreen(
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                 if (!activeMed.primaryIngredient.isNullOrBlank()) {
-                                    Text(
-                                        text = "🔬 Active: ${activeMed.primaryIngredient}",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF2E7D32),
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Rounded.Science, null, tint = Color(0xFF2E7D32), modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Active: ${activeMed.primaryIngredient}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF2E7D32),
+                                        )
+                                    }
                                 }
                                 if (!activeMed.therapeuticClass.isNullOrBlank()) {
-                                    Text(
-                                        text = "🏷️ Class: ${activeMed.therapeuticClass}",
-                                        fontSize = 10.5.sp,
-                                        color = Color(0xFFA855F7),
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Rounded.Style, null, tint = Color(0xFFA855F7), modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Class: ${activeMed.therapeuticClass}",
+                                            fontSize = 10.5.sp,
+                                            color = Color(0xFFA855F7),
+                                        )
+                                    }
                                 }
                                 if (!activeMed.manufacturer.isNullOrBlank() || !activeMed.packaging.isNullOrBlank()) {
                                     val mfdPack = listOf(activeMed.manufacturer, activeMed.packaging)
                                         .filter { it.isNotBlank() }
                                         .joinToString(" • ")
-                                    Text(
-                                        text = "🏭 $mfdPack",
-                                        fontSize = 10.5.sp,
-                                        color = AppTheme.colors.textSecondary,
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Rounded.Store, null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = mfdPack,
+                                            fontSize = 10.5.sp,
+                                            color = AppTheme.colors.textSecondary,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -273,13 +298,24 @@ fun MedicationReminderScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             if (detailState.errorMessage != null) {
-                Text(
-                    text = "⚠️ ${detailState.errorMessage}",
-                    fontSize = 12.sp,
-                    color = Color(0xFFC62828),
-                    textAlign = TextAlign.Center,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 8.dp)
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFC62828),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = detailState.errorMessage ?: "",
+                        fontSize = 12.sp,
+                        color = Color(0xFFC62828),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             Text(
@@ -301,7 +337,7 @@ fun MedicationReminderScreen(
             } else {
                 // Taken Button
                 IosLiquidGlassButton(
-                    text = "✓  Taken",
+                    text = "Taken",
                     onClick = {
                         val medNameStr = activeMed?.name ?: "Medication"
                         DiaWellNotificationHelper.stopAlarmSound(context)
@@ -318,7 +354,7 @@ fun MedicationReminderScreen(
                                 onSuccess = {
                                     DiaWellNotificationHelper.showGeneralNotification(
                                         context = context,
-                                        title = "✅ Dose Completed",
+                                        title = "Dose Completed",
                                         message = "Great job taking $medNameStr on time!"
                                     )
                                     onTakenClick()
@@ -327,7 +363,7 @@ fun MedicationReminderScreen(
                         } else {
                             DiaWellNotificationHelper.showGeneralNotification(
                                 context = context,
-                                title = "✅ Dose Completed",
+                                title = "Dose Completed",
                                 message = "Great job taking $medNameStr on time!"
                             )
                             onTakenClick()
@@ -339,7 +375,7 @@ fun MedicationReminderScreen(
 
                 // Snooze Button
                 IosLiquidGlassButton(
-                    text = "⏰  Snooze - 15 minutes",
+                    text = "Snooze - 15 minutes",
                     onClick = {
                         val medNameStr = activeMed?.name ?: "Medication"
                         val resolvedUserId = try {
@@ -405,7 +441,7 @@ fun MedicationReminderScreen(
                                     onSuccess = {
                                         DiaWellNotificationHelper.showGeneralNotification(
                                             context = context,
-                                            title = "⏭️ Dose Skipped",
+                                            title = "Dose Skipped",
                                             message = "Marked $medNameStr as skipped."
                                         )
                                         onSkipClick()
@@ -420,11 +456,8 @@ fun MedicationReminderScreen(
 
                 if (medId > 0) {
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "🗑 Delete Reminder",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFFD32F2F),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .clickable {
@@ -433,7 +466,21 @@ fun MedicationReminderScreen(
                                 viewModel.deleteMedication(medId, onSuccess = onBackClick)
                             }
                             .padding(horizontal = 12.dp, vertical = 6.dp),
-                    )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Delete,
+                            contentDescription = null,
+                            tint = Color(0xFFD32F2F),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Delete Reminder",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFD32F2F),
+                        )
+                    }
                 }
             }
 
