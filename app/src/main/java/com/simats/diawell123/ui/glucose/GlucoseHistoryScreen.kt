@@ -21,7 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -169,12 +172,23 @@ fun GlucoseHistoryScreen(
                             .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                     ) {
-                        Text(
-                            text = "🩸 Tracked",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFA855F7),
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.WaterDrop,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = "Tracked",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA855F7),
+                            )
+                        }
                     }
                 }
 
@@ -330,7 +344,20 @@ fun GlucoseHistoryScreen(
                         contentAlignment = Alignment.Center,
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "🩸", fontSize = 28.sp)
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFA855F7).copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.WaterDrop,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = "No readings logged for this timeframe",
