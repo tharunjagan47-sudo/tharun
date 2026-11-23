@@ -80,7 +80,7 @@ fun FoodLogScreen(
                 .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar
@@ -94,15 +94,10 @@ fun FoodLogScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Your food log",
-                            fontSize = 20.sp,
+                            text = "Food Log",
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
-                        )
-                        Text(
-                            text = "Every meal is a little check-in.",
-                            fontSize = 12.sp,
-                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
