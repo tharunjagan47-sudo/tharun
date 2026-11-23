@@ -98,7 +98,7 @@ fun FoodDetailsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -116,7 +116,7 @@ fun FoodDetailsScreen(
 
                     Text(
                         text = "$mealCategory Details",
-                        fontSize = 20.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
                     )
@@ -358,7 +358,7 @@ fun FoodDetailsScreen(
 
             // iOS Liquid Glass Action Button (Adds meal to Food Log)
             IosLiquidGlassButton(
-                text = if (uiState.isLogging) "Adding to Food Log..." else "+ Add to Food Log",
+                text = if (uiState.isLogging) "Adding..." else "Add to Food Log",
                 onClick = {
                     if (!uiState.isLogging) {
                         val calInt = displayDetails?.calories ?: (fallbackDetails.calories.filter { it.isDigit() }.toIntOrNull() ?: 300)
@@ -379,7 +379,7 @@ fun FoodDetailsScreen(
                                 DiaWellNotificationHelper.showGeneralNotification(
                                     context = context,
                                     title = "🥗 Meal Logged Successfully",
-                                    message = "Recorded $title ($calInt kcal). Remember to take a 10-min walk after meals to control glucose spikes!"
+                                    message = "Recorded $title ($calInt kcal)."
                                 )
                                 onAddToFoodLogClick()
                             },
@@ -388,7 +388,7 @@ fun FoodDetailsScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
