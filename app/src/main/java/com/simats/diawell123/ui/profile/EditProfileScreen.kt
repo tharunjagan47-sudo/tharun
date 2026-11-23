@@ -42,6 +42,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.PhotoCamera
+import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -60,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -335,7 +342,12 @@ fun EditProfileScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = Color(0xFF22C55E),
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -401,7 +413,12 @@ fun EditProfileScreen(
                                 modifier = Modifier.size(14.dp)
                             )
                         } else {
-                            Text(text = "📷", fontSize = 13.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.PhotoCamera,
+                                contentDescription = "Edit Photo",
+                                tint = Color.White,
+                                modifier = Modifier.size(15.dp)
+                            )
                         }
                     }
                 }
@@ -422,12 +439,21 @@ fun EditProfileScreen(
                             .clickable { showViewPictureDialog = true }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
-                        Text(
-                            text = "👁️ View Photo",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFA855F7)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.Visibility,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "View Photo",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA855F7)
+                            )
+                        }
                     }
 
                     // Gallery Chip
@@ -439,12 +465,21 @@ fun EditProfileScreen(
                             .clickable { safeLaunchGallery() }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
-                        Text(
-                            text = "🖼️ Gallery",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFA855F7)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.Image,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "Gallery",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA855F7)
+                            )
+                        }
                     }
 
                     // Camera Chip
@@ -455,12 +490,21 @@ fun EditProfileScreen(
                             .clickable { safeLaunchCamera() }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
-                        Text(
-                            text = "📷 Take Photo",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.PhotoCamera,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "Take Photo",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
 
@@ -812,7 +856,7 @@ fun ProfilePhotoOptionsDialog(
 
                 // Option 1: View Picture
                 PhotoOptionItem(
-                    icon = "👁️",
+                    vectorIcon = Icons.Rounded.Visibility,
                     title = "View Profile Picture",
                     subtitle = "Open photo viewer in full size",
                     onClick = {
@@ -825,7 +869,7 @@ fun ProfilePhotoOptionsDialog(
 
                 // Option 2: Gallery
                 PhotoOptionItem(
-                    icon = "🖼️",
+                    vectorIcon = Icons.Rounded.Image,
                     title = "Choose from Gallery",
                     subtitle = "Select a picture from your device photos",
                     onClick = {
@@ -838,7 +882,7 @@ fun ProfilePhotoOptionsDialog(
 
                 // Option 3: Take Photo
                 PhotoOptionItem(
-                    icon = "📷",
+                    vectorIcon = Icons.Rounded.PhotoCamera,
                     title = "Take Photo",
                     subtitle = "Capture a new picture with camera",
                     onClick = {
@@ -873,7 +917,8 @@ fun ProfilePhotoOptionsDialog(
 
 @Composable
 private fun PhotoOptionItem(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     title: String,
     subtitle: String,
     onClick: () -> Unit,
@@ -895,7 +940,16 @@ private fun PhotoOptionItem(
                 .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = icon, fontSize = 20.sp)
+            if (vectorIcon != null) {
+                Icon(
+                    imageVector = vectorIcon,
+                    contentDescription = null,
+                    tint = Color(0xFFA855F7),
+                    modifier = Modifier.size(20.dp)
+                )
+            } else if (icon.isNotEmpty()) {
+                Text(text = icon, fontSize = 20.sp)
+            }
         }
 
         Spacer(modifier = Modifier.width(14.dp))
@@ -957,7 +1011,12 @@ fun ViewProfilePictureDialog(
                             .clickable { onDismissRequest() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Close",
+                            tint = AppTheme.colors.textPrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
 
@@ -1001,7 +1060,12 @@ fun ViewProfilePictureDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "📷", fontSize = 14.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.PhotoCamera,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Take Photo",
@@ -1026,7 +1090,12 @@ fun ViewProfilePictureDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "🖼️", fontSize = 14.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.Image,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(16.dp)
+                            )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Gallery",
