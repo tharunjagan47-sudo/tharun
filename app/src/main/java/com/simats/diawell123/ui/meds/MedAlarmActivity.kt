@@ -35,8 +35,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Medication
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -121,10 +125,10 @@ class MedAlarmActivity : ComponentActivity() {
                         }
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
-                            title = "✅ Dose Completed",
+                            title = "Dose Completed",
                             message = "Great job taking $medName on time!"
                         )
-                        Toast.makeText(this, "Marked as Taken ✅", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Marked as Taken", Toast.LENGTH_SHORT).show()
 
                         lifecycleScope.launch {
                             MedicationStatusUpdater.updateStatusAndNotify(
@@ -293,9 +297,11 @@ fun MedAlarmScreen(
                         .border(2.dp, Color(0xFFFF3366), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "💊",
-                        fontSize = 48.sp
+                    Icon(
+                        imageVector = Icons.Rounded.Medication,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(52.dp)
                     )
                 }
 
@@ -411,7 +417,12 @@ fun MedAlarmScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(text = "✅", fontSize = 18.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "TAKEN NOW",
