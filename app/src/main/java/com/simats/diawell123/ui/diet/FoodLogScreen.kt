@@ -19,6 +19,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -127,12 +133,23 @@ fun FoodLogScreen(
                                 .clickable { viewModel.navigateDate(-1) }
                                 .padding(horizontal = 4.dp)
                         )
-                        Text(
-                            text = "📅  ${uiState.selectedDateLabel}",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.CalendarToday,
+                                contentDescription = null,
+                                tint = AppTheme.colors.textPrimary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = uiState.selectedDateLabel,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.textPrimary,
+                            )
+                        }
                         Text(
                             text = "›",
                             fontSize = 18.sp,
@@ -263,19 +280,31 @@ fun FoodLogScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "🍲 Add Meal to Log",
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AppTheme.colors.textPrimary
-                            )
-                            Text(
-                                text = "✕",
-                                fontSize = 16.sp,
-                                color = AppTheme.colors.textMuted,
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Restaurant,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "Add Meal to Log",
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AppTheme.colors.textPrimary
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = "Close",
+                                tint = AppTheme.colors.textMuted,
                                 modifier = Modifier
                                     .clickable { showAddFoodDialog = false }
                                     .padding(4.dp)
+                                    .size(18.dp)
                             )
                         }
 
@@ -434,12 +463,23 @@ fun FoodLogScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Search,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(16.dp)
+                            )
                             Text(
-                                text = "🔍 Search 1000+ Food Database",
+                                text = "Search Food Database",
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFFA855F7)
                             )
+                        }
                         }
                     }
                 }
