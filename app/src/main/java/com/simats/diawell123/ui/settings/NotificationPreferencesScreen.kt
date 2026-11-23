@@ -25,8 +25,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.InsertChart
+import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.SmartToy
+import androidx.compose.material.icons.rounded.Vibration
+import androidx.compose.material.icons.rounded.WaterDrop
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -41,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -129,7 +142,12 @@ fun NotificationPreferencesScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(22.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -186,7 +204,7 @@ fun NotificationPreferencesScreen(
             NotificationToggleRow(
                 title = "Medication Reminders",
                 subtitle = "For the dose schedule you set.",
-                icon = "💊",
+                vectorIcon = Icons.Rounded.Medication,
                 checked = prefsState.medicationReminders,
                 onCheckedChange = {
                     sessionManager.setMedAlarmsEnabled(it)
@@ -200,7 +218,7 @@ fun NotificationPreferencesScreen(
             NotificationToggleRow(
                 title = "Smart Health Nudges",
                 subtitle = "Swiggy/Zomato-style daily contextual health tips.",
-                icon = "🔔",
+                vectorIcon = Icons.Rounded.Notifications,
                 checked = smartNudgesEnabled,
                 onCheckedChange = {
                     smartNudgesEnabled = it
@@ -219,7 +237,7 @@ fun NotificationPreferencesScreen(
             NotificationToggleRow(
                 title = "DIVA Voice Assistant",
                 subtitle = "Automatic two-way voice reading & audio speech for DIVA.",
-                icon = "🤖",
+                vectorIcon = Icons.Rounded.SmartToy,
                 checked = drJarvisVoiceEnabled,
                 onCheckedChange = {
                     drJarvisVoiceEnabled = it
@@ -233,7 +251,7 @@ fun NotificationPreferencesScreen(
             NotificationToggleRow(
                 title = "Meal Logging Reminders",
                 subtitle = "A nudge to record meals and portions.",
-                icon = "🥗",
+                vectorIcon = Icons.Rounded.Restaurant,
                 checked = prefsState.mealLoggingReminders,
                 onCheckedChange = {
                     viewModel.toggleMealLoggingReminders(it)
@@ -246,7 +264,7 @@ fun NotificationPreferencesScreen(
             NotificationToggleRow(
                 title = "Glucose Logging Reminders",
                 subtitle = "Follow your agreed care routine.",
-                icon = "🩸",
+                vectorIcon = Icons.Rounded.WaterDrop,
                 checked = prefsState.glucoseCheckins,
                 onCheckedChange = {
                     viewModel.toggleGlucoseCheckins(it)
@@ -259,7 +277,7 @@ fun NotificationPreferencesScreen(
             NotificationToggleRow(
                 title = "Weekly Report Alerts",
                 subtitle = "Know when your weekly summary is ready.",
-                icon = "📊",
+                vectorIcon = Icons.Rounded.InsertChart,
                 checked = prefsState.weeklyReportAlerts,
                 onCheckedChange = {
                     viewModel.toggleWeeklyReportAlerts(it)
@@ -272,7 +290,7 @@ fun NotificationPreferencesScreen(
             NotificationToggleRow(
                 title = "Vibration",
                 subtitle = "With reminder alerts",
-                icon = "📳",
+                vectorIcon = Icons.Rounded.Vibration,
                 checked = prefsState.vibration,
                 onCheckedChange = {
                     viewModel.toggleVibration(it)
@@ -297,12 +315,21 @@ fun NotificationPreferencesScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = "🌙  Quiet hours",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.DarkMode,
+                                contentDescription = null,
+                                tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Quiet Hours",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                            )
+                        }
                         Text(
                             text = "›",
                             fontSize = 18.sp,
@@ -379,12 +406,23 @@ fun NotificationPreferencesScreen(
                                         }
                                         .padding(12.dp)
                                 ) {
-                                    Text(
-                                        text = if (isSelected) "✓  $schedule" else schedule,
-                                        fontSize = 14.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (isSelected) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                tint = Color(0xFFA855F7),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                        }
+                                        Text(
+                                            text = schedule,
+                                            fontSize = 14.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -405,7 +443,8 @@ fun NotificationPreferencesScreen(
 fun NotificationToggleRow(
     title: String,
     subtitle: String,
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
@@ -426,7 +465,24 @@ fun NotificationToggleRow(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f),
             ) {
-                Text(text = icon, fontSize = 20.sp)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(if (AppTheme.colors.isDark) Color(0xFF2E1C55) else Color(0xFFF3E8FF)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (vectorIcon != null) {
+                        Icon(
+                            imageVector = vectorIcon,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else if (icon.isNotEmpty()) {
+                        Text(text = icon, fontSize = 20.sp)
+                    }
+                }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
