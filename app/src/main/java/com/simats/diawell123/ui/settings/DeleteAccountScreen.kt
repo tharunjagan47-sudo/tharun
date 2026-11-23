@@ -76,7 +76,7 @@ fun DeleteAccountScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -91,19 +91,13 @@ fun DeleteAccountScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Delete Account",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD32F2F),
-                    )
-                    Text(
-                        text = "Settings",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                }
+                Text(
+                    text = "Delete Account",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD32F2F),
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -306,7 +300,7 @@ fun DeleteAccountScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = if (deleteState.isDeleting) "Deleting Account..." else "Permanently Delete Account",
+                    text = if (deleteState.isDeleting) "Deleting..." else "Delete Account",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -334,7 +328,7 @@ fun DeleteAccountScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
