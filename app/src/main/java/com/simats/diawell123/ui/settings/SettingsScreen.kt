@@ -23,8 +23,25 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CleaningServices
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Emergency
+import androidx.compose.material.icons.rounded.Help
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Logout
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -183,10 +200,15 @@ fun SettingsScreen(
                                             modifier = Modifier
                                                 .size(36.dp)
                                                 .clip(CircleShape)
-                                                .background(AppTheme.colors.secondaryBackground),
+                                                .background(if (AppTheme.colors.isDark) Color(0xFF2E1C55) else Color(0xFFF3E8FF)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(text = "🎨", fontSize = 18.sp)
+                                            Icon(
+                                                imageVector = Icons.Rounded.Palette,
+                                                contentDescription = null,
+                                                tint = Color(0xFFA855F7),
+                                                modifier = Modifier.size(20.dp)
+                                            )
                                         }
                                         Spacer(modifier = Modifier.width(12.dp))
                                         Column {
@@ -217,10 +239,10 @@ fun SettingsScreen(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     listOf(
-                                        ThemeMode.LIGHT to "☀️ Light",
-                                        ThemeMode.DARK to "🌙 Dark",
-                                        ThemeMode.SYSTEM to "⚙️ System"
-                                    ).forEach { (mode, label) ->
+                                        Triple(ThemeMode.LIGHT, "Light", Icons.Rounded.LightMode),
+                                        Triple(ThemeMode.DARK, "Dark", Icons.Rounded.DarkMode),
+                                        Triple(ThemeMode.SYSTEM, "System", Icons.Rounded.Settings)
+                                    ).forEach { (mode, label, iconVec) ->
                                         val isSelected = ThemeManager.themeMode.value == mode
                                         Box(
                                             modifier = Modifier
@@ -238,12 +260,21 @@ fun SettingsScreen(
                                                 .padding(vertical = 8.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(
-                                                text = label,
-                                                fontSize = 12.sp,
-                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                                color = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textSecondary
-                                            )
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = iconVec,
+                                                    contentDescription = null,
+                                                    tint = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textSecondary,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = label,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textSecondary
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -259,9 +290,9 @@ fun SettingsScreen(
                 // Settings Rows (Pop Up Staggered)
                 ElementPopUpContainer(delayMillis = 80) {
                     Column {
-                        SettingsRow(icon = "👤", title = "Personal Profile", onClick = onPersonalProfileClick)
+                        SettingsRow(vectorIcon = Icons.Rounded.Person, title = "Personal Profile", onClick = onPersonalProfileClick)
                         Spacer(modifier = Modifier.height(10.dp))
-                        SettingsRow(icon = "🔔", title = "Notification Preferences", onClick = onNotificationPrefsClick)
+                        SettingsRow(vectorIcon = Icons.Rounded.Notifications, title = "Notification Preferences", onClick = onNotificationPrefsClick)
                     }
                 }
 
@@ -269,9 +300,9 @@ fun SettingsScreen(
 
                 ElementPopUpContainer(delayMillis = 160) {
                     Column {
-                        SettingsRow(icon = "🥗", title = "Food Preferences", onClick = onFoodPrefsClick)
+                        SettingsRow(vectorIcon = Icons.Rounded.Restaurant, title = "Food Preferences", onClick = onFoodPrefsClick)
                         Spacer(modifier = Modifier.height(10.dp))
-                        SettingsRow(icon = "🔒", title = "Privacy and Security", onClick = onPrivacySecurityClick)
+                        SettingsRow(vectorIcon = Icons.Rounded.Lock, title = "Privacy and Security", onClick = onPrivacySecurityClick)
                     }
                 }
 
@@ -279,10 +310,10 @@ fun SettingsScreen(
 
                 ElementPopUpContainer(delayMillis = 200) {
                     Column {
-                        SettingsRow(icon = "📥", title = "Export Medical Records", onClick = onExportRecordsClick)
+                        SettingsRow(vectorIcon = Icons.Rounded.Download, title = "Export Medical Records", onClick = onExportRecordsClick)
                         Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(
-                            icon = "🚨",
+                            vectorIcon = Icons.Rounded.Emergency,
                             title = "Emergency Medical Hotline (108)",
                             onClick = {
                                 val dialIntent = android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:108"))
@@ -301,12 +332,12 @@ fun SettingsScreen(
                 ElementPopUpContainer(delayMillis = 240) {
                     Column {
                         SettingsRow(
-                            icon = "🧹",
+                            vectorIcon = Icons.Rounded.CleaningServices,
                             title = "Clear App Cache",
                             onClick = {
                                 try {
                                     context.cacheDir.deleteRecursively()
-                                    Toast.makeText(context, "✅ App cache cleared successfully.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "App cache cleared successfully.", Toast.LENGTH_SHORT).show()
                                 } catch (_: Exception) {
                                     Toast.makeText(context, "Cache already clean.", Toast.LENGTH_SHORT).show()
                                 }
@@ -314,15 +345,15 @@ fun SettingsScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(
-                            icon = "🗑️",
+                            vectorIcon = Icons.Rounded.Delete,
                             title = "Reset / Clear My Logs",
                             isDestructive = true,
                             onClick = { showResetDialog = true }
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        SettingsRow(icon = "❓", title = "Help and Support", onClick = onHelpSupportClick)
+                        SettingsRow(vectorIcon = Icons.Rounded.Help, title = "Help and Support", onClick = onHelpSupportClick)
                         Spacer(modifier = Modifier.height(10.dp))
-                        SettingsRow(icon = "🚪", title = "Log Out", isDestructive = true, onClick = onLogoutClick)
+                        SettingsRow(vectorIcon = Icons.Rounded.Logout, title = "Log Out", isDestructive = true, onClick = onLogoutClick)
                     }
                 }
 
@@ -376,12 +407,12 @@ fun SettingsScreen(
                                 onSuccess = { msg ->
                                     isResetting = false
                                     showResetDialog = false
-                                    Toast.makeText(context, "✅ $msg", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                                 },
                                 onFailure = { err ->
                                     isResetting = false
                                     showResetDialog = false
-                                    Toast.makeText(context, "⚠️ Logs cleared locally: $err", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "Logs cleared locally: $err", Toast.LENGTH_LONG).show()
                                 }
                             )
                         },
@@ -409,7 +440,8 @@ fun SettingsScreen(
 
 @Composable
 fun SettingsRow(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     title: String,
     modifier: Modifier = Modifier,
     isDestructive: Boolean = false,
@@ -437,14 +469,27 @@ fun SettingsRow(
                         .clip(CircleShape)
                         .background(
                             if (isDestructive) {
-                                if (isDark) Color(0xFF7F1D1D) else Color(0xFFFFEBEE)
+                                if (isDark) Color(0xFF7F1D1D).copy(alpha = 0.4f) else Color(0xFFFFEBEE)
                             } else {
-                                AppTheme.colors.secondaryBackground
+                                if (isDark) Color(0xFF2E1C55) else Color(0xFFF3E8FF)
                             }
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = icon, fontSize = 16.sp)
+                    if (vectorIcon != null) {
+                        Icon(
+                            imageVector = vectorIcon,
+                            contentDescription = null,
+                            tint = if (isDestructive) {
+                                if (isDark) Color(0xFFF87171) else Color(0xFFD32F2F)
+                            } else {
+                                Color(0xFFA855F7)
+                            },
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else if (icon.isNotEmpty()) {
+                        Text(text = icon, fontSize = 16.sp)
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
