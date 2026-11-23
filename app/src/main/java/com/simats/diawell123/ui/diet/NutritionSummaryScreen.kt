@@ -13,12 +13,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.Fastfood
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,12 +97,23 @@ fun NutritionSummaryScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(text = "‹", fontSize = 18.sp, color = Color(0xFFA855F7), fontWeight = FontWeight.Bold)
-                        Text(
-                            text = "📅  Thu, 15 Oct 2026",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.CalendarToday,
+                                contentDescription = null,
+                                tint = AppTheme.colors.textPrimary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "Thu, 15 Oct 2026",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.textPrimary,
+                            )
+                        }
                         Text(text = "›", fontSize = 18.sp, color = Color(0xFFA855F7), fontWeight = FontWeight.Bold)
                     }
                 }
@@ -211,13 +230,13 @@ fun NutritionSummaryScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                MealBreakdownRow(icon = "🥣", name = "Breakfast", calories = "320 kcal")
+                MealBreakdownRow(vectorIcon = Icons.Rounded.Restaurant, name = "Breakfast", calories = "320 kcal")
                 Spacer(modifier = Modifier.height(8.dp))
-                MealBreakdownRow(icon = "🥗", name = "Lunch", calories = "450 kcal")
+                MealBreakdownRow(vectorIcon = Icons.Rounded.Fastfood, name = "Lunch", calories = "450 kcal")
                 Spacer(modifier = Modifier.height(8.dp))
-                MealBreakdownRow(icon = "🫐", name = "Snacks", calories = "160 kcal")
+                MealBreakdownRow(vectorIcon = Icons.Rounded.Restaurant, name = "Snacks", calories = "160 kcal")
                 Spacer(modifier = Modifier.height(8.dp))
-                MealBreakdownRow(icon = "🍱", name = "Dinner", calories = "480 kcal")
+                MealBreakdownRow(vectorIcon = Icons.Rounded.Fastfood, name = "Dinner", calories = "480 kcal")
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -230,12 +249,21 @@ fun NutritionSummaryScreen(
                         .padding(14.dp),
                 ) {
                     Column {
-                        Text(
-                            text = "✨ AI • nutrition insight",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.AutoAwesome,
+                                contentDescription = null,
+                                tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "AI • Nutrition Insight",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                            )
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Your 4 logged meals include grains, fruit and protein. Add varied vegetables across meals.",
@@ -299,7 +327,8 @@ fun MacroLegendItem(
 
 @Composable
 fun MealBreakdownRow(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     name: String,
     calories: String,
 ) {
@@ -317,7 +346,16 @@ fun MealBreakdownRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = icon, fontSize = 20.sp)
+                if (vectorIcon != null) {
+                    Icon(
+                        imageVector = vectorIcon,
+                        contentDescription = null,
+                        tint = Color(0xFF7E22CE),
+                        modifier = Modifier.size(20.dp),
+                    )
+                } else if (icon.isNotEmpty()) {
+                    Text(text = icon, fontSize = 20.sp)
+                }
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = name,
