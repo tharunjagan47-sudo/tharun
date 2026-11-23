@@ -24,8 +24,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.LocalHospital
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -136,7 +141,12 @@ fun ExportRecordsScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(22.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
@@ -166,12 +176,21 @@ fun ExportRecordsScreen(
                         .clickable { viewModel.clearExportError() }
                         .padding(12.dp)
                 ) {
-                    Text(
-                        text = "⚠️ ${exportState.errorMessage}",
-                        fontSize = 12.sp,
-                        color = Color(0xFFD32F2F),
-                        lineHeight = 16.sp,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFD32F2F),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = exportState.errorMessage ?: "",
+                            fontSize = 12.sp,
+                            color = Color(0xFFD32F2F),
+                            lineHeight = 16.sp,
+                        )
+                    }
                 }
             }
 
@@ -184,7 +203,12 @@ fun ExportRecordsScreen(
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "🏥", fontSize = 22.sp)
+                    Icon(
+                        imageVector = Icons.Rounded.LocalHospital,
+                        contentDescription = null,
+                        tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                        modifier = Modifier.size(22.dp)
+                    )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Generates a clean health summary of your glucose readings, medications, meals, and workouts for your doctor.",
@@ -255,7 +279,7 @@ fun ExportRecordsScreen(
             ) {
                 ExportFormatCard(
                     title = "PDF Report",
-                    subtitle = "📄 Hospital-grade multi-page report",
+                    subtitle = "Hospital-grade multi-page report",
                     isSelected = selectedFormat == "PDF",
                     onClick = { selectedFormat = "PDF" },
                     modifier = Modifier.weight(1f),
@@ -263,7 +287,7 @@ fun ExportRecordsScreen(
 
                 ExportFormatCard(
                     title = "CSV Data",
-                    subtitle = "📊 Spreadsheet-ready raw telemetry",
+                    subtitle = "Spreadsheet-ready raw telemetry",
                     isSelected = selectedFormat == "CSV",
                     onClick = { selectedFormat = "CSV" },
                     modifier = Modifier.weight(1f),
@@ -283,7 +307,7 @@ fun ExportRecordsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExportCheckOption(
-                label = "🩸  Blood Glucose Readings History",
+                label = "Blood Glucose Readings History",
                 checked = includeGlucose,
                 onCheckedChange = { includeGlucose = it },
             )
@@ -291,7 +315,7 @@ fun ExportRecordsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExportCheckOption(
-                label = "💊  Medication Regimen & Adherence",
+                label = "Medication Regimen & Adherence",
                 checked = includeMedications,
                 onCheckedChange = { includeMedications = it },
             )
@@ -299,7 +323,7 @@ fun ExportRecordsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExportCheckOption(
-                label = "🥗  Diet & Nutrition Logs",
+                label = "Diet & Nutrition Logs",
                 checked = includeMeals,
                 onCheckedChange = { includeMeals = it },
             )
@@ -307,7 +331,7 @@ fun ExportRecordsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExportCheckOption(
-                label = "🏃  Physical Activity & Exercise Logs",
+                label = "Physical Activity & Exercise Logs",
                 checked = includeActivity,
                 onCheckedChange = { includeActivity = it },
             )
