@@ -297,7 +297,7 @@ fun ActivityTrackingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -320,8 +320,8 @@ fun ActivityTrackingScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "AI Activity Coach",
-                                    fontSize = 20.sp,
+                                    text = "Activity",
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
                                 )
@@ -334,11 +334,6 @@ fun ActivityTrackingScreen(
                                     )
                                 }
                             }
-                            Text(
-                                text = "Personalized for Glucose $effectiveGlucose mg/dL • $effectiveWeight kg",
-                                fontSize = 11.sp,
-                                color = AppTheme.colors.textSecondary,
-                            )
                         }
                     }
 
@@ -352,7 +347,7 @@ fun ActivityTrackingScreen(
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     ) {
                         Text(
-                            text = "📜 Logs",
+                            text = "History",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0D9488),
@@ -793,7 +788,7 @@ fun ActivityTrackingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
