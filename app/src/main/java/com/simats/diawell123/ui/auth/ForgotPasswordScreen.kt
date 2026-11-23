@@ -94,7 +94,7 @@ fun ForgotPasswordScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
@@ -117,14 +117,9 @@ fun ForgotPasswordScreen(
                     Column {
                         Text(
                             text = "Reset Password",
-                            fontSize = 20.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
-                        )
-                        Text(
-                            text = "Update your credentials securely.",
-                            fontSize = 12.sp,
-                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
