@@ -82,10 +82,10 @@ fun ExploreFoodScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar & Search Bar
@@ -101,15 +101,10 @@ fun ExploreFoodScreen(
 
                             Column {
                                 Text(
-                                    text = "Explore food",
-                                    fontSize = 20.sp,
+                                    text = "Explore Food",
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
-                                )
-                                Text(
-                                    text = "Search from 1000+ healthy dishes & nutrition info",
-                                    fontSize = 12.sp,
-                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
