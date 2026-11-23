@@ -88,15 +88,128 @@ fun SiriVoiceOverlay(
         enter = fadeIn(tween(260)) + scaleIn(initialScale = 0.96f, animationSpec = tween(260)),
         exit = fadeOut(tween(220)) + scaleOut(targetScale = 0.96f, animationSpec = tween(220))
     ) {
+        // Ambient Gradient Motion Transitions (Smooth continuous breathing movement behind robot)
+        val ambientTransition = rememberInfiniteTransition(label = "VoiceAmbientGradientMotion")
+        val phase1 by ambientTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = (2f * PI).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 14000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "phase1"
+        )
+        val phase2 by ambientTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = (2f * PI).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 18000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "phase2"
+        )
+        val pulseScale by ambientTransition.animateFloat(
+            initialValue = 0.94f,
+            targetValue = 1.06f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 8000, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulseScale"
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0B0E17))
-                .systemBarsPadding()
+                .background(Color(0xFF000000))
         ) {
+            // Half-faded atmospheric ambient top-half gradient background with gentle motion
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val w = size.width
+                val h = size.height
+
+                val offsetX1 = w * (0.16f + 0.08f * sin(phase1))
+                val offsetY1 = h * (0.07f + 0.04f * cos(phase1))
+                val radius1 = w * (0.95f * pulseScale)
+
+                val offsetX2 = w * (0.84f - 0.08f * cos(phase2))
+                val offsetY2 = h * (0.11f + 0.05f * sin(phase2))
+                val radius2 = w * (0.90f * (2f - pulseScale))
+
+                // 1. Broad Top-Half Ambient Horizontal Glow with subtle lateral drift
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFF6D28D9).copy(alpha = 0.62f), // Rich Royal Purple on left
+                            Color(0xFF7C3AED).copy(alpha = 0.52f), // Electric Violet in center
+                            Color(0xFF9333EA).copy(alpha = 0.60f), // Deep Magenta-Violet on right
+                        ),
+                        startX = -w * 0.10f + w * 0.10f * sin(phase1),
+                        endX = w * 1.10f + w * 0.10f * sin(phase1)
+                    ),
+                    size = androidx.compose.ui.geometry.Size(w, h * 0.50f)
+                )
+
+                // 2. High-saturation Top-Left Radial Bloom (Royal Purple & Lavender)
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF8B5CF6).copy(alpha = 0.70f),
+                            Color(0xFF7C3AED).copy(alpha = 0.44f),
+                            Color(0xFF4C1D95).copy(alpha = 0.16f),
+                            Color.Transparent
+                        ),
+                        center = Offset(offsetX1, offsetY1),
+                        radius = radius1
+                    )
+                )
+
+                // 3. High-saturation Top-Right Radial Bloom (Electric Magenta & Deep Violet)
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFA855F7).copy(alpha = 0.64f),
+                            Color(0xFF9333EA).copy(alpha = 0.40f),
+                            Color(0xFF581C87).copy(alpha = 0.14f),
+                            Color.Transparent
+                        ),
+                        center = Offset(offsetX2, offsetY2),
+                        radius = radius2
+                    )
+                )
+
+                // 4. Floating central atmospheric aura behind the robot
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF7C3AED).copy(alpha = 0.32f),
+                            Color(0xFF4C1D95).copy(alpha = 0.12f),
+                            Color.Transparent
+                        ),
+                        center = Offset(w * (0.50f + 0.05f * sin(phase2)), h * (0.24f + 0.03f * cos(phase1))),
+                        radius = w * 0.85f
+                    )
+                )
+
+                // 5. Half-faded smooth atmospheric diffusion into pure obsidian black by ~48-55%
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.0f to Color.Transparent,
+                            0.20f to Color.Transparent,
+                            0.35f to Color(0xFF000000).copy(alpha = 0.35f),
+                            0.48f to Color(0xFF000000).copy(alpha = 0.85f),
+                            0.55f to Color(0xFF000000),
+                            1.0f to Color(0xFF000000)
+                        )
+                    )
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .systemBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
@@ -487,6 +600,27 @@ fun GlowingSiriOrb(
             .size(stageSizeDp.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Ambient soft royal purple & violet halo aura directly behind the robot element
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val cx = size.width * 0.5f
+            val cy = size.height * 0.46f
+            val haloRadius = size.minDimension * 0.58f * breathing
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF8B5CF6).copy(alpha = 0.38f),
+                        Color(0xFF7C3AED).copy(alpha = 0.22f),
+                        Color(0xFF4C1D95).copy(alpha = 0.08f),
+                        Color.Transparent
+                    ),
+                    center = Offset(cx, cy),
+                    radius = haloRadius
+                ),
+                radius = haloRadius,
+                center = Offset(cx, cy)
+            )
+        }
+
         // LARGE FULL-BODY VIRTUAL ASSISTANT DIVA ROBOT + SYNCHRONIZED DW CHEST VOICE ORB
         DivaTalkingAvatar(
             isSpeaking = voiceState == JarvisVoiceState.SPEAKING,
