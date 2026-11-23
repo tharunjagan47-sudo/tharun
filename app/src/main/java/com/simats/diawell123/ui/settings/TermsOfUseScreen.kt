@@ -45,7 +45,7 @@ fun TermsOfUseScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -60,50 +60,13 @@ fun TermsOfUseScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Terms of Use",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Settings",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Last Updated: October 15, 2026 • DiaWell",
-                fontSize = 11.sp,
-                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                fontWeight = FontWeight.Medium,
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Banner Card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                    .padding(14.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "📜", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Please read these terms carefully before using the DiaWell application.",
-                        fontSize = 12.sp,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                        lineHeight = 16.sp,
-                    )
-                }
+                Text(
+                    text = "Terms of Use",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -142,18 +105,7 @@ fun TermsOfUseScreen(
                 body = "DiaWell Health shall not be liable for health decisions, outcomes, or actions taken based on general dietary suggestions or logging data.",
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "By using DiaWell, you acknowledge that you have read and agree to these terms.\nDiaWell Health • Version 1.0.0",
-                fontSize = 11.sp,
-                color = AppTheme.colors.textMuted,
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-            )
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
