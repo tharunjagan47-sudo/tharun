@@ -21,6 +21,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,8 +74,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -84,6 +87,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.R
 import com.simats.diawell123.data.model.AlertType
 import com.simats.diawell123.data.model.BadgeType
 import com.simats.diawell123.data.model.ChatMessage
@@ -243,44 +247,60 @@ fun ChatScreen(
             .fillMaxSize()
             .background(Color(0xFF000000))
     ) {
-        // Atmospheric Top-Half Radial Mesh Gradient
+        // Atmospheric Ambient Top-Half Gradient (inspired by ambient glassmorphic chat UI)
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
 
-            // Top-Left Royal Purple ambient glow (#7C3AED at ~35% alpha)
+            // 1. Broad Top-Half Ambient Horizontal-to-Vertical Glow
+            drawRect(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFF6D28D9).copy(alpha = 0.60f), // Rich Royal Purple on left
+                        Color(0xFF7C3AED).copy(alpha = 0.50f), // Electric Violet in center
+                        Color(0xFF9333EA).copy(alpha = 0.58f), // Deep Magenta-Violet on right
+                    )
+                ),
+                size = androidx.compose.ui.geometry.Size(w, h * 0.48f)
+            )
+
+            // 2. High-saturation Top-Left Radial Bloom (Royal Purple & Lavender)
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF7C3AED).copy(alpha = 0.35f),
-                        Color(0xFF7C3AED).copy(alpha = 0.15f),
+                        Color(0xFF8B5CF6).copy(alpha = 0.68f),
+                        Color(0xFF7C3AED).copy(alpha = 0.42f),
+                        Color(0xFF4C1D95).copy(alpha = 0.15f),
                         Color.Transparent
                     ),
-                    center = Offset(w * 0.16f, h * 0.10f),
+                    center = Offset(w * 0.12f, h * 0.06f),
+                    radius = w * 0.95f
+                )
+            )
+
+            // 3. High-saturation Top-Right Radial Bloom (Electric Magenta & Deep Violet)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFA855F7).copy(alpha = 0.62f),
+                        Color(0xFF9333EA).copy(alpha = 0.38f),
+                        Color(0xFF581C87).copy(alpha = 0.12f),
+                        Color.Transparent
+                    ),
+                    center = Offset(w * 0.88f, h * 0.10f),
                     radius = w * 0.90f
                 )
             )
 
-            // Top-Right Deep Violet / Magenta ambient glow (#6D28D9 / #4C1D95 at ~25% alpha)
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF6D28D9).copy(alpha = 0.26f),
-                        Color(0xFF4C1D95).copy(alpha = 0.18f),
-                        Color.Transparent
-                    ),
-                    center = Offset(w * 0.88f, h * 0.14f),
-                    radius = w * 0.85f
-                )
-            )
-
-            // Seamless vertical fade mask: blends completely into pure #000000 by ~50-55%
+            // 4. Smooth, seamless atmospheric diffusion into pure obsidian black by ~48-55%
             drawRect(
                 brush = Brush.verticalGradient(
                     colorStops = arrayOf(
                         0.0f to Color.Transparent,
-                        0.32f to Color.Transparent,
-                        0.52f to Color(0xFF000000),
+                        0.22f to Color.Transparent,
+                        0.36f to Color(0xFF000000).copy(alpha = 0.35f),
+                        0.48f to Color(0xFF000000).copy(alpha = 0.85f),
+                        0.55f to Color(0xFF000000),
                         1.0f to Color(0xFF000000)
                     )
                 )
@@ -847,27 +867,28 @@ fun ChatMessageItem(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.Top
         ) {
-            // Tiny subtle purple sparkle / DIVA icon
+            // Official DIVA AI Avatar Logo Badge
             Box(
                 modifier = Modifier
-                    .padding(top = 4.dp)
-                    .size(24.dp)
+                    .padding(top = 2.dp)
+                    .size(28.dp)
                     .clip(CircleShape)
-                    .background(Color(0x28A855F7)),
+                    .background(Color(0xFF0F0B1E))
+                    .border(
+                        width = 1.2.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFFA855F7), Color(0xFF7C3AED), Color(0xFFF0ABFC))
+                        ),
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Canvas(modifier = Modifier.size(13.dp)) {
-                    val w = size.width
-                    val h = size.height
-                    val path = Path().apply {
-                        moveTo(w * 0.5f, 0f)
-                        quadraticBezierTo(w * 0.5f, h * 0.5f, w, h * 0.5f)
-                        quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, h)
-                        quadraticBezierTo(w * 0.5f, h * 0.5f, 0f, h * 0.5f)
-                        quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, 0f)
-                    }
-                    drawPath(path = path, color = Color(0xFFC084FC))
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.diva_avatar),
+                    contentDescription = "DIVA",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             Spacer(modifier = Modifier.width(10.dp))
@@ -979,26 +1000,27 @@ fun DivaThinkingIndicator() {
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Sparkle icon
+        // DIVA Avatar Logo Badge
         Box(
             modifier = Modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(Color(0x28A855F7)),
+                .background(Color(0xFF0F0B1E))
+                .border(
+                    width = 1.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFFA855F7), Color(0xFF7C3AED))
+                    ),
+                    shape = CircleShape
+                ),
             contentAlignment = Alignment.Center
         ) {
-            Canvas(modifier = Modifier.size(13.dp)) {
-                val w = size.width
-                val h = size.height
-                val path = Path().apply {
-                    moveTo(w * 0.5f, 0f)
-                    quadraticBezierTo(w * 0.5f, h * 0.5f, w, h * 0.5f)
-                    quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, h)
-                    quadraticBezierTo(w * 0.5f, h * 0.5f, 0f, h * 0.5f)
-                    quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, 0f)
-                }
-                drawPath(path = path, color = Color(0xFFA855F7))
-            }
+            Image(
+                painter = painterResource(id = R.drawable.diva_avatar),
+                contentDescription = "DIVA",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
         Spacer(modifier = Modifier.width(10.dp))
