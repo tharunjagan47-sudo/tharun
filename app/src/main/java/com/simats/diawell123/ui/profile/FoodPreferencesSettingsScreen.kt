@@ -27,8 +27,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Eco
+import androidx.compose.material.icons.rounded.Grass
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -44,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -176,7 +186,12 @@ fun FoodPreferencesSettingsScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = Color(0xFF22C55E),
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -244,7 +259,7 @@ fun FoodPreferencesSettingsScreen(
             ) {
                 DietTypeOptionCard(
                     title = "Vegetarian",
-                    iconText = "🥦",
+                    vectorIcon = Icons.Rounded.Eco,
                     isSelected = selectedDiet == "Vegetarian",
                     onClick = {
                         selectedDiet = "Vegetarian"
@@ -256,7 +271,7 @@ fun FoodPreferencesSettingsScreen(
                 )
                 DietTypeOptionCard(
                     title = "Non-Vegetarian",
-                    iconText = "🍗",
+                    vectorIcon = Icons.Rounded.Restaurant,
                     isSelected = selectedDiet == "Non-Vegetarian",
                     onClick = {
                         selectedDiet = "Non-Vegetarian"
@@ -268,7 +283,7 @@ fun FoodPreferencesSettingsScreen(
                 )
                 DietTypeOptionCard(
                     title = "Vegan",
-                    iconText = "🌱",
+                    vectorIcon = Icons.Rounded.Grass,
                     isSelected = selectedDiet == "Vegan",
                     onClick = {
                         selectedDiet = "Vegan"
@@ -327,12 +342,23 @@ fun FoodPreferencesSettingsScreen(
                             .clickable { allergies[index] = name to !isSelected }
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     ) {
-                        Text(
-                            text = if (isSelected) "✓  $name" else name,
-                            fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                            }
+                            Text(
+                                text = name,
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
+                            )
+                        }
                     }
                 }
             }
@@ -367,12 +393,23 @@ fun FoodPreferencesSettingsScreen(
                             .clickable { preferredStyles[index] = name to !isSelected }
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     ) {
-                        Text(
-                            text = if (isSelected) "✓  $name" else name,
-                            fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                            }
+                            Text(
+                                text = name,
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
+                            )
+                        }
                     }
                 }
             }
@@ -476,12 +513,21 @@ fun FoodPreferencesSettingsScreen(
                                         }
                                         .padding(10.dp)
                                 ) {
-                                    Text(
-                                        text = if (alreadyExists) "✓ $item (Already added)" else "+ $item",
-                                        fontSize = 13.sp,
-                                        color = if (alreadyExists) AppTheme.colors.textMuted else Color(0xFFA855F7),
-                                        fontWeight = if (alreadyExists) FontWeight.Normal else FontWeight.SemiBold
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = if (alreadyExists) Icons.Rounded.Check else Icons.Rounded.Add,
+                                            contentDescription = null,
+                                            tint = if (alreadyExists) AppTheme.colors.textMuted else Color(0xFFA855F7),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (alreadyExists) "$item (Already added)" else item,
+                                            fontSize = 13.sp,
+                                            color = if (alreadyExists) AppTheme.colors.textMuted else Color(0xFFA855F7),
+                                            fontWeight = if (alreadyExists) FontWeight.Normal else FontWeight.SemiBold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -501,19 +547,20 @@ fun FoodPreferencesSettingsScreen(
 @Composable
 fun DietTypeOptionCard(
     title: String,
-    iconText: String,
+    vectorIcon: ImageVector? = null,
+    iconText: String = "",
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else AppTheme.colors.secondaryBackground)
             .border(
                 width = 1.5.dp,
                 color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
             )
             .clickable { onClick() }
             .padding(horizontal = 6.dp, vertical = 12.dp),
@@ -523,8 +570,25 @@ fun DietTypeOptionCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = iconText, fontSize = 22.sp)
-            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(if (isSelected) Color(0xFFA855F7).copy(alpha = 0.2f) else AppTheme.colors.cardBackground),
+                contentAlignment = Alignment.Center
+            ) {
+                if (vectorIcon != null) {
+                    Icon(
+                        imageVector = vectorIcon,
+                        contentDescription = null,
+                        tint = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                } else if (iconText.isNotEmpty()) {
+                    Text(text = iconText, fontSize = 20.sp)
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = title,
                 fontSize = 11.5.sp,
