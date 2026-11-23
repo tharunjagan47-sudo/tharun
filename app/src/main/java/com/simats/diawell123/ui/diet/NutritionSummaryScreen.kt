@@ -47,10 +47,10 @@ fun NutritionSummaryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar
@@ -64,27 +64,13 @@ fun NutritionSummaryScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Nutrition summary",
-                            fontSize = 20.sp,
+                            text = "Nutrition Summary",
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
                         )
-                        Text(
-                            text = "A snapshot of your estimated meals.",
-                            fontSize = 12.sp,
-                            color = AppTheme.colors.textSecondary,
-                        )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "${ProfileState.userName} • Daily Nutrition Summary",
-                    fontSize = 11.sp,
-                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                    fontWeight = FontWeight.Medium,
-                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
