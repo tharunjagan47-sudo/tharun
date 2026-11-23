@@ -23,6 +23,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.RadioButtonChecked
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -107,10 +113,16 @@ fun DeleteAccountScreen(
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFFEBEE)),
+                    .background(Color(0xFFEF4444).copy(alpha = 0.15f))
+                    .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = "🗑️", fontSize = 28.sp)
+                Icon(
+                    imageVector = Icons.Rounded.Delete,
+                    contentDescription = null,
+                    tint = Color(0xFFEF4444),
+                    modifier = Modifier.size(32.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -135,12 +147,22 @@ fun DeleteAccountScreen(
                     .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(14.dp))
                     .padding(14.dp),
             ) {
-                Text(
-                    text = "⚠️ Warning: This action is permanent and cannot be undone. All your logged glucose readings, meal history, medication schedules, and account preferences will be permanently erased.",
-                    fontSize = 12.sp,
-                    color = Color(0xFFC62828),
-                    lineHeight = 17.sp,
-                )
+                Row(verticalAlignment = Alignment.Top) {
+                    Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFC62828),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "This action is permanent and cannot be undone. All your logged glucose readings, meal history, medication schedules, and account preferences will be permanently erased.",
+                        fontSize = 12.sp,
+                        color = Color(0xFFC62828),
+                        lineHeight = 17.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
             if (deleteState.errorMessage != null) {
@@ -195,12 +217,21 @@ fun DeleteAccountScreen(
                         }
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                 ) {
-                    Text(
-                        text = if (isSelected) "●  $reason" else "○  $reason",
-                        fontSize = 12.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
+                            contentDescription = null,
+                            tint = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textMuted,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = reason,
+                            fontSize = 13.sp,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.textPrimary,
+                        )
+                    }
                 }
             }
 
