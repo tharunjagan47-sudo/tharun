@@ -96,7 +96,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
@@ -117,15 +117,7 @@ fun LoginScreen(
                     textAlign = TextAlign.Start,
                 )
 
-                Text(
-                    text = "Let's make today a little healthier.",
-                    fontSize = 13.sp,
-                    color = AppTheme.colors.textSecondary,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Start,
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Arc Reactor Logo
                 ArcReactorCanvas(
@@ -312,12 +304,12 @@ fun LoginScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White.copy(alpha = 0.96f))
+                    .background(if (AppTheme.colors.isDark) Color(0xD90F0E17) else Color.White.copy(alpha = 0.96f))
                     .clickable(enabled = false) {}, // Intercept clicks during loading
                 contentAlignment = Alignment.Center,
             ) {
                 AiSpeechOrbLoadingView(
-                    statusText = "Logging in & Setting up your Dashboard...",
+                    statusText = "Logging in...",
                 )
             }
         }
