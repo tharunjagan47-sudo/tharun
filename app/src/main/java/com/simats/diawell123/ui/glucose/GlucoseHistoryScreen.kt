@@ -75,10 +75,10 @@ fun GlucoseHistoryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp)
+                .padding(bottom = 100.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar with Styled Back Button
@@ -93,14 +93,9 @@ fun GlucoseHistoryScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Glucose History",
-                            fontSize = 20.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
-                        )
-                        Text(
-                            text = "Track your blood sugar trends over time",
-                            fontSize = 12.sp,
-                            color = AppTheme.colors.textSecondary,
                         )
                     }
 
