@@ -99,7 +99,9 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.cos
 import kotlin.math.sin
+import com.simats.diawell123.ui.profile.ProfileState
 
 /**
  * Ultra-minimal modern dark-mode DIVA AI Chat Screen.
@@ -241,12 +243,126 @@ fun ChatScreen(
         }
     }
 
-    // Edge-to-edge layout content (Seamlessly rendered on DiaWellAmbientBackground)
+    // Dynamic Ambient Fluid Gradient (Gemini-inspired top half bloom & sinusoidal motion)
+    val ambientTransition = rememberInfiniteTransition(label = "ChatAmbientGradientMotion")
+    val phase1 by ambientTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 14000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase1"
+    )
+    val phase2 by ambientTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 18000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase2"
+    )
+    val pulseScale by ambientTransition.animateFloat(
+        initialValue = 0.94f,
+        targetValue = 1.06f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 8000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+
+    // Edge-to-edge layout content with integrated moving ambient gradient
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Transparent)
+            .background(Color(0xFF000000))
     ) {
+        // Fluid Top Ambient Gradient Canvas (Emerald & Teal to Royal Purple fading to pitch black)
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+
+            val offsetX1 = w * (0.18f + 0.08f * sin(phase1))
+            val offsetY1 = h * (0.08f + 0.04f * cos(phase1))
+            val radius1 = w * (0.95f * pulseScale)
+
+            val offsetX2 = w * (0.82f - 0.08f * cos(phase2))
+            val offsetY2 = h * (0.12f + 0.05f * sin(phase2))
+            val radius2 = w * (0.92f * (2f - pulseScale))
+
+            // 1. Broad Top-Half Ambient Horizontal Glow with lateral drift
+            drawRect(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFF047857).copy(alpha = 0.65f), // Rich Emerald / Teal on left (matches screenshot)
+                        Color(0xFF0E7490).copy(alpha = 0.48f), // Deep Cyan in middle
+                        Color(0xFF1E3A8A).copy(alpha = 0.45f), // Deep Midnight Blue / Indigo
+                        Color(0xFF581C87).copy(alpha = 0.48f), // Deep Violet / Purple on right
+                    ),
+                    startX = -w * 0.10f + w * 0.10f * sin(phase1),
+                    endX = w * 1.10f + w * 0.10f * sin(phase1)
+                ),
+                size = androidx.compose.ui.geometry.Size(w, h * 0.50f)
+            )
+
+            // 2. High-saturation Top-Left Radial Bloom (Emerald & Vibrant Teal)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF10B981).copy(alpha = 0.72f),
+                        Color(0xFF0D9488).copy(alpha = 0.52f),
+                        Color(0xFF064E3B).copy(alpha = 0.22f),
+                        Color.Transparent
+                    ),
+                    center = Offset(offsetX1, offsetY1),
+                    radius = radius1
+                )
+            )
+
+            // 3. High-saturation Top-Right Radial Bloom (Indigo & Royal Purple)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF38BDF8).copy(alpha = 0.35f),
+                        Color(0xFF6366F1).copy(alpha = 0.50f),
+                        Color(0xFF7C3AED).copy(alpha = 0.55f),
+                        Color(0xFF3B0764).copy(alpha = 0.20f),
+                        Color.Transparent
+                    ),
+                    center = Offset(offsetX2, offsetY2),
+                    radius = radius2
+                )
+            )
+
+            // 4. Subtle central floating aura node
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF065F46).copy(alpha = 0.35f),
+                        Color(0xFF1E1B4B).copy(alpha = 0.25f),
+                        Color.Transparent
+                    ),
+                    center = Offset(w * (0.50f + 0.05f * sin(phase2)), h * (0.16f + 0.03f * cos(phase1))),
+                    radius = w * 0.75f
+                )
+            )
+
+            // 5. Smooth atmospheric diffusion fading to pure obsidian pitch black (#000000) by ~48-52%
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0.0f to Color.Transparent,
+                        0.20f to Color.Transparent,
+                        0.32f to Color(0xFF000000).copy(alpha = 0.35f),
+                        0.44f to Color(0xFF000000).copy(alpha = 0.85f),
+                        0.50f to Color(0xFF000000),
+                        1.0f to Color(0xFF000000)
+                    )
+                )
+            )
+        }
 
         // Edge-to-edge layout content centered for landscape/tablet screens
         Column(
@@ -270,30 +386,46 @@ fun ChatScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left: Circular Glass Button with Glowing Rim & Official DIVA Logo (matches reference UI!)
+                // Left: Circular Button with Green Accent & Gemini-style Sidebar Icon (matches reference UI!)
                 Box(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(CircleShape)
-                        .background(Color(0x400F172A))
+                        .background(Color(0x3310B981))
                         .border(
-                            width = 1.4.dp,
-                            brush = Brush.linearGradient(
-                                colors = listOf(Color(0xFF10B981), Color(0xFF0D9488), Color(0xFFA855F7))
-                            ),
+                            width = 1.2.dp,
+                            color = Color(0xFF10B981),
                             shape = CircleShape
                         )
                         .clickable { onBackClick() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.diva_avatar),
-                        contentDescription = "DIVA AI",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
-                    )
+                    Canvas(modifier = Modifier.size(18.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        // Top bar
+                        drawLine(
+                            color = Color(0xFF34D399),
+                            start = Offset(w * 0.20f, h * 0.40f),
+                            end = Offset(w * 0.60f, h * 0.40f),
+                            strokeWidth = 2.4.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+                        // Bottom bar
+                        drawLine(
+                            color = Color(0xFF34D399),
+                            start = Offset(w * 0.20f, h * 0.65f),
+                            end = Offset(w * 0.60f, h * 0.65f),
+                            strokeWidth = 2.4.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+                        // Top-right dot
+                        drawCircle(
+                            color = Color(0xFF34D399),
+                            radius = 2.2.dp.toPx(),
+                            center = Offset(w * 0.78f, h * 0.40f)
+                        )
+                    }
                 }
 
                 // Right: Single Sleek Translucent Glass Pill (New Chat & More Options)
@@ -303,9 +435,9 @@ fun ChatScreen(
                     modifier = Modifier
                         .height(42.dp)
                         .clip(RoundedCornerShape(22.dp))
-                        .background(Color(0x331F1A30))
-                        .border(1.dp, Color(0x38A855F7), RoundedCornerShape(22.dp))
-                        .padding(horizontal = 6.dp),
+                        .background(Color(0x661E2024))
+                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(22.dp))
+                        .padding(horizontal = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
@@ -658,8 +790,8 @@ fun ChatScreen(
                     val canSend = inputText.isNotBlank() && !isLoading
                     val actionButtonBrush = when {
                         isLoading -> Brush.linearGradient(listOf(Color(0xFF3B1547), Color(0xFF3B1547)))
-                        canSend -> Brush.linearGradient(listOf(Color(0xFF7C3AED), Color(0xFFA855F7)))
-                        else -> Brush.linearGradient(listOf(Color(0x1AFFFFFF), Color(0x1AFFFFFF)))
+                        canSend -> Brush.linearGradient(listOf(Color(0xFF10B981), Color(0xFF0D9488)))
+                        else -> Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
                     }
                     Box(
                         modifier = Modifier
@@ -711,14 +843,14 @@ fun ChatScreen(
                             }
                         } else {
                             // Minimal Rounded Square Icon matching reference UI
-                            Canvas(modifier = Modifier.size(16.dp)) {
+                            Canvas(modifier = Modifier.size(20.dp)) {
                                 val w = size.width
                                 val h = size.height
                                 drawRoundRect(
                                     color = Color(0xFFCBD5E1),
                                     size = androidx.compose.ui.geometry.Size(w * 0.78f, h * 0.78f),
                                     topLeft = Offset(w * 0.11f, h * 0.11f),
-                                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(3.5.dp.toPx()),
+                                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()),
                                     style = Stroke(width = 1.8.dp.toPx())
                                 )
                             }
@@ -786,57 +918,82 @@ fun ChatMessageItem(
     }
 
     if (isUser) {
-        // User Message (Right Aligned Translucent Bubble)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+        // User Message: Sleek wide dark rounded card with user avatar thumbnail in top-right (matches Gemini reference!)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color(0xFF1E2024))
+                .padding(18.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier
-                    .fillMaxWidth(0.85f)
-                    .padding(start = 24.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 // Attached Image preview if present
                 if (!message.attachedImageUrl.isNullOrBlank()) {
                     Box(
                         modifier = Modifier
-                            .padding(bottom = 6.dp)
+                            .padding(bottom = 10.dp)
                             .size(76.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF1A1A22))
-                            .border(1.dp, Color(0x33A855F7), RoundedCornerShape(16.dp)),
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF2A2B32))
+                            .border(1.dp, Color(0x33A855F7), RoundedCornerShape(14.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = "📷", fontSize = 24.sp)
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(Color(0xFF1E1F24))
-                        .padding(horizontal = 18.dp, vertical = 13.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
                 ) {
+                    // User's Prompt Text (wraps and expands)
                     Text(
                         text = message.text,
-                        fontSize = 15.sp,
-                        color = Color(0xFFF8FAFC),
-                        lineHeight = 22.sp,
-                        softWrap = true,
+                        fontSize = 15.5.sp,
+                        color = Color(0xFFF1F5F9),
+                        lineHeight = 23.sp,
+                        fontWeight = FontWeight.Normal,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 14.dp)
                     )
+
+                    // Top-Right User Avatar / Photo Thumbnail (matches reference screenshot!)
+                    val profileBitmap = ProfileState.profileImageBitmap
+                    Box(
+                        modifier = Modifier
+                            .size(width = 54.dp, height = 66.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF2A2B32)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (profileBitmap != null) {
+                            Image(
+                                bitmap = profileBitmap,
+                                contentDescription = "User Avatar",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                text = ProfileState.userName
+                                    .split(" ")
+                                    .mapNotNull { it.firstOrNull()?.toString() }
+                                    .take(2)
+                                    .joinToString("")
+                                    .ifEmpty { "ME" },
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFCBD5E1)
+                            )
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    text = timeFormatted,
-                    fontSize = 10.sp,
-                    color = Color(0x66FFFFFF),
-                    modifier = Modifier.padding(end = 6.dp)
-                )
             }
         }
     } else {
-        // DIVA AI Response: Full-width, bubble-less clean typography directly on dark background
+        // DIVA AI Response: Full-width, bubble-less clean typography directly on dark obsidian canvas
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -844,34 +1001,8 @@ fun ChatMessageItem(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.Top
         ) {
-            // Official DIVA AI Avatar Logo Badge
-            Box(
-                modifier = Modifier
-                    .padding(top = 2.dp)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF0F0B1E))
-                    .border(
-                        width = 1.2.dp,
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFFA855F7), Color(0xFF7C3AED), Color(0xFFF0ABFC))
-                        ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.diva_avatar),
-                    contentDescription = "DIVA",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 // Clinical Emergency Alert Card (if any)
                 if (message.alertType != AlertType.NONE) {
@@ -883,8 +1014,8 @@ fun ChatMessageItem(
                 MarkdownFormattedText(
                     text = message.text,
                     color = if (message.isError) Color(0xFFF87171) else Color(0xFFF1F5F9),
-                    fontSize = 14.5.sp,
-                    lineHeight = 22.sp
+                    fontSize = 15.sp,
+                    lineHeight = 23.sp
                 )
 
                 // Nutrition Badges (if any)
@@ -906,7 +1037,7 @@ fun ChatMessageItem(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 6.dp),
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -915,12 +1046,12 @@ fun ChatMessageItem(
                             .clip(RoundedCornerShape(6.dp))
                             .background(Color(0x1AFFFFFF))
                             .clickable { onSpeakClick(message.text) }
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "🔊 Listen",
-                            fontSize = 11.sp,
+                            fontSize = 11.5.sp,
                             color = Color(0xFFE2E8F0)
                         )
                     }
@@ -957,9 +1088,10 @@ fun DivaThinkingIndicator() {
     var statusIndex by remember { mutableIntStateOf(0) }
     val statusMessages = remember {
         listOf(
-            "Thinking...",
-            "Checking your health logs...",
-            "Preparing advice..."
+            "Searching the web",
+            "Checking health logs...",
+            "Analyzing nutrition metrics...",
+            "Formulating guidance..."
         )
     }
 
@@ -973,10 +1105,43 @@ fun DivaThinkingIndicator() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp, horizontal = 4.dp),
+            .padding(vertical = 12.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Minimal 4-dot cluster arranged as '.:' matching screenshot
+        Canvas(modifier = Modifier.size(width = 18.dp, height = 18.dp)) {
+            val w = size.width
+            val h = size.height
+            val points = listOf(
+                Offset(w * 0.22f, h * 0.68f),
+                Offset(w * 0.38f, h * 0.28f),
+                Offset(w * 0.78f, h * 0.38f),
+                Offset(w * 0.64f, h * 0.72f)
+            )
+            points.forEachIndexed { i, pt ->
+                val localPhase = (dotPhase + i * 0.25f) % 1f
+                val bounce = sin(localPhase * Math.PI).toFloat().coerceIn(0f, 1f)
+                val r = 2.0.dp.toPx() * (0.85f + bounce * 0.35f)
+                val alpha = 0.40f + bounce * 0.60f
+                val color = if (i % 2 == 0) Color(0xFF34D399) else Color(0xFFFFFFFF)
+                drawCircle(
+                    color = color.copy(alpha = alpha),
+                    radius = r,
+                    center = pt
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Text(
+            text = statusMessages[statusIndex],
+            fontSize = 15.sp,
+            color = Color(0xFFF1F5F9),
+            fontWeight = FontWeight.Normal
+        )
+    } {
         // Minimal 4-dot cluster arranged as '.:'
         Canvas(modifier = Modifier.size(width = 18.dp, height = 18.dp)) {
             val w = size.width
