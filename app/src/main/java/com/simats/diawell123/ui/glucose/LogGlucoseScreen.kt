@@ -28,7 +28,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -75,21 +79,21 @@ fun LogGlucoseScreen(
                 valInt < 70 -> {
                     DiaWellNotificationHelper.showCriticalHealthAlert(
                         context = context,
-                        title = "⚠️ Low Blood Sugar Alert ($valInt mg/dL)",
+                        title = "Low Blood Sugar Alert ($valInt mg/dL)",
                         message = "Your glucose is low. Take 15g of fast-acting carbs (juice/glucose) and recheck in 15 mins."
                     )
                 }
                 valInt > 180 -> {
                     DiaWellNotificationHelper.showCriticalHealthAlert(
                         context = context,
-                        title = "⚠️ High Blood Sugar Alert ($valInt mg/dL)",
+                        title = "High Blood Sugar Alert ($valInt mg/dL)",
                         message = "Your glucose is elevated. Drink water, take a light 15-min walk, and monitor closely."
                     )
                 }
                 else -> {
                     DiaWellNotificationHelper.showGeneralNotification(
                         context = context,
-                        title = "✅ Blood Sugar Logged ($valInt mg/dL)",
+                        title = "Blood Sugar Logged ($valInt mg/dL)",
                         message = "Great job! Your glucose level is within a healthy target range."
                     )
                 }
@@ -158,7 +162,12 @@ fun LogGlucoseScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(22.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -365,7 +374,14 @@ fun LogGlucoseScreen(
                                 value = uiState.readingDate,
                                 onValueChange = { viewModel.onReadingDateChanged(it) },
                                 singleLine = true,
-                                trailingIcon = { Text(text = "📅", fontSize = 14.sp) },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CalendarToday,
+                                        contentDescription = null,
+                                        tint = AppTheme.colors.textSecondary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedTextColor = AppTheme.colors.textPrimary,
