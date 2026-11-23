@@ -65,7 +65,7 @@ fun ActivityHistoryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -83,8 +83,8 @@ fun ActivityHistoryScreen(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Activity History & Logs",
-                                fontSize = 20.sp,
+                                text = "Activity History",
+                                fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.textPrimary,
                             )
@@ -97,11 +97,6 @@ fun ActivityHistoryScreen(
                                 )
                             }
                         }
-                        Text(
-                            text = "Track your workout progress & glucose improvements.",
-                            fontSize = 12.sp,
-                            color = AppTheme.colors.textSecondary,
-                        )
                     }
                 }
             }
@@ -214,12 +209,12 @@ fun ActivityHistoryScreen(
             // 5. Start New Workout Action Button (Pops Up)
             ElementPopUpContainer(delayMillis = 240) {
                 IosLiquidGlassButton(
-                    text = "🏃‍♂️  Start New Workout",
+                    text = "Start Workout",
                     onClick = onStartNewWorkoutClick,
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
@@ -252,10 +247,10 @@ fun ActivityHistoryCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-            .padding(16.dp),
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+            .padding(18.dp),
     ) {
         Column {
             Row(
