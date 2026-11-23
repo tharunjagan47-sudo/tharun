@@ -213,7 +213,7 @@ fun SetMedicationReminderScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -228,19 +228,13 @@ fun SetMedicationReminderScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Set Medication Reminder",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Configure time, meal timing & care plan.",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                }
+                Text(
+                    text = "Set Reminder",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -813,7 +807,7 @@ fun SetMedicationReminderScreen(
                     )
                 } else {
                     Text(
-                        text = "Set Medication Reminder",
+                        text = "Save Reminder",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -821,7 +815,7 @@ fun SetMedicationReminderScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
 
         // Medication Schedule Date Picker Modal Dialog (Daily / Today / Tomorrow)
