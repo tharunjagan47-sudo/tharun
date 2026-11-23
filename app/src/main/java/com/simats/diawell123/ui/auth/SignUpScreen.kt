@@ -94,7 +94,7 @@ fun SignUpScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top,
@@ -109,19 +109,10 @@ fun SignUpScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Create your account",
+                        text = "Create account",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "Your wellbeing starts with a simple step.",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = AppTheme.colors.textSecondary,
                     )
                 }
 
@@ -131,33 +122,6 @@ fun SignUpScreen(
                 ArcReactorCanvas(
                     rotationAngle = 0f,
                     modifier = Modifier.size(48.dp),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Info Banner Card
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                ArcReactorCanvas(
-                    rotationAngle = 0f,
-                    modifier = Modifier.size(36.dp),
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    text = "A little support for your meals, medication and daily habits.",
-                    fontSize = 12.sp,
-                    color = AppTheme.colors.textSecondary,
-                    lineHeight = 17.sp,
-                    modifier = Modifier.weight(1f),
                 )
             }
 
@@ -344,12 +308,12 @@ fun SignUpScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White.copy(alpha = 0.96f))
+                    .background(if (AppTheme.colors.isDark) Color(0xD90F0E17) else Color.White.copy(alpha = 0.96f))
                     .clickable(enabled = false) {}, // Intercept clicks during loading
                 contentAlignment = Alignment.Center,
             ) {
                 AiSpeechOrbLoadingView(
-                    statusText = "Creating your account & preparing profile...",
+                    statusText = "Creating account...",
                 )
             }
         }
