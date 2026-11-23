@@ -35,15 +35,19 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -78,6 +82,7 @@ import com.simats.diawell123.ui.glucose.ReadingDetailsScreen
 import com.simats.diawell123.ui.home.HomeScreen
 import com.simats.diawell123.ui.home.HomeViewModel
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
+import com.simats.diawell123.ui.home.DiaWellLiquidGlassNavRail
 import com.simats.diawell123.ui.meds.MedicationReminderScreen
 import com.simats.diawell123.ui.meds.MedicationsScreen
 import com.simats.diawell123.ui.meds.MedsViewModel
@@ -150,12 +155,16 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         setContent {
             Diawell123Theme {
-                var currentScreen by remember { mutableStateOf("splash") }
-                var screenBeforeLock by remember { mutableStateOf("home") }
-                var selectedMealCategory by remember { mutableStateOf("breakfast") }
-                var selectedFoodId by remember { mutableStateOf<Int?>(null) }
-                var selectedDishName by remember { mutableStateOf<String?>(null) }
-                var launchSnapFoodInDiet by remember { mutableStateOf(false) }
+                val configuration = LocalConfiguration.current
+                val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+                var hasShownSplash by rememberSaveable { mutableStateOf(false) }
+                var currentScreen by rememberSaveable { mutableStateOf("splash") }
+                var screenBeforeLock by rememberSaveable { mutableStateOf("home") }
+                var selectedMealCategory by rememberSaveable { mutableStateOf("breakfast") }
+                var selectedFoodId by rememberSaveable { mutableStateOf<Int?>(null) }
+                var selectedDishName by rememberSaveable { mutableStateOf<String?>(null) }
+                var launchSnapFoodInDiet by rememberSaveable { mutableStateOf(false) }
 
                 val dietViewModel: DietViewModel = viewModel()
                 val glucoseViewModel: GlucoseViewModel = viewModel()
@@ -168,13 +177,13 @@ class MainActivity : FragmentActivity() {
                 val profileViewModel: ProfileViewModel = viewModel()
                 val chatViewModel: ChatViewModel = viewModel()
 
-                var selectedGlucoseReadingId by remember { mutableStateOf<Int?>(null) }
+                var selectedGlucoseReadingId by rememberSaveable { mutableStateOf<Int?>(null) }
                 var selectedMedication by remember { mutableStateOf<com.simats.diawell123.data.model.MedicationItem?>(null) }
 
-                var selectedTabletName by remember { mutableStateOf("Metformin") }
-                var selectedTabletDose by remember { mutableStateOf("500 mg • 1 Tablet") }
-                var exportReturnScreen by remember { mutableStateOf("privacy_security") }
-                var exploreFoodReturnScreen by remember { mutableStateOf("daily_diet_plan") }
+                var selectedTabletName by rememberSaveable { mutableStateOf("Metformin") }
+                var selectedTabletDose by rememberSaveable { mutableStateOf("500 mg • 1 Tablet") }
+                var exportReturnScreen by rememberSaveable { mutableStateOf("privacy_security") }
+                var exploreFoodReturnScreen by rememberSaveable { mutableStateOf("daily_diet_plan") }
 
                 val sessionManager = remember {
                     try {
@@ -310,7 +319,16 @@ class MainActivity : FragmentActivity() {
 
                 // Splash screen initial routing based on saved persistent authentication session
                 LaunchedEffect(Unit) {
+                    if (hasShownSplash) {
+                        if (currentScreen == "splash") {
+                            currentScreen = if (sessionManager.isLoggedIn()) {
+                                if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) "app_lock" else "home"
+                            } else if (sessionManager.isOnboardingCompleted()) "login" else "onboarding"
+                        }
+                        return@LaunchedEffect
+                    }
                     delay(2600) // Splash duration matching logo spin, audio clicks, and settle
+                    hasShownSplash = true
                     if (sessionManager.isLoggedIn()) {
                         if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) {
                             screenBeforeLock = "home"
@@ -342,6 +360,9 @@ class MainActivity : FragmentActivity() {
 
                     AnimatedContent(
                         targetState = currentScreen,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = if (isLandscape && activeBottomTab != null) 76.dp else 0.dp),
                         transitionSpec = {
                             val fromTabIdx = mainTabOrder[initialState]
                             val toTabIdx = mainTabOrder[targetState]
@@ -747,10 +768,26 @@ class MainActivity : FragmentActivity() {
                     }
                 }
 
-                    // Single persistent GPU-accelerated Liquid Glass Bottom Navigation Dock
-                    // Never torn down across main tab switches so the liquid glass pill glides continuously at 60/120 FPS
+                    // Landscape / Tablet Navigation: Slim left-side liquid glass NavigationRail
                     AnimatedVisibility(
-                        visible = activeBottomTab != null,
+                        visible = isLandscape && activeBottomTab != null,
+                        enter = fadeIn(tween(180)) + slideInHorizontally(tween(200, easing = FastOutSlowInEasing)) { -it },
+                        exit = fadeOut(tween(140)) + slideOutHorizontally(tween(160)) { -it },
+                        modifier = Modifier.align(Alignment.CenterStart),
+                    ) {
+                        DiaWellLiquidGlassNavRail(
+                            selectedTab = activeBottomTab ?: "Home",
+                            onHomeTabClick = { currentScreen = "home" },
+                            onDietTabClick = { currentScreen = "daily_diet_plan" },
+                            onMedsTabClick = { currentScreen = "medications" },
+                            onReportsTabClick = { currentScreen = "weekly_report" },
+                            onSettingsTabClick = { currentScreen = "settings" },
+                        )
+                    }
+
+                    // Portrait Navigation: GPU-accelerated Liquid Glass Bottom Navigation Dock
+                    AnimatedVisibility(
+                        visible = !isLandscape && activeBottomTab != null,
                         enter = fadeIn(tween(180)) + slideInVertically(tween(200, easing = FastOutSlowInEasing)) { it / 2 },
                         exit = fadeOut(tween(140)) + slideOutVertically(tween(160)) { it / 2 },
                         modifier = Modifier.align(Alignment.BottomCenter),
