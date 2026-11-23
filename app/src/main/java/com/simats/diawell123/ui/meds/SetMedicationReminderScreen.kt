@@ -28,9 +28,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Air
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Inventory2
+import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Store
+import androidx.compose.material.icons.rounded.Vaccines
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -255,7 +272,12 @@ fun SetMedicationReminderScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "✓", fontSize = 22.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(22.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -289,11 +311,20 @@ fun SetMedicationReminderScreen(
                         .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
                         .padding(12.dp),
                 ) {
-                    Text(
-                        text = "⚠️ ${reminderState.errorMessage}",
-                        fontSize = 12.sp,
-                        color = Color(0xFFC62828)
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFC62828),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = reminderState.errorMessage ?: "",
+                            fontSize = 12.sp,
+                            color = Color(0xFFC62828)
+                        )
+                    }
                 }
             }
 
@@ -308,13 +339,26 @@ fun SetMedicationReminderScreen(
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val iconChar = when {
-                            reminderState.dosageForm.contains("inject", ignoreCase = true) || activeName.contains("insulin", ignoreCase = true) -> "💉"
-                            reminderState.dosageForm.contains("inhal", ignoreCase = true) -> "💨"
-                            reminderState.dosageForm.contains("syrup", ignoreCase = true) -> "💧"
-                            else -> "💊"
+                        val iconVector = when {
+                            reminderState.dosageForm.contains("inject", ignoreCase = true) || activeName.contains("insulin", ignoreCase = true) -> Icons.Rounded.Vaccines
+                            reminderState.dosageForm.contains("inhal", ignoreCase = true) -> Icons.Rounded.Air
+                            reminderState.dosageForm.contains("syrup", ignoreCase = true) -> Icons.Rounded.WaterDrop
+                            else -> Icons.Rounded.Medication
                         }
-                        Text(text = iconChar, fontSize = 32.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = iconVector,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Row(
@@ -371,29 +415,41 @@ fun SetMedicationReminderScreen(
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                 if (reminderState.primaryIngredient.isNotBlank()) {
-                                    Text(
-                                        text = "🔬 Active Ingredient: ${reminderState.primaryIngredient}",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF2E7D32),
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Rounded.Science, null, tint = Color(0xFF2E7D32), modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Active Ingredient: ${reminderState.primaryIngredient}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF2E7D32),
+                                        )
+                                    }
                                 }
                                 if (reminderState.manufacturer.isNotBlank()) {
-                                    Text(
-                                        text = "🏭 Manufacturer: ${reminderState.manufacturer}",
-                                        fontSize = 10.5.sp,
-                                        color = Color(0xFF4A4453),
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Rounded.Store, null, tint = Color(0xFF4A4453), modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Manufacturer: ${reminderState.manufacturer}",
+                                            fontSize = 10.5.sp,
+                                            color = Color(0xFF4A4453),
+                                        )
+                                    }
                                 }
                                 if (reminderState.packaging.isNotBlank() || reminderState.priceInr.isNotBlank()) {
                                     val packPrice = listOf(reminderState.packaging, reminderState.priceInr)
                                         .filter { it.isNotBlank() }
                                         .joinToString(" • MRP: ")
-                                    Text(
-                                        text = "📦 Packaging: $packPrice",
-                                        fontSize = 10.5.sp,
-                                        color = AppTheme.colors.textSecondary,
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Rounded.Inventory2, null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Packaging: $packPrice",
+                                            fontSize = 10.5.sp,
+                                            color = AppTheme.colors.textSecondary,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -416,12 +472,21 @@ fun SetMedicationReminderScreen(
                     color = AppTheme.colors.textPrimary,
                 )
 
-                Text(
-                    text = if (isDailySchedule) "🔁 Daily Repeating" else "🔔 Single Alarm",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFA855F7),
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (isDailySchedule) Icons.Rounded.Repeat else Icons.Rounded.Notifications,
+                        contentDescription = null,
+                        tint = Color(0xFFA855F7),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (isDailySchedule) "Daily Repeating" else "Single Alarm",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFFA855F7),
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -440,11 +505,28 @@ fun SetMedicationReminderScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = if (isDailySchedule) "📅  Daily (Every Day)" else "📅  $reminderDateText",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CalendarToday,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isDailySchedule) "Daily (Every Day)" else reminderDateText,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.textPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
@@ -534,7 +616,7 @@ fun SetMedicationReminderScreen(
                 )
 
                 Text(
-                    text = "Tap to pick any time ⏱",
+                    text = "Tap to pick any time",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFFA855F7),
@@ -559,7 +641,12 @@ fun SetMedicationReminderScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "⏰", fontSize = 18.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.Schedule,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(18.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = selectedTime,
@@ -575,12 +662,21 @@ fun SetMedicationReminderScreen(
                             .background(AppTheme.colors.elevatedSurface)
                             .padding(horizontal = 10.dp, vertical = 4.dp),
                     ) {
-                        Text(
-                            text = "Set Custom Time ✎",
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFA855F7),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Set Custom Time",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA855F7),
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -784,7 +880,7 @@ fun SetMedicationReminderScreen(
 
                             DiaWellNotificationHelper.showGeneralNotification(
                                 context = context,
-                                title = "💊 Medication Reminder Scheduled",
+                                title = "Medication Reminder Scheduled",
                                 message = if (isDailySchedule) {
                                     "Daily alarm set for $medLabel ($doseLabel) at $selectedTime."
                                 } else {
@@ -936,12 +1032,21 @@ fun MedicationDatePickerDialog(
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = "📅 Pick Specific Future Date",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AppTheme.colors.textPrimary,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.CalendarToday,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Pick Specific Future Date",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = AppTheme.colors.textPrimary,
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
