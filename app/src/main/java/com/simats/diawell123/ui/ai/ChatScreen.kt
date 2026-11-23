@@ -1141,40 +1141,6 @@ fun DivaThinkingIndicator() {
             color = Color(0xFFF1F5F9),
             fontWeight = FontWeight.Normal
         )
-    } {
-        // Minimal 4-dot cluster arranged as '.:'
-        Canvas(modifier = Modifier.size(width = 18.dp, height = 18.dp)) {
-            val w = size.width
-            val h = size.height
-            // 4 points representing '.:'
-            val points = listOf(
-                Offset(w * 0.22f, h * 0.68f),
-                Offset(w * 0.38f, h * 0.28f),
-                Offset(w * 0.78f, h * 0.38f),
-                Offset(w * 0.64f, h * 0.72f)
-            )
-            points.forEachIndexed { i, pt ->
-                val localPhase = (dotPhase + i * 0.25f) % 1f
-                val bounce = sin(localPhase * Math.PI).toFloat().coerceIn(0f, 1f)
-                val r = 1.9.dp.toPx() * (0.85f + bounce * 0.35f)
-                val alpha = 0.40f + bounce * 0.60f
-                val color = if (i % 2 == 0) Color(0xFFC084FC) else Color(0xFFFFFFFF)
-                drawCircle(
-                    color = color.copy(alpha = alpha),
-                    radius = r,
-                    center = pt
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Text(
-            text = statusMessages[statusIndex],
-            fontSize = 14.5.sp,
-            color = Color(0xFFF1F5F9),
-            fontWeight = FontWeight.Normal
-        )
     }
 }
 
