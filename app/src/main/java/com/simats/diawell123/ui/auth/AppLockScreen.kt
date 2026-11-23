@@ -151,7 +151,7 @@ fun AppLockScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 20.dp),
+                .padding(horizontal = 20.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -184,7 +184,7 @@ fun AppLockScreen(
 
                 Text(
                     text = "DiaWell Locked",
-                    fontSize = 22.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = AppTheme.colors.textPrimary
                 )
