@@ -125,7 +125,7 @@ fun HealthPreferencesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -143,14 +143,9 @@ fun HealthPreferencesScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Health Preferences",
-                        fontSize = 20.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Step 2 of 2 • Health focus & dietary preferences",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -405,7 +400,7 @@ fun HealthPreferencesScreen(
 
             // Save Preferences Button
             IosLiquidGlassButton(
-                text = if (uiState.isSaving) "Saving Preferences..." else "Save Health Preferences",
+                text = if (uiState.isSaving) "Saving..." else "Save Preferences",
                 onClick = {
                     val diets = selectedDiets.filter { it.second }.map { it.first }
                     val allergies = allergiesList.filter { it.second }.map { it.first }
