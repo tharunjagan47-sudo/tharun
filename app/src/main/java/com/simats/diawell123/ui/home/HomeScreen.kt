@@ -44,10 +44,24 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Assessment
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.InsertChart
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.TrackChanges
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.WaterDrop
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -288,7 +302,7 @@ fun HomeScreen(
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "$displayName 👋",
+                                            text = displayName,
                                             fontSize = 24.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White,
@@ -302,7 +316,7 @@ fun HomeScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                                     ) {
-                                        // Quick Theme Toggle Button (☀️ / 🌙) - Perfectly Circular
+                                        // Quick Theme Toggle Button - Perfectly Circular Dark Glass
                                         Box(
                                             modifier = Modifier
                                                 .size(38.dp)
@@ -312,9 +326,11 @@ fun HomeScreen(
                                                 .clickable { ThemeManager.toggleTheme() },
                                             contentAlignment = Alignment.Center,
                                         ) {
-                                            Text(
-                                                text = if (AppTheme.colors.isDark) "🌙" else "☀️",
-                                                fontSize = 16.sp,
+                                            Icon(
+                                                imageVector = if (AppTheme.colors.isDark) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
+                                                contentDescription = "Toggle Theme",
+                                                tint = Color.White,
+                                                modifier = Modifier.size(18.dp),
                                             )
                                         }
 
@@ -353,14 +369,19 @@ fun HomeScreen(
                                             .padding(horizontal = 11.dp, vertical = 6.dp),
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.LocalFireDepartment,
+                                                contentDescription = null,
+                                                tint = Color(0xFFFF9800),
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = data?.streakBadge?.takeIf { it.isNotBlank() } ?: "⚡ Start your streak today",
+                                                text = data?.streakBadge?.replace("🔥", "")?.trim()?.takeIf { it.isNotBlank() } ?: "Start streak",
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
                                             )
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = "🔥", fontSize = 10.sp)
                                         }
                                     }
 
@@ -374,14 +395,26 @@ fun HomeScreen(
                                             .padding(horizontal = 11.dp, vertical = 6.dp),
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.TrackChanges,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(13.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = data?.targetBadge?.takeIf { it.isNotBlank() } ?: "🎯 Target: 100 mg/dL",
+                                                text = data?.targetBadge?.replace("🎯", "")?.replace("✏️", "")?.trim()?.takeIf { it.isNotBlank() } ?: "Target: 100 mg/dL",
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
                                             )
-                                            Spacer(modifier = Modifier.width(5.dp))
-                                            Text(text = "✏️", fontSize = 11.sp)
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Icon(
+                                                imageVector = Icons.Rounded.Edit,
+                                                contentDescription = null,
+                                                tint = Color.White.copy(alpha = 0.8f),
+                                                modifier = Modifier.size(12.dp)
+                                            )
                                         }
                                     }
                                 }
@@ -390,7 +423,7 @@ fun HomeScreen(
                     }
                 }
 
-                                if (uiState.errorMessage != null && data == null) {
+                if (uiState.errorMessage != null && data == null) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Box(
                         modifier = Modifier
@@ -406,18 +439,40 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = "⚠️ ${uiState.errorMessage}",
-                                fontSize = 12.sp,
-                                color = Color(0xFFC62828),
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = "Retry ↻",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC62828)
-                            )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Warning,
+                                    contentDescription = null,
+                                    tint = Color(0xFFC62828),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = uiState.errorMessage ?: "",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFC62828),
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Refresh,
+                                    contentDescription = null,
+                                    tint = Color(0xFFC62828),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "Retry",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFC62828)
+                                )
+                            }
                         }
                     }
                 }
@@ -453,7 +508,7 @@ fun HomeScreen(
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
-                                    icon = "🩸",
+                                    vectorIcon = Icons.Rounded.WaterDrop,
                                     title = gMetric?.title?.ifBlank { "Glucose" } ?: "Glucose",
                                     value = gMetric?.value?.ifBlank { "-- mg/dL" } ?: "-- mg/dL",
                                     subtitle = gMetric?.subtitle?.ifBlank { "Tap to log your first reading" } ?: "Tap to log your first reading",
@@ -473,7 +528,7 @@ fun HomeScreen(
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
-                                    icon = "🥗",
+                                    vectorIcon = Icons.Rounded.Restaurant,
                                     title = nMetric?.title?.ifBlank { "Nutrition" } ?: "Nutrition",
                                     value = nMetric?.value?.ifBlank { "0 kcal" } ?: "0 kcal",
                                     subtitle = nMetric?.subtitle?.ifBlank { "0 meals logged today" } ?: "0 meals logged today",
@@ -500,7 +555,7 @@ fun HomeScreen(
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
-                                    icon = "💊",
+                                    vectorIcon = Icons.Rounded.Medication,
                                     title = mMetric?.title?.ifBlank { "Medication" } ?: "Medication",
                                     value = mMetric?.value?.ifBlank { "0 Active Medications" } ?: "0 Active Medications",
                                     subtitle = mMetric?.subtitle?.ifBlank { "No medications scheduled" } ?: "No medications scheduled",
@@ -520,7 +575,7 @@ fun HomeScreen(
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
-                                    icon = "📊",
+                                    vectorIcon = Icons.Rounded.InsertChart,
                                     title = wMetric?.title?.ifBlank { "Weekly Report" } ?: "Weekly Report",
                                     value = wMetric?.value?.ifBlank { "0/7 Days" } ?: "0/7 Days",
                                     subtitle = wMetric?.subtitle?.ifBlank { "No logs this week" } ?: "No logs this week",
@@ -567,8 +622,15 @@ fun HomeScreen(
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.AutoAwesome,
+                                            contentDescription = null,
+                                            tint = Color(0xFFA855F7),
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "Daily Tip ⚡",
+                                            text = "Daily Tip",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFA855F7),
@@ -628,10 +690,10 @@ fun HomeScreen(
                                 ) {
                                     val defaultRoutine = remember {
                                         listOf(
-                                            HomeRoutineItem(icon = "🥣", label = "Breakfast", isDone = false),
-                                            HomeRoutineItem(icon = "🩸", label = "Glucose", isDone = false),
-                                            HomeRoutineItem(icon = "🥗", label = "Lunch", isDone = false),
-                                            HomeRoutineItem(icon = "💊", label = "Dinner/Meds", isDone = false),
+                                            HomeRoutineItem(icon = "", label = "Breakfast", isDone = false),
+                                            HomeRoutineItem(icon = "", label = "Glucose", isDone = false),
+                                            HomeRoutineItem(icon = "", label = "Lunch", isDone = false),
+                                            HomeRoutineItem(icon = "", label = "Dinner/Meds", isDone = false),
                                         )
                                     }
                                     val routineItems = data?.routine?.takeIf { it.isNotEmpty() } ?: defaultRoutine
@@ -670,7 +732,7 @@ fun HomeScreen(
         if (showStreakDialog) {
             StreakDetailsDialog(
                 streakDays = data?.streakDays ?: 2,
-                streakBadge = data?.streakBadge ?: "🔥 2 Day Logging Streak",
+                streakBadge = data?.streakBadge?.replace("🔥", "")?.trim() ?: "2 Day Logging Streak",
                 onDismissRequest = { showStreakDialog = false },
                 onLogGlucoseClick = {
                     showStreakDialog = false
@@ -1240,7 +1302,8 @@ fun DiaWellLiquidGlassNavRail(
 
 @Composable
 fun MetricCard(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     title: String,
     value: String,
     subtitle: String = "",
@@ -1271,7 +1334,25 @@ fun MetricCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = icon, fontSize = 22.sp)
+                if (vectorIcon != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(if (AppTheme.colors.isDark) Color(0xFF1E1035) else Color(0xFFF3E8FF))
+                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.35f), CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = vectorIcon,
+                            contentDescription = title,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else if (icon.isNotBlank()) {
+                    Text(text = icon, fontSize = 22.sp)
+                }
                 if (statusText.isNotBlank()) {
                     Box(
                         modifier = Modifier
@@ -1337,6 +1418,13 @@ fun RoutineCheckItem(
     isDone: Boolean,
     onClick: () -> Unit = {},
 ) {
+    val routineVector: ImageVector = when {
+        isDone -> Icons.Rounded.Check
+        label.contains("Glucose", ignoreCase = true) -> Icons.Rounded.WaterDrop
+        label.contains("Med", ignoreCase = true) -> Icons.Rounded.Medication
+        else -> Icons.Rounded.Restaurant
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -1356,10 +1444,11 @@ fun RoutineCheckItem(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = if (isDone) "✓" else icon,
-                fontSize = 16.sp,
-                color = if (isDone) AppTheme.colors.successText else AppTheme.colors.textPrimary,
+            Icon(
+                imageVector = routineVector,
+                contentDescription = label,
+                tint = if (isDone) AppTheme.colors.successText else Color(0xFFA855F7),
+                modifier = Modifier.size(20.dp)
             )
         }
 
@@ -1377,7 +1466,8 @@ fun RoutineCheckItem(
 @Composable
 fun VibrantQuickActionButton(
     title: String,
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     gradientColors: List<Color>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -1404,7 +1494,11 @@ fun VibrantQuickActionButton(
                     .background(brush = Brush.linearGradient(colors = gradientColors)),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = icon, fontSize = 18.sp)
+                if (vectorIcon != null) {
+                    Icon(imageVector = vectorIcon, contentDescription = title, tint = Color.White, modifier = Modifier.size(20.dp))
+                } else {
+                    Text(text = icon, fontSize = 18.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -1423,7 +1517,6 @@ fun VibrantQuickActionButton(
         }
     }
 }
-
 
 @Composable
 fun StreakDetailsDialog(
@@ -1446,15 +1539,21 @@ fun StreakDetailsDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Header with fire icon
+                // Header with fire icon inside circular glass
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFFEDD5)),
+                        .background(if (AppTheme.colors.isDark) Color(0xFF451A03) else Color(0xFFFFEDD5))
+                        .border(1.dp, Color(0xFFF97316).copy(alpha = 0.4f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "🔥", fontSize = 34.sp)
+                    Icon(
+                        imageVector = Icons.Rounded.LocalFireDepartment,
+                        contentDescription = null,
+                        tint = Color(0xFFF97316),
+                        modifier = Modifier.size(34.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -1499,12 +1598,21 @@ fun StreakDetailsDialog(
                                     .border(1.dp, if (isAchieved) Color(0xFFA855F7) else AppTheme.colors.border, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = if (isAchieved) "✓" else "○",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isAchieved) Color.White else AppTheme.colors.textSecondary
-                                )
+                                if (isAchieved) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(AppTheme.colors.textSecondary.copy(alpha = 0.4f))
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(text = day, fontSize = 10.sp, color = AppTheme.colors.textSecondary)
@@ -1531,12 +1639,23 @@ fun StreakDetailsDialog(
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "🩸 Log Glucose",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.WaterDrop,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Log Glucose",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
 
                     Box(
@@ -1552,12 +1671,23 @@ fun StreakDetailsDialog(
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "🥗 Log Meal",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFA855F7)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Restaurant,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Log Meal",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA855F7)
+                            )
+                        }
                     }
                 }
 
@@ -1606,12 +1736,23 @@ fun TargetEditDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "🎯 Edit Target Glucose",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.TrackChanges,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Edit Target Glucose",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.textPrimary
+                        )
+                    }
 
                     Box(
                         modifier = Modifier
@@ -1621,7 +1762,12 @@ fun TargetEditDialog(
                             .clickable { onDismissRequest() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Close",
+                            tint = AppTheme.colors.textPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                 }
 
