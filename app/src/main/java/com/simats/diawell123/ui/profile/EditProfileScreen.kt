@@ -293,7 +293,7 @@ fun EditProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -308,19 +308,13 @@ fun EditProfileScreen(
 
                 Spacer(modifier = Modifier.width(14.dp))
 
-                Column {
-                    Text(
-                        text = "Personal Profile",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        text = "Settings",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                }
+                Text(
+                    text = "Edit Profile",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -635,18 +629,7 @@ fun EditProfileScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Sharing details assists your personalized accounting. Review this profile before saving. Logs are for tracking, not medical advice.",
-                fontSize = 11.sp,
-                color = AppTheme.colors.textMuted,
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-            )
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
