@@ -27,7 +27,25 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.InsertChart
+import androidx.compose.material.icons.rounded.Lightbulb
+import androidx.compose.material.icons.rounded.MedicalServices
+import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.material.icons.rounded.PhotoCamera
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.TrackChanges
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -165,7 +183,7 @@ fun DailyDietPlanScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            // 📸 Prominent Snap Food Button
+                            // Prominent Snap Food Button
                             Box(
                                 modifier = Modifier
                                     .weight(1.15f)
@@ -180,9 +198,16 @@ fun DailyDietPlanScreen(
                                     .padding(vertical = 9.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(text = "📸", fontSize = 12.sp)
-                                    Spacer(modifier = Modifier.width(4.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.PhotoCamera,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(15.dp)
+                                    )
                                     Text(
                                         text = "Snap Food",
                                         fontSize = 12.sp,
@@ -201,12 +226,23 @@ fun DailyDietPlanScreen(
                                     .padding(vertical = 9.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(
-                                    text = "📖 Food Log",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.MenuBook,
+                                        contentDescription = null,
+                                        tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "Food Log",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                                    )
+                                }
                             }
                             Box(
                                 modifier = Modifier
@@ -217,12 +253,23 @@ fun DailyDietPlanScreen(
                                     .padding(vertical = 9.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(
-                                    text = "🔍 Explore",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF5B1761),
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Search,
+                                        contentDescription = null,
+                                        tint = Color(0xFF5B1761),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "Explore",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF5B1761),
+                                    )
+                                }
                             }
                         }
 
@@ -291,13 +338,24 @@ fun DailyDietPlanScreen(
                                         .clickable { viewModel.navigateDate(-1) }
                                         .padding(horizontal = 8.dp)
                                 )
-                                Text(
-                                    text = "📅  ${uiState.selectedDateLabel}",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = AppTheme.colors.textPrimary,
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                                     modifier = Modifier.clickable { showDatePickerDialog = true }
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CalendarToday,
+                                        contentDescription = null,
+                                        tint = AppTheme.colors.textPrimary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = uiState.selectedDateLabel,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = AppTheme.colors.textPrimary,
+                                    )
+                                }
                                 Text(
                                     text = "›",
                                     fontSize = 20.sp,
@@ -343,7 +401,12 @@ fun DailyDietPlanScreen(
                             .padding(12.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "🛡️", fontSize = 20.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.Shield,
+                                contentDescription = null,
+                                tint = Color(0xFFC62828),
+                                modifier = Modifier.size(22.dp)
+                            )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
@@ -372,7 +435,12 @@ fun DailyDietPlanScreen(
                             .padding(12.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "📊", fontSize = 20.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.InsertChart,
+                                contentDescription = null,
+                                tint = Color(0xFFFB8C00),
+                                modifier = Modifier.size(22.dp)
+                            )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
@@ -421,7 +489,7 @@ fun DailyDietPlanScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "📋 Full Personalized Meal Plan",
+                            text = "Personalized Meal Plan",
                             fontSize = 15.5.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
@@ -452,9 +520,16 @@ fun DailyDietPlanScreen(
                                 .clickable { viewModel.cycleDailyMealPlan() }
                                 .padding(horizontal = 9.dp, vertical = 6.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "🔀", fontSize = 11.sp)
-                                Spacer(modifier = Modifier.width(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Shuffle,
+                                    contentDescription = null,
+                                    tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                                    modifier = Modifier.size(12.dp)
+                                )
                                 Text(
                                     text = "Try Another",
                                     fontSize = 11.sp,
@@ -478,7 +553,7 @@ fun DailyDietPlanScreen(
 
                     // Structured Complete Day Plan: Breakfast, Lunch, Snack, Dinner
                     if (dailyPlan.breakfast.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "🌅 Breakfast", subtitle = "Gentle morning glycemic release")
+                        MealTimeSectionHeader(title = "Breakfast", subtitle = "Gentle morning glycemic release")
                         Spacer(modifier = Modifier.height(8.dp))
                         dailyPlan.breakfast.take(2).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("breakfast", item.id, item.title) })
@@ -488,7 +563,7 @@ fun DailyDietPlanScreen(
                     }
 
                     if (dailyPlan.lunch.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "☀️ Lunch", subtitle = "Sustained afternoon energy & protein")
+                        MealTimeSectionHeader(title = "Lunch", subtitle = "Sustained afternoon energy & protein")
                         Spacer(modifier = Modifier.height(8.dp))
                         dailyPlan.lunch.take(2).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("lunch", item.id, item.title) })
@@ -498,7 +573,7 @@ fun DailyDietPlanScreen(
                     }
 
                     if (dailyPlan.snack.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "☕ Afternoon Snack", subtitle = "High fibre to prevent evening spikes")
+                        MealTimeSectionHeader(title = "Afternoon Snack", subtitle = "High fibre to prevent evening spikes")
                         Spacer(modifier = Modifier.height(8.dp))
                         dailyPlan.snack.take(1).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("snack", item.id, item.title) })
@@ -508,7 +583,7 @@ fun DailyDietPlanScreen(
                     }
 
                     if (dailyPlan.dinner.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "🌙 Dinner", subtitle = "Light, nutrient-dense overnight support")
+                        MealTimeSectionHeader(title = "Dinner", subtitle = "Light, nutrient-dense overnight support")
                         Spacer(modifier = Modifier.height(8.dp))
                         dailyPlan.dinner.take(2).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("dinner", item.id, item.title) })
@@ -654,7 +729,7 @@ fun DailyDietPlanScreen(
                         fat = fat,
                         subItemsSummary = subSummary,
                         onSuccess = {
-                            Toast.makeText(context, "✅ Logged $dishName ($calories kcal) to today's diet log!", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Logged $dishName ($calories kcal) to today's diet log!", Toast.LENGTH_LONG).show()
                         }
                     )
                     activeSnapFoodAnalysis = null
@@ -729,10 +804,16 @@ fun ActiveHealthMatchCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
+                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.35f), CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = "🩸", fontSize = 18.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.WaterDrop,
+                            contentDescription = null,
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f, fill = false)) {
@@ -768,12 +849,23 @@ fun ActiveHealthMatchCard(
                         .clickable { onAdjustClick() }
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                 ) {
-                    Text(
-                        text = "⚙️ Adjust",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Tune,
+                            contentDescription = null,
+                            tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = "Adjust",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                        )
+                    }
                 }
             }
 
@@ -785,33 +877,52 @@ fun ActiveHealthMatchCard(
             ) {
                 dietPref.split(",").map { it.trim() }.filter { it.isNotEmpty() }.forEach { diet ->
                     HealthTagPill(
-                        icon = if (diet.contains("Non", ignoreCase = true)) "🍗" else "🥗",
+                        vectorIcon = Icons.Rounded.Restaurant,
                         text = diet
                     )
                 }
                 healthFocus.split(",").map { it.trim() }.filter { it.isNotEmpty() }.forEach { focus ->
-                    HealthTagPill(icon = "🎯", text = focus)
+                    HealthTagPill(vectorIcon = Icons.Rounded.TrackChanges, text = focus)
                 }
-                HealthTagPill(icon = "🩺", text = diabetesType)
+                HealthTagPill(vectorIcon = Icons.Rounded.MedicalServices, text = diabetesType)
             }
         }
     }
 }
 
 @Composable
-fun HealthTagPill(icon: String, text: String) {
+fun HealthTagPill(
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
+    text: String
+) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .background(AppTheme.colors.secondaryBackground)
             .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
-        Text(
-            text = "$icon $text",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF5E5A66),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (vectorIcon != null) {
+                Icon(
+                    imageVector = vectorIcon,
+                    contentDescription = text,
+                    tint = Color(0xFFA855F7),
+                    modifier = Modifier.size(12.dp)
+                )
+            } else if (icon.isNotBlank()) {
+                Text(text = icon, fontSize = 11.sp)
+            }
+            Text(
+                text = text,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF5E5A66),
+            )
+        }
     }
 }
 
@@ -967,12 +1078,13 @@ fun AdjustHealthInputsDialog(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (isSelected) {
-                                    Text(
-                                        text = "✓ ",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(13.dp)
                                     )
+                                    Spacer(modifier = Modifier.width(3.dp))
                                 }
                                 Text(
                                     text = diet,
@@ -1038,12 +1150,13 @@ fun AdjustHealthInputsDialog(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (isSelected) {
-                                    Text(
-                                        text = "✓ ",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(13.dp)
                                     )
+                                    Spacer(modifier = Modifier.width(3.dp))
                                 }
                                 Text(
                                     text = focus,
@@ -1093,7 +1206,18 @@ fun AdjustHealthInputsDialog(
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = "✓ Update Plan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Text(text = "Update Plan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
                     }
                 }
             }
@@ -1189,12 +1313,23 @@ fun AiDietMealCard(
 
             if (item.recommendationReason.isNotBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "💡 ${item.recommendationReason}",
-                    fontSize = 11.sp,
-                    color = Color(0xFF2E7D32),
-                    lineHeight = 15.sp,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Lightbulb,
+                        contentDescription = null,
+                        tint = Color(0xFF2E7D32),
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Text(
+                        text = item.recommendationReason,
+                        fontSize = 11.sp,
+                        color = Color(0xFF2E7D32),
+                        lineHeight = 15.sp,
+                    )
+                }
             }
 
             if (item.highlights.isNotEmpty() || item.glycemicImpact != null) {
@@ -1429,10 +1564,17 @@ fun AiFoodRecommendationForHealthCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Restaurant,
+                        contentDescription = null,
+                        tint = if (isDark) Color(0xFFF3E8FF) else Color(0xFF581C87),
+                        modifier = Modifier.size(16.dp)
+                    )
                     Text(
-                        text = "✨ Recommended For You",
+                        text = "Recommended For You",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF581C87),
@@ -1506,14 +1648,8 @@ fun AiFoodRecommendationForHealthCard(
                         .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
                         .padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
-                    val slotEmoji = when (item.mealSlot.lowercase()) {
-                        "breakfast" -> "🌅"
-                        "lunch" -> "☀️"
-                        "snack" -> "☕"
-                        else -> "🌙"
-                    }
                     Text(
-                        text = "$slotEmoji ${item.mealSlot}",
+                        text = item.mealSlot,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
@@ -1527,13 +1663,8 @@ fun AiFoodRecommendationForHealthCard(
                         .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
                         .padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
-                    val dietEmoji = when (item.dietType.lowercase()) {
-                        "vegan" -> "🌿"
-                        "vegetarian" -> "🌱"
-                        else -> "🍗"
-                    }
                     Text(
-                        text = "$dietEmoji ${item.dietType}",
+                        text = item.dietType,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
@@ -1548,7 +1679,7 @@ fun AiFoodRecommendationForHealthCard(
                         .padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "🟢 ${item.glycemicLoad} Glycemic Load",
+                        text = "${item.glycemicLoad} Glycemic Load",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
@@ -1645,7 +1776,12 @@ fun AiFoodRecommendationForHealthCard(
                     .padding(12.dp)
             ) {
                 Row(verticalAlignment = Alignment.Top) {
-                    Text(text = "💡", fontSize = 14.sp)
+                    Icon(
+                        imageVector = Icons.Rounded.Lightbulb,
+                        contentDescription = null,
+                        tint = Color(0xFFA855F7),
+                        modifier = Modifier.size(15.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = result.matchedReason,
@@ -1683,7 +1819,12 @@ fun AiFoodRecommendationForHealthCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(text = "🔀", fontSize = 12.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.Shuffle,
+                            contentDescription = null,
+                            tint = if (isDark) Color(0xFFF3E8FF) else Color(0xFF7E22CE),
+                            modifier = Modifier.size(14.dp)
+                        )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Try Another",
@@ -1719,7 +1860,12 @@ fun AiFoodRecommendationForHealthCard(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Text(text = "➕", fontSize = 12.sp, color = Color.White)
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Log This Meal",
