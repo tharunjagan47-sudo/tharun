@@ -160,7 +160,9 @@ fun PatientProfileScreen(
             }
 
             val userFacingError = uiState.errorMessage?.let { err ->
-                if (err.contains("User not specified", ignoreCase = true) || err.contains("log in", ignoreCase = true)) {
+                if (err.contains("User not specified", ignoreCase = true) || 
+                    err.contains("log in", ignoreCase = true) ||
+                    err.contains("user_id", ignoreCase = true)) {
                     null // suppress during onboarding pre-fill
                 } else {
                     err
@@ -316,7 +318,7 @@ fun IosLiquidGlassSlider(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Outer iOS Liquid Glass Capsule Container
+        // Outer iOS Liquid Glass Capsule Container (Deep Obsidian Glass)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -329,22 +331,15 @@ fun IosLiquidGlassSlider(
                 .clip(RoundedCornerShape(32.dp))
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = if (AppTheme.colors.isDark) {
-                            listOf(
-                                Color(0xFF1E1B2E),
-                                Color(0xFF161424),
-                            )
-                        } else {
-                            listOf(
-                                Color(0xFFF1F5F9),
-                                Color(0xFFE2E8F0),
-                            )
-                        },
+                        colors = listOf(
+                            Color(0xFF1C192E),
+                            Color(0xFF131122),
+                        ),
                     ),
                 )
                 .border(
                     width = 1.2.dp,
-                    color = if (AppTheme.colors.isDark) Color(0xFF383256) else Color(0xFFCBD5E1),
+                    color = Color(0xFF3B3358),
                     shape = RoundedCornerShape(32.dp),
                 )
                 .padding(vertical = 8.dp, horizontal = 6.dp),
@@ -357,7 +352,7 @@ fun IosLiquidGlassSlider(
                         .width(36.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(if (AppTheme.colors.isDark) Color(0xFF4C3E6D) else Color(0xFF94A3B8)),
+                        .background(Color(0xFF4C3E6D)),
                 )
 
                 LazyRow(
@@ -369,7 +364,7 @@ fun IosLiquidGlassSlider(
                         val isSelected = item == selectedItem
 
                         if (isSelected) {
-                            // Selected Liquid Glass Pill
+                            // Selected Liquid Glass Pill (Vibrant Gradient with High Contrast)
                             Box(
                                 modifier = Modifier
                                     .shadow(
@@ -389,12 +384,7 @@ fun IosLiquidGlassSlider(
                                     )
                                     .border(
                                         width = 1.2.dp,
-                                        brush = Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.White.copy(alpha = 0.8f),
-                                                Color.White.copy(alpha = 0.2f),
-                                            ),
-                                        ),
+                                        color = Color(0xFFF472B6).copy(alpha = 0.8f),
                                         shape = RoundedCornerShape(24.dp),
                                     )
                                     .clickable { onItemSelected(item) }
@@ -409,20 +399,14 @@ fun IosLiquidGlassSlider(
                                 )
                             }
                         } else {
-                            // Unselected Frosted Glass Pill (High contrast in both dark & light modes)
+                            // Unselected Frosted Glass Pill (Deep Purple-Indigo with Crisp White-Silver Text)
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(24.dp))
-                                    .background(
-                                        if (AppTheme.colors.isDark) {
-                                            Color(0xFF2D264A)
-                                        } else {
-                                            Color(0xFFDDD6FE)
-                                        }
-                                    )
+                                    .background(Color(0xFF282245))
                                     .border(
                                         width = 1.dp,
-                                        color = if (AppTheme.colors.isDark) Color(0xFF564C7D) else Color(0xFFC4B5FD),
+                                        color = Color(0xFF4C3E6D),
                                         shape = RoundedCornerShape(24.dp),
                                     )
                                     .clickable { onItemSelected(item) }
@@ -433,7 +417,7 @@ fun IosLiquidGlassSlider(
                                     text = item,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = if (AppTheme.colors.isDark) Color(0xFFF8FAFC) else Color(0xFF4C1D95),
+                                    color = Color(0xFFF8FAFC),
                                 )
                             }
                         }

@@ -239,27 +239,67 @@ fun ChatScreen(
         }
     }
 
+    // Ambient Gradient Motion Transitions (Smooth sinusoidal continuous breathing movement)
+    val ambientTransition = rememberInfiniteTransition(label = "AmbientGradientMotion")
+    val phase1 by ambientTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 14000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase1"
+    )
+    val phase2 by ambientTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 18000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase2"
+    )
+    val pulseScale by ambientTransition.animateFloat(
+        initialValue = 0.94f,
+        targetValue = 1.06f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 8000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+
     // =========================================================================
-    // PART 1: AMBIENT HALF-SCREEN GRADIENT CANVAS (Pure Obsidian Black Base)
+    // PART 1: AMBIENT HALF-SCREEN GRADIENT CANVAS (Pure Obsidian Black Base with Subtle Fluid Motion)
     // =========================================================================
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF000000))
     ) {
-        // Atmospheric Ambient Top-Half Gradient (inspired by ambient glassmorphic chat UI)
+        // Atmospheric Ambient Top-Half Gradient with continuous fluid motion
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
 
-            // 1. Broad Top-Half Ambient Horizontal-to-Vertical Glow
+            val offsetX1 = w * (0.16f + 0.08f * sin(phase1))
+            val offsetY1 = h * (0.07f + 0.04f * kotlin.math.cos(phase1))
+            val radius1 = w * (0.95f * pulseScale)
+
+            val offsetX2 = w * (0.84f - 0.08f * kotlin.math.cos(phase2))
+            val offsetY2 = h * (0.11f + 0.05f * sin(phase2))
+            val radius2 = w * (0.90f * (2f - pulseScale))
+
+            // 1. Broad Top-Half Ambient Horizontal Glow with subtle lateral drift
             drawRect(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFF6D28D9).copy(alpha = 0.60f), // Rich Royal Purple on left
-                        Color(0xFF7C3AED).copy(alpha = 0.50f), // Electric Violet in center
-                        Color(0xFF9333EA).copy(alpha = 0.58f), // Deep Magenta-Violet on right
-                    )
+                        Color(0xFF6D28D9).copy(alpha = 0.62f), // Rich Royal Purple on left
+                        Color(0xFF7C3AED).copy(alpha = 0.52f), // Electric Violet in center
+                        Color(0xFF9333EA).copy(alpha = 0.60f), // Deep Magenta-Violet on right
+                    ),
+                    startX = -w * 0.10f + w * 0.10f * sin(phase1),
+                    endX = w * 1.10f + w * 0.10f * sin(phase1)
                 ),
                 size = androidx.compose.ui.geometry.Size(w, h * 0.48f)
             )
@@ -268,13 +308,13 @@ fun ChatScreen(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF8B5CF6).copy(alpha = 0.68f),
-                        Color(0xFF7C3AED).copy(alpha = 0.42f),
-                        Color(0xFF4C1D95).copy(alpha = 0.15f),
+                        Color(0xFF8B5CF6).copy(alpha = 0.70f),
+                        Color(0xFF7C3AED).copy(alpha = 0.44f),
+                        Color(0xFF4C1D95).copy(alpha = 0.16f),
                         Color.Transparent
                     ),
-                    center = Offset(w * 0.12f, h * 0.06f),
-                    radius = w * 0.95f
+                    center = Offset(offsetX1, offsetY1),
+                    radius = radius1
                 )
             )
 
@@ -282,25 +322,38 @@ fun ChatScreen(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFA855F7).copy(alpha = 0.62f),
-                        Color(0xFF9333EA).copy(alpha = 0.38f),
-                        Color(0xFF581C87).copy(alpha = 0.12f),
+                        Color(0xFFA855F7).copy(alpha = 0.64f),
+                        Color(0xFF9333EA).copy(alpha = 0.40f),
+                        Color(0xFF581C87).copy(alpha = 0.14f),
                         Color.Transparent
                     ),
-                    center = Offset(w * 0.88f, h * 0.10f),
-                    radius = w * 0.90f
+                    center = Offset(offsetX2, offsetY2),
+                    radius = radius2
                 )
             )
 
-            // 4. Smooth, seamless atmospheric diffusion into pure obsidian black by ~48-55%
+            // 4. Subtle central floating aura node
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF7C3AED).copy(alpha = 0.28f),
+                        Color(0xFF4C1D95).copy(alpha = 0.10f),
+                        Color.Transparent
+                    ),
+                    center = Offset(w * (0.50f + 0.06f * sin(phase2)), h * (0.16f + 0.03f * kotlin.math.cos(phase1))),
+                    radius = w * 0.75f
+                )
+            )
+
+            // 5. Smooth atmospheric diffusion fading to pure obsidian black (#000000) by ~48-52%
             drawRect(
                 brush = Brush.verticalGradient(
                     colorStops = arrayOf(
                         0.0f to Color.Transparent,
                         0.22f to Color.Transparent,
-                        0.36f to Color(0xFF000000).copy(alpha = 0.35f),
-                        0.48f to Color(0xFF000000).copy(alpha = 0.85f),
-                        0.55f to Color(0xFF000000),
+                        0.35f to Color(0xFF000000).copy(alpha = 0.35f),
+                        0.46f to Color(0xFF000000).copy(alpha = 0.85f),
+                        0.52f to Color(0xFF000000),
                         1.0f to Color(0xFF000000)
                     )
                 )
@@ -571,9 +624,31 @@ fun ChatScreen(
                 }
             }
 
-            // Quick Prompt Suggestion Chips (collapses when keyboard is open to maximize chat view)
+            // Sleek floating pill above input bar (matching reference screenshot)
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 6.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xD91E1E26))
+                        .border(1.dp, Color(0x33A855F7), RoundedCornerShape(20.dp))
+                        .clickable { viewModel.stopGenerating() }
+                        .padding(horizontal = 18.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Stop generating",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFF1F5F9)
+                    )
+                }
+            }
+
+            // Quick Prompt Suggestion Chips (collapses when keyboard is open or while loading)
             AnimatedVisibility(
-                visible = !isKeyboardOpen && messages.size <= 2,
+                visible = !isKeyboardOpen && !isLoading && messages.size <= 2,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
@@ -692,7 +767,7 @@ fun ChatScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Right: Circular Action Button (Send Arrow vs. Stop Square ■)
+                    // Right: Action Button (Send Arrow vs Stop Square vs Minimal Rounded Square)
                     val canSend = inputText.isNotBlank() && !isLoading
                     val actionButtonBrush = when {
                         isLoading -> Brush.linearGradient(listOf(Color(0xFF3B1547), Color(0xFF3B1547)))
@@ -711,6 +786,8 @@ fun ChatScreen(
                                     val query = inputText.trim()
                                     inputText = ""
                                     submitQuery(query, fromVoice = false)
+                                } else {
+                                    startVoiceInput()
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -723,7 +800,7 @@ fun ChatScreen(
                                     .clip(RoundedCornerShape(2.dp))
                                     .background(Color(0xFFF5D0FE))
                             )
-                        } else {
+                        } else if (canSend) {
                             // Crisp Vector Send Arrow
                             Canvas(modifier = Modifier.size(16.dp)) {
                                 val w = size.width
@@ -737,12 +814,25 @@ fun ChatScreen(
                                 }
                                 drawPath(
                                     path = path,
-                                    color = if (canSend) Color.White else Color(0x66FFFFFF),
+                                    color = Color.White,
                                     style = Stroke(
                                         width = 2.2.dp.toPx(),
                                         cap = StrokeCap.Round,
                                         join = StrokeJoin.Round
                                     )
+                                )
+                            }
+                        } else {
+                            // Minimal Rounded Square Icon matching reference UI
+                            Canvas(modifier = Modifier.size(16.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                drawRoundRect(
+                                    color = Color(0xFFCBD5E1),
+                                    size = androidx.compose.ui.geometry.Size(w * 0.78f, h * 0.78f),
+                                    topLeft = Offset(w * 0.11f, h * 0.11f),
+                                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(3.5.dp.toPx()),
+                                    style = Stroke(width = 1.8.dp.toPx())
                                 )
                             }
                         }
@@ -961,8 +1051,8 @@ fun ChatMessageItem(
 
 /**
  * Animated DIVA Thinking Indicator:
- * 3 tiny smoothly pulsing/orbiting white-violet dots next to subtly cycling status text.
- * No backend jargon.
+ * Sleek minimal 4-dot constellation (matching '.:' from reference UI),
+ * followed by clean unboxed status text. No backend jargon.
  */
 @Composable
 fun DivaThinkingIndicator() {
@@ -971,7 +1061,7 @@ fun DivaThinkingIndicator() {
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
+            animation = tween(1300, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "dotPhase"
@@ -996,60 +1086,42 @@ fun DivaThinkingIndicator() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 10.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // DIVA Avatar Logo Badge
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF0F0B1E))
-                .border(
-                    width = 1.dp,
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFFA855F7), Color(0xFF7C3AED))
-                    ),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.diva_avatar),
-                contentDescription = "DIVA",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+        // Minimal 4-dot cluster arranged as '.:'
+        Canvas(modifier = Modifier.size(width = 18.dp, height = 18.dp)) {
+            val w = size.width
+            val h = size.height
+            // 4 points representing '.:'
+            val points = listOf(
+                Offset(w * 0.22f, h * 0.68f),
+                Offset(w * 0.38f, h * 0.28f),
+                Offset(w * 0.78f, h * 0.38f),
+                Offset(w * 0.64f, h * 0.72f)
             )
-        }
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        // 3 smoothly pulsing white-violet dots
-        Canvas(modifier = Modifier.size(width = 30.dp, height = 14.dp)) {
-            val dotRadius = 3.2.dp.toPx()
-            val spacing = 9.dp.toPx()
-            for (i in 0..2) {
-                val offset = ((dotPhase + i * 0.33f) % 1f)
-                val bounce = sin(offset * Math.PI).toFloat().coerceIn(0f, 1f)
-                val y = size.height / 2f - bounce * 3.5.dp.toPx()
-                val alpha = 0.4f + bounce * 0.6f
-                val color = if (i == 1) Color(0xFFC084FC) else Color(0xFFEDE9FE)
+            points.forEachIndexed { i, pt ->
+                val localPhase = (dotPhase + i * 0.25f) % 1f
+                val bounce = sin(localPhase * Math.PI).toFloat().coerceIn(0f, 1f)
+                val r = 1.9.dp.toPx() * (0.85f + bounce * 0.35f)
+                val alpha = 0.40f + bounce * 0.60f
+                val color = if (i % 2 == 0) Color(0xFFC084FC) else Color(0xFFFFFFFF)
                 drawCircle(
                     color = color.copy(alpha = alpha),
-                    radius = dotRadius * (0.85f + bounce * 0.25f),
-                    center = Offset(x = 6.dp.toPx() + i * spacing, y = y)
+                    radius = r,
+                    center = pt
                 )
             }
         }
 
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Text(
             text = statusMessages[statusIndex],
-            fontSize = 13.sp,
-            color = Color(0xFFC084FC),
-            fontWeight = FontWeight.Medium
+            fontSize = 14.5.sp,
+            color = Color(0xFFF1F5F9),
+            fontWeight = FontWeight.Normal
         )
     }
 }
