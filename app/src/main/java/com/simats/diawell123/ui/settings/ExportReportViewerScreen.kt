@@ -28,7 +28,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.FileDownload
+import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.rounded.Print
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -156,11 +165,11 @@ fun ExportReportViewerScreen(
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = if (actionBannerIsError) "⚠️" else "✓",
-                            fontSize = 20.sp,
-                            color = fg,
-                            fontWeight = FontWeight.Bold
+                        Icon(
+                            imageVector = if (actionBannerIsError) Icons.Rounded.Warning else Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = fg,
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
@@ -342,7 +351,7 @@ fun ExportReportViewerScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     ReportActionButton(
-                        icon = "📂",
+                        vectorIcon = Icons.Rounded.FolderOpen,
                         label = "Open $formatTag",
                         onClick = {
                             viewModel.openGeneratedReport(context) { ok, msg ->
@@ -353,7 +362,7 @@ fun ExportReportViewerScreen(
                     )
 
                     ReportActionButton(
-                        icon = "💾",
+                        vectorIcon = Icons.Rounded.FileDownload,
                         label = "Save to Downloads",
                         onClick = {
                             viewModel.saveGeneratedReportToDownloads(context) { ok, msg ->
@@ -369,7 +378,7 @@ fun ExportReportViewerScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     ReportActionButton(
-                        icon = "📤",
+                        vectorIcon = Icons.Rounded.Share,
                         label = "Share / Email",
                         onClick = {
                             viewModel.shareGeneratedReport(context) { ok, msg ->
@@ -380,7 +389,7 @@ fun ExportReportViewerScreen(
                     )
 
                     ReportActionButton(
-                        icon = "🖨️",
+                        vectorIcon = Icons.Rounded.Print,
                         label = if (formatTag == "PDF") "Print PDF" else "Send CSV",
                         onClick = {
                             viewModel.printGeneratedReport(context) { ok, msg ->
@@ -517,7 +526,8 @@ fun ReportSummaryRow(
 
 @Composable
 fun ReportActionButton(
-    icon: String,
+    vectorIcon: ImageVector? = null,
+    icon: String = "",
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -533,7 +543,16 @@ fun ReportActionButton(
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = icon, fontSize = 20.sp)
+            if (vectorIcon != null) {
+                Icon(
+                    imageVector = vectorIcon,
+                    contentDescription = null,
+                    tint = Color(0xFFA855F7),
+                    modifier = Modifier.size(22.dp)
+                )
+            } else if (icon.isNotEmpty()) {
+                Text(text = icon, fontSize = 20.sp)
+            }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
