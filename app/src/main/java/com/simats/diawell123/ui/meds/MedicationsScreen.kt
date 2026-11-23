@@ -19,9 +19,19 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Air
+import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Sanitizer
+import androidx.compose.material.icons.rounded.Vaccines
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -165,18 +175,40 @@ fun MedicationsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = "⚠️ ${uiState.errorMessage}",
-                                fontSize = 12.sp,
-                                color = Color(0xFFC62828),
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = "Retry ↻",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC62828)
-                            )
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Warning,
+                                    contentDescription = null,
+                                    tint = Color(0xFFC62828),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = uiState.errorMessage ?: "",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFC62828),
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Retry",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFC62828)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Rounded.Refresh,
+                                    contentDescription = null,
+                                    tint = Color(0xFFC62828),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -248,7 +280,20 @@ fun MedicationsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "💊", fontSize = 36.sp)
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Medication,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
                                 text = "No medication reminders set",
@@ -327,12 +372,12 @@ fun MedicationScheduleCard(
     scheduleTag: String = "",
     onClick: () -> Unit = {},
 ) {
-    val iconChar = when {
-        dosageForm.contains("inject", ignoreCase = true) || name.contains("insulin", ignoreCase = true) -> "💉"
-        dosageForm.contains("inhal", ignoreCase = true) -> "💨"
-        dosageForm.contains("syrup", ignoreCase = true) || dosageForm.contains("liquid", ignoreCase = true) -> "💧"
-        dosageForm.contains("cream", ignoreCase = true) || dosageForm.contains("gel", ignoreCase = true) -> "🧴"
-        else -> "💊"
+    val iconVector = when {
+        dosageForm.contains("inject", ignoreCase = true) || name.contains("insulin", ignoreCase = true) -> Icons.Rounded.Vaccines
+        dosageForm.contains("inhal", ignoreCase = true) -> Icons.Rounded.Air
+        dosageForm.contains("syrup", ignoreCase = true) || dosageForm.contains("liquid", ignoreCase = true) -> Icons.Rounded.WaterDrop
+        dosageForm.contains("cream", ignoreCase = true) || dosageForm.contains("gel", ignoreCase = true) -> Icons.Rounded.Sanitizer
+        else -> Icons.Rounded.Medication
     }
 
     Box(
@@ -353,7 +398,20 @@ fun MedicationScheduleCard(
                 modifier = Modifier.weight(1f).padding(end = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = iconChar, fontSize = 28.sp)
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = iconVector,
+                        contentDescription = null,
+                        tint = Color(0xFFA855F7),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -456,10 +514,10 @@ fun formatMedicationScheduleLabel(rawDate: String?, frequency: String?): String 
 
 fun formatMedsStatusLabel(status: String): String {
     return when (status.trim().lowercase()) {
-        "taken" -> "✓ Taken"
-        "snoozed" -> "⏰ Snoozed"
-        "skipped" -> "⏭ Skipped"
-        "missed" -> "✕ Missed"
+        "taken" -> "Taken"
+        "snoozed" -> "Snoozed"
+        "skipped" -> "Skipped"
+        "missed" -> "Missed"
         else -> "Upcoming"
     }
 }
