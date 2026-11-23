@@ -158,5 +158,6 @@ data class ChatMessage(
     val timestamp: Long = System.currentTimeMillis(),
     val alertType: AlertType = AlertType.NONE,
     val metrics: List<NutritionMetric> = emptyList(),
-    val isError: Boolean = false
+    val isError: Boolean = false,
+    val attachedImageUrl: String? = null
 )

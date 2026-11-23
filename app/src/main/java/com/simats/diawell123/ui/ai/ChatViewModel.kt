@@ -23,6 +23,7 @@ import com.simats.diawell123.data.repository.MedsRepositoryImpl
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.ui.profile.ProfileState
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,6 +53,7 @@ class ChatViewModel(
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     private var lastUserMessage: String? = null
+    private var currentJob: Job? = null
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.e("ChatViewModel", "Uncaught exception in ChatViewModel: ${throwable.message}", throwable)
@@ -135,7 +137,8 @@ class ChatViewModel(
         )
         _messages.value = _messages.value + userMsg
 
-        viewModelScope.launch(exceptionHandler) {
+        currentJob?.cancel()
+        currentJob = viewModelScope.launch(exceptionHandler) {
             try {
                 _isLoading.value = true
 
@@ -276,7 +279,14 @@ class ChatViewModel(
         _errorMessage.value = null
     }
 
+    fun stopGenerating() {
+        currentJob?.cancel()
+        currentJob = null
+        _isLoading.value = false
+    }
+
     fun resetChat() {
+        stopGenerating()
         _errorMessage.value = null
         initWelcomeMessage()
     }

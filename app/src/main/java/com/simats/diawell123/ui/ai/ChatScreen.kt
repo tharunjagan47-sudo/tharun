@@ -4,13 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -29,7 +29,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,78 +36,70 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
 import com.simats.diawell123.data.model.AlertType
 import com.simats.diawell123.data.model.BadgeType
 import com.simats.diawell123.data.model.ChatMessage
 import com.simats.diawell123.data.model.ChatSender
 import com.simats.diawell123.data.model.NutritionMetric
-import com.simats.diawell123.ui.diet.StyledBackButton
-import com.simats.diawell123.ui.theme.AppTheme
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.sin
 
 /**
- * Main Dr. Jarvis AI Chat Screen with Diabetes Visual Styling and Speech-to-Text.
+ * Ultra-minimal modern dark-mode DIVA AI Chat Screen.
+ * Styled in DiaWell's Obsidian Black & Royal Purple / Deep Violet ambient theme.
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun ChatScreen(
     modifier: Modifier = Modifier,
@@ -189,14 +180,8 @@ fun ChatScreen(
         }
     }
 
-    LaunchedEffect(inputText) {
-        if (inputText.isNotEmpty() && messages.isNotEmpty()) {
-            listState.scrollToItem(messages.size - 1)
-        }
-    }
-
     // -------------------------------------------------------------------------
-    // Voice Input Speech Recognizer & Siri-Style Live Voice Session Integration
+    // Voice Input Speech Recognizer Integration
     // -------------------------------------------------------------------------
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -250,284 +235,245 @@ fun ChatScreen(
         }
     }
 
-    // Arc Reactor Pulsing Animation for Dr. Jarvis Avatar
-    val infiniteTransition = rememberInfiniteTransition(label = "JarvisPulse")
-    val avatarPulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.08f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "avatarScale"
-    )
-
-    val auraAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.25f,
-        targetValue = 0.65f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "auraAlpha"
-    )
-
+    // =========================================================================
+    // PART 1: AMBIENT HALF-SCREEN GRADIENT CANVAS (Pure Obsidian Black Base)
+    // =========================================================================
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppTheme.colors.background)
+            .background(Color(0xFF000000))
     ) {
+        // Atmospheric Top-Half Radial Mesh Gradient
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+
+            // Top-Left Royal Purple ambient glow (#7C3AED at ~35% alpha)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF7C3AED).copy(alpha = 0.35f),
+                        Color(0xFF7C3AED).copy(alpha = 0.15f),
+                        Color.Transparent
+                    ),
+                    center = Offset(w * 0.16f, h * 0.10f),
+                    radius = w * 0.90f
+                )
+            )
+
+            // Top-Right Deep Violet / Magenta ambient glow (#6D28D9 / #4C1D95 at ~25% alpha)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF6D28D9).copy(alpha = 0.26f),
+                        Color(0xFF4C1D95).copy(alpha = 0.18f),
+                        Color.Transparent
+                    ),
+                    center = Offset(w * 0.88f, h * 0.14f),
+                    radius = w * 0.85f
+                )
+            )
+
+            // Seamless vertical fade mask: blends completely into pure #000000 by ~50-55%
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0.0f to Color.Transparent,
+                        0.32f to Color.Transparent,
+                        0.52f to Color(0xFF000000),
+                        1.0f to Color(0xFF000000)
+                    )
+                )
+            )
+        }
+
+        // Edge-to-edge layout content
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
-                .imeNestedScroll()
+                .navigationBarsPadding()
+                .imePadding()
         ) {
 
-            // -----------------------------------------------------------------
-            // Top Bar: Dr. Jarvis Iron Man Medical Avatar & Compact Actions
-            // -----------------------------------------------------------------
+            // =================================================================
+            // PART 2: MINIMAL FLOATING GLASS TOP BAR
+            // =================================================================
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(horizontal = 18.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    StyledBackButton(onBackClick = onBackClick)
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    // Arc Reactor Avatar with pulsing glow
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .scale(avatarPulseScale)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF00E5FF).copy(alpha = auraAlpha))
-                        )
-                        IronmanDoctorAvatar(sizeDp = 36)
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "DIVA",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AppTheme.colors.textPrimary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f, fill = false)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF4CAF50))
-                            )
-                        }
-                        Text(
-                            text = "DiaWell Intelligent Virtual Assistant",
-                            fontSize = 11.sp,
-                            lineHeight = 14.sp,
-                            color = AppTheme.colors.textSecondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-
-                // Right Controls: Uniform Circular Auto-Speak & Reset Buttons
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(AppTheme.colors.elevatedSurface)
-                            .border(1.dp, AppTheme.colors.border, CircleShape)
-                            .clickable {
-                                autoSpeakEnabled = !autoSpeakEnabled
-                                sessionManager.setDrJarvisVoiceEnabled(autoSpeakEnabled)
-                                if (!autoSpeakEnabled) {
-                                    voiceManager.stopSpeaking()
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (autoSpeakEnabled) "🔊" else "🔇",
-                            fontSize = 15.sp
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(AppTheme.colors.elevatedSurface)
-                            .border(1.dp, AppTheme.colors.border, CircleShape)
-                            .clickable {
-                                voiceManager.stopSpeaking()
-                                viewModel.resetChat()
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "🔄", fontSize = 15.sp)
-                    }
-                }
-            }
-
-            // -----------------------------------------------------------------
-            // Clinical Safety Disclaimer + Siri Voice Mode Action Strip (hides during typing)
-            // -----------------------------------------------------------------
-            AnimatedVisibility(
-                visible = !isKeyboardOpen,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
+                // Left: Circular Translucent Glass Button (42.dp, subtle purple-tinted border)
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(AppTheme.colors.elevatedSurface)
-                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(Color(0x331F1A30))
+                        .border(1.dp, Color(0x38A855F7), CircleShape)
+                        .clickable { onBackClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.size(15.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        val path = Path().apply {
+                            moveTo(w * 0.62f, h * 0.18f)
+                            lineTo(w * 0.28f, h * 0.50f)
+                            lineTo(w * 0.62f, h * 0.82f)
+                        }
+                        drawPath(
+                            path = path,
+                            color = Color(0xFFF1F5F9),
+                            style = Stroke(
+                                width = 2.2.dp.toPx(),
+                                cap = StrokeCap.Round,
+                                join = StrokeJoin.Round
+                            )
+                        )
+                    }
+                }
+
+                // Right: Single Sleek Translucent Glass Pill (New Chat & More Options)
+                var showOptionsMenu by remember { mutableStateOf(false) }
+
+                Box(
+                    modifier = Modifier
+                        .height(42.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Color(0x331F1A30))
+                        .border(1.dp, Color(0x38A855F7), RoundedCornerShape(22.dp))
+                        .padding(horizontal = 6.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(text = "🩺", fontSize = 14.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Wellness & diet guidance. Consult your doctor for med edits.",
-                            fontSize = 11.sp,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
-                            lineHeight = 15.sp,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp)
-                        )
+                        // New Chat (Compose Icon)
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
-                                    )
-                                )
-                                .clickable { startVoiceInput() }
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    voiceManager.stopSpeaking()
+                                    viewModel.resetChat()
+                                    Toast.makeText(context, "New chat started", Toast.LENGTH_SHORT).show()
+                                },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "🎙️ Voice",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                maxLines = 1,
-                                softWrap = false
-                            )
+                            Canvas(modifier = Modifier.size(16.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                val squarePath = Path().apply {
+                                    moveTo(w * 0.72f, h * 0.44f)
+                                    lineTo(w * 0.72f, h * 0.82f)
+                                    lineTo(w * 0.18f, h * 0.82f)
+                                    lineTo(w * 0.18f, h * 0.28f)
+                                    lineTo(w * 0.56f, h * 0.28f)
+                                }
+                                drawPath(
+                                    path = squarePath,
+                                    color = Color(0xFFF1F5F9),
+                                    style = Stroke(width = 1.6.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                                )
+                                val pencilPath = Path().apply {
+                                    moveTo(w * 0.42f, h * 0.58f)
+                                    lineTo(w * 0.84f, h * 0.16f)
+                                }
+                                drawPath(
+                                    path = pencilPath,
+                                    color = Color(0xFFA78BFA),
+                                    style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round)
+                                )
+                            }
+                        }
+
+                        // Subtle Divider
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(16.dp)
+                                .background(Color(0x26FFFFFF))
+                        )
+
+                        // More / Options (...)
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .clickable { showOptionsMenu = !showOptionsMenu },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Canvas(modifier = Modifier.size(16.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                val r = 1.6.dp.toPx()
+                                drawCircle(color = Color(0xFFF1F5F9), radius = r, center = Offset(w * 0.22f, h * 0.5f))
+                                drawCircle(color = Color(0xFFF1F5F9), radius = r, center = Offset(w * 0.50f, h * 0.5f))
+                                drawCircle(color = Color(0xFFF1F5F9), radius = r, center = Offset(w * 0.78f, h * 0.5f))
+                            }
+
+                            DropdownMenu(
+                                expanded = showOptionsMenu,
+                                onDismissRequest = { showOptionsMenu = false },
+                                modifier = Modifier
+                                    .background(Color(0xFF161524))
+                                    .border(1.dp, Color(0x40A855F7), RoundedCornerShape(12.dp))
+                            ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = if (autoSpeakEnabled) "🔊 Auto-Speak Enabled" else "🔇 Auto-Speak Disabled",
+                                            color = Color.White,
+                                            fontSize = 13.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        autoSpeakEnabled = !autoSpeakEnabled
+                                        sessionManager.setDrJarvisVoiceEnabled(autoSpeakEnabled)
+                                        if (!autoSpeakEnabled) voiceManager.stopSpeaking()
+                                        Toast.makeText(context, if (autoSpeakEnabled) "DIVA will speak responses" else "DIVA voice muted", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "🎙️ Open Voice Mode",
+                                            color = Color(0xFFF0ABFC),
+                                            fontSize = 13.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        startVoiceInput()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "🧹 Clear Conversation",
+                                            color = Color(0xFFF87171),
+                                            fontSize = 13.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        viewModel.resetChat()
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // -----------------------------------------------------------------
-            // Live Animated Talking DIVA Stage (appears whenever DIVA speaks aloud in chat!)
-            // -----------------------------------------------------------------
-            AnimatedVisibility(
-                visible = voiceState == JarvisVoiceState.SPEAKING && !isVoiceOverlayOpen,
-                enter = fadeIn(tween(220)) + expandVertically(tween(240)),
-                exit = fadeOut(tween(180)) + shrinkVertically(tween(200)),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF150E2A),
-                                    Color(0xFF1E1338),
-                                    Color(0xFF10192E),
-                                ),
-                            ),
-                        )
-                        .border(1.2.dp, Color(0x88A855F7), RoundedCornerShape(18.dp))
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    DivaTalkingAvatar(
-                        isSpeaking = true,
-                        mouthOpenness = mouthOpenness,
-                        mouthShape = mouthShape,
-                        sizeDp = 82,
-                    )
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "🔊 DIVA is speaking...",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00E5FF),
-                        )
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Text(
-                            text = "DiaWell Intelligent Virtual Assistant",
-                            fontSize = 11.sp,
-                            color = Color(0xFFE9D5FF),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFEF4444).copy(alpha = 0.22f))
-                            .border(1.dp, Color(0xFFEF4444), RoundedCornerShape(12.dp))
-                            .clickable { voiceManager.stopSpeaking() }
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = "⏹ Stop",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFCA5A5),
-                        )
-                    }
-                }
-            }
-
-            // -----------------------------------------------------------------
-            // Messages LazyColumn
-            // -----------------------------------------------------------------
+            // =================================================================
+            // PART 3: MINIMAL CHAT MESSAGES & ANIMATED THINKING STYLE
+            // =================================================================
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -539,8 +485,8 @@ fun ChatScreen(
                     ) {
                         focusManager.clearFocus()
                     },
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(horizontal = 18.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(messages, key = { it.id }) { message ->
                     ChatMessageItem(
@@ -551,24 +497,22 @@ fun ChatScreen(
 
                 if (isLoading) {
                     item(key = "typing_indicator") {
-                        DrJarvisThinkingIndicator(avatarPulseScale)
+                        DivaThinkingIndicator()
                     }
                 }
             }
 
-            // -----------------------------------------------------------------
             // Error Banner with Retry
-            // -----------------------------------------------------------------
             AnimatedVisibility(visible = errorMessage != null) {
                 errorMessage?.let { error ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFFFEBEE))
-                            .border(1.dp, Color(0xFFEF5350), RoundedCornerShape(10.dp))
-                            .padding(10.dp)
+                            .padding(horizontal = 18.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF2A1518))
+                            .border(1.dp, Color(0xFFEF5350).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -577,8 +521,8 @@ fun ChatScreen(
                         ) {
                             Text(
                                 text = error,
-                                fontSize = 11.sp,
-                                color = Color(0xFFC62828),
+                                fontSize = 12.sp,
+                                color = Color(0xFFFCA5A5),
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -586,7 +530,7 @@ fun ChatScreen(
                                 text = "Retry",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC62828),
+                                color = Color(0xFFF87171),
                                 modifier = Modifier
                                     .clickable {
                                         viewModel.retryLastMessage(
@@ -607,9 +551,7 @@ fun ChatScreen(
                 }
             }
 
-            // -----------------------------------------------------------------
             // Quick Prompt Suggestion Chips (collapses when keyboard is open to maximize chat view)
-            // -----------------------------------------------------------------
             AnimatedVisibility(
                 visible = !isKeyboardOpen && messages.size <= 2,
                 enter = expandVertically() + fadeIn(),
@@ -619,32 +561,32 @@ fun ChatScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(horizontal = 18.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val suggestions = listOf(
-                        "🌾 3 high-fibre Indian foods",
-                        "🚶 Walking MET value for 30 mins",
-                        "🚨 What to do if glucose < 70 mg/dL?",
-                        "🥗 Low carbohydrate snacks"
+                        "🌾 High-fibre Indian foods",
+                        "🚶 Walking MET for 30 mins",
+                        "🚨 What to do if sugar < 70?",
+                        "🥗 Low-carb dinner ideas"
                     )
                     suggestions.forEach { prompt ->
                         val cleanPrompt = prompt.substringAfter(" ")
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(AppTheme.colors.elevatedSurface)
-                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                                .background(Color(0x331F1B2E))
+                                .border(1.dp, Color(0x33A855F7), RoundedCornerShape(16.dp))
                                 .clickable { submitQuery(cleanPrompt, fromVoice = false) }
-                                .padding(horizontal = 12.dp, vertical = 7.dp),
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = prompt,
-                                fontSize = 11.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
+                                color = Color(0xFFE9D5FF),
                                 maxLines = 1,
                                 softWrap = false
                             )
@@ -653,90 +595,99 @@ fun ChatScreen(
                 }
             }
 
-            // -----------------------------------------------------------------
-            // Bottom Chat Input Bar with Microphone Voice Action
-            // -----------------------------------------------------------------
-            Column(
+            // =================================================================
+            // PART 4: FLOATING GLASS BOTTOM INPUT PILL (`Ask DIVA`)
+            // =================================================================
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(AppTheme.colors.cardBackground)
+                    .padding(horizontal = 18.dp, vertical = 10.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Color(0xD916161E))
+                    .border(1.dp, Color(0x3DA855F7), RoundedCornerShape(28.dp))
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
             ) {
-                HorizontalDivider(thickness = 1.dp, color = AppTheme.colors.border)
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Voice Input Microphone Button
+                    // Left: Minimal '+' Action Button
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
-                            .background(AppTheme.colors.elevatedSurface)
-                            .border(
-                                width = 1.2.dp,
-                                brush = Brush.linearGradient(
-                                    colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7))
-                                ),
-                                shape = CircleShape
-                            )
+                            .background(Color(0x1AFFFFFF))
                             .clickable { startVoiceInput() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "🎙️", fontSize = 18.sp)
+                        Canvas(modifier = Modifier.size(14.dp)) {
+                            val w = size.width
+                            val h = size.height
+                            drawLine(
+                                color = Color(0xFFF1F5F9),
+                                start = Offset(w * 0.5f, h * 0.18f),
+                                end = Offset(w * 0.5f, h * 0.82f),
+                                strokeWidth = 2.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                            drawLine(
+                                color = Color(0xFFF1F5F9),
+                                start = Offset(w * 0.18f, h * 0.5f),
+                                end = Offset(w * 0.82f, h * 0.5f),
+                                strokeWidth = 2.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                        }
                     }
 
-                    // Text Input Field
-                    OutlinedTextField(
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    // Center: Borderless BasicTextField with placeholder 'Ask DIVA'
+                    BasicTextField(
                         value = inputText,
                         onValueChange = { inputText = it },
-                        placeholder = {
-                            Text(
-                                text = "Ask DIVA or tap mic...",
-                                fontSize = 13.sp,
-                                color = AppTheme.colors.textMuted,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        },
-                        singleLine = false,
-                        maxLines = 4,
-                        shape = RoundedCornerShape(24.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = AppTheme.colors.textPrimary,
-                            unfocusedTextColor = AppTheme.colors.textPrimary,
-                            focusedContainerColor = AppTheme.colors.inputBackground,
-                            unfocusedContainerColor = AppTheme.colors.inputBackground,
-                            focusedBorderColor = Color(0xFFA855F7),
-                            unfocusedBorderColor = AppTheme.colors.inputBorder,
-                            cursorColor = Color(0xFFA855F7)
-                        ),
                         modifier = Modifier
                             .weight(1f)
-                            .heightIn(min = 46.dp, max = 120.dp)
-                    )
-
-                    // Send Button with Crisp Centered Vector Arrow
-                    val canSend = inputText.isNotBlank() && !isLoading
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(
-                                brush = if (canSend) {
-                                    Brush.linearGradient(
-                                        colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFFF0ABFC))
-                                    )
-                                } else {
-                                    Brush.linearGradient(
-                                        colors = listOf(Color.Gray.copy(alpha = 0.4f), Color.Gray.copy(alpha = 0.4f))
+                            .padding(vertical = 6.dp),
+                        textStyle = TextStyle(
+                            color = Color(0xFFF8FAFC),
+                            fontSize = 14.5.sp,
+                            lineHeight = 20.sp
+                        ),
+                        cursorBrush = SolidColor(Color(0xFFA855F7)),
+                        maxLines = 4,
+                        decorationBox = { innerTextField ->
+                            Box(contentAlignment = Alignment.CenterStart) {
+                                if (inputText.isEmpty()) {
+                                    Text(
+                                        text = "Ask DIVA",
+                                        fontSize = 14.5.sp,
+                                        color = Color(0x66FFFFFF)
                                     )
                                 }
-                            )
-                            .clickable(enabled = canSend) {
-                                if (inputText.isNotBlank()) {
+                                innerTextField()
+                            }
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Right: Circular Action Button (Send Arrow vs. Stop Square ■)
+                    val canSend = inputText.isNotBlank() && !isLoading
+                    val actionButtonBrush = when {
+                        isLoading -> Brush.linearGradient(listOf(Color(0xFF3B1547), Color(0xFF3B1547)))
+                        canSend -> Brush.linearGradient(listOf(Color(0xFF7C3AED), Color(0xFFA855F7)))
+                        else -> Brush.linearGradient(listOf(Color(0x1AFFFFFF), Color(0x1AFFFFFF)))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(actionButtonBrush)
+                            .clickable {
+                                if (isLoading) {
+                                    viewModel.stopGenerating()
+                                } else if (canSend) {
                                     val query = inputText.trim()
                                     inputText = ""
                                     submitQuery(query, fromVoice = false)
@@ -744,32 +695,43 @@ fun ChatScreen(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Canvas(modifier = Modifier.size(18.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            val arrowPath = Path().apply {
-                                moveTo(w * 0.5f, h * 0.85f)
-                                lineTo(w * 0.5f, h * 0.18f)
-                                moveTo(w * 0.22f, h * 0.44f)
-                                lineTo(w * 0.5f, h * 0.16f)
-                                lineTo(w * 0.78f, h * 0.44f)
-                            }
-                            drawPath(
-                                path = arrowPath,
-                                color = Color.White,
-                                style = Stroke(
-                                    width = 2.4.dp.toPx(),
-                                    cap = StrokeCap.Round,
-                                    join = StrokeJoin.Round
-                                )
+                        if (isLoading) {
+                            // Stop Square Icon (■)
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(Color(0xFFF5D0FE))
                             )
+                        } else {
+                            // Crisp Vector Send Arrow
+                            Canvas(modifier = Modifier.size(16.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                val path = Path().apply {
+                                    moveTo(w * 0.5f, h * 0.82f)
+                                    lineTo(w * 0.5f, h * 0.18f)
+                                    moveTo(w * 0.22f, h * 0.44f)
+                                    lineTo(w * 0.5f, h * 0.16f)
+                                    lineTo(w * 0.78f, h * 0.44f)
+                                }
+                                drawPath(
+                                    path = path,
+                                    color = if (canSend) Color.White else Color(0x66FFFFFF),
+                                    style = Stroke(
+                                        width = 2.2.dp.toPx(),
+                                        cap = StrokeCap.Round,
+                                        join = StrokeJoin.Round
+                                    )
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Interactive Siri-Style Voice Assistant Overlay
+        // Siri-Style Voice Assistant Overlay (activated hands-free or via voice button)
         SiriVoiceOverlay(
             visible = isVoiceOverlayOpen,
             voiceState = voiceState,
@@ -812,7 +774,9 @@ fun ChatScreen(
 }
 
 /**
- * Single Message Bubble with Sender Alignment, Clinical Cards, and Nutrition Chips.
+ * Message items rendered according to the new sleek minimal typography design:
+ * - User Messages: Right-aligned dark-charcoal translucent bubble (#1A1A22 at ~85% alpha).
+ * - DIVA AI Messages: Full-width, bubble-less clean typography directly on obsidian canvas with tiny purple sparkle badge.
  */
 @Composable
 fun ChatMessageItem(
@@ -825,7 +789,7 @@ fun ChatMessageItem(
     }
 
     if (isUser) {
-        // User Message (Right Aligned)
+        // User Message (Right Aligned Translucent Bubble)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -833,144 +797,238 @@ fun ChatMessageItem(
             Column(
                 horizontalAlignment = Alignment.End,
                 modifier = Modifier
-                    .fillMaxWidth(0.84f)
-                    .padding(start = 16.dp)
+                    .fillMaxWidth(0.85f)
+                    .padding(start = 24.dp)
             ) {
+                // Attached Image preview if present
+                if (!message.attachedImageUrl.isNullOrBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .padding(bottom = 6.dp)
+                            .size(76.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFF1A1A22))
+                            .border(1.dp, Color(0x33A855F7), RoundedCornerShape(16.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "📷", fontSize = 24.sp)
+                    }
+                }
+
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(18.dp, 18.dp, 4.dp, 18.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7))
-                            )
-                        )
-                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xD91A1A22))
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text(
                         text = message.text,
-                        fontSize = 13.sp,
-                        color = Color.White,
-                        lineHeight = 18.sp,
+                        fontSize = 14.5.sp,
+                        color = Color(0xFFF8FAFC),
+                        lineHeight = 21.sp,
                         softWrap = true,
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = timeFormatted,
                     fontSize = 10.sp,
-                    color = AppTheme.colors.textMuted,
-                    modifier = Modifier.padding(end = 4.dp)
+                    color = Color(0x66FFFFFF),
+                    modifier = Modifier.padding(end = 6.dp)
                 )
             }
         }
     } else {
-        // Dr. Jarvis AI Message (Left Aligned)
+        // DIVA AI Response: Full-width, bubble-less clean typography directly on dark background
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.Top
         ) {
-            IronmanDoctorAvatar(sizeDp = 34)
+            // Tiny subtle purple sparkle / DIVA icon
+            Box(
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(Color(0x28A855F7)),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.size(13.dp)) {
+                    val w = size.width
+                    val h = size.height
+                    val path = Path().apply {
+                        moveTo(w * 0.5f, 0f)
+                        quadraticBezierTo(w * 0.5f, h * 0.5f, w, h * 0.5f)
+                        quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, h)
+                        quadraticBezierTo(w * 0.5f, h * 0.5f, 0f, h * 0.5f)
+                        quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, 0f)
+                    }
+                    drawPath(path = path, color = Color(0xFFC084FC))
+                }
+            }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
             Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 14.dp)
+                modifier = Modifier.weight(1f)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(4.dp, 18.dp, 18.dp, 18.dp))
-                        .background(
-                            if (message.isError) Color(0xFFFFEBEE) else AppTheme.colors.cardElevated
-                        )
-                        .border(
-                            1.dp,
-                            if (message.isError) Color(0xFFEF5350) else AppTheme.colors.border,
-                            RoundedCornerShape(4.dp, 18.dp, 18.dp, 18.dp)
-                        )
-                        .padding(14.dp)
-                ) {
-                    Column {
-                        // Header Title
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "DIVA ⚡🩺",
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 8.dp)
-                            )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(AppTheme.colors.elevatedSurface)
-                                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(8.dp))
-                                        .clickable { onSpeakClick(message.text) }
-                                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "🔊",
-                                        fontSize = 12.sp
-                                    )
-                                }
-                                Text(
-                                    text = timeFormatted,
-                                    fontSize = 10.sp,
-                                    color = AppTheme.colors.textMuted,
-                                    maxLines = 1
-                                )
-                            }
-                        }
+                // Clinical Emergency Alert Card (if any)
+                if (message.alertType != AlertType.NONE) {
+                    ClinicalAlertBanner(alertType = message.alertType)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
-                        // Clinical Emergency Alert Card
-                        if (message.alertType != AlertType.NONE) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            ClinicalAlertBanner(alertType = message.alertType)
-                        }
+                // Bubble-less clean Markdown / bold typography directly on dark canvas
+                MarkdownFormattedText(
+                    text = message.text,
+                    color = if (message.isError) Color(0xFFF87171) else Color(0xFFF1F5F9),
+                    fontSize = 14.5.sp,
+                    lineHeight = 22.sp
+                )
 
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        // Formatted Markdown Content
-                        MarkdownFormattedText(
-                            text = message.text,
-                            color = if (message.isError) Color(0xFFC62828) else AppTheme.colors.textPrimary
-                        )
-
-                        // Nutrition / MET Badges
-                        if (message.metrics.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                message.metrics.forEach { metric ->
-                                    NutritionBadgeChip(metric = metric)
-                                }
-                            }
+                // Nutrition Badges (if any)
+                if (message.metrics.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        message.metrics.forEach { metric ->
+                            NutritionBadgeChip(metric = metric)
                         }
                     }
                 }
+
+                // Subtle speak & timestamp footer
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0x1AFFFFFF))
+                            .clickable { onSpeakClick(message.text) }
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🔊 Listen",
+                            fontSize = 11.sp,
+                            color = Color(0xFFE2E8F0)
+                        )
+                    }
+
+                    Text(
+                        text = timeFormatted,
+                        fontSize = 10.sp,
+                        color = Color(0x66FFFFFF)
+                    )
+                }
             }
         }
+    }
+}
+
+/**
+ * Animated DIVA Thinking Indicator:
+ * 3 tiny smoothly pulsing/orbiting white-violet dots next to subtly cycling status text.
+ * No backend jargon.
+ */
+@Composable
+fun DivaThinkingIndicator() {
+    val infiniteTransition = rememberInfiniteTransition(label = "ThinkingDots")
+    val dotPhase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "dotPhase"
+    )
+
+    var statusIndex by remember { mutableIntStateOf(0) }
+    val statusMessages = remember {
+        listOf(
+            "Thinking...",
+            "Checking your health logs...",
+            "Preparing advice..."
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2400)
+            statusIndex = (statusIndex + 1) % statusMessages.size
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Sparkle icon
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(Color(0x28A855F7)),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(modifier = Modifier.size(13.dp)) {
+                val w = size.width
+                val h = size.height
+                val path = Path().apply {
+                    moveTo(w * 0.5f, 0f)
+                    quadraticBezierTo(w * 0.5f, h * 0.5f, w, h * 0.5f)
+                    quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, h)
+                    quadraticBezierTo(w * 0.5f, h * 0.5f, 0f, h * 0.5f)
+                    quadraticBezierTo(w * 0.5f, h * 0.5f, w * 0.5f, 0f)
+                }
+                drawPath(path = path, color = Color(0xFFA855F7))
+            }
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        // 3 smoothly pulsing white-violet dots
+        Canvas(modifier = Modifier.size(width = 30.dp, height = 14.dp)) {
+            val dotRadius = 3.2.dp.toPx()
+            val spacing = 9.dp.toPx()
+            for (i in 0..2) {
+                val offset = ((dotPhase + i * 0.33f) % 1f)
+                val bounce = sin(offset * Math.PI).toFloat().coerceIn(0f, 1f)
+                val y = size.height / 2f - bounce * 3.5.dp.toPx()
+                val alpha = 0.4f + bounce * 0.6f
+                val color = if (i == 1) Color(0xFFC084FC) else Color(0xFFEDE9FE)
+                drawCircle(
+                    color = color.copy(alpha = alpha),
+                    radius = dotRadius * (0.85f + bounce * 0.25f),
+                    center = Offset(x = 6.dp.toPx() + i * spacing, y = y)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(6.dp))
+
+        Text(
+            text = statusMessages[statusIndex],
+            fontSize = 13.sp,
+            color = Color(0xFFC084FC),
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -983,30 +1041,30 @@ fun ClinicalAlertBanner(alertType: AlertType) {
         AlertType.HYPOGLYCEMIA_WARNING -> Tuple5(
             "🚨",
             "CRITICAL: Hypoglycemia Guidance (<70 mg/dL)",
-            Color(0xFFD32F2F),
-            Color(0xFFFFEBEE),
-            Color(0xFFB71C1C)
+            Color(0xFFEF4444),
+            Color(0xFF381418),
+            Color(0xFFFCA5A5)
         )
         AlertType.HYPERGLYCEMIA_WARNING -> Tuple5(
             "⚠️",
             "ELEVATED: Hyperglycemia Caution (>250 mg/dL)",
-            Color(0xFFF57C00),
-            Color(0xFFFFF3E0),
-            Color(0xFFE65100)
+            Color(0xFFF59E0B),
+            Color(0xFF352010),
+            Color(0xFFFDE68A)
         )
         AlertType.KETONE_WARNING -> Tuple5(
             "⚠️",
             "ALERT: Ketone Protocol & Clinical Advisory",
-            Color(0xFFE64A19),
-            Color(0xFFFBE9E7),
-            Color(0xFFBF360C)
+            Color(0xFFF97316),
+            Color(0xFF381912),
+            Color(0xFFFDBA74)
         )
         AlertType.GENERAL_CLINICAL_ALERT -> Tuple5(
             "ℹ️",
             "Clinical Safety & Medication Advisory",
-            Color(0xFF1976D2),
-            Color(0xFFE3F2FD),
-            Color(0xFF0D47A1)
+            Color(0xFF38BDF8),
+            Color(0xFF10233D),
+            Color(0xFFBAE6FD)
         )
         AlertType.NONE -> Tuple5("", "", Color.Transparent, Color.Transparent, Color.Transparent)
     }
@@ -1014,17 +1072,17 @@ fun ClinicalAlertBanner(alertType: AlertType) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(bgColor)
-            .border(1.2.dp, borderColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .border(1.2.dp, borderColor, RoundedCornerShape(10.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = icon, fontSize = 14.sp)
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = title,
-                fontSize = 11.sp,
+                fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor,
                 lineHeight = 15.sp,
@@ -1042,16 +1100,16 @@ fun NutritionBadgeChip(metric: NutritionMetric) {
     val (chipBg, chipBorder, chipText) = when (metric.badgeType) {
         BadgeType.HIGH_FIBRE -> {
             if (metric.isHighlight) {
-                Triple(Color(0xFFE8F5E9), Color(0xFF4CAF50), Color(0xFF1B5E20))
+                Triple(Color(0xFF0D331A), Color(0xFF10B981), Color(0xFF6EE7B7))
             } else {
-                Triple(Color(0xFFF1F8E9), Color(0xFF8BC34A), Color(0xFF33691E))
+                Triple(Color(0xFF0F2B1D), Color(0xFF059669), Color(0xFF34D399))
             }
         }
-        BadgeType.CALORIES -> Triple(Color(0xFFFFF3E0), Color(0xFFFF9800), Color(0xFFE65100))
-        BadgeType.CARBOHYDRATES -> Triple(Color(0xFFE1F5FE), Color(0xFF03A9F4), Color(0xFF01579B))
-        BadgeType.PROTEIN -> Triple(Color(0xFFF3E5F5), Color(0xFFAB47BC), Color(0xFF4A148C))
-        BadgeType.MET_ACTIVITY -> Triple(Color(0xFFEDE7F6), Color(0xFF7E57C2), Color(0xFF311B92))
-        BadgeType.GENERAL -> Triple(Color(0xFFECEFF1), Color(0xFF90A4AE), Color(0xFF263238))
+        BadgeType.CALORIES -> Triple(Color(0xFF33200D), Color(0xFFF59E0B), Color(0xFFFCD34D))
+        BadgeType.CARBOHYDRATES -> Triple(Color(0xFF0F263E), Color(0xFF38BDF8), Color(0xFF7DD3FC))
+        BadgeType.PROTEIN -> Triple(Color(0xFF2C103D), Color(0xFFA855F7), Color(0xFFE9D5FF))
+        BadgeType.MET_ACTIVITY -> Triple(Color(0xFF1E143D), Color(0xFF818CF8), Color(0xFFC7D2FE))
+        BadgeType.GENERAL -> Triple(Color(0xFF1E1E28), Color(0xFF64748B), Color(0xFFCBD5E1))
     }
 
     Box(
@@ -1059,58 +1117,14 @@ fun NutritionBadgeChip(metric: NutritionMetric) {
             .clip(RoundedCornerShape(12.dp))
             .background(chipBg)
             .border(1.dp, chipBorder, RoundedCornerShape(12.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 9.dp, vertical = 5.dp)
     ) {
         Text(
             text = metric.label,
-            fontSize = 10.sp,
+            fontSize = 10.5.sp,
             fontWeight = FontWeight.SemiBold,
             color = chipText
         )
-    }
-}
-
-/**
- * Animated Dr. Jarvis Thinking Indicator.
- */
-@Composable
-fun DrJarvisThinkingIndicator(pulseScale: Float) {
-    val statusText = "DIVA is typing..."
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(end = 14.dp),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(modifier = Modifier.scale(pulseScale)) {
-            IronmanDoctorAvatar(sizeDp = 34)
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Box(
-            modifier = Modifier
-                .weight(1f, fill = false)
-                .clip(RoundedCornerShape(16.dp))
-                .background(AppTheme.colors.cardElevated)
-                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                .padding(horizontal = 14.dp, vertical = 10.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(14.dp),
-                    strokeWidth = 2.dp,
-                    color = Color(0xFF00E5FF)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = statusText,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp,
-                    color = AppTheme.colors.textSecondary
-                )
-            }
-        }
     }
 }
 
@@ -1121,9 +1135,9 @@ fun DrJarvisThinkingIndicator(pulseScale: Float) {
 fun MarkdownFormattedText(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = AppTheme.colors.textPrimary,
-    fontSize: TextUnit = 13.sp,
-    lineHeight: TextUnit = 18.sp
+    color: Color = Color(0xFFF1F5F9),
+    fontSize: TextUnit = 14.5.sp,
+    lineHeight: TextUnit = 22.sp
 ) {
     val annotated = remember(text) {
         buildAnnotatedString {
@@ -1155,7 +1169,10 @@ fun MarkdownFormattedText(
                     val boldStart = length
                     append(boldText)
                     addStyle(
-                        style = SpanStyle(fontWeight = FontWeight.Bold),
+                        style = SpanStyle(
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFF8FAFC)
+                        ),
                         start = boldStart,
                         end = length
                     )
@@ -1218,4 +1235,3 @@ private fun launchSpeechInput(
         ).show()
     }
 }
-
