@@ -278,23 +278,15 @@ fun HomeScreen(
                                             text = "$timeGreeting,",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = Color.White.copy(alpha = 0.90f),
+                                            color = Color.White.copy(alpha = 0.85f),
                                             letterSpacing = 0.5.sp,
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = "$displayName 👋",
-                                            fontSize = 22.sp,
-                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.Bold,
                                             color = Color.White,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
-                                        Spacer(modifier = Modifier.height(3.dp))
-                                        Text(
-                                            text = data?.wellnessSubtitle?.takeIf { it.isNotBlank() } ?: "Daily Wellness • Start your day",
-                                            fontSize = 11.5.sp,
-                                            color = Color.White.copy(alpha = 0.85f),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
@@ -427,11 +419,11 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Section Title
+                // Section Title (16.sp, SemiBold, 12.dp gap below)
                 Text(
-                    text = "Key Health Metrics",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "Health Metrics",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = AppTheme.colors.textPrimary,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -571,26 +563,27 @@ fun HomeScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = (data?.aiTip?.title ?: "DIVA Tip Of The Day ⚡")
-                                                .replace(Regex("Dr\\.?\\s*JARVIS", RegexOption.IGNORE_CASE), "DIVA"),
+                                            text = "Daily Tip ⚡",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFA855F7),
                                         )
                                     }
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Spacer(modifier = Modifier.height(3.dp))
                                     Text(
-                                        text = data?.aiTip?.tip ?: "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!",
-                                        fontSize = 12.sp,
+                                        text = data?.aiTip?.tip ?: "A 10-minute light walk after meals helps smooth blood sugar levels.",
+                                        fontSize = 12.5.sp,
                                         color = AppTheme.colors.textSecondary,
                                         lineHeight = 17.sp,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
                                     )
                                 }
 
                                 Spacer(modifier = Modifier.width(8.dp))
 
                                 Text(
-                                    text = "Ask →",
+                                    text = "Ask ›",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFA855F7),
@@ -607,21 +600,21 @@ fun HomeScreen(
                     FloatingBubbleContainer(phaseOffsetMs = 500) {
                         Column {
                             Text(
-                                text = "Today's Check-In Routine",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
+                                text = "Today's Routine",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
                                 color = AppTheme.colors.textPrimary,
                             )
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(20.dp))
                                     .background(AppTheme.colors.cardBackground)
-                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                                    .padding(horizontal = 10.dp, vertical = 14.dp),
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                                    .padding(horizontal = 12.dp, vertical = 18.dp),
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -639,7 +632,7 @@ fun HomeScreen(
                                     val routineItems = data?.routine?.takeIf { it.isNotEmpty() } ?: defaultRoutine
                                     routineItems.forEach { item ->
                                         val onRoutineClick: () -> Unit = when {
-                                            item.label.contains("Glucose", ignoreCase = true) -> onLogGlucoseClick
+                                             item.label.contains("Glucose", ignoreCase = true) -> onLogGlucoseClick
                                             item.label.contains("Breakfast", ignoreCase = true) -> {
                                                 { onTrackFoodCategoryClick("breakfast") }
                                             }
@@ -665,7 +658,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(116.dp).navigationBarsPadding())
+                Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding())
             }
         }
 
@@ -1126,7 +1119,7 @@ fun MetricCard(
     icon: String,
     title: String,
     value: String,
-    subtitle: String,
+    subtitle: String = "",
     statusText: String,
     statusBg: Color,
     statusColor: Color,
@@ -1138,16 +1131,15 @@ fun MetricCard(
 ) {
     val actualCardBg = if (AppTheme.colors.isDark) AppTheme.colors.cardBackground else cardBg
     val actualBorder = if (AppTheme.colors.isDark) AppTheme.colors.border else borderColor
-    val actualStatusBg = if (AppTheme.colors.isDark) statusColor.copy(alpha = 0.22f) else statusBg
+    val actualStatusBg = if (AppTheme.colors.isDark) statusColor.copy(alpha = 0.18f) else statusBg
     val actualActionColor = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7)
     Box(
         modifier = modifier
-            .heightIn(min = 140.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(actualCardBg)
-            .border(1.dp, actualBorder, RoundedCornerShape(16.dp))
+            .border(1.dp, actualBorder, RoundedCornerShape(20.dp))
             .clickable { onActionClick() }
-            .padding(14.dp),
+            .padding(18.dp),
     ) {
         Column {
             Row(
@@ -1155,56 +1147,58 @@ fun MetricCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = icon, fontSize = 20.sp)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(statusBg)
-                        .padding(horizontal = 8.dp, vertical = 3.dp),
-                ) {
-                    Text(
-                        text = statusText,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = statusColor,
-                    )
+                Text(text = icon, fontSize = 22.sp)
+                if (statusText.isNotBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(actualStatusBg)
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    ) {
+                        Text(
+                            text = statusText,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = statusColor,
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            Text(
-                text = title,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = AppTheme.colors.textSecondary,
-            )
-
+            // Big bold metric value (24.sp-26.sp Bold)
             Text(
                 text = value,
-                fontSize = 16.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
+            // 1-2 word muted label (12.sp-13.sp, alpha 0.65f)
             Text(
-                text = subtitle,
-                fontSize = 10.sp,
-                color = AppTheme.colors.textMuted,
+                text = title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = AppTheme.colors.textSecondary.copy(alpha = 0.65f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
             ) {
                 Text(
-                    text = "$actionText →",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "$actionText ›",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = actualActionColor,
                 )
             }

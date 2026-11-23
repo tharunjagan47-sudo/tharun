@@ -290,13 +290,13 @@ fun ChatScreen(
             val offsetY2 = h * (0.11f + 0.05f * sin(phase2))
             val radius2 = w * (0.90f * (2f - pulseScale))
 
-            // 1. Broad Top-Half Ambient Horizontal Glow with subtle lateral drift
+            // 1. Broad Top-Half Ambient Horizontal Glow with subtle lateral drift (Emerald Teal to Royal Purple)
             drawRect(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFF6D28D9).copy(alpha = 0.62f), // Rich Royal Purple on left
-                        Color(0xFF7C3AED).copy(alpha = 0.52f), // Electric Violet in center
-                        Color(0xFF9333EA).copy(alpha = 0.60f), // Deep Magenta-Violet on right
+                        Color(0xFF0D9488).copy(alpha = 0.58f), // Deep Teal / Emerald on left (matches screenshot green glow)
+                        Color(0xFF6366F1).copy(alpha = 0.40f), // Soft Indigo blend
+                        Color(0xFF7C3AED).copy(alpha = 0.58f), // Royal Purple on right (DiaWell theme)
                     ),
                     startX = -w * 0.10f + w * 0.10f * sin(phase1),
                     endX = w * 1.10f + w * 0.10f * sin(phase1)
@@ -304,13 +304,13 @@ fun ChatScreen(
                 size = androidx.compose.ui.geometry.Size(w, h * 0.48f)
             )
 
-            // 2. High-saturation Top-Left Radial Bloom (Royal Purple & Lavender)
+            // 2. High-saturation Top-Left Radial Bloom (Emerald & Teal - matching screenshot!)
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF8B5CF6).copy(alpha = 0.70f),
-                        Color(0xFF7C3AED).copy(alpha = 0.44f),
-                        Color(0xFF4C1D95).copy(alpha = 0.16f),
+                        Color(0xFF10B981).copy(alpha = 0.65f),
+                        Color(0xFF0D9488).copy(alpha = 0.45f),
+                        Color(0xFF064E3B).copy(alpha = 0.18f),
                         Color.Transparent
                     ),
                     center = Offset(offsetX1, offsetY1),
@@ -318,13 +318,13 @@ fun ChatScreen(
                 )
             )
 
-            // 3. High-saturation Top-Right Radial Bloom (Electric Magenta & Deep Violet)
+            // 3. High-saturation Top-Right Radial Bloom (Royal Purple & Deep Violet)
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFA855F7).copy(alpha = 0.64f),
-                        Color(0xFF9333EA).copy(alpha = 0.40f),
-                        Color(0xFF581C87).copy(alpha = 0.14f),
+                        Color(0xFFA855F7).copy(alpha = 0.62f),
+                        Color(0xFF7C3AED).copy(alpha = 0.45f),
+                        Color(0xFF4C1D95).copy(alpha = 0.18f),
                         Color.Transparent
                     ),
                     center = Offset(offsetX2, offsetY2),
@@ -336,7 +336,7 @@ fun ChatScreen(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF7C3AED).copy(alpha = 0.28f),
+                        Color(0xFF6366F1).copy(alpha = 0.28f),
                         Color(0xFF4C1D95).copy(alpha = 0.10f),
                         Color.Transparent
                     ),
@@ -379,34 +379,30 @@ fun ChatScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left: Circular Translucent Glass Button (42.dp, subtle purple-tinted border)
+                // Left: Circular Glass Button with Glowing Rim & Official DIVA Logo (matches reference UI!)
                 Box(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(CircleShape)
-                        .background(Color(0x331F1A30))
-                        .border(1.dp, Color(0x38A855F7), CircleShape)
+                        .background(Color(0x400F172A))
+                        .border(
+                            width = 1.4.dp,
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF10B981), Color(0xFF0D9488), Color(0xFFA855F7))
+                            ),
+                            shape = CircleShape
+                        )
                         .clickable { onBackClick() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Canvas(modifier = Modifier.size(15.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        val path = Path().apply {
-                            moveTo(w * 0.62f, h * 0.18f)
-                            lineTo(w * 0.28f, h * 0.50f)
-                            lineTo(w * 0.62f, h * 0.82f)
-                        }
-                        drawPath(
-                            path = path,
-                            color = Color(0xFFF1F5F9),
-                            style = Stroke(
-                                width = 2.2.dp.toPx(),
-                                cap = StrokeCap.Round,
-                                join = StrokeJoin.Round
-                            )
-                        )
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.diva_avatar),
+                        contentDescription = "DIVA AI",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                    )
                 }
 
                 // Right: Single Sleek Translucent Glass Pill (New Chat & More Options)
@@ -624,22 +620,22 @@ fun ChatScreen(
                 }
             }
 
-            // Sleek floating pill above input bar (matching reference screenshot)
+            // Sleek floating pill above input bar (matching reference screenshot: 'Answer now')
             if (isLoading) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(bottom = 6.dp)
+                        .padding(bottom = 8.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xD91E1E26))
-                        .border(1.dp, Color(0x33A855F7), RoundedCornerShape(20.dp))
+                        .background(Color(0xFF1E1F24))
+                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(20.dp))
                         .clickable { viewModel.stopGenerating() }
-                        .padding(horizontal = 18.dp, vertical = 8.dp),
+                        .padding(horizontal = 20.dp, vertical = 9.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Stop generating",
-                        fontSize = 13.sp,
+                        text = "Answer now",
+                        fontSize = 13.5.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFFF1F5F9)
                     )
@@ -696,10 +692,10 @@ fun ChatScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 10.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .clip(RoundedCornerShape(28.dp))
-                    .background(Color(0xD916161E))
-                    .border(1.dp, Color(0x3DA855F7), RoundedCornerShape(28.dp))
+                    .background(Color(0xFF1E1F24))
+                    .border(1.dp, Color(0x2EFFFFFF), RoundedCornerShape(28.dp))
                     .padding(horizontal = 8.dp, vertical = 6.dp)
             ) {
                 Row(
@@ -746,8 +742,8 @@ fun ChatScreen(
                             .padding(vertical = 6.dp),
                         textStyle = TextStyle(
                             color = Color(0xFFF8FAFC),
-                            fontSize = 14.5.sp,
-                            lineHeight = 20.sp
+                            fontSize = 15.sp,
+                            lineHeight = 21.sp
                         ),
                         cursorBrush = SolidColor(Color(0xFFA855F7)),
                         maxLines = 4,
@@ -756,8 +752,8 @@ fun ChatScreen(
                                 if (inputText.isEmpty()) {
                                     Text(
                                         text = "Ask DIVA",
-                                        fontSize = 14.5.sp,
-                                        color = Color(0x66FFFFFF)
+                                        fontSize = 15.sp,
+                                        color = Color(0x80FFFFFF)
                                     )
                                 }
                                 innerTextField()
@@ -927,15 +923,15 @@ fun ChatMessageItem(
 
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xD91A1A22))
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Color(0xFF1E1F24))
+                        .padding(horizontal = 18.dp, vertical = 13.dp)
                 ) {
                     Text(
                         text = message.text,
-                        fontSize = 14.5.sp,
+                        fontSize = 15.sp,
                         color = Color(0xFFF8FAFC),
-                        lineHeight = 21.sp,
+                        lineHeight = 22.sp,
                         softWrap = true,
                     )
                 }

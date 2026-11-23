@@ -134,7 +134,7 @@ fun WeeklyReportScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar & Date Selector (Pops Up)
@@ -150,44 +150,30 @@ fun WeeklyReportScreen(
 
                             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                                 Text(
-                                    text = "Your weekly report",
-                                    fontSize = 20.sp,
+                                    text = "Reports",
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
-                                )
-                                Text(
-                                    text = "A clearer view of your everyday habits.",
-                                    fontSize = 12.sp,
-                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
 
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(14.dp))
                                     .background(if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF))
-                                    .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(12.dp))
+                                    .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(14.dp))
                                     .clickable { onExportReportClick() }
-                                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                                    .padding(horizontal = 12.dp, vertical = 7.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = "📤 Export",
-                                    fontSize = 11.5.sp,
+                                    text = "Export",
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
                                 )
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "${ProfileState.userName} • Personalized health summary",
-                            fontSize = 11.sp,
-                            color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                            fontWeight = FontWeight.Medium,
-                        )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -195,11 +181,11 @@ fun WeeklyReportScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(AppTheme.colors.cardBackground)
-                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
                                 .clickable { showCalendarDialog = true }
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -241,10 +227,10 @@ fun WeeklyReportScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(20.dp))
                             .background(AppTheme.colors.cardBackground)
-                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                            .padding(16.dp),
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                            .padding(18.dp),
                     ) {
                         Column {
                             Row(
@@ -430,10 +416,10 @@ fun WeeklyReportScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(20.dp))
                             .background(AppTheme.colors.cardBackground)
-                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                            .padding(16.dp),
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                            .padding(18.dp),
                     ) {
                         Column {
                             Row(
@@ -540,10 +526,10 @@ fun WeeklyReportScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(20.dp))
                             .background(AppTheme.colors.cardBackground)
-                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                            .padding(16.dp),
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                            .padding(18.dp),
                     ) {
                         Column {
                             Row(
@@ -587,47 +573,42 @@ fun WeeklyReportScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // 7 days badge
+                // Single concise health insight card (max 1 short sentence, maxLines = 2)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(AppTheme.colors.elevatedSurface)
-                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                        .padding(12.dp),
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                        .padding(18.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "📅", fontSize = 18.sp)
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "7 days of health & glucose logging",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                            )
-                            Text(
-                                text = if (report != null && report.activity.totalActiveMins > 0)
-                                    "Active minutes: ${report.activity.totalActiveMins} mins across ${report.activity.workoutCount} workouts!"
-                                else
-                                    "Keep up the consistent routine!",
-                                fontSize = 11.sp,
-                                color = AppTheme.colors.textSecondary,
-                            )
-                        }
+                        Text(text = "💡", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = if (report != null && report.activity.totalActiveMins > 0)
+                                "Great consistency: ${report.activity.totalActiveMins} active minutes recorded this week."
+                            else
+                                "Logging meals and glucose consistently improves health trends.",
+                            fontSize = 13.sp,
+                            color = AppTheme.colors.textPrimary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            lineHeight = 18.sp,
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 IosLiquidGlassButton(
-                    text = "📄  Export Clinical Report (PDF / CSV)",
+                    text = "Export PDF",
                     onClick = onExportReportClick,
                 )
 
-                Spacer(modifier = Modifier.height(116.dp).navigationBarsPadding())
+                Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding())
             }
         }
 

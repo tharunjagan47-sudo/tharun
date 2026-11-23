@@ -134,7 +134,7 @@ fun DailyDietPlanScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar & Action Shortcuts
@@ -150,15 +150,10 @@ fun DailyDietPlanScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Diet & Nutrition",
-                                    fontSize = 20.sp,
+                                    text = "Diet",
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
-                                )
-                                Text(
-                                    text = "Personalized meals for your health",
-                                    fontSize = 12.sp,
-                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -579,7 +574,7 @@ fun DailyDietPlanScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
-                        .padding(bottom = 116.dp),
+                        .padding(bottom = 100.dp),
                 )
             }
         }

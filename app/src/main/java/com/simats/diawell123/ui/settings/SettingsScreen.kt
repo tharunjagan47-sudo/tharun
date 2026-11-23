@@ -99,7 +99,7 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar & Profile Card (Pops Up)
@@ -116,14 +116,9 @@ fun SettingsScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Settings",
-                                    fontSize = 20.sp,
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
-                                )
-                                Text(
-                                    text = "Make DiaWell feel like you.",
-                                    fontSize = 12.sp,
-                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -134,11 +129,11 @@ fun SettingsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(RoundedCornerShape(20.dp))
                                 .background(AppTheme.colors.cardBackground)
-                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
                                 .clickable { onPersonalProfileClick() }
-                                .padding(16.dp),
+                                .padding(18.dp),
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -172,10 +167,10 @@ fun SettingsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(RoundedCornerShape(20.dp))
                                 .background(AppTheme.colors.cardBackground)
-                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-                                .padding(16.dp),
+                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                                .padding(18.dp),
                         ) {
                             Column {
                                 Row(
@@ -351,7 +346,7 @@ fun SettingsScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(116.dp).navigationBarsPadding())
+                Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding())
             }
         }
 
@@ -424,11 +419,11 @@ fun SettingsRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
             .clickable { onClick() }
-            .padding(14.dp),
+            .padding(16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

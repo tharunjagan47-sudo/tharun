@@ -100,7 +100,7 @@ fun MedicationsScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Top Bar & Add Button (Pops Up)
@@ -116,16 +116,10 @@ fun MedicationsScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Your medications",
-                                    fontSize = 20.sp,
+                                    text = "Medications",
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
-                                )
-                                Text(
-                                    text = medsData?.dateLabel?.takeIf { it.isNotBlank() }
-                                        ?: "Reminders set according to your care plan.",
-                                    fontSize = 12.sp,
-                                    color = AppTheme.colors.textSecondary,
                                 )
                             }
                         }
@@ -136,16 +130,16 @@ fun MedicationsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                                .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(16.dp))
                                 .clickable { onAddMedicationClick() }
                                 .padding(14.dp),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = "+ Add medication or set reminder",
-                                fontSize = 13.sp,
+                                text = "+ Add Med",
+                                fontSize = 13.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFA855F7),
                             )
@@ -311,7 +305,7 @@ fun MedicationsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
-                        .padding(bottom = 116.dp),
+                        .padding(bottom = 100.dp),
                 )
             }
         }
@@ -344,11 +338,11 @@ fun MedicationScheduleCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .padding(14.dp),
+            .padding(18.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

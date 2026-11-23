@@ -136,13 +136,13 @@ fun SiriVoiceOverlay(
                 val offsetY2 = h * (0.11f + 0.05f * sin(phase2))
                 val radius2 = w * (0.90f * (2f - pulseScale))
 
-                // 1. Broad Top-Half Ambient Horizontal Glow with subtle lateral drift
+                // 1. Broad Top-Half Ambient Horizontal Glow with subtle lateral drift (Emerald Teal to Royal Purple)
                 drawRect(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFF6D28D9).copy(alpha = 0.62f), // Rich Royal Purple on left
-                            Color(0xFF7C3AED).copy(alpha = 0.52f), // Electric Violet in center
-                            Color(0xFF9333EA).copy(alpha = 0.60f), // Deep Magenta-Violet on right
+                            Color(0xFF0D9488).copy(alpha = 0.58f), // Deep Teal / Emerald on left
+                            Color(0xFF6366F1).copy(alpha = 0.40f), // Soft Indigo blend
+                            Color(0xFF7C3AED).copy(alpha = 0.58f), // Royal Purple on right (DiaWell theme)
                         ),
                         startX = -w * 0.10f + w * 0.10f * sin(phase1),
                         endX = w * 1.10f + w * 0.10f * sin(phase1)
@@ -150,13 +150,13 @@ fun SiriVoiceOverlay(
                     size = androidx.compose.ui.geometry.Size(w, h * 0.50f)
                 )
 
-                // 2. High-saturation Top-Left Radial Bloom (Royal Purple & Lavender)
+                // 2. High-saturation Top-Left Radial Bloom (Emerald & Teal - matching screenshot!)
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFF8B5CF6).copy(alpha = 0.70f),
-                            Color(0xFF7C3AED).copy(alpha = 0.44f),
-                            Color(0xFF4C1D95).copy(alpha = 0.16f),
+                            Color(0xFF10B981).copy(alpha = 0.65f),
+                            Color(0xFF0D9488).copy(alpha = 0.45f),
+                            Color(0xFF064E3B).copy(alpha = 0.18f),
                             Color.Transparent
                         ),
                         center = Offset(offsetX1, offsetY1),
@@ -164,13 +164,13 @@ fun SiriVoiceOverlay(
                     )
                 )
 
-                // 3. High-saturation Top-Right Radial Bloom (Electric Magenta & Deep Violet)
+                // 3. High-saturation Top-Right Radial Bloom (Royal Purple & Deep Violet)
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFFA855F7).copy(alpha = 0.64f),
-                            Color(0xFF9333EA).copy(alpha = 0.40f),
-                            Color(0xFF581C87).copy(alpha = 0.14f),
+                            Color(0xFFA855F7).copy(alpha = 0.62f),
+                            Color(0xFF7C3AED).copy(alpha = 0.45f),
+                            Color(0xFF4C1D95).copy(alpha = 0.18f),
                             Color.Transparent
                         ),
                         center = Offset(offsetX2, offsetY2),
@@ -348,35 +348,24 @@ fun SiriVoiceOverlay(
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // Live User Speech Transcript Box
+                    // Clean Virtual User Speech Transcript (Unboxed, directly on dark canvas)
                     if (partialTranscript.isNotBlank()) {
-                        Box(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Color.White.copy(alpha = 0.08f))
-                                .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.35f), RoundedCornerShape(16.dp))
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .padding(horizontal = 20.dp, vertical = 6.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column {
-                                Text(
-                                    text = "YOU SAID",
-                                    fontSize = 9.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF00E5FF),
-                                    letterSpacing = 0.8.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "\"$partialTranscript\"",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White,
-                                    lineHeight = 21.sp
-                                )
-                            }
+                            Text(
+                                text = "\"$partialTranscript\"",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 23.sp
+                            )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
 
                     // Voice Error Message
@@ -390,34 +379,22 @@ fun SiriVoiceOverlay(
                         )
                     }
 
-                    // Latest Dr. Jarvis Spoken Response Preview
+                    // Clean Virtual DIVA Spoken Response (Unboxed clean typography directly on canvas)
                     if (latestAiResponse.isNotBlank() && voiceState != JarvisVoiceState.LISTENING) {
-                        Box(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(max = 180.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Color(0xFF1E1B4B).copy(alpha = 0.72f))
-                                .border(1.dp, Color(0xFFFF2E93).copy(alpha = 0.45f), RoundedCornerShape(16.dp))
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                                .verticalScroll(rememberScrollState())
+                                .heightIn(max = 200.dp)
+                                .padding(horizontal = 20.dp, vertical = 6.dp)
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column {
-                                Text(
-                                    text = "DIVA",
-                                    fontSize = 9.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFF472B6),
-                                    letterSpacing = 0.8.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                MarkdownFormattedText(
-                                    text = latestAiResponse,
-                                    color = Color(0xFFF1F5F9),
-                                    fontSize = 13.sp,
-                                    lineHeight = 18.sp
-                                )
-                            }
+                            MarkdownFormattedText(
+                                text = latestAiResponse,
+                                color = Color(0xFFF1F5F9),
+                                fontSize = 14.sp,
+                                lineHeight = 21.sp
+                            )
                         }
                     }
 
