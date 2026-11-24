@@ -320,7 +320,7 @@ fun HomeScreen(
                                         // Quick Theme Toggle Button - Fluid Glass Circular Bubble
                                         FluidGlassCircleButton(
                                             imageVector = if (AppTheme.colors.isDark) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
-                                            onClick = { ThemeManager.toggleTheme() },
+                                            onClick = { ThemeManager.toggleTheme(context) },
                                             contentDescription = "Toggle Theme",
                                             sizeDp = 40.dp,
                                             iconSizeDp = 18.dp,
