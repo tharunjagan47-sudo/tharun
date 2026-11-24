@@ -83,6 +83,7 @@ import com.simats.diawell123.data.model.HealthFoodItem
 import com.simats.diawell123.data.model.SnapFoodAnalysis
 import com.simats.diawell123.data.model.SnapFoodSubItem
 import com.simats.diawell123.data.repository.SnapFoodAnalyzer
+import com.simats.diawell123.ui.components.FluidGlassCircleButton
 import com.simats.diawell123.ui.components.aiRotatingBorder
 import com.simats.diawell123.ui.theme.AppTheme
 
@@ -147,22 +148,15 @@ fun SnapFoodCameraOverlay(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Close button
-                    Box(
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(Color(0x66FFFFFF))
-                            .clickable { onDismiss() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = "Close",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    // Close button - Fluid Glass Bubble
+                    FluidGlassCircleButton(
+                        imageVector = Icons.Rounded.Close,
+                        onClick = onDismiss,
+                        contentDescription = "Close",
+                        sizeDp = 44.dp,
+                        iconSizeDp = 20.dp,
+                        tint = Color.White,
+                    )
 
                     // Header title & tips
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -188,25 +182,18 @@ fun SnapFoodCameraOverlay(
                         )
                     }
 
-                    // Flash Toggle Button
-                    Box(
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(if (isFlashOn) Color(0xFFA855F7) else Color(0x66FFFFFF))
-                            .clickable {
-                                isFlashOn = !isFlashOn
-                                Toast.makeText(context, if (isFlashOn) "Flash Enabled" else "Flash Disabled", Toast.LENGTH_SHORT).show()
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.FlashOn,
-                            contentDescription = "Flash",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    // Flash Toggle Button - Fluid Glass Bubble
+                    FluidGlassCircleButton(
+                        imageVector = Icons.Rounded.FlashOn,
+                        onClick = {
+                            isFlashOn = !isFlashOn
+                            Toast.makeText(context, if (isFlashOn) "Flash Enabled" else "Flash Disabled", Toast.LENGTH_SHORT).show()
+                        },
+                        contentDescription = "Flash",
+                        sizeDp = 44.dp,
+                        iconSizeDp = 20.dp,
+                        tint = if (isFlashOn) Color(0xFFF0ABFC) else Color.White,
+                    )
                 }
 
                 // Center Viewfinder Framing Overlay
@@ -474,21 +461,13 @@ fun MealNutritionBreakdownSheet(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(CircleShape)
-                            .background(if (isDark) Color(0xFF1E1733) else Color(0xFFF3E8FF))
-                            .clickable { onDismiss() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = "Close",
-                            tint = AppTheme.colors.textPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    FluidGlassCircleButton(
+                        imageVector = Icons.Rounded.Close,
+                        onClick = onDismiss,
+                        contentDescription = "Close",
+                        sizeDp = 40.dp,
+                        iconSizeDp = 18.dp,
+                    )
 
                     Text(
                         text = "Meal Nutrition Breakdown",
@@ -1080,21 +1059,13 @@ private fun ChangeFoodDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(CircleShape)
-                            .background(if (isDark) Color(0xFF1E1733) else Color(0xFFF3E8FF))
-                            .clickable { onDismiss() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = "Close",
-                            tint = AppTheme.colors.textPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    FluidGlassCircleButton(
+                        imageVector = Icons.Rounded.Close,
+                        onClick = onDismiss,
+                        contentDescription = "Close",
+                        sizeDp = 40.dp,
+                        iconSizeDp = 18.dp,
+                    )
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
