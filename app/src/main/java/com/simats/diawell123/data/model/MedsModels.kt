@@ -266,5 +266,24 @@ data class CatalogMedicationItem(
     val info: String = "",
 
     @SerializedName("icon")
-    val icon: String = "medication"
+    val icon: String = "💊"
 )
+
+/**
+ * Returns tablet (💊), injection (💉), syrup (🧪), or cream (🧴) emoji based on medicine type/name.
+ */
+fun resolveMedEmoji(dosageForm: String? = null, medName: String? = null): String {
+    val form = (dosageForm ?: "").lowercase()
+    val name = (medName ?: "").lowercase()
+    return when {
+        form.contains("inject") || form.contains("pen") || form.contains("vial") ||
+            name.contains("insulin") || name.contains("glargine") || name.contains("novolog") ||
+            name.contains("humalog") || name.contains("lantus") || name.contains("tresiba") ||
+            name.contains("ozempic") || name.contains("mounjaro") || name.contains("trulicity") ||
+            name.contains("victoza") -> "💉"
+        form.contains("syrup") || form.contains("liquid") || form.contains("drop") || form.contains("suspension") -> "🧪"
+        form.contains("cream") || form.contains("gel") || form.contains("ointment") -> "🧴"
+        form.contains("inhal") -> "💨"
+        else -> "💊"
+    }
+}
