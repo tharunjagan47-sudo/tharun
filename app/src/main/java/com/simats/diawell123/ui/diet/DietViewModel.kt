@@ -437,7 +437,7 @@ class DietViewModel(
         carbs: Float = 25f,
         protein: Float = 10f,
         fat: Float = 5f,
-        icon: String = "🥗",
+        icon: String = "",
         onSuccess: () -> Unit = {}
     ) {
         viewModelScope.launch(exceptionHandler) {
@@ -642,7 +642,7 @@ class DietViewModel(
                 carbsG = carbs,
                 proteinG = protein,
                 fatG = fat,
-                icon = "📸",
+                icon = "",
                 logDate = dateStr,
                 logTime = currentTimeStr
             )
@@ -658,7 +658,7 @@ class DietViewModel(
                 carbsG = carbs,
                 proteinG = protein,
                 fatG = fat,
-                icon = "📸"
+                icon = ""
             )
 
             val result = dietRepository.logMeal(request)
