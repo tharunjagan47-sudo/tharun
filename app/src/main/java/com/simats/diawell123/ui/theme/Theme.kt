@@ -86,7 +86,7 @@ val LightAppColors = AppColors(
 
 val DarkAppColors = AppColors(
     isDark = true,
-    background = Color.Transparent,         // Transparent obsidian base revealing global ambient gradient
+    background = Color(0xFF0F0E17),         // Deep obsidian base matching DarkColorScheme.background
     secondaryBackground = Color(0x33171524),
     cardBackground = Color(0xD9161524),      // Rich muted translucent dark glass surface
     cardElevated = Color(0xE61F1B2E),
@@ -153,6 +153,7 @@ fun Diawell123Theme(
                 val insetsController = WindowCompat.getInsetsController(window, view)
                 insetsController.isAppearanceLightStatusBars = !darkTheme
                 insetsController.isAppearanceLightNavigationBars = !darkTheme
+                window.decorView.setBackgroundColor(if (darkTheme) 0xFF0F0E17.toInt() else 0xFFF8FAFC.toInt())
             }
         }
     }
