@@ -47,6 +47,7 @@ import androidx.compose.material.icons.rounded.DirectionsBike
 import androidx.compose.material.icons.rounded.DirectionsRun
 import androidx.compose.material.icons.rounded.DirectionsWalk
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Security
@@ -82,6 +83,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.components.FluidGlassCircleButton
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.AppTheme
@@ -350,22 +352,14 @@ fun ActivityTrackingScreen(
                         }
                     }
 
-                    // History Logs Button
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(AppTheme.colors.elevatedSurface)
-                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                            .clickable { onHistoryClick() }
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                    ) {
-                        Text(
-                            text = "History",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0D9488),
-                        )
-                    }
+                    // History Logs Button - Fluid Glass Circular Action Button
+                    FluidGlassCircleButton(
+                        imageVector = Icons.Rounded.History,
+                        onClick = onHistoryClick,
+                        contentDescription = "History",
+                        sizeDp = 44.dp,
+                        iconSizeDp = 22.dp,
+                    )
                 }
             }
 
