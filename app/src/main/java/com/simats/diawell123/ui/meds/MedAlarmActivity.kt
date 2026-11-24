@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import com.simats.diawell123.data.local.MedicationAlarmStorage
+import com.simats.diawell123.data.model.resolveMedEmoji
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.MedicationStatusUpdater
@@ -298,11 +299,9 @@ fun MedAlarmScreen(
                         .border(2.dp, Color(0xFFFF3366), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Medication,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(52.dp)
+                    Text(
+                        text = resolveMedEmoji(dosageForm = medDosage, medName = medName),
+                        fontSize = 48.sp
                     )
                 }
 
