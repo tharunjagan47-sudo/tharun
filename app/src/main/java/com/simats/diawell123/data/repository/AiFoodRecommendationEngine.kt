@@ -49,7 +49,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Finger millet (ragi) provides slow-digesting polyphenols and complex carbs that prevent morning glucose spikes.",
             portion = "2 ragi idlis with 1 bowl vegetable sambar",
-            icon = "🥣",
+            icon = "⚪",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -321,7 +321,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Kollu (horse gram) has traditional Ayurvedic prominence for enhancing insulin sensitivity and reducing insulin resistance.",
             portion = "1 cup kollu sambar + 1 small cup red rice + cabbage poriyal",
-            icon = "🥣",
+            icon = "🍛",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -685,7 +685,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "LightEvening"),
             healthReason = "Calorie-controlled dinner providing soothing horse gram polyphenols and clean protein for overnight muscular & glycemic repair.",
             portion = "1 large bowl rasam + steamed beans/carrots + 2 whites",
-            icon = "🥣",
+            icon = "🍲",
             isSouthIndian = true
         ),
         HealthFoodItem(
