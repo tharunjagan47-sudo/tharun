@@ -38,6 +38,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.FiberManualRecord
+import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.RecordVoiceOver
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material.icons.rounded.VolumeOff
+import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.WaterDrop
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -112,7 +126,7 @@ fun SiriVoiceOverlay(
                             .padding(end = 8.dp)
                     ) {
                         Text(
-                            text = "DIVA Voice ⚡",
+                            text = "DIVA Voice",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
@@ -148,14 +162,23 @@ fun SiriVoiceOverlay(
                                 .padding(horizontal = 10.dp, vertical = 6.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = if (isAutoSpeakEnabled) "🔊 On" else "🔇 Muted",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isAutoSpeakEnabled) Color(0xFF00E5FF) else Color(0xFFCBD5E1),
-                                maxLines = 1,
-                                softWrap = false
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = if (isAutoSpeakEnabled) Icons.Rounded.VolumeUp else Icons.Rounded.VolumeOff,
+                                    contentDescription = null,
+                                    tint = if (isAutoSpeakEnabled) Color(0xFF00E5FF) else Color(0xFFCBD5E1),
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (isAutoSpeakEnabled) "On" else "Muted",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isAutoSpeakEnabled) Color(0xFF00E5FF) else Color(0xFFCBD5E1),
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
                         }
 
                         Box(
@@ -167,14 +190,23 @@ fun SiriVoiceOverlay(
                                 .padding(horizontal = 11.dp, vertical = 6.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "✕ Close",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                maxLines = 1,
-                                softWrap = false
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Close",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
                         }
                     }
                 }
@@ -190,12 +222,12 @@ fun SiriVoiceOverlay(
                 ) {
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    val stateBadgeText = when (voiceState) {
-                        JarvisVoiceState.LISTENING -> "● LISTENING..."
-                        JarvisVoiceState.THINKING -> "⚡ THINKING..."
-                        JarvisVoiceState.SPEAKING -> "🔊 DIVA SPEAKING"
-                        JarvisVoiceState.ERROR -> "⚠️ TRY AGAIN"
-                        JarvisVoiceState.IDLE -> "🎙️ TAP DW LOGO TO SPEAK"
+                    val (stateBadgeIcon, stateBadgeText) = when (voiceState) {
+                        JarvisVoiceState.LISTENING -> Icons.Rounded.FiberManualRecord to "LISTENING..."
+                        JarvisVoiceState.THINKING -> Icons.Rounded.AutoAwesome to "THINKING..."
+                        JarvisVoiceState.SPEAKING -> Icons.Rounded.VolumeUp to "DIVA SPEAKING"
+                        JarvisVoiceState.ERROR -> Icons.Rounded.Warning to "TRY AGAIN"
+                        JarvisVoiceState.IDLE -> Icons.Rounded.Mic to "TAP DW LOGO TO SPEAK"
                     }
                     val stateBadgeColor = when (voiceState) {
                         JarvisVoiceState.LISTENING -> Color(0xFF00E5FF)
@@ -212,13 +244,22 @@ fun SiriVoiceOverlay(
                             .border(1.dp, stateBadgeColor.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
                             .padding(horizontal = 14.dp, vertical = 5.dp)
                     ) {
-                        Text(
-                            text = stateBadgeText,
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
-                            color = stateBadgeColor
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = stateBadgeIcon,
+                                contentDescription = null,
+                                tint = stateBadgeColor,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stateBadgeText,
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp,
+                                color = stateBadgeColor
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(18.dp))
@@ -306,12 +347,12 @@ fun SiriVoiceOverlay(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         val quickCommands = listOf(
-                            "🩸 Log fasting sugar 115" to "Log fasting sugar 115",
-                            "💊 Remind Metformin at 8 PM" to "Remind me to take Metformin at 8 PM",
-                            "🍛 Low-GI Indian lunch" to "Suggest a low-GI Indian lunch",
-                            "🗣️ En sarkarai 145 after lunch" to "En sarkarai 145 after lunch"
+                            Triple(Icons.Rounded.WaterDrop, "Log fasting sugar 115", "Log fasting sugar 115"),
+                            Triple(Icons.Rounded.Medication, "Remind Metformin at 8 PM", "Remind me to take Metformin at 8 PM"),
+                            Triple(Icons.Rounded.Restaurant, "Low-GI Indian lunch", "Suggest a low-GI Indian lunch"),
+                            Triple(Icons.Rounded.RecordVoiceOver, "En sarkarai 145 after lunch", "En sarkarai 145 after lunch")
                         )
-                        quickCommands.forEach { (chipLabel, cmd) ->
+                        quickCommands.forEach { (icon, chipLabel, cmd) ->
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(18.dp))
@@ -320,12 +361,21 @@ fun SiriVoiceOverlay(
                                     .clickable { onQuickVoiceCommand(cmd) }
                                     .padding(horizontal = 12.dp, vertical = 7.dp)
                             ) {
-                                Text(
-                                    text = chipLabel,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.White
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = null,
+                                        tint = Color(0xFFA855F7),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = chipLabel,
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.White
+                                    )
+                                }
                             }
                         }
                     }
@@ -360,12 +410,21 @@ fun SiriVoiceOverlay(
                                     .clickable { onStopAudio() }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text(
-                                    text = "⏹ Stop Audio",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFCA5A5)
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Stop,
+                                        contentDescription = "Stop Audio",
+                                        tint = Color(0xFFFCA5A5),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Stop Audio",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFFCA5A5)
+                                    )
+                                }
                             }
                         }
                     }
