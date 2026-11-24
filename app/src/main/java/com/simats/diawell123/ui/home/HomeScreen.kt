@@ -377,7 +377,7 @@ fun HomeScreen(
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = data?.streakBadge?.replace("🔥", "")?.trim()?.takeIf { it.isNotBlank() } ?: "Start streak",
+                                                text = data?.streakBadge?.replace(Regex("[^\\x00-\\x7F]"), "")?.trim()?.takeIf { it.isNotBlank() } ?: "Start streak",
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
@@ -403,7 +403,7 @@ fun HomeScreen(
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = data?.targetBadge?.replace("🎯", "")?.replace("✏️", "")?.trim()?.takeIf { it.isNotBlank() } ?: "Target: 100 mg/dL",
+                                                text = data?.targetBadge?.replace(Regex("[^\\x00-\\x7F]"), "")?.trim()?.takeIf { it.isNotBlank() } ?: "Target: 100 mg/dL",
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
@@ -713,7 +713,7 @@ fun HomeScreen(
                                             else -> onTrackFoodClick
                                         }
                                         RoutineCheckItem(
-                                            icon = item.icon.ifBlank { "✓" },
+                                            icon = item.icon.ifBlank { "" },
                                             label = item.label,
                                             isDone = item.isDone,
                                             onClick = onRoutineClick,
@@ -732,7 +732,7 @@ fun HomeScreen(
         if (showStreakDialog) {
             StreakDetailsDialog(
                 streakDays = data?.streakDays ?: 2,
-                streakBadge = data?.streakBadge?.replace("🔥", "")?.trim() ?: "2 Day Logging Streak",
+                streakBadge = data?.streakBadge?.replace(Regex("[^\\x00-\\x7F]"), "")?.trim() ?: "2 Day Logging Streak",
                 onDismissRequest = { showStreakDialog = false },
                 onLogGlucoseClick = {
                     showStreakDialog = false
