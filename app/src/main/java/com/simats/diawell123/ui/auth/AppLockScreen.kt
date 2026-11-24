@@ -29,7 +29,12 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Backspace
+import androidx.compose.material.icons.rounded.Fingerprint
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -177,7 +182,12 @@ fun AppLockScreen(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "🔒", fontSize = 36.sp)
+                    Icon(
+                        imageVector = Icons.Rounded.Lock,
+                        contentDescription = "Locked",
+                        tint = Color.White,
+                        modifier = Modifier.size(38.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -273,7 +283,12 @@ fun AppLockScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "👆", fontSize = 26.sp)
+                            Icon(
+                                imageVector = Icons.Rounded.Fingerprint,
+                                contentDescription = "Biometric Unlock",
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(30.dp)
+                            )
                         }
                     } else {
                         Box(
@@ -336,11 +351,11 @@ fun AppLockScreen(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "⌫",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary
+                        Icon(
+                            imageVector = Icons.Rounded.Backspace,
+                            contentDescription = "Backspace",
+                            tint = AppTheme.colors.textPrimary,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
