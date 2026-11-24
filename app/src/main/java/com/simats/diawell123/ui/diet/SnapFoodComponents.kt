@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CenterFocusStrong
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
@@ -413,8 +414,6 @@ fun MealNutritionBreakdownSheet(
     var baseFat by remember(analysis) { mutableFloatStateOf(analysis.baseFat) }
     var baseFiber by remember(analysis) { mutableFloatStateOf(analysis.baseFiber) }
 
-    var showChangeFoodDialog by remember(analysis) { mutableStateOf(analysis.needsUserSelection || analysis.detectedDishName.isBlank()) }
-
     // Mutable list of sub-items
     val subItems = remember(analysis) { mutableStateListOf<SnapFoodSubItem>().apply { addAll(analysis.subItems) } }
 
@@ -452,43 +451,12 @@ fun MealNutritionBreakdownSheet(
                 .navigationBarsPadding()
         ) {
             DiaWellAmbientBackground {
-                if (showChangeFoodDialog) {
-                    ChangeFoodContent(
-                        currentDish = dishTitle,
-                        imageBitmap = analysis.imageBitmap,
-                        isInitialSelection = analysis.needsUserSelection || dishTitle.isBlank(),
-                        userGlucose = userGlucose,
-                        onDismiss = {
-                            if (dishTitle.isBlank()) {
-                                onDismiss()
-                            } else {
-                                showChangeFoodDialog = false
-                            }
-                        },
-                        onFoodSelected = { newAnalysis ->
-                            dishTitle = newAnalysis.detectedDishName
-                            dishIcon = newAnalysis.icon
-                            selectedMealSlot = newAnalysis.mealSlot
-                            activeGlycemicScore = newAnalysis.glycemicScore
-                            activeGlycemicExplanation = newAnalysis.glycemicHealthExplanation
-                            baseCalories = newAnalysis.baseCalories
-                            baseCarbs = newAnalysis.baseCarbs
-                            baseProtein = newAnalysis.baseProtein
-                            baseFat = newAnalysis.baseFat
-                            baseFiber = newAnalysis.baseFiber
-                            subItems.clear()
-                            subItems.addAll(newAnalysis.subItems)
-                            servingCount = 1
-                            showChangeFoodDialog = false
-                        }
-                    )
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 18.dp, vertical = 14.dp)
-                    ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 18.dp, vertical = 14.dp)
+                ) {
                 // Top Action Bar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -510,7 +478,7 @@ fun MealNutritionBreakdownSheet(
                         color = AppTheme.colors.textPrimary
                     )
 
-                    // Photo preview icon
+                    // Photo preview icon / emoji
                     Box(
                         modifier = Modifier
                             .size(38.dp)
@@ -518,12 +486,17 @@ fun MealNutritionBreakdownSheet(
                             .background(Color(0xFFA855F7).copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Restaurant,
-                            contentDescription = null,
-                            tint = Color(0xFFA855F7),
-                            modifier = Modifier.size(20.dp)
-                        )
+                        val foodEmoji = resolveFoodEmoji(dishIcon, dishTitle)
+                        if (foodEmoji.isNotBlank() && dishTitle.isNotBlank()) {
+                            Text(text = foodEmoji, fontSize = 19.sp)
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Restaurant,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
 
@@ -607,7 +580,7 @@ fun MealNutritionBreakdownSheet(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 2. Detected Dish Title + Change Food Button
+                // 2. Detected Dish Title
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -621,10 +594,10 @@ fun MealNutritionBreakdownSheet(
                             color = Color(0xFFA855F7)
                         )
                         Text(
-                            text = if (dishTitle.isNotBlank()) dishTitle else "Tap to Select Snapped Food",
+                            text = if (dishTitle.isNotBlank()) dishTitle else "Analyzing Food...",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (dishTitle.isNotBlank()) AppTheme.colors.textPrimary else Color(0xFFA855F7),
+                            color = AppTheme.colors.textPrimary,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -633,23 +606,23 @@ fun MealNutritionBreakdownSheet(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (isDark) Color(0xFF2B1D4C) else Color(0xFFEDE9FE))
-                            .clickable { showChangeFoodDialog = true }
-                            .padding(horizontal = 10.dp, vertical = 7.dp)
+                            .background(Color(0xFF10B981).copy(alpha = 0.15f))
+                            .border(1.dp, Color(0xFF10B981).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Rounded.Refresh,
+                                imageVector = Icons.Rounded.AutoAwesome,
                                 contentDescription = null,
-                                tint = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6B21A8),
+                                tint = Color(0xFF10B981),
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Change Food",
-                                fontSize = 11.5.sp,
+                                text = "AI Verified",
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6B21A8)
+                                color = Color(0xFF10B981)
                             )
                         }
                     }
@@ -960,8 +933,7 @@ fun MealNutritionBreakdownSheet(
                         )
                         .clickable {
                             if (dishTitle.isBlank() || totalCalories <= 0) {
-                                Toast.makeText(context, "Please select what you snapped first", Toast.LENGTH_SHORT).show()
-                                showChangeFoodDialog = true
+                                Toast.makeText(context, "Please wait for nutrition analysis to complete", Toast.LENGTH_SHORT).show()
                                 return@clickable
                             }
                             val subSummary = subItems.joinToString(", ") { "${it.name} (${it.calories * servingCount} kcal)" }
@@ -997,338 +969,11 @@ fun MealNutritionBreakdownSheet(
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-                    }
                 }
             }
         }
     }
 }
-
-/**
- * Searchable, category-filtered dialog allowing users to pick any authentic South Indian or
- * diabetic-friendly food item to replace or refine the detected meal.
- */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun ChangeFoodContent(
-    currentDish: String,
-    imageBitmap: Bitmap? = null,
-    isInitialSelection: Boolean = false,
-    userGlucose: Float?,
-    onDismiss: () -> Unit,
-    onFoodSelected: (SnapFoodAnalysis) -> Unit
-) {
-    val isDark = AppTheme.colors.isDark
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("All") }
-
-    val categories = listOf("All", "Breakfast", "Lunch", "Snack", "Dinner", "South Indian")
-    val allDataset = remember { SnapFoodAnalyzer.getAllSelectableFoods() }
-
-    val filteredFoods = remember(searchQuery, selectedCategory) {
-        val q = searchQuery.trim().lowercase(java.util.Locale.ROOT)
-        allDataset.filter { item ->
-            val matchesCategory = when (selectedCategory) {
-                "All" -> true
-                "South Indian" -> item.isSouthIndian
-                else -> item.mealSlot.equals(selectedCategory, ignoreCase = true)
-            }
-            val matchesQuery = if (q.isBlank()) true else {
-                item.name.lowercase(java.util.Locale.ROOT).contains(q) ||
-                item.healthReason.lowercase(java.util.Locale.ROOT).contains(q) ||
-                item.mealSlot.lowercase(java.util.Locale.ROOT).contains(q) ||
-                item.healthTags.any { it.lowercase(java.util.Locale.ROOT).contains(q) }
-            }
-            matchesCategory && matchesQuery
-        }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-    ) {
-                // Top Header Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FluidGlassCircleButton(
-                        imageVector = Icons.Rounded.Close,
-                        onClick = onDismiss,
-                        contentDescription = "Close",
-                        sizeDp = 40.dp,
-                        iconSizeDp = 18.dp,
-                    )
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = if (isInitialSelection || currentDish.isBlank()) "Select What You Snapped" else "Change Food Item",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary
-                        )
-                        Text(
-                            text = "100% verified diabetic nutrition",
-                            fontSize = 11.sp,
-                            color = Color(0xFFA855F7),
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.size(38.dp))
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Snapped Photo Preview Card
-                imageBitmap?.let { bmp ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(if (isDark) Color(0xFF23163D) else Color(0xFFF3E8FF))
-                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(14.dp))
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            bitmap = bmp.asImageBitmap(),
-                            contentDescription = "Snapped food",
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Rounded.PhotoCamera,
-                                    contentDescription = null,
-                                    tint = Color(0xFFA855F7),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Snapped Photo",
-                                    fontSize = 12.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFA855F7)
-                                )
-                            }
-                            Text(
-                                text = "Select your matching meal below for accurate carbs & calories",
-                                fontSize = 11.sp,
-                                color = AppTheme.colors.textSecondary
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Search field
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search food (e.g. Dosa, Idli, Salad, Khichdi)...", fontSize = 13.sp) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFA855F7),
-                        unfocusedBorderColor = AppTheme.colors.border
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Category Filter Pills
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    categories.forEach { cat ->
-                        val isSelected = selectedCategory == cat
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    if (isSelected) {
-                                        Brush.horizontalGradient(listOf(Color(0xFF7E22CE), Color(0xFFA855F7)))
-                                    } else {
-                                        Brush.horizontalGradient(
-                                            if (isDark) listOf(Color(0xFF1B1430), Color(0xFF1B1430))
-                                            else listOf(Color(0xFFF3E8FF), Color(0xFFF3E8FF))
-                                        )
-                                    }
-                                )
-                                .clickable { selectedCategory = cat }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = cat,
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else AppTheme.colors.textSecondary
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Option to use custom search query if typed
-                if (searchQuery.isNotBlank()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFA855F7).copy(alpha = 0.12f))
-                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                            .clickable {
-                                val customAnalysis = SnapFoodAnalyzer.createAnalysisFromCustomName(searchQuery, userGlucose)
-                                onFoodSelected(customAnalysis)
-                            }
-                            .padding(horizontal = 14.dp, vertical = 10.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.Edit,
-                                contentDescription = null,
-                                tint = Color(0xFFA855F7),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = "Use custom food: \"$searchQuery\"",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFA855F7)
-                                )
-                                Text(
-                                    text = "Calculates balanced diabetic-aware calories & macros",
-                                    fontSize = 10.5.sp,
-                                    color = AppTheme.colors.textMuted
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-
-                // Food Items List
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(filteredFoods, key = { it.id }) { item ->
-                        val isCurrent = currentDish.equals(item.name, ignoreCase = true)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(
-                                    if (isCurrent) {
-                                        Color(0xFFA855F7).copy(alpha = 0.15f)
-                                    } else {
-                                        if (isDark) Color(0xFF140F24) else Color(0xFFF8FAFC)
-                                    }
-                                )
-                                .border(
-                                    1.dp,
-                                    if (isCurrent) Color(0xFFA855F7) else AppTheme.colors.border,
-                                    RoundedCornerShape(14.dp)
-                                )
-                                .clickable {
-                                    val newAnalysis = SnapFoodAnalyzer.createAnalysisForFoodItem(item, userGlucose)
-                                    onFoodSelected(newAnalysis)
-                                }
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = resolveFoodEmoji(item.icon, item.name),
-                                        fontSize = 18.sp
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = item.name,
-                                            fontSize = 13.5.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = AppTheme.colors.textPrimary
-                                        )
-                                        if (item.isSouthIndian) {
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(6.dp))
-                                                    .background(Color(0xFF059669).copy(alpha = 0.15f))
-                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                                            ) {
-                                                Text(
-                                                    text = "South Indian",
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color(0xFF10B981)
-                                                )
-                                            }
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = "${item.mealSlot} • ${item.calories} kcal • ${item.carbsGrams.toInt()}g Carbs • ${item.proteinGrams.toInt()}g Protein",
-                                        fontSize = 11.sp,
-                                        color = AppTheme.colors.textMuted
-                                    )
-                                    if (item.healthTags.isNotEmpty()) {
-                                        Spacer(modifier = Modifier.height(3.dp))
-                                        Text(
-                                            text = item.healthTags.joinToString(" • ") { "#$it" },
-                                            fontSize = 10.sp,
-                                            color = Color(0xFFA855F7)
-                                        )
-                                    }
-                                }
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFA855F7))
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
-                            ) {
-                                Text(
-                                    text = "Select",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-    }
-}
-
 
 /**
  * Animated analyzing overlay shown while Moondream Vision AI processes the captured meal photo.
