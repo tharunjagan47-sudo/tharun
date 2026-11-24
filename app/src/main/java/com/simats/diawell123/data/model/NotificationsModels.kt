@@ -88,7 +88,7 @@ data class SendMedNotificationRequest(
     val fcmToken: String? = null,
 
     @SerializedName("title")
-    val title: String = "💊 Medication Reminder",
+    val title: String = "Medication Reminder",
 
     @SerializedName("body")
     val body: String = "",
