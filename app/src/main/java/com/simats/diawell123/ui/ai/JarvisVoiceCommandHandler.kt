@@ -159,37 +159,37 @@ object JarvisVoiceCommandHandler {
                 when {
                     valInt < 70 -> {
                         alertType = AlertType.HYPOGLYCEMIA_WARNING
-                        advice = "🚨 **Low Blood Sugar Alert (< 70 mg/dL):** Take 15g fast-acting carbs (half cup fruit juice or 3 glucose tablets) immediately and recheck in 15 minutes."
+                        advice = "**Low Blood Sugar Alert (< 70 mg/dL):** Take 15g fast-acting carbs (half cup fruit juice or 3 glucose tablets) immediately and recheck in 15 minutes."
                         spokenAdvice = "Warning: $valInt milligrams per deciliter is dangerously low. Have 15 grams of fast-acting carbs like half a cup of fruit juice right away and recheck in 15 minutes."
                         DiaWellNotificationHelper.showCriticalHealthAlert(
                             context = context,
-                            title = "⚠️ Critical: Low Blood Sugar ($valInt mg/dL)",
+                            title = "Critical: Low Blood Sugar ($valInt mg/dL)",
                             message = "Have 15g fast-acting carbs immediately and recheck in 15 minutes."
                         )
                     }
                     valInt > 180 -> {
                         alertType = AlertType.HYPERGLYCEMIA_WARNING
-                        advice = "⚠️ **Elevated Glucose Warning (> 180 mg/dL):** Hydrate with water and take a gentle 15-minute walk if safe. Avoid high-sugar foods."
+                        advice = "**Elevated Glucose Warning (> 180 mg/dL):** Hydrate with water and take a gentle 15-minute walk if safe. Avoid high-sugar foods."
                         spokenAdvice = "Caution: $valInt milligrams per deciliter is elevated. Drink water and take a gentle 15-minute walk if safe."
                         DiaWellNotificationHelper.showCriticalHealthAlert(
                             context = context,
-                            title = "⚠️ High Blood Sugar Warning ($valInt mg/dL)",
+                            title = "High Blood Sugar Warning ($valInt mg/dL)",
                             message = "Your $readingType reading is elevated. Drink water and check ketones if persistent."
                         )
                     }
                     else -> {
                         alertType = AlertType.NONE
-                        advice = "✅ **In Healthy Range:** Great job staying consistent with your DiaWell check-ins!"
+                        advice = "**In Healthy Range:** Great job staying consistent with your DiaWell check-ins!"
                         spokenAdvice = "Great job, this reading is in a healthy range."
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = context,
-                            title = "🩸 Blood Sugar Logged: $valInt mg/dL",
+                            title = "Blood Sugar Logged: $valInt mg/dL",
                             message = "Logged $readingType reading ($valInt mg/dL) via DIVA Voice Assistant."
                         )
                     }
                 }
 
-                val displayMsg = "✅ **Blood Glucose Logged via Voice**\n" +
+                val displayMsg = "**Blood Glucose Logged via Voice**\n" +
                     "• **Reading:** $valInt mg/dL ($readingType)\n" +
                     "• **Time:** Today, $nowTime\n\n$advice"
 
@@ -203,7 +203,7 @@ object JarvisVoiceCommandHandler {
             },
             onFailure = { error ->
                 val errMsg = "I couldn't save your blood sugar reading right now. Please try again."
-                VoiceActionResult.Executed(displayReply = "⚠️ $errMsg", spokenReply = errMsg)
+                VoiceActionResult.Executed(displayReply = errMsg, spokenReply = errMsg)
             }
         )
     }
@@ -270,7 +270,7 @@ object JarvisVoiceCommandHandler {
                 )
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
-                    title = "💊 Medication Reminder Scheduled",
+                    title = "Medication Reminder Scheduled",
                     message = "Voice alarm set for ${savedMed.name.ifBlank { medName }} at $formattedTime ($mealTiming).",
                     notifId = realMedId
                 )
@@ -278,7 +278,7 @@ object JarvisVoiceCommandHandler {
 
                 val finalName = savedMed.name.ifBlank { medName }
                 val finalDose = savedMed.dose.ifBlank { extractedDose }
-                val displayMsg = "✅ **Medication Alarm Scheduled via Voice**\n" +
+                val displayMsg = "**Medication Alarm Scheduled via Voice**\n" +
                     "• **Medicine:** $finalName ($finalDose)\n" +
                     "• **Alarm Time:** $formattedTime • $todayDisplay\n" +
                     "• **Meal Timing:** $mealTiming"
@@ -288,7 +288,7 @@ object JarvisVoiceCommandHandler {
             },
             onFailure = { error ->
                 val errMsg = "I couldn't schedule that medication reminder right now. Please try again."
-                VoiceActionResult.Executed(displayReply = "⚠️ $errMsg", spokenReply = errMsg)
+                VoiceActionResult.Executed(displayReply = errMsg, spokenReply = errMsg)
             }
         )
     }
