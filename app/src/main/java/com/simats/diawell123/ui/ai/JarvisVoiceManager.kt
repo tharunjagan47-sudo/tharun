@@ -661,7 +661,7 @@ class JarvisVoiceManager(context: Context) {
                 .replace(Regex("#+\\s*"), "")
                 // Remove non-ASCII symbol/emoji blocks while retaining ASCII punctuation & letters
                 .replace(Regex("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+"), " ")
-                .replace(Regex("[✓✔✕⚠️🩺⚡💊🩸🥗🚶🍚🔥💧🎙️🔊🔇🚨⏰]"), " ")
+                .replace(Regex("[\\p{So}\\p{Cn}\\u2600-\\u27BF\\u2300-\\u23FF]"), " ")
 
             // Expand clinical abbreviations
             text = text
