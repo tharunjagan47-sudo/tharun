@@ -579,33 +579,129 @@ data class RecommendedFoodItem(
  * Resolves a dish name or icon key into an authentic, colorful food emoji.
  */
 fun resolveFoodEmoji(icon: String? = null, foodName: String? = null): String {
+    val name = (foodName ?: "").lowercase()
+
+    // 1. Check food name keywords first for pinpoint accuracy
+    if (name.isNotBlank()) {
+        when {
+            // Hot Beverages & Teas
+            name.contains("green tea") || name.contains("herbal tea") || name.contains("black tea") ||
+                name.contains("lemon tea") || name.contains("ginger tea") || name.contains("tea") ||
+                name.contains("chai") || name.contains("kashayam") || name.contains("matcha") -> return "🍵"
+
+            // Coffee
+            name.contains("coffee") || name.contains("filter coffee") || name.contains("kaapi") ||
+                name.contains("cappuccino") || name.contains("espresso") || name.contains("latte") -> return "☕"
+
+            // Dairy, Traditional Buttermilk & Drinks
+            name.contains("buttermilk") || name.contains("neer mor") || name.contains("mor ") ||
+                name.endsWith("mor") || name.contains("chaas") || name.contains("sambaram") -> return "🥛"
+            name.contains("milk") || name.contains("badam milk") || name.contains("turmeric milk") -> return "🥛"
+            name.contains("curd") || name.contains("yogurt") || name.contains("dahi") || name.contains("raita") -> return "🥣"
+            name.contains("lassi") || name.contains("smoothie") || name.contains("shake") -> return "🥤"
+            name.contains("coconut water") || name.contains("tender coconut") || name.contains("elaneer") -> return "🥥"
+            name.contains("juice") || name.contains("lemonade") || name.contains("amla") || name.contains("karela") -> return "🧃"
+            name.contains("water") -> return "💧"
+
+            // South Indian Tiffin: Idli & Steamed Foods
+            name.contains("idli") || name.contains("idly") || name.contains("thatte idli") ||
+                name.contains("ragi idli") || name.contains("steamed idli") || name.contains("appam") ||
+                name.contains("aappam") || name.contains("idiyappam") || name.contains("puttu") -> return "⚪"
+
+            // Dosa & Savory Pancakes
+            name.contains("dosa") || name.contains("dosai") || name.contains("pesarattu") ||
+                name.contains("chilla") || name.contains("cheela") || name.contains("uthappam") ||
+                name.contains("oothappam") || name.contains("pancake") -> return "🥞"
+
+            // Vada & Crispy Fritters
+            name.contains("vada") || name.contains("vadai") || name.contains("bajji") ||
+                name.contains("pakora") || name.contains("samosa") -> return "🍩"
+
+            // Rotis, Chapatis & Indian Breads
+            name.contains("roti") || name.contains("chapati") || name.contains("chappathi") ||
+                name.contains("phulka") || name.contains("paratha") || name.contains("thepla") ||
+                name.contains("naan") || name.contains("kulcha") || name.contains("poori") ||
+                name.contains("puri") || name.contains("bhatura") || name.contains("flatbread") -> return "🫓"
+
+            // Rice & Grains
+            name.contains("biryani") || name.contains("pulao") || name.contains("fried rice") ||
+                name.contains("sambar rice") || name.contains("rasam rice") || name.contains("curd rice") ||
+                name.contains("lemon rice") || name.contains("tomato rice") || name.contains("rice") -> return "🍛"
+
+            // Porridge, Oats, Upma & Khichdi
+            name.contains("upma") || name.contains("kichadi") || name.contains("pongal") ||
+                name.contains("oat") || name.contains("oatmeal") || name.contains("dalia") ||
+                name.contains("khichdi") || name.contains("porridge") || name.contains("cereal") ||
+                name.contains("kanji") -> return "🥣"
+
+            // Sambar, Rasam, Dal, Curries & Soups
+            name.contains("sambar") || name.contains("kuzhambu") || name.contains("kulambu") ||
+                name.contains("rasam") || name.contains("dal") || name.contains("dhal") ||
+                name.contains("tadka") || name.contains("kootu") || name.contains("curry") ||
+                name.contains("gravy") || name.contains("salna") || name.contains("kurma") ||
+                name.contains("saag") || name.contains("chole") || name.contains("soup") ||
+                name.contains("broth") -> return "🍲"
+
+            // Meat & Poultry
+            name.contains("chicken") || name.contains("poultry") -> return "🍗"
+            name.contains("fish") || name.contains("salmon") || name.contains("tuna") ||
+                name.contains("prawn") || name.contains("shrimp") || name.contains("crab") ||
+                name.contains("seafood") -> return "🐟"
+            name.contains("mutton") || name.contains("lamb") || name.contains("beef") ||
+                name.contains("steak") || name.contains("meat") -> return "🥩"
+            name.contains("egg") || name.contains("omlet") || name.contains("omelette") ||
+                name.contains("bhurji") || name.contains("scramble") -> return "🍳"
+            name.contains("paneer") || name.contains("cheese") || name.contains("tofu") -> return "🧀"
+
+            // Vegetables, Salads & Greens
+            name.contains("salad") || name.contains("poriyal") || name.contains("greens") ||
+                name.contains("keerai") || name.contains("spinach") || name.contains("palak") ||
+                name.contains("cabbage") || name.contains("beans") || name.contains("vendakkai") ||
+                name.contains("okra") || name.contains("bhindi") || name.contains("gourd") ||
+                name.contains("cucumber") || name.contains("carrot") || name.contains("beetroot") -> return "🥗"
+            name.contains("broccoli") -> return "🥦"
+            name.contains("avocado") -> return "🥑"
+            name.contains("mushroom") -> return "🍄"
+            name.contains("corn") -> return "🌽"
+
+            // Sundal, Legumes, Nuts & Seeds
+            name.contains("sundal") || name.contains("chickpea") || name.contains("chana") ||
+                name.contains("sprout") || name.contains("sprouted") || name.contains("kollu") ||
+                name.contains("horse gram") || name.contains("rajma") -> return "🧆"
+            name.contains("peanut") || name.contains("groundnut") || name.contains("makhana") ||
+                name.contains("almond") || name.contains("badam") || name.contains("walnut") ||
+                name.contains("cashew") || name.contains("nut") || name.contains("seed") ||
+                name.contains("chia") || name.contains("flax") -> return "🥜"
+
+            // Fruits
+            name.contains("guava") -> return "🍈"
+            name.contains("apple") -> return "🍎"
+            name.contains("banana") -> return "🍌"
+            name.contains("orange") || name.contains("citrus") || name.contains("mosambi") -> return "🍊"
+            name.contains("lemon") || name.contains("lime") -> return "🍋"
+            name.contains("papaya") || name.contains("mango") -> return "🥭"
+            name.contains("berry") || name.contains("berries") || name.contains("blueberry") ||
+                name.contains("strawberry") -> return "🫐"
+            name.contains("watermelon") -> return "🍉"
+            name.contains("grapes") -> return "🍇"
+            name.contains("pomegranate") -> return "🍎"
+
+            // Breads & Snacks
+            name.contains("bread") || name.contains("toast") || name.contains("sandwich") -> return "🥪"
+            name.contains("biscuit") || name.contains("cookie") -> return "🍪"
+        }
+    }
+
+    // 2. If name did not match specific patterns, check if icon is an authentic custom emoji
     val raw = icon?.trim() ?: ""
-    if (raw.isNotEmpty() && raw.any { it.code > 127 } && raw != "restaurant" && raw != "check") {
+    if (raw.isNotEmpty() && raw.any { it.code > 127 } &&
+        raw != "restaurant" && raw != "check" && raw != "🍽️" && raw != "🥣") {
         return raw
     }
-    val name = (foodName ?: "").lowercase()
-    return when {
-        name.contains("idli") || name.contains("steamed cake") -> "⚪"
-        name.contains("dosa") || name.contains("chilla") || name.contains("pancake") -> "🥞"
-        name.contains("roti") || name.contains("chapati") || name.contains("paratha") || name.contains("flatbread") -> "🫓"
-        name.contains("rice") || name.contains("biryani") || name.contains("pulao") || name.contains("khichdi") || name.contains("pongal") -> "🍛"
-        name.contains("sambar") || name.contains("dal") || name.contains("soup") || name.contains("kootu") || name.contains("curry") || name.contains("saag") -> "🍲"
-        name.contains("salad") || name.contains("poriyal") || name.contains("greens") || name.contains("keerai") || name.contains("sundal") || name.contains("cabbage") || name.contains("beans") || name.contains("spinach") -> "🥗"
-        name.contains("oat") || name.contains("upma") || name.contains("cereal") || name.contains("porridge") || name.contains("dalia") -> "🥣"
-        name.contains("sprout") -> "🌱"
-        name.contains("paneer") || name.contains("cheese") || name.contains("tofu") -> "🧀"
-        name.contains("chicken") || name.contains("poultry") -> "🍗"
-        name.contains("fish") || name.contains("seafood") -> "🐟"
-        name.contains("egg") -> "🍳"
-        name.contains("coffee") -> "☕"
-        name.contains("tea") -> "🍵"
-        name.contains("milk") || name.contains("buttermilk") || name.contains("mor") || name.contains("curd") || name.contains("yogurt") -> "🥛"
-        name.contains("juice") || name.contains("orange") || name.contains("fruit") || name.contains("apple") -> "🍊"
-        name.contains("chickpea") || name.contains("chana") || name.contains("nut") || name.contains("almond") || name.contains("seed") -> "🥜"
-        name.contains("broccoli") -> "🥦"
-        name.contains("lemon") || name.contains("rasam") -> "🍋"
-        else -> "🥗"
-    }
+
+    if (raw == "🥣") return "🥣"
+
+    return "🥗"
 }
 
 
