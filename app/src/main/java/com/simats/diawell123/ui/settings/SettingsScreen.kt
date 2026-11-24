@@ -254,7 +254,7 @@ fun SettingsScreen(
                                                     } else Color.Transparent
                                                 )
                                                 .clickable {
-                                                    ThemeManager.setThemeMode(mode)
+                                                    ThemeManager.setThemeMode(mode, context)
                                                     Toast.makeText(context, "Theme set to ${mode.title}", Toast.LENGTH_SHORT).show()
                                                 }
                                                 .padding(vertical = 8.dp),
