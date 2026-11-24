@@ -30,14 +30,11 @@ class NudgeActionReceiver : BroadcastReceiver() {
 
         when (action) {
             ACTION_QUICK_LOG_WATER -> {
-                val store = HealthMetricsStore(context.applicationContext)
-                val updated = store.getWaterLiters() + WATER_GLASS_LITERS
-                store.setWaterLiters(updated)
                 dismissNotification(context, nudgeId)
                 Toast.makeText(
                     context.applicationContext,
-                    "+250ml Water Logged! Keep it up!",
-                    Toast.LENGTH_LONG,
+                    "Stay hydrated! Drinking water keeps your sugar balanced.",
+                    Toast.LENGTH_SHORT,
                 ).show()
             }
 
@@ -56,7 +53,7 @@ class NudgeActionReceiver : BroadcastReceiver() {
                 dismissNotification(context, nudgeId)
                 Toast.makeText(
                     context.applicationContext,
-                    "Staying healthy! Keep your streak going!",
+                    "Stay hydrated! Drinking water helps flush excess glucose.",
                     Toast.LENGTH_SHORT,
                 ).show()
             }
