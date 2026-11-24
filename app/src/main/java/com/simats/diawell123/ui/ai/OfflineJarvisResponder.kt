@@ -125,10 +125,10 @@ object OfflineJarvisResponder {
                 val numMatcher = Pattern.compile("(\\d+(?:\\.\\d+)?)").matcher(latest)
                 val num = if (numMatcher.find()) numMatcher.group(1)?.toFloatOrNull() ?: 120f else 120f
                 return when {
-                    num < 70 -> "⚠️ At $num mg/dL, your blood sugar is low (hypoglycemia). Consume 15g fast-acting carbs immediately and re-check in 15 minutes."
-                    num <= 130 -> "✅ Yes, $num mg/dL is within the target fasting range (80-130 mg/dL). Great job maintaining control!"
-                    num <= 180 -> "📊 $num mg/dL is acceptable if taken 1-2 hours after a meal (target <180 mg/dL). Stay active with a short walk."
-                    else -> "⚠️ At $num mg/dL, it is elevated (target <130 fasting, <180 post-meal). Drink plenty of water and avoid sugary foods."
+                    num < 70 -> "At $num mg/dL, your blood sugar is low (hypoglycemia). Consume 15g fast-acting carbs immediately and re-check in 15 minutes."
+                    num <= 130 -> "Yes, $num mg/dL is within the target fasting range (80-130 mg/dL). Great job maintaining control!"
+                    num <= 180 -> "$num mg/dL is acceptable if taken 1-2 hours after a meal (target <180 mg/dL). Stay active with a short walk."
+                    else -> "At $num mg/dL, it is elevated (target <130 fasting, <180 post-meal). Drink plenty of water and avoid sugary foods."
                 }
             } else {
                 return "Standard target ranges are 80-130 mg/dL for fasting and under 180 mg/dL within 2 hours after a meal. Log your reading to see where you stand!"
@@ -148,10 +148,10 @@ object OfflineJarvisResponder {
                 val num = if (numMatcher.find()) numMatcher.group(1)?.toFloatOrNull() ?: 120f else 120f
 
                 val interp = when {
-                    num < 70 -> "⚠️ Low (<70 mg/dL). Take 15g fast carbs immediately."
-                    num <= 130 -> "🎯 In target fasting range (80-130 mg/dL)."
-                    num <= 180 -> "📊 Post-meal range (target <180 mg/dL). Normal if tested after food."
-                    else -> "⚠️ Elevated (>180 mg/dL). Drink water and take a light walk."
+                    num < 70 -> "Low (<70 mg/dL). Take 15g fast carbs immediately."
+                    num <= 130 -> "In target fasting range (80-130 mg/dL)."
+                    num <= 180 -> "Post-meal range (target <180 mg/dL). Normal if tested after food."
+                    else -> "Elevated (>180 mg/dL). Drink water and take a light walk."
                 }
 
                 val avgStr = patientContext.avgGlucose?.let { "$it mg/dL" } ?: "${num.toInt()} mg/dL"
