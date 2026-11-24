@@ -27,6 +27,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -166,11 +168,11 @@ fun SignUpScreen(
                             onClick = { viewModel.clearError() },
                             modifier = Modifier.size(24.dp),
                         ) {
-                            Text(
-                                text = "✕",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF9B1C1C),
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = "Dismiss error",
+                                tint = Color(0xFF9B1C1C),
+                                modifier = Modifier.size(16.dp),
                             )
                         }
                     }
