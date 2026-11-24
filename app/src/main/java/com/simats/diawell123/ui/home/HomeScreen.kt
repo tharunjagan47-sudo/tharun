@@ -118,6 +118,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.ai.IronmanDoctorAvatar
 import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.components.FluidGlassCircleButton
 import com.simats.diawell123.ui.components.aiRotatingBorder
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
@@ -316,23 +317,15 @@ fun HomeScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                                     ) {
-                                        // Quick Theme Toggle Button - Perfectly Circular Dark Glass
-                                        Box(
-                                            modifier = Modifier
-                                                .size(38.dp)
-                                                .clip(CircleShape)
-                                                .background(Color.White.copy(alpha = 0.20f))
-                                                .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape)
-                                                .clickable { ThemeManager.toggleTheme() },
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            Icon(
-                                                imageVector = if (AppTheme.colors.isDark) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
-                                                contentDescription = "Toggle Theme",
-                                                tint = Color.White,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        }
+                                        // Quick Theme Toggle Button - Fluid Glass Circular Bubble
+                                        FluidGlassCircleButton(
+                                            imageVector = if (AppTheme.colors.isDark) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
+                                            onClick = { ThemeManager.toggleTheme() },
+                                            contentDescription = "Toggle Theme",
+                                            sizeDp = 40.dp,
+                                            iconSizeDp = 18.dp,
+                                            tint = Color.White,
+                                        )
 
                                         // Profile Avatar - Crisp, distinct, perfectly circular with specular border
                                         Box(
