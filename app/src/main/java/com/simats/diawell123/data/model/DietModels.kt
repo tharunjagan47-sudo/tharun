@@ -49,7 +49,7 @@ data class FoodItem(
     val glycemicIndex: String = "Low",
 
     @SerializedName("icon")
-    val icon: String = "🥣",
+    val icon: String = "restaurant",
 
     @SerializedName("health_benefits")
     val healthBenefits: String? = null
@@ -138,7 +138,7 @@ data class FoodDetailsData(
     val diabeticGuidance: String? = null,
 
     @SerializedName("icon")
-    val icon: String = "🥣",
+    val icon: String = "restaurant",
 
     @SerializedName("ingredients")
     val ingredients: List<String> = emptyList(),
@@ -216,7 +216,7 @@ data class FoodLogItem(
     val fatG: Float = 0f,
 
     @SerializedName("icon")
-    val icon: String = "🥣"
+    val icon: String = "restaurant"
 )
 
 /**
@@ -251,7 +251,7 @@ data class FoodLogRequest(
     val logTime: String? = null,
 
     @SerializedName("icon")
-    val icon: String = "🥣"
+    val icon: String = "restaurant"
 )
 
 /**
@@ -560,7 +560,7 @@ data class RecommendedFoodItem(
     val portion: String = "100 g portion basis",
 
     @SerializedName("icon")
-    val icon: String = "🥗",
+    val icon: String = "restaurant",
 
     @SerializedName("recommendation_score")
     val recommendationScore: Int = 85,
