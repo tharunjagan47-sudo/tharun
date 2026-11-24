@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.model.resolveFoodEmoji
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @Composable
@@ -517,7 +518,7 @@ fun FoodLogItem(
                 modifier = Modifier.weight(1f).padding(end = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = icon, fontSize = 28.sp)
+                Text(text = resolveFoodEmoji(icon, title), fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
