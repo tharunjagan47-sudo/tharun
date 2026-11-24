@@ -36,7 +36,7 @@ class NudgeActionReceiver : BroadcastReceiver() {
                 dismissNotification(context, nudgeId)
                 Toast.makeText(
                     context.applicationContext,
-                    "💧 +250ml Water Logged! Keep it up!",
+                    "+250ml Water Logged! Keep it up!",
                     Toast.LENGTH_LONG,
                 ).show()
             }
@@ -47,7 +47,7 @@ class NudgeActionReceiver : BroadcastReceiver() {
                 dismissNotification(context, nudgeId)
                 Toast.makeText(
                     context.applicationContext,
-                    "🏃 15-min Walk Logged (+1,500 steps)! Super da!",
+                    "15-min Walk Logged (+1,500 steps)!",
                     Toast.LENGTH_LONG,
                 ).show()
             }
@@ -56,7 +56,7 @@ class NudgeActionReceiver : BroadcastReceiver() {
                 dismissNotification(context, nudgeId)
                 Toast.makeText(
                     context.applicationContext,
-                    "👍 Staying healthy! Keep your streak going!",
+                    "Staying healthy! Keep your streak going!",
                     Toast.LENGTH_SHORT,
                 ).show()
             }
