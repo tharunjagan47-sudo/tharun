@@ -586,8 +586,9 @@ fun resolveFoodEmoji(icon: String? = null, foodName: String? = null): String {
         when {
             // Hot Beverages & Teas
             name.contains("green tea") || name.contains("herbal tea") || name.contains("black tea") ||
-                name.contains("lemon tea") || name.contains("ginger tea") || name.contains("tea") ||
-                name.contains("chai") || name.contains("kashayam") || name.contains("matcha") -> return "🍵"
+                name.contains("lemon tea") || name.contains("ginger tea") ||
+                name.contains("chai") || name.contains("kashayam") || name.contains("matcha") ||
+                Regex("\\btea\\b").containsMatchIn(name) -> return "🍵"
 
             // Coffee
             name.contains("coffee") || name.contains("filter coffee") || name.contains("kaapi") ||
@@ -689,6 +690,8 @@ fun resolveFoodEmoji(icon: String? = null, foodName: String? = null): String {
             // Breads & Snacks
             name.contains("bread") || name.contains("toast") || name.contains("sandwich") -> return "🥪"
             name.contains("biscuit") || name.contains("cookie") -> return "🍪"
+            name.contains("custard") || name.contains("pudding") || name.contains("kheer") ||
+                name.contains("payasam") || name.contains("halwa") || name.contains("sweet") -> return "🍮"
         }
     }
 
