@@ -73,7 +73,7 @@ data class HomeAiTip(
  */
 data class HomeRoutineItem(
     @SerializedName("icon")
-    val icon: String = "✓",
+    val icon: String = "check",
 
     @SerializedName("label")
     val label: String = "",
