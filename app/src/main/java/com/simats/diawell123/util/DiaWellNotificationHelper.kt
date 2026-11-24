@@ -791,7 +791,8 @@ object DiaWellNotificationHelper {
         alarmHour: Int = -1,
         alarmMinute: Int = -1,
         requestCodeOverride: Int = -1,
-        repeatType: String = if (isDaily) "Daily" else "Once"
+        repeatType: String = if (isDaily) "Daily" else "Once",
+        isSnooze: Boolean = false
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
@@ -861,6 +862,7 @@ object DiaWellNotificationHelper {
             putExtra("hour", resolvedHour)
             putExtra("minute", resolvedMinute)
             putExtra("is_active", true)
+            putExtra("is_snooze", isSnooze)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -876,9 +878,10 @@ object DiaWellNotificationHelper {
             putExtra("med_id", medId)
         }
 
+        val showReqCode = if (requestCodeOverride > 0) requestCodeOverride else medId
         val showPendingIntent = PendingIntent.getActivity(
             context,
-            medId,
+            showReqCode,
             showIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -886,7 +889,7 @@ object DiaWellNotificationHelper {
         try {
             val clockInfo = AlarmManager.AlarmClockInfo(finalTrigger, showPendingIntent)
             alarmManager.setAlarmClock(clockInfo, pendingIntent)
-            Log.d("DiaWellNotifications", "Scheduled AlarmClock for medId=$medId (req=$broadcastReqCode) at $finalTrigger ($resolvedHour:$resolvedMinute, isDaily=$isDaily)")
+            Log.d("DiaWellNotifications", "Scheduled AlarmClock for medId=$medId (req=$broadcastReqCode) at $finalTrigger ($resolvedHour:$resolvedMinute, isDaily=$isDaily, isSnooze=$isSnooze)")
         } catch (e: SecurityException) {
             Log.w("DiaWellNotifications", "SecurityException on setAlarmClock: ${e.message}. Falling back.")
             try {
@@ -905,12 +908,20 @@ object DiaWellNotificationHelper {
                 }
             } catch (e2: Exception) {
                 Log.e("DiaWellNotifications", "Fallback exact alarm failed: ${e2.message}", e2)
-                alarmManager.set(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
+                } else {
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
+                }
             }
         } catch (e: Exception) {
             Log.e("DiaWellNotifications", "Failed to schedule alarm: ${e.message}", e)
             try {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
+                } else {
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
+                }
             } catch (_: Exception) {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, finalTrigger, pendingIntent)
             }
@@ -976,9 +987,10 @@ object DiaWellNotificationHelper {
             triggerAtMillis = triggerTime,
             userId = userId,
             isDaily = isDaily,
-            requestCodeOverride = snoozeReqCode
+            requestCodeOverride = snoozeReqCode,
+            isSnooze = true
         )
-        Log.d("DiaWellNotifications", "Snoozed medId=$medId (req=$snoozeReqCode) for $snoozeMinutes minutes (isDaily=$isDaily)")
+        Log.d("DiaWellNotifications", "Snoozed medId=$medId (req=$snoozeReqCode) for $snoozeMinutes minutes (isDaily=$isDaily, isSnooze=true)")
     }
 
     private fun cancelAlarmRequestCode(context: Context, reqId: Int) {
@@ -994,8 +1006,7 @@ object DiaWellNotificationHelper {
         )
         if (pendingIntent != null) {
             alarmManager.cancel(pendingIntent)
-            pendingIntent.cancel()
-            Log.d("DiaWellNotifications", "Cancelled alarm for reqId=$reqId")
+            Log.d("DiaWellNotifications", "Cancelled alarm in AlarmManager for reqId=$reqId")
         }
     }
 
