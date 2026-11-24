@@ -572,6 +572,44 @@ class DietRepositoryImpl(
                 icon = "🍊",
                 highlights = listOf("Fast Carbs: 22g", "Hypo Rescue", "Vitamin C"),
                 glycemicImpact = GlycemicDetails(badge = "Fast Acting Carbs", color = "#E65100", bgColor = "#FFF3E0")
+            ),
+            RecommendedFoodItem(
+                id = 115,
+                title = "Herbal Green Tea with Mint & Lemon",
+                dishName = "Herbal Green Tea",
+                calories = 15f,
+                caloriesLabel = "15 kcal",
+                carbsG = 1.5f,
+                proteinG = 0.5f,
+                fatG = 0.2f,
+                freeSugarG = 0f,
+                fibreG = 0.5f,
+                sodiumMg = 5f,
+                category = "Snack",
+                dietType = "Vegan",
+                portion = "1 cup • 200 ml",
+                icon = "🍵",
+                highlights = listOf("EGCG Polyphenols", "Zero Added Sugar", "Low GI: 0"),
+                glycemicImpact = GlycemicDetails(badge = "Minimal GI Impact", color = "#2E7D32", bgColor = "#E8F5E9")
+            ),
+            RecommendedFoodItem(
+                id = 116,
+                title = "Unsweetened Masala Chai (Spiced Tea)",
+                dishName = "Masala Chai",
+                calories = 45f,
+                caloriesLabel = "45 kcal",
+                carbsG = 3.5f,
+                proteinG = 2.5f,
+                fatG = 1.8f,
+                freeSugarG = 0f,
+                fibreG = 0.5f,
+                sodiumMg = 25f,
+                category = "Snack",
+                dietType = "Vegetarian",
+                portion = "1 cup • 150 ml",
+                icon = "🍵",
+                highlights = listOf("Cinnamon Power", "Ginger & Cardamom", "Zero Sugar"),
+                glycemicImpact = GlycemicDetails(badge = "Minimal GI Impact", color = "#2E7D32", bgColor = "#E8F5E9")
             )
         )
 
