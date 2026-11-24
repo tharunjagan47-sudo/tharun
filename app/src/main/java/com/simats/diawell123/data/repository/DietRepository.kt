@@ -299,7 +299,7 @@ class DietRepositoryImpl(
         val (glucoseStatus, alert) = when {
             glucose < 70f -> Pair(
                 "hypoglycemia",
-                "⚠️ Hypoglycemia Warning (${glucose.toInt()} mg/dL): Immediate fast-acting carbs recommended! Consume 15g simple carbs (e.g., fruit juice, glucose powder or raisins). Follow with complex carbs & protein once glucose reaches >70 mg/dL."
+                "Hypoglycemia Alert (${glucose.toInt()} mg/dL): Immediate fast-acting carbs recommended! Consume 15g simple carbs (e.g., fruit juice, glucose powder or raisins). Follow with complex carbs & protein once glucose reaches >70 mg/dL."
             )
             glucose > 180f -> Pair("high", null)
             glucose >= 140f -> Pair("elevated", null)
@@ -322,7 +322,7 @@ class DietRepositoryImpl(
                 category = "Lunch",
                 dietType = "Vegan",
                 portion = "1 bowl • 250 g",
-                icon = "🍲",
+                icon = "restaurant",
                 highlights = listOf("Low GI: 22", "Carbs: 7g", "Fiber: 6g", "Vegan"),
                 glycemicImpact = GlycemicDetails(badge = "Ultra Low GI", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -341,7 +341,7 @@ class DietRepositoryImpl(
                 category = "Dinner",
                 dietType = "Vegan",
                 portion = "1 bowl • 220 g",
-                icon = "🥣",
+                icon = "restaurant",
                 highlights = listOf("Fenugreek Power", "High Fibre", "Satiating"),
                 glycemicImpact = GlycemicDetails(badge = "Low Glycemic", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -360,7 +360,7 @@ class DietRepositoryImpl(
                 category = "Snack",
                 dietType = "Vegan",
                 portion = "1 cup • 180 g",
-                icon = "🥗",
+                icon = "restaurant",
                 highlights = listOf("Live Enzymes", "Carbs: 14g", "Zero Added Sugar"),
                 glycemicImpact = GlycemicDetails(badge = "Low Glycemic", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -379,7 +379,7 @@ class DietRepositoryImpl(
                 category = "Snack",
                 dietType = "Vegan",
                 portion = "1/2 cup • 50 g",
-                icon = "🧆",
+                icon = "restaurant",
                 highlights = listOf("Magnesium Rich", "Crunchy Snack", "Low GI"),
                 glycemicImpact = GlycemicDetails(badge = "Low Glycemic", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -398,7 +398,7 @@ class DietRepositoryImpl(
                 category = "Lunch",
                 dietType = "Vegetarian",
                 portion = "1 plate • 200 g",
-                icon = "🧀",
+                icon = "restaurant",
                 highlights = listOf("High Protein: 19g", "Carbs: 8g", "Keto Friendly"),
                 glycemicImpact = GlycemicDetails(badge = "Very Low GI", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -417,7 +417,7 @@ class DietRepositoryImpl(
                 category = "Breakfast",
                 dietType = "Vegetarian",
                 portion = "1 cup • 170 g",
-                icon = "🫐",
+                icon = "restaurant",
                 highlights = listOf("Probiotics", "Omega-3", "High Protein"),
                 glycemicImpact = GlycemicDetails(badge = "Low Glycemic", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -436,7 +436,7 @@ class DietRepositoryImpl(
                 category = "Breakfast",
                 dietType = "Vegetarian",
                 portion = "2 chillas • 160 g",
-                icon = "🥞",
+                icon = "restaurant",
                 highlights = listOf("Plant Protein", "Low GI: 32", "High Fibre"),
                 glycemicImpact = GlycemicDetails(badge = "Low GI", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -455,7 +455,7 @@ class DietRepositoryImpl(
                 category = "Dinner",
                 dietType = "Vegetarian",
                 portion = "1 roti + 1 bowl • 280 g",
-                icon = "🫓",
+                icon = "restaurant",
                 highlights = listOf("Complex Carbs", "High Fibre", "Sustained Energy"),
                 glycemicImpact = GlycemicDetails(badge = "Low GI", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -474,7 +474,7 @@ class DietRepositoryImpl(
                 category = "Breakfast",
                 dietType = "Eggetarian",
                 portion = "2 eggs • 180 g",
-                icon = "🍳",
+                icon = "restaurant",
                 highlights = listOf("Zero Sugar", "Carbs: 4g", "High Protein"),
                 glycemicImpact = GlycemicDetails(badge = "Ultra Low GI", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -493,7 +493,7 @@ class DietRepositoryImpl(
                 category = "Snack",
                 dietType = "Eggetarian",
                 portion = "3 whites • 160 g",
-                icon = "🥚",
+                icon = "restaurant",
                 highlights = listOf("Lean Protein", "Healthy Fats", "Zero Sugar"),
                 glycemicImpact = GlycemicDetails(badge = "Ultra Low GI", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -512,7 +512,7 @@ class DietRepositoryImpl(
                 category = "Lunch",
                 dietType = "Non-Vegetarian",
                 portion = "1 plate • 220 g",
-                icon = "🍗",
+                icon = "restaurant",
                 highlights = listOf("Protein: 32g", "Carbs: 3g", "Zero Sugar"),
                 glycemicImpact = GlycemicDetails(badge = "Minimal GI Impact", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -531,7 +531,7 @@ class DietRepositoryImpl(
                 category = "Dinner",
                 dietType = "Non-Vegetarian",
                 portion = "1 bowl • 250 g",
-                icon = "🍲",
+                icon = "restaurant",
                 highlights = listOf("Hydrating", "Low Calorie", "High Protein"),
                 glycemicImpact = GlycemicDetails(badge = "Minimal GI Impact", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -550,7 +550,7 @@ class DietRepositoryImpl(
                 category = "Dinner",
                 dietType = "Non-Vegetarian",
                 portion = "1 fillet • 180 g",
-                icon = "🐟",
+                icon = "restaurant",
                 highlights = listOf("Omega-3", "Protein: 28g", "Carbs: 2g"),
                 glycemicImpact = GlycemicDetails(badge = "Minimal GI Impact", color = "#2E7D32", bgColor = "#E8F5E9")
             ),
@@ -569,7 +569,7 @@ class DietRepositoryImpl(
                 category = "Snack",
                 dietType = "Vegan",
                 portion = "1 glass • 200 ml",
-                icon = "🍊",
+                icon = "restaurant",
                 highlights = listOf("Fast Carbs: 22g", "Hypo Rescue", "Vitamin C"),
                 glycemicImpact = GlycemicDetails(badge = "Fast Acting Carbs", color = "#E65100", bgColor = "#FFF3E0")
             )
