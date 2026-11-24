@@ -310,6 +310,38 @@ object SnapFoodAnalyzer {
             ),
             icon = "🥞",
             needsUserSelection = false
+        ),
+        SnapFoodAnalysis(
+            detectedDishName = "Herbal Green Tea with Mint & Lemon",
+            mealSlot = "Snack",
+            baseCalories = 15,
+            baseCarbs = 1.5f,
+            baseProtein = 0.5f,
+            baseFat = 0.2f,
+            baseFiber = 0.5f,
+            glycemicScore = 9.8f,
+            glycemicHealthExplanation = "EGCG catechins in green tea stimulate natural cellular glucose uptake without elevating glycemic index.",
+            subItems = listOf(
+                SnapFoodSubItem(name = "Steeped Green Tea with Mint Leaves", portion = "1 cup (200ml)", calories = 15, carbsG = 1.5f, proteinG = 0.5f, fatG = 0.2f, fiberG = 0.5f)
+            ),
+            icon = "🍵",
+            needsUserSelection = false
+        ),
+        SnapFoodAnalysis(
+            detectedDishName = "Unsweetened Masala Chai (Spiced Tea)",
+            mealSlot = "Snack",
+            baseCalories = 45,
+            baseCarbs = 3.5f,
+            baseProtein = 2.5f,
+            baseFat = 1.8f,
+            baseFiber = 0.5f,
+            glycemicScore = 9.4f,
+            glycemicHealthExplanation = "Cinnamon and cardamom spices blunt post-drink glucose absorption and improve afternoon satiety.",
+            subItems = listOf(
+                SnapFoodSubItem(name = "Fresh Spiced Tea with Low-Fat Milk", portion = "1 cup (150ml)", calories = 45, carbsG = 3.5f, proteinG = 2.5f, fatG = 1.8f, fiberG = 0.5f)
+            ),
+            icon = "🍵",
+            needsUserSelection = false
         )
     )
 
