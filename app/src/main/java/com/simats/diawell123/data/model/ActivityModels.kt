@@ -38,7 +38,7 @@ data class ActivityRecommendationItem(
     val activity: String = "Walking",
 
     @SerializedName("icon")
-    val icon: String = "🚶‍♂️",
+    val icon: String = "directions_walk",
 
     @SerializedName("duration_minutes")
     val durationMinutes: Int? = null,
@@ -225,7 +225,7 @@ data class ActivityHistoryItem(
     val type: String = "Walking",
 
     @SerializedName("icon")
-    val icon: String = "🚶‍♂️",
+    val icon: String = "directions_walk",
 
     @SerializedName("date")
     val date: String = "",
