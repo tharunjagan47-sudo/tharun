@@ -38,6 +38,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Medication
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -151,10 +152,10 @@ class MedAlarmActivity : ComponentActivity() {
                         DiaWellNotificationHelper.snoozeMedicationAlarm(this, medId, medName, medDosage, 5, userId, effectiveDaily)
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
-                            title = "⏰ Medication Snoozed",
+                            title = "Medication Snoozed",
                             message = "We will remind you to take $medName again in 5 minutes."
                         )
-                        Toast.makeText(this, "Snoozed for 5 minutes ⏰", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Snoozed for 5 minutes", Toast.LENGTH_SHORT).show()
 
                         lifecycleScope.launch {
                             MedicationStatusUpdater.updateStatusAndNotify(
@@ -182,7 +183,7 @@ class MedAlarmActivity : ComponentActivity() {
                         }
                         DiaWellNotificationHelper.showGeneralNotification(
                             context = this,
-                            title = "⏭️ Dose Skipped",
+                            title = "Dose Skipped",
                             message = "Marked $medName as skipped for this schedule."
                         )
                         Toast.makeText(this, "Medication Skipped", Toast.LENGTH_SHORT).show()
@@ -450,7 +451,12 @@ fun MedAlarmScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(text = "⏰", fontSize = 16.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.Schedule,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Snooze (5 Minutes)",
