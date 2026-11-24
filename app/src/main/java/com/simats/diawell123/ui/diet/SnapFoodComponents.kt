@@ -79,6 +79,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.simats.diawell123.data.model.resolveFoodEmoji
+import com.simats.diawell123.ui.components.DiaWellAmbientBackground
 import com.simats.diawell123.data.model.HealthFoodItem
 import com.simats.diawell123.data.model.SnapFoodAnalysis
 import com.simats.diawell123.data.model.SnapFoodSubItem
@@ -445,16 +447,48 @@ fun MealNutritionBreakdownSheet(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(AppTheme.colors.background)
+                .background(if (isDark) Color(0xFF090611) else Color(0xFFF8FAFC))
                 .statusBarsPadding()
                 .navigationBarsPadding()
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 18.dp, vertical = 14.dp)
-            ) {
+            DiaWellAmbientBackground {
+                if (showChangeFoodDialog) {
+                    ChangeFoodContent(
+                        currentDish = dishTitle,
+                        imageBitmap = analysis.imageBitmap,
+                        isInitialSelection = analysis.needsUserSelection || dishTitle.isBlank(),
+                        userGlucose = userGlucose,
+                        onDismiss = {
+                            if (dishTitle.isBlank()) {
+                                onDismiss()
+                            } else {
+                                showChangeFoodDialog = false
+                            }
+                        },
+                        onFoodSelected = { newAnalysis ->
+                            dishTitle = newAnalysis.detectedDishName
+                            dishIcon = newAnalysis.icon
+                            selectedMealSlot = newAnalysis.mealSlot
+                            activeGlycemicScore = newAnalysis.glycemicScore
+                            activeGlycemicExplanation = newAnalysis.glycemicHealthExplanation
+                            baseCalories = newAnalysis.baseCalories
+                            baseCarbs = newAnalysis.baseCarbs
+                            baseProtein = newAnalysis.baseProtein
+                            baseFat = newAnalysis.baseFat
+                            baseFiber = newAnalysis.baseFiber
+                            subItems.clear()
+                            subItems.addAll(newAnalysis.subItems)
+                            servingCount = 1
+                            showChangeFoodDialog = false
+                        }
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 18.dp, vertical = 14.dp)
+                    ) {
                 // Top Action Bar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -963,41 +997,10 @@ fun MealNutritionBreakdownSheet(
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
+                    }
+                }
             }
         }
-    }
-
-    // Dynamic Change Food Dialog
-    if (showChangeFoodDialog) {
-        ChangeFoodDialog(
-            currentDish = dishTitle,
-            imageBitmap = analysis.imageBitmap,
-            isInitialSelection = analysis.needsUserSelection || dishTitle.isBlank(),
-            userGlucose = userGlucose,
-            onDismiss = {
-                if (dishTitle.isBlank()) {
-                    onDismiss()
-                } else {
-                    showChangeFoodDialog = false
-                }
-            },
-            onFoodSelected = { newAnalysis ->
-                dishTitle = newAnalysis.detectedDishName
-                dishIcon = newAnalysis.icon
-                selectedMealSlot = newAnalysis.mealSlot
-                activeGlycemicScore = newAnalysis.glycemicScore
-                activeGlycemicExplanation = newAnalysis.glycemicHealthExplanation
-                baseCalories = newAnalysis.baseCalories
-                baseCarbs = newAnalysis.baseCarbs
-                baseProtein = newAnalysis.baseProtein
-                baseFat = newAnalysis.baseFat
-                baseFiber = newAnalysis.baseFiber
-                subItems.clear()
-                subItems.addAll(newAnalysis.subItems)
-                servingCount = 1
-                showChangeFoodDialog = false
-            }
-        )
     }
 }
 
@@ -1007,7 +1010,7 @@ fun MealNutritionBreakdownSheet(
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ChangeFoodDialog(
+private fun ChangeFoodContent(
     currentDish: String,
     imageBitmap: Bitmap? = null,
     isInitialSelection: Boolean = false,
@@ -1040,19 +1043,11 @@ private fun ChangeFoodDialog(
         }
     }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(AppTheme.colors.background)
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
                 // Top Header Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1267,11 +1262,9 @@ private fun ChangeFoodDialog(
                                         .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Restaurant,
-                                        contentDescription = null,
-                                        tint = Color(0xFFA855F7),
-                                        modifier = Modifier.size(20.dp)
+                                    Text(
+                                        text = resolveFoodEmoji(item.icon, item.name),
+                                        fontSize = 18.sp
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
@@ -1333,8 +1326,6 @@ private fun ChangeFoodDialog(
                         }
                     }
                 }
-            }
-        }
     }
 }
 
