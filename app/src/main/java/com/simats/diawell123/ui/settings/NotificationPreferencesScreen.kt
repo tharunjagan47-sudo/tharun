@@ -217,9 +217,9 @@ fun NotificationPreferencesScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             NotificationToggleRow(
-                title = "Smart Health Nudges",
-                subtitle = "Swiggy/Zomato-style daily contextual health tips.",
-                vectorIcon = Icons.Rounded.Notifications,
+                title = "Drinking Water Nudges",
+                subtitle = "Gentle daily reminders to drink water and stay hydrated.",
+                vectorIcon = Icons.Rounded.WaterDrop,
                 checked = smartNudgesEnabled,
                 onCheckedChange = {
                     smartNudgesEnabled = it
@@ -229,7 +229,7 @@ fun NotificationPreferencesScreen(
                     } else {
                         com.simats.diawell123.util.SmartNudgeEngine.cancelAllNudges(context)
                     }
-                    Toast.makeText(context, if (it) "Smart Health Nudges enabled" else "Smart Health Nudges disabled", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if (it) "Drinking Water Nudges enabled" else "Drinking Water Nudges disabled", Toast.LENGTH_SHORT).show()
                 },
             )
 
