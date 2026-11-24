@@ -56,6 +56,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.MedicationItem
+import com.simats.diawell123.data.model.resolveMedEmoji
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
@@ -287,11 +288,9 @@ fun MedicationsScreen(
                                     .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Medication,
-                                    contentDescription = null,
-                                    tint = Color(0xFFA855F7),
-                                    modifier = Modifier.size(32.dp)
+                                Text(
+                                    text = "💊",
+                                    fontSize = 28.sp
                                 )
                             }
                             Spacer(modifier = Modifier.height(10.dp))
@@ -405,11 +404,9 @@ fun MedicationScheduleCard(
                         .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = iconVector,
-                        contentDescription = null,
-                        tint = Color(0xFFA855F7),
-                        modifier = Modifier.size(24.dp)
+                    Text(
+                        text = resolveMedEmoji(dosageForm, name),
+                        fontSize = 22.sp
                     )
                 }
                 Spacer(modifier = Modifier.width(14.dp))
