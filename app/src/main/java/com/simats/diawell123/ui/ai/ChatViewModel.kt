@@ -83,7 +83,7 @@ class ChatViewModel(
     }
 
     private fun buildWelcomeText(name: String): String {
-        return "Hello $name! I am **DIVA** (DiaWell Intelligent Virtual Assistant), your personal voice & diabetes wellness companion. ⚡🩺\n\nTap the **🎙️ Mic** for Voice Mode: ask about your blood sugar, medications, or diet (e.g. **\"What is my glucose level?\"** or **\"What medications am I taking?\"**), or say **\"Log my fasting sugar 115\"** hands-free!"
+        return "Hello $name! I am **DIVA** (DiaWell Intelligent Virtual Assistant), your personal voice & diabetes wellness companion.\n\nTap the **Mic** for Voice Mode: ask about your blood sugar, medications, or diet (e.g. **\"What is my glucose level?\"** or **\"What medications am I taking?\"**), or say **\"Log my fasting sugar 115\"** hands-free!"
     }
 
     private fun initWelcomeMessage() {
@@ -209,7 +209,7 @@ class ChatViewModel(
                             _errorMessage.value = errorMsg
                             _messages.value = _messages.value + ChatMessage(
                                 sender = ChatSender.AI,
-                                text = "⚠️ $errorMsg",
+                                text = errorMsg,
                                 isError = true
                             )
                             onErrorCallback?.invoke()
@@ -326,7 +326,7 @@ class ChatViewModel(
                 val isHighFibre = fibreVal >= 3.0f
                 metrics.add(
                     NutritionMetric(
-                        label = if (isHighFibre) "🌾 High-Fibre: ${valueStr}g" else "🌾 Fibre: ${valueStr}g",
+                        label = if (isHighFibre) "High-Fibre: ${valueStr}g" else "Fibre: ${valueStr}g",
                         value = "${valueStr}g",
                         isHighlight = isHighFibre,
                         badgeType = BadgeType.HIGH_FIBRE
@@ -339,7 +339,7 @@ class ChatViewModel(
                 val valueStr = calMatcher.group(1) ?: ""
                 metrics.add(
                     NutritionMetric(
-                        label = "🔥 ${valueStr} kcal",
+                        label = "${valueStr} kcal",
                         value = "${valueStr} kcal",
                         isHighlight = false,
                         badgeType = BadgeType.CALORIES
@@ -352,7 +352,7 @@ class ChatViewModel(
                 val valueStr = carbMatcher.group(1) ?: ""
                 metrics.add(
                     NutritionMetric(
-                        label = "🍞 Carbs: ${valueStr}g",
+                        label = "Carbs: ${valueStr}g",
                         value = "${valueStr}g",
                         isHighlight = false,
                         badgeType = BadgeType.CARBOHYDRATES
@@ -365,7 +365,7 @@ class ChatViewModel(
                 val valueStr = proteinMatcher.group(1) ?: ""
                 metrics.add(
                     NutritionMetric(
-                        label = "🥩 Protein: ${valueStr}g",
+                        label = "Protein: ${valueStr}g",
                         value = "${valueStr}g",
                         isHighlight = false,
                         badgeType = BadgeType.PROTEIN
@@ -378,7 +378,7 @@ class ChatViewModel(
                 val valueStr = metMatcher.group(1) ?: ""
                 metrics.add(
                     NutritionMetric(
-                        label = "⚡ ${valueStr} METs",
+                        label = "${valueStr} METs",
                         value = "${valueStr} METs",
                         isHighlight = true,
                         badgeType = BadgeType.MET_ACTIVITY
