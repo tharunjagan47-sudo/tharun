@@ -61,6 +61,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.data.model.resolveFoodEmoji
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.util.DiaWellNotificationHelper
@@ -152,7 +153,7 @@ fun FoodDetailsScreen(
                                 .background(Color.White.copy(alpha = 0.2f)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(text = icon, fontSize = 28.sp)
+                            Text(text = resolveFoodEmoji(icon, title), fontSize = 28.sp)
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
