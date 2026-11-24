@@ -157,6 +157,7 @@ class MedAlarmActivity : ComponentActivity() {
                             message = "We will remind you to take $medName again in 5 minutes."
                         )
                         Toast.makeText(this, "Snoozed for 5 minutes", Toast.LENGTH_SHORT).show()
+                        finish()
 
                         lifecycleScope.launch {
                             MedicationStatusUpdater.updateStatusAndNotify(
@@ -167,7 +168,6 @@ class MedAlarmActivity : ComponentActivity() {
                                 explicitUserId = userId,
                                 snoozeMinutes = 5
                             )
-                            finish()
                         }
                     },
                     onSkip = {
