@@ -527,12 +527,6 @@ fun SetMedicationReminderScreen(
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp)
-                    )
 
                     Text(
                         text = "Change Date ›",
