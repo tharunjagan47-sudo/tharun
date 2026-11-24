@@ -31,6 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -408,7 +409,14 @@ fun LogGlucoseScreen(
                                 value = uiState.readingTime,
                                 onValueChange = { viewModel.onReadingTimeChanged(it) },
                                 singleLine = true,
-                                trailingIcon = { Text(text = "⏰", fontSize = 14.sp) },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Schedule,
+                                        contentDescription = "Time",
+                                        tint = Color(0xFFA855F7),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedTextColor = AppTheme.colors.textPrimary,
