@@ -30,10 +30,10 @@ data class DashboardData(
     val wellnessSubtitle: String = "Daily Wellness • 94% On Track",
 
     @SerializedName("streak_badge")
-    val streakBadge: String = "🔥 7 Day Logging Streak",
+    val streakBadge: String = "7 Day Logging Streak",
 
     @SerializedName("target_badge")
-    val targetBadge: String = "🎯 Fasting Target Met",
+    val targetBadge: String = "Fasting Target Met",
 
     @SerializedName("streak_days")
     val streakDays: Int = 0,
@@ -62,7 +62,7 @@ data class DashboardData(
  */
 data class HomeAiTip(
     @SerializedName("title")
-    val title: String = "DIVA Tip Of The Day ⚡",
+    val title: String = "DIVA Tip Of The Day",
 
     @SerializedName("tip")
     val tip: String = "A 10-minute light walk after meals helps smooth out blood sugar levels effectively!"
