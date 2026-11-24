@@ -37,123 +37,119 @@ object SmartNudgeEngine {
     private const val PERIODIC_INTERVAL_MS = 30 * 60 * 1000L
 
     private val dailySlots = listOf(
-        // 2001: 8:00 AM — Morning Sugar Check Nudge
+        // 2001: 8:00 AM — Morning Hydration Nudge
         SmartNudgeSlot(
             slotId = 2001,
             hour = 8,
             minute = 0,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "Morning Sugar Check-In",
-                    body = "Morning check-in! Fasting sugar check pannacha? Log it before breakfast!",
+                    title = "Morning Hydration Check 💧",
+                    body = "Start your morning with a fresh glass of water! Hydration supports metabolism and flushes excess glucose.",
                 ),
                 SmartNudgeVariant(
-                    title = "Rise & Shine, Glucose Check",
-                    body = "Good morning! A quick 10-second fasting glucose check sets your day right.",
+                    title = "Rise & Shine Hydration 💧",
+                    body = "Good morning! Drinking water before your routine keeps energy high and blood sugar balanced.",
                 ),
             ),
-            primaryActionLabel = "Log Sugar Now",
-            primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_GLUCOSE,
-            targetScreen = "log_glucose",
+            primaryActionLabel = "Got It, Drinking Water 💧",
+            primaryActionType = NudgeActionReceiver.ACTION_DISMISS_NUDGE,
+            targetScreen = "home",
         ),
-        // 2002: 10:30 AM — Morning Hydration Nudge
+        // 2002: 10:30 AM — Mid-Morning Hydration Nudge
         SmartNudgeSlot(
             slotId = 2002,
             hour = 10,
             minute = 30,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "Thirsty? Your kidneys called!",
-                    body = "Thirsty? Your kidneys called! One glass of water right now flushes excess glucose. Kudichacha?",
+                    title = "Thirsty? Your kidneys called! 💧",
+                    body = "Mid-morning hydration check! One glass of water right now flushes excess glucose. Drink up!",
                 ),
                 SmartNudgeVariant(
-                    title = "Mid-Morning Hydration Check",
-                    body = "Mid-morning hydration check! Drink 250ml of water to keep your energy and sugar steady.",
+                    title = "Mid-Morning Water Reminder 💧",
+                    body = "Time for a glass of water! Staying hydrated keeps your energy and blood sugar steady.",
                 ),
             ),
-            primaryActionLabel = "Drank 1 Glass (+250ml)",
-            primaryActionType = NudgeActionReceiver.ACTION_QUICK_LOG_WATER,
+            primaryActionLabel = "Got It, Drinking Water 💧",
+            primaryActionType = NudgeActionReceiver.ACTION_DISMISS_NUDGE,
             targetScreen = "home",
         ),
-        // 2003: 1:15 PM — Low-GI Lunch Nudge
+        // 2003: 1:30 PM — Post-Lunch Hydration Nudge
         SmartNudgeSlot(
             slotId = 2003,
             hour = 13,
-            minute = 15,
+            minute = 30,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "Hungry? Skip the white rice spike",
-                    body = "Hungry? Skip the white rice spike! Pair your lunch with extra poriyal, greens & buttermilk.",
+                    title = "Afternoon Hydration 💧",
+                    body = "Time for a sip! A glass of water after your meal supports gentle digestion and metabolic balance.",
                 ),
                 SmartNudgeVariant(
-                    title = "Smart Lunch Tip for Steady Sugar",
-                    body = "Lunch time! Start with fiber & vegetables first before carbs to reduce your glucose spike by 30%.",
+                    title = "Stay Hydrated this Afternoon 💧",
+                    body = "Beat the afternoon slump! A glass of clean water keeps you active and focused.",
                 ),
             ),
-            primaryActionLabel = "Log My Meal",
-            primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_DIET,
-            secondaryActionLabel = "Ask DIVA",
-            secondaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_AI_CHAT,
-            targetScreen = "daily_diet_plan",
+            primaryActionLabel = "Got It, Drinking Water 💧",
+            primaryActionType = NudgeActionReceiver.ACTION_DISMISS_NUDGE,
+            targetScreen = "home",
         ),
-        // 2004: 4:30 PM — Evening Tea/Snack Nudge
+        // 2004: 4:30 PM — Evening Water Reminder
         SmartNudgeSlot(
             slotId = 2004,
             hour = 16,
             minute = 30,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "Tea time cravings hitting hard?",
-                    body = "Tea time cravings hitting hard? Skip the bajji & biscuits — grab roasted chana or sundal instead!",
+                    title = "Evening Hydration Check 💧",
+                    body = "Before your evening tea or snacks, drink a glass of water to keep your hydration on track.",
                 ),
                 SmartNudgeVariant(
-                    title = "4:30 PM hunger pang?",
-                    body = "4:30 PM hunger pang? A handful of almonds, walnuts, or cucumber slices keeps sugar flat!",
+                    title = "Hydrate & Recharge 💧",
+                    body = "A glass of water right now helps flush excess sugar and maintain steady evening energy.",
                 ),
             ),
-            primaryActionLabel = "Got It, Staying Healthy",
+            primaryActionLabel = "Got It, Drinking Water 💧",
             primaryActionType = NudgeActionReceiver.ACTION_DISMISS_NUDGE,
             targetScreen = "home",
         ),
-        // 2005: 6:30 PM — Evening Walk / Activity Nudge
+        // 2005: 7:00 PM — Pre-Dinner Hydration Nudge
         SmartNudgeSlot(
             slotId = 2005,
-            hour = 18,
-            minute = 30,
+            hour = 19,
+            minute = 0,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "Couch vs. 15-Min Walk — Who wins today?",
-                    body = "Couch vs. 15-Min Walk — Who wins today? A brisk walk right now drops glucose naturally. Polama?",
+                    title = "Pre-Dinner Glass of Water 💧",
+                    body = "Drinking water before dinner aids healthy digestion and helps prevent glucose spikes.",
                 ),
                 SmartNudgeVariant(
-                    title = "Evening step goal calling",
-                    body = "Evening step goal calling! 20 minutes of walking boosts your insulin sensitivity all night.",
+                    title = "Evening Water Check 💧",
+                    body = "Keep up your hydration habit! A glass of water now prepares your body for dinner.",
                 ),
             ),
-            primaryActionLabel = "Start 15m Walk",
-            primaryActionType = NudgeActionReceiver.ACTION_QUICK_LOG_WALK,
-            targetScreen = "activity_tracking",
+            primaryActionLabel = "Got It, Drinking Water 💧",
+            primaryActionType = NudgeActionReceiver.ACTION_DISMISS_NUDGE,
+            targetScreen = "home",
         ),
-        // 2006: 8:30 PM — Dinner & Post-Meal Nudge
+        // 2006: 9:30 PM — Bedtime Hydration Nudge
         SmartNudgeSlot(
             slotId = 2006,
-            hour = 20,
+            hour = 21,
             minute = 30,
             variants = listOf(
                 SmartNudgeVariant(
-                    title = "Dinner time! Keep it light & low-GI",
-                    body = "Dinner time! Keep it light and low-GI (chapati, millet dosa, or soup) at least 2 hours before sleep.",
+                    title = "Bedtime Hydration 💧",
+                    body = "A gentle glass of water before winding down keeps you comfortable and hydrated through the night.",
                 ),
                 SmartNudgeVariant(
-                    title = "Done with dinner?",
-                    body = "Done with dinner? A gentle 10-minute stroll around the house prevents morning fasting spikes!",
+                    title = "Night Hydration Reminder 💧",
+                    body = "Stay hydrated before sleep to support your body's overnight glucose balance.",
                 ),
             ),
-            primaryActionLabel = "Log My Meal",
-            primaryActionType = DiaWellNotificationHelper.NUDGE_ACTION_OPEN_DIET,
-            secondaryActionLabel = "Start 15m Walk",
-            secondaryActionType = NudgeActionReceiver.ACTION_QUICK_LOG_WALK,
-            targetScreen = "daily_diet_plan",
+            primaryActionLabel = "Got It, Drinking Water 💧",
+            primaryActionType = NudgeActionReceiver.ACTION_DISMISS_NUDGE,
+            targetScreen = "home",
         ),
     )
 
