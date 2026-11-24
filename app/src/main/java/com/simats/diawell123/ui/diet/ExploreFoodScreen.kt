@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.RecommendedFoodItem
+import com.simats.diawell123.data.model.resolveFoodEmoji
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
@@ -433,7 +434,7 @@ fun AiRecommendedFoodCard(
                             .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = item.icon, fontSize = 20.sp)
+                        Text(text = resolveFoodEmoji(item.icon, item.title), fontSize = 20.sp)
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
@@ -574,7 +575,7 @@ fun ExploreMealCard(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = icon, fontSize = 28.sp)
+                Text(text = resolveFoodEmoji(icon, name), fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
