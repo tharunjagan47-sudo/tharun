@@ -5,6 +5,11 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.ImageLabeling
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import com.simats.diawell123.data.api.NetworkConstants
 import com.simats.diawell123.data.model.HealthFoodItem
 import com.simats.diawell123.data.model.SnapFoodAnalysis
@@ -389,8 +394,9 @@ object SnapFoodAnalyzer {
         val endpoints = listOf(
             "${NetworkConstants.BASE_URL}ai/analyze_food.php",
             "http://127.0.0.1:8080/diawell_backend/ai/analyze_food.php",
-            "http://127.0.0.1:8080/DiaWell_backend/ai/analyze_food.php",
+            "http://172.23.176.99/diawell_backend/ai/analyze_food.php",
             "http://127.0.0.1/diawell_backend/ai/analyze_food.php",
+            "http://127.0.0.1:8080/DiaWell_backend/ai/analyze_food.php",
             "http://127.0.0.1/DiaWell_backend/ai/analyze_food.php",
             "http://10.0.2.2/diawell_backend/ai/analyze_food.php"
         )
@@ -430,8 +436,9 @@ object SnapFoodAnalyzer {
         val endpoints = listOf(
             "${NetworkConstants.BASE_URL}ai/analyze_food.php",
             "http://127.0.0.1:8080/diawell_backend/ai/analyze_food.php",
-            "http://127.0.0.1:8080/DiaWell_backend/ai/analyze_food.php",
+            "http://172.23.176.99/diawell_backend/ai/analyze_food.php",
             "http://127.0.0.1/diawell_backend/ai/analyze_food.php",
+            "http://127.0.0.1:8080/DiaWell_backend/ai/analyze_food.php",
             "http://127.0.0.1/DiaWell_backend/ai/analyze_food.php",
             "http://10.0.2.2/diawell_backend/ai/analyze_food.php"
         )
@@ -497,6 +504,7 @@ object SnapFoodAnalyzer {
         val ollamaUrls = listOf(
             "$ollamaBaseUrl/api/generate",
             "http://127.0.0.1:11434/api/generate",
+            "http://172.23.176.99:11434/api/generate",
             "http://10.0.2.2:11434/api/generate"
         )
 
@@ -710,12 +718,88 @@ object SnapFoodAnalyzer {
     }
 
     /**
-     * Intelligent on-device heuristic vision classifier that inspects color distribution,
-     * dominant hues, and time of day to identify what food was snapped/uploaded when offline.
-     * Guarantees zero blank screens, accurate diabetic macro calculation, and immediate breakdown.
+     * Google ML Kit On-Device Computer Vision Labeling (100% offline, zero network required).
+     * Extracts genuine computer vision food labels (Pizza, Bread, Rice, Salad, Soup, Coffee, Tea, Meat, etc.)
      */
-    private fun classifyFoodLocally(bitmap: Bitmap, userGlucose: Float?): SnapFoodAnalysis {
-        val sampleSize = 48
+    private suspend fun labelImageWithMlKit(bitmap: Bitmap): List<String> = suspendCoroutine { cont ->
+        try {
+            val image = InputImage.fromBitmap(bitmap, 0)
+            val labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
+            labeler.process(image)
+                .addOnSuccessListener { labels ->
+                    val detected = labels.filter { it.confidence >= 0.40f }.map { it.text.lowercase(Locale.ROOT) }
+                    cont.resume(detected)
+                }
+                .addOnFailureListener {
+                    cont.resume(emptyList())
+                }
+        } catch (_: Throwable) {
+            cont.resume(emptyList())
+        }
+    }
+
+    /**
+     * Comprehensive multi-modal on-device classifier combining:
+     * 1. Google ML Kit On-Device Vision Labeling (Pizza, Bread, Rice, Salad, Soup, Coffee, Tea, Meat, Fruit, etc.)
+     * 2. High-precision HSV Color & Texture analysis (sauce red, cheese yellow, leafy green, dark brown)
+     * 3. Diurnal contextual heuristics (Breakfast / Lunch / Snack / Dinner)
+     */
+    private suspend fun classifyFoodLocally(bitmap: Bitmap, userGlucose: Float?): SnapFoodAnalysis {
+        // Step 1: Run Google ML Kit on-device computer vision
+        val mlLabels = labelImageWithMlKit(bitmap)
+
+        // Check ML Kit labels against templates
+        for (label in mlLabels) {
+            when {
+                label.contains("pizza") || label.contains("fast food") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Pizza", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("coffee") || label.contains("espresso") || label.contains("cappuccino") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Coffee", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("tea") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Tea", ignoreCase = true) }
+                        ?: templateBreakdowns.firstOrNull { it.detectedDishName.contains("Chai", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("salad") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Salad", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("soup") || label.contains("broth") || label.contains("stew") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Rasam", ignoreCase = true) }
+                        ?: templateBreakdowns.firstOrNull { it.detectedDishName.contains("Sambar", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("rice") || label.contains("grain") || label.contains("biryani") || label.contains("pilaf") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Rice", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("pancake") || label.contains("crepe") || label.contains("waffle") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Dosa", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("bread") || label.contains("flatbread") || label.contains("roti") || label.contains("naan") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Chapati", ignoreCase = true) }
+                        ?: templateBreakdowns.firstOrNull { it.detectedDishName.contains("Dosa", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("meat") || label.contains("chicken") || label.contains("fish") || label.contains("seafood") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Grilled", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+                label.contains("dessert") || label.contains("cake") || label.contains("pastry") || label.contains("ice cream") -> {
+                    val match = templateBreakdowns.firstOrNull { it.detectedDishName.contains("Pudding", ignoreCase = true) }
+                        ?: templateBreakdowns.firstOrNull { it.detectedDishName.contains("Khichdi", ignoreCase = true) }
+                    if (match != null) return match.copy(glycemicHealthExplanation = personalizeExplanation(match.glycemicHealthExplanation, userGlucose), needsUserSelection = false)
+                }
+            }
+        }
+
+        // Step 2: Multi-feature color & texture analysis if ML Kit labels are generic ("Food", "Dish", etc.)
+        val sampleSize = 64
         val scaled = try {
             Bitmap.createScaledBitmap(bitmap, sampleSize, sampleSize, false)
         } catch (_: Throwable) {
@@ -738,20 +822,15 @@ object SnapFoodAnalyzer {
                 val b = pixel and 0xFF
 
                 android.graphics.Color.RGBToHSV(r, g, b, hsv)
-                val hue = hsv[0] // 0 to 360
-                val sat = hsv[1] // 0 to 1
-                val value = hsv[2] // 0 to 1
+                val hue = hsv[0]
+                val sat = hsv[1]
+                val value = hsv[2]
 
                 when {
-                    // Reddish / Orange (pizza sauce, tomato gravy, etc.)
-                    (hue in 0f..25f || hue in 345f..360f) && sat > 0.35f && value > 0.35f -> redCount++
-                    // Green (leafy vegetables, salads, keerai, green tea)
-                    hue in 65f..160f && sat > 0.25f && value > 0.25f -> greenCount++
-                    // Yellow / Golden (cheese, dosa, dal, khichdi, roti)
-                    hue in 26f..64f && sat > 0.30f && value > 0.40f -> yellowGoldenCount++
-                    // White / Ivory (idli, plain rice, curd)
-                    sat < 0.20f && value > 0.70f -> whiteIvoryCount++
-                    // Dark / Brown (coffee, dark curry, seared protein)
+                    (hue in 0f..25f || hue in 345f..360f) && sat > 0.32f && value > 0.35f -> redCount++
+                    hue in 65f..160f && sat > 0.22f && value > 0.22f -> greenCount++
+                    hue in 26f..64f && sat > 0.28f && value > 0.38f -> yellowGoldenCount++
+                    sat < 0.20f && value > 0.68f -> whiteIvoryCount++
                     value < 0.30f || (hue in 15f..40f && sat > 0.30f && value < 0.45f) -> darkBrownCount++
                 }
             }
@@ -769,33 +848,28 @@ object SnapFoodAnalyzer {
         }
 
         val chosenTemplate = when {
-            // Pizza: strong reddish sauce AND golden cheese / crust
             redCount > totalPixels * 0.10f && yellowGoldenCount > totalPixels * 0.08f -> {
                 templateBreakdowns.firstOrNull { it.detectedDishName.contains("Pizza", ignoreCase = true) }
             }
-            // Fresh Greens / Salad
-            greenCount > totalPixels * 0.18f -> {
+            greenCount > totalPixels * 0.16f -> {
                 templateBreakdowns.firstOrNull { it.detectedDishName.contains("Salad", ignoreCase = true) }
                     ?: templateBreakdowns.firstOrNull { it.detectedDishName.contains("Keerai", ignoreCase = true) }
             }
-            // Light / Steamed (Idli / Curd)
-            whiteIvoryCount > totalPixels * 0.25f -> {
+            whiteIvoryCount > totalPixels * 0.24f -> {
                 if (defaultSlot == "Breakfast") {
                     templateBreakdowns.firstOrNull { it.detectedDishName.contains("Steamed Idli", ignoreCase = true) }
                 } else {
                     templateBreakdowns.firstOrNull { it.detectedDishName.contains("Brown Rice", ignoreCase = true) }
                 }
             }
-            // Golden / Roasted (Dosa / Chapati / Khichdi)
-            yellowGoldenCount > totalPixels * 0.20f -> {
+            yellowGoldenCount > totalPixels * 0.18f -> {
                 when (defaultSlot) {
                     "Breakfast" -> templateBreakdowns.firstOrNull { it.detectedDishName.contains("Dosa", ignoreCase = true) }
                     "Dinner" -> templateBreakdowns.firstOrNull { it.detectedDishName.contains("Chapati", ignoreCase = true) }
                     else -> templateBreakdowns.firstOrNull { it.detectedDishName.contains("Brown Rice", ignoreCase = true) }
                 }
             }
-            // Dark / Beverages / Grilled
-            darkBrownCount > totalPixels * 0.20f -> {
+            darkBrownCount > totalPixels * 0.18f -> {
                 if (defaultSlot == "Snack") {
                     templateBreakdowns.firstOrNull { it.detectedDishName.contains("Chai", ignoreCase = true) }
                         ?: templateBreakdowns.firstOrNull { it.detectedDishName.contains("Tea", ignoreCase = true) }
