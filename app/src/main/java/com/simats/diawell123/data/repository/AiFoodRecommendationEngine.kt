@@ -49,7 +49,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Finger millet (ragi) provides slow-digesting polyphenols and complex carbs that prevent morning glucose spikes.",
             portion = "2 ragi idlis with 1 bowl vegetable sambar",
-            icon = "🥣",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -67,7 +67,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
             healthReason = "Whole green gram provides high plant protein and resistant starch, yielding a remarkably flat post-meal glucose response.",
             portion = "2 pesarattus with 2 tbsp mint-coriander chutney",
-            icon = "🥞",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -85,7 +85,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Beta-glucan soluble fiber paired with carrots, beans, and mustard tempering blunts carbohydrate absorption speed.",
             portion = "1 medium bowl (220g)",
-            icon = "🍲",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -103,7 +103,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
             healthReason = "Pearl millet (kambu) has high mineral magnesium content and a very low glycemic load that supports insulin receptor sensitivity.",
             portion = "2 dosas with 2 tbsp tomato chutney",
-            icon = "🫓",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -121,7 +121,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "PostWorkout", "Balanced"),
             healthReason = "Traditional soft steamed idlis paired with bioavailable albumin egg protein slow gastric emptying and prevent insulin spikes.",
             portion = "2 idlis + 3 boiled egg whites + 1/2 bowl sambar",
-            icon = "🍳",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -139,7 +139,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Thinai millet cooked with yellow moong dal, ginger, and crushed pepper provides continuous, sustained morning energy.",
             portion = "1 medium bowl + 1 tbsp coriander chutney",
-            icon = "🥣",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -157,7 +157,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "Balanced"),
             healthReason = "High plant protein and active dietary fiber stabilize fasting sugar and sustain morning satiety.",
             portion = "2 chillas",
-            icon = "🥞",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -175,7 +175,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
             healthReason = "Ultra-low carbohydrate load with pure bioavailable albumin protein protects morning insulin sensitivity.",
             portion = "3 whites scrambled + 1 toast",
-            icon = "🍳",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -193,7 +193,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb"),
             healthReason = "Near-zero glycemic load meal combining soy isoflavones and heart-healthy monounsaturated fats.",
             portion = "1 bowl (200g)",
-            icon = "🥗",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -211,7 +211,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "Balanced"),
             healthReason = "Fenugreek alkaloid trigonelline has clinically proven hypoglycemic properties that enhance insulin sensitivity.",
             portion = "2 theplas with 1/2 cup curd",
-            icon = "🫓",
+            icon = "restaurant",
             isSouthIndian = false
         ),
 
@@ -231,7 +231,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Unpolished red matta rice paired with drumstick toor dal and amaranth keerai poriyal prevents sharp postprandial glycemic excursions.",
             portion = "1 small cup rice + 1 cup sambar + 1 cup keerai + 1/2 cup curd",
-            icon = "🍛",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -249,7 +249,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced", "LowCarb"),
             healthReason = "Foxtail millet delivers complex amylose starch that digests slowly, sustaining balanced glucose levels for 4+ hours.",
             portion = "1 bowl thinai sambar + 1 cup keerai poriyal + curd",
-            icon = "🍲",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -267,7 +267,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Okra (vendakkai) contains soluble mucilage fiber that delays carbohydrate absorption, while ginger neer mor aids metabolic gut balance.",
             portion = "1 bowl millet rice + 1 cup shallow okra fry + 1 glass neer mor",
-            icon = "🍋",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -285,7 +285,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
             healthReason = "Piperine-rich South Indian pepper rasam stimulates natural digestive enzymes, while paneer protein keeps carbohydrate intake low.",
             portion = "1 bowl rasam + 1 cup cabbage beans poriyal + 100g tawa paneer",
-            icon = "🧀",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -303,7 +303,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "PostWorkout"),
             healthReason = "Pure lean chicken protein paired with traditional cumin-pepper rasam and fibrous vegetables keeps glucose completely steady.",
             portion = "1 bowl rasam + 1 cup poriyal + 150g grilled chicken",
-            icon = "🍗",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -321,7 +321,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Kollu (horse gram) has traditional Ayurvedic prominence for enhancing insulin sensitivity and reducing insulin resistance.",
             portion = "1 cup kollu sambar + 1 small cup red rice + cabbage poriyal",
-            icon = "🥣",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -339,7 +339,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Omega-3 rich fish curry prepared with fenugreek and tomato simmer paired with little millet gives steady glycemic control.",
             portion = "1 bowl fish curry (1 fillet) + 1 small bowl samai rice",
-            icon = "🐟",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -357,7 +357,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "Balanced"),
             healthReason = "High dairy calcium and casein protein combined with non-starchy peppers create a slow, gradual glycemic release.",
             portion = "6 paneer cubes + 1 roti",
-            icon = "🧀",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -375,7 +375,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "Balanced"),
             healthReason = "Textured soy protein absorbs cooking broth, reducing overall net starch content while supplying complete essential amino acids.",
             portion = "1 medium bowl + 1/2 cup raita",
-            icon = "🍚",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -393,7 +393,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
             healthReason = "Zero net glycemic impact meal rich in anti-inflammatory EPA and DHA omega-3 fatty acids for cardiovascular health.",
             portion = "1 fillet (180g) + 1 cup cauli-mash",
-            icon = "🐟",
+            icon = "restaurant",
             isSouthIndian = false
         ),
 
@@ -413,7 +413,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "Balanced"),
             healthReason = "Traditional temple-style sundal tempered with mustard, curry leaves, and minimal coconut provides satiating slow carbs and fiber.",
             portion = "1 small cup (100g)",
-            icon = "🥗",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -431,7 +431,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
             healthReason = "Crunchy makhana and roasted groundnuts tossed in turmeric and curry leaves stabilize mid-day hunger without glucose spikes.",
             portion = "1/2 cup (40g)",
-            icon = "🥜",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -449,7 +449,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "Balanced"),
             healthReason = "Sprouted whole moong contains active enzymes, vitamin C, and soluble fiber that keep pre-dinner blood sugar level.",
             portion = "1 medium bowl (150g)",
-            icon = "🌱",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -467,7 +467,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
             healthReason = "Traditional South Indian spiced buttermilk hydrates, delivers digestive probiotics, and has near-zero glycemic impact.",
             portion = "1 tall glass (250ml)",
-            icon = "🥛",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -485,7 +485,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
             healthReason = "Rich chicory filter decoction with low-fat cow's milk and zero sugar delivers antioxidants without raising blood glucose.",
             portion = "1 davarah tumbler (120ml)",
-            icon = "☕",
+            icon = "local_cafe",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -503,7 +503,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
             healthReason = "Low glycemic index whole roasted chickpeas satisfy afternoon salt cravings while keeping glucose flat.",
             portion = "1/2 cup (50g)",
-            icon = "🧆",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -521,7 +521,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "PostWorkout"),
             healthReason = "Pure protein snack with near-zero sugar content, perfect for preventing pre-dinner hypoglycemia without adding excess calories.",
             portion = "3 whites chopped",
-            icon = "🥚",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -539,7 +539,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb"),
             healthReason = "Cinnamon contains cinnamaldehyde which mimics insulin, while walnuts contribute cardioprotective alpha-linolenic acid.",
             portion = "1 small bowl (120g)",
-            icon = "🥣",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -557,7 +557,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "Balanced"),
             healthReason = "Very low glycemic index (GI 12) fruit packed with 4x the vitamin C of an orange and high pectin soluble fiber.",
             portion = "1 medium guava sliced",
-            icon = "🍐",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -575,7 +575,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb"),
             healthReason = "Abundant magnesium and lignans assist glucose cellular uptake and modulate post-snack insulin demand.",
             portion = "2 tbsp (25g)",
-            icon = "🌻",
+            icon = "restaurant",
             isSouthIndian = false
         ),
 
@@ -595,7 +595,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LightEvening", "Balanced"),
             healthReason = "High-water-content bottle gourd combined with chana dal provides a light, easily digestible evening meal that supports overnight glucose control.",
             portion = "2 phulkas with 1 cup lauki kootu",
-            icon = "🫓",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -613,7 +613,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LightEvening", "Balanced"),
             healthReason = "Cracked whole wheat retains germ and aleurone layers, yielding an ultra-low glycemic response that prevents fasting hyperglycemia (Dawn Phenomenon).",
             portion = "1 medium bowl (250g)",
-            icon = "🍲",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -631,7 +631,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "LightEvening"),
             healthReason = "Seared fish fillet in South Indian turmeric-garlic rub with local greens keeps carbohydrates minimal before bedtime.",
             portion = "1 seared fillet (180g) + 1 cup spinach poriyal",
-            icon = "🐟",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -649,7 +649,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "LightEvening"),
             healthReason = "High lean poultry protein with soluble okra fiber ensures prolonged satiety and prevents midnight hypoglycemia or morning spikes.",
             portion = "150g spiced chicken breast + 1 cup okra & spinach",
-            icon = "🍗",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -667,7 +667,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LightEvening", "Balanced"),
             healthReason = "Crisp calcium-rich finger millet dosa digests gently, avoiding overnight liver glycogen dump and morning insulin surges.",
             portion = "2 thin ragi dosas + 1 cup clear veggie soup",
-            icon = "🥞",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -685,7 +685,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb", "LightEvening"),
             healthReason = "Calorie-controlled dinner providing soothing horse gram polyphenols and clean protein for overnight muscular & glycemic repair.",
             portion = "1 large bowl rasam + steamed beans/carrots + 2 whites",
-            icon = "🥣",
+            icon = "restaurant",
             isSouthIndian = true
         ),
         HealthFoodItem(
@@ -703,7 +703,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
             healthReason = "Broccoli contains sulforaphane which reduces hepatic glucose output, coupled with slow-digesting paneer casein.",
             portion = "1 medium plate (220g)",
-            icon = "🥦",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -721,7 +721,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LightEvening", "Balanced"),
             healthReason = "Calorie-controlled, high-volume broth that stretches the stomach wall, stimulating natural satiety peptides (GLP-1).",
             portion = "1 large bowl (300ml)",
-            icon = "🍲",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -739,7 +739,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("Balanced", "LightEvening"),
             healthReason = "Balanced 2:1 lentil-to-grain ratio ensures steady, non-spiking overnight glucose release.",
             portion = "1 medium bowl (200g)",
-            icon = "🍲",
+            icon = "restaurant",
             isSouthIndian = false
         ),
         HealthFoodItem(
@@ -757,7 +757,7 @@ object AiFoodRecommendationEngine {
             healthTags = listOf("HighSugarSafe", "LowCarb", "LightEvening"),
             healthReason = "Shirataki konjac noodles contain zero-calorie glucomannan fiber that stabilizes nighttime sugar without heavy carbs.",
             portion = "1 large bowl (300ml)",
-            icon = "🍜",
+            icon = "restaurant",
             isSouthIndian = false
         )
     )
@@ -904,11 +904,11 @@ object AiFoodRecommendationEngine {
         val (reasonText, glucoseBadge) = when {
             glucose > 180f -> {
                 val reason = "Tailored for your current glucose (${glucose.toInt()} mg/dL): Low glycemic load with ${chosenItem.fiberGrams.toInt()}g fiber and ${chosenItem.proteinGrams.toInt()}g protein slows carbohydrate digestion to help safely stabilize your sugar levels."
-                reason to "🔴 High Glucose Safe"
+                reason to "High Glucose Safe"
             }
             glucose < 70f -> {
                 val reason = "Selected for low blood sugar (${glucose.toInt()} mg/dL): Delivers ${chosenItem.carbsGrams.toInt()}g of gentle stabilizing complex carbohydrates paired with protein to safely recover normal glycemic balance."
-                reason to "🟡 Glucose Stabilizer"
+                reason to "Glucose Stabilizer"
             }
             else -> {
                 val reason = if (chosenItem.healthReason.isNotBlank()) {
@@ -916,14 +916,14 @@ object AiFoodRecommendationEngine {
                 } else {
                     "Nutrient-balanced pick for your healthy glucose level (${glucose.toInt()} mg/dL) with ${chosenItem.fiberGrams.toInt()}g fiber and steady macro release."
                 }
-                reason to "🟢 Glycemic In-Range"
+                reason to "Glycemic In-Range"
             }
         }
 
         val rotationLabel = if (shuffleOffset == 0) {
-            "📅 Today's Daily Pick"
+            "Today's Daily Pick"
         } else {
-            "🔀 Suggestion #${effectiveIndex + 1} of ${rotatedList.size}"
+            "Suggestion #${effectiveIndex + 1} of ${rotatedList.size}"
         }
 
         return HealthRecommendationResult(
