@@ -578,6 +578,42 @@ object AiFoodRecommendationEngine {
             icon = "🌻",
             isSouthIndian = false
         ),
+        HealthFoodItem(
+            id = 311,
+            name = "Herbal Green Tea with Mint & Lemon",
+            mealSlot = "Snack",
+            calories = 15,
+            carbsGrams = 1.5f,
+            proteinGrams = 0.5f,
+            fiberGrams = 0.5f,
+            fatGrams = 0.2f,
+            glycemicLoad = "Low",
+            dietType = "Vegan",
+            allergens = emptyList(),
+            healthTags = listOf("HighSugarSafe", "LowCarb", "Hydration"),
+            healthReason = "Rich in EGCG catechins and polyphenols that naturally improve insulin sensitivity and glycemic stability.",
+            portion = "1 cup (200ml)",
+            icon = "🍵",
+            isSouthIndian = false
+        ),
+        HealthFoodItem(
+            id = 312,
+            name = "Unsweetened Masala Chai (Spiced Tea)",
+            mealSlot = "Snack",
+            calories = 45,
+            carbsGrams = 3.5f,
+            proteinGrams = 2.5f,
+            fiberGrams = 0.5f,
+            fatGrams = 1.8f,
+            glycemicLoad = "Low",
+            dietType = "Vegetarian",
+            allergens = listOf("Dairy"),
+            healthTags = listOf("SouthIndian", "HighSugarSafe", "LowCarb"),
+            healthReason = "Brewed with ginger, cardamom, and cinnamon which enhances glucose uptake and digestion without spikes.",
+            portion = "1 cup (150ml)",
+            icon = "🍵",
+            isSouthIndian = true
+        ),
 
         // ==================== DINNER ====================
         HealthFoodItem(
