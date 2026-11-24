@@ -52,10 +52,10 @@ class MedReminderReceiver : BroadcastReceiver() {
 
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
-                    title = "✅ Dose Completed",
+                    title = "Dose Completed",
                     message = "Great job taking $medName on time!"
                 )
-                Toast.makeText(context, "Marked as Taken ✅", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Marked as Taken", Toast.LENGTH_SHORT).show()
 
                 val pendingResult = goAsync()
                 CoroutineScope(Dispatchers.IO).launch {
@@ -85,10 +85,10 @@ class MedReminderReceiver : BroadcastReceiver() {
                 DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId, effectiveDaily)
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
-                    title = "⏰ Medication Snoozed",
+                    title = "Medication Snoozed",
                     message = "We will remind you to take $medName again in 5 minutes."
                 )
-                Toast.makeText(context, "Snoozed for 5 minutes ⏰", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Snoozed for 5 minutes", Toast.LENGTH_SHORT).show()
 
                 val pendingResult = goAsync()
                 CoroutineScope(Dispatchers.IO).launch {
@@ -123,7 +123,7 @@ class MedReminderReceiver : BroadcastReceiver() {
 
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
-                    title = "⏭️ Dose Skipped",
+                    title = "Dose Skipped",
                     message = "Marked $medName as skipped for this schedule."
                 )
                 Toast.makeText(context, "Medication Skipped", Toast.LENGTH_SHORT).show()
