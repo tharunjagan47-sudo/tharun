@@ -63,7 +63,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Drumstick Toor Dal Sambar", portion = "1 bowl (150ml)", calories = 70, carbsG = 9f, proteinG = 4f, fatG = 1.5f, fiberG = 2.5f),
                 SnapFoodSubItem(name = "Fresh Coconut & Mint Chutney", portion = "2 tbsp (30g)", calories = 40, carbsG = 3f, proteinG = 0.5f, fatG = 2f, fiberG = 1f)
             ),
-            icon = "⚪",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -81,7 +81,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Drumstick Toor Dal Sambar", portion = "1 bowl (150ml)", calories = 70, carbsG = 9f, proteinG = 4f, fatG = 1.5f, fiberG = 2f),
                 SnapFoodSubItem(name = "Keerai (Spinach) Poriyal", portion = "1/2 cup (75g)", calories = 40, carbsG = 3f, proteinG = 1.5f, fatG = 0.5f, fiberG = 1.5f)
             ),
-            icon = "🥣",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -99,7 +99,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Spiced Potato Masala Filling", portion = "1 scoop (80g)", calories = 110, carbsG = 16f, proteinG = 2f, fatG = 4f, fiberG = 1.5f),
                 SnapFoodSubItem(name = "Toor Dal Sambar & Chutney", portion = "1 serving", calories = 80, carbsG = 5f, proteinG = 2f, fatG = 5f, fiberG = 1f)
             ),
-            icon = "🫓",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -117,7 +117,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Spicy Tomato Garlic Chutney", portion = "2 tbsp (30g)", calories = 45, carbsG = 4f, proteinG = 1f, fatG = 1.5f, fiberG = 1f),
                 SnapFoodSubItem(name = "Drumstick Dal Sambar", portion = "1 small bowl (100ml)", calories = 35, carbsG = 4f, proteinG = 1.5f, fatG = 0.5f, fiberG = 1f)
             ),
-            icon = "🥞",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -136,7 +136,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Amaranth Keerai Poriyal", portion = "1 cup (100g)", calories = 45, carbsG = 2f, proteinG = 2f, fatG = 1f, fiberG = 2f),
                 SnapFoodSubItem(name = "Low-Fat Probiotic Curd", portion = "1/2 cup (100g)", calories = 45, carbsG = 1f, proteinG = 3f, fatG = 1f, fiberG = 0.5f)
             ),
-            icon = "🍛",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -155,7 +155,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Pepper Cumin Tomato Rasam", portion = "1 cup (150ml)", calories = 40, carbsG = 4f, proteinG = 1.5f, fatG = 0.5f, fiberG = 0.5f),
                 SnapFoodSubItem(name = "Spiced Chilled Buttermilk", portion = "1 glass (150ml)", calories = 35, carbsG = 3f, proteinG = 2.5f, fatG = 0.5f, fiberG = 0f)
             ),
-            icon = "🥣",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -172,7 +172,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Roasted Oats & Veggie Upma", portion = "1 bowl (150g)", calories = 165, carbsG = 25f, proteinG = 6.5f, fatG = 3f, fiberG = 6.5f),
                 SnapFoodSubItem(name = "Fresh Mint & Coriander Chutney", portion = "2 tbsp (30g)", calories = 45, carbsG = 5f, proteinG = 1.5f, fatG = 1f, fiberG = 1f)
             ),
-            icon = "🍲",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -190,7 +190,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Lauki (Bottle Gourd) Moong Kootu", portion = "1 cup (120g)", calories = 70, carbsG = 6f, proteinG = 3.5f, fatG = 1.5f, fiberG = 2f),
                 SnapFoodSubItem(name = "Yellow Toor Dal Tadka", portion = "1/2 cup (100ml)", calories = 60, carbsG = 6f, proteinG = 3f, fatG = 1.5f, fiberG = 1f)
             ),
-            icon = "🫓",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -207,7 +207,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Dalia Veg Khichdi", portion = "1 bowl (180g)", calories = 205, carbsG = 31f, proteinG = 8.5f, fatG = 3.5f, fiberG = 7.5f),
                 SnapFoodSubItem(name = "Cucumber Tomato Salad", portion = "1 cup (80g)", calories = 45, carbsG = 3f, proteinG = 2.5f, fatG = 0.5f, fiberG = 1f)
             ),
-            icon = "🥣",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -224,7 +224,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Tempered Chickpeas & Moong Sundal", portion = "1 cup (120g)", calories = 140, carbsG = 18f, proteinG = 8f, fatG = 3f, fiberG = 6.5f),
                 SnapFoodSubItem(name = "Spiced Ginger Neer Mor (Buttermilk)", portion = "1 tall glass (200ml)", calories = 65, carbsG = 5f, proteinG = 4f, fatG = 1.5f, fiberG = 1f)
             ),
-            icon = "🥗",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -241,7 +241,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Sprouted Green Moong", portion = "1 cup (100g)", calories = 105, carbsG = 14f, proteinG = 8.5f, fatG = 1f, fiberG = 6f),
                 SnapFoodSubItem(name = "Diced Cucumber & Lemon Chaat", portion = "1/2 cup (80g)", calories = 35, carbsG = 4f, proteinG = 1.5f, fatG = 0.5f, fiberG = 1f)
             ),
-            icon = "🌱",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -258,7 +258,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Tawa Spiced Fish / Chicken Breast", portion = "1 fillet (150g)", calories = 210, carbsG = 2f, proteinG = 28f, fatG = 7f, fiberG = 0.5f),
                 SnapFoodSubItem(name = "Stir-Fried Beans & Cabbage", portion = "1 cup (100g)", calories = 70, carbsG = 6f, proteinG = 4f, fatG = 2f, fiberG = 4f)
             ),
-            icon = "🥩",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -274,7 +274,7 @@ object SnapFoodAnalyzer {
             subItems = listOf(
                 SnapFoodSubItem(name = "Spiced Neer Mor", portion = "1 tall glass (250ml)", calories = 65, carbsG = 5f, proteinG = 4f, fatG = 1.5f, fiberG = 1f)
             ),
-            icon = "🥛",
+            icon = "restaurant",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -290,7 +290,7 @@ object SnapFoodAnalyzer {
             subItems = listOf(
                 SnapFoodSubItem(name = "Decoction with Low-Fat Milk", portion = "1 dabara (120ml)", calories = 45, carbsG = 3f, proteinG = 2.5f, fatG = 1.5f, fiberG = 0f)
             ),
-            icon = "☕",
+            icon = "local_cafe",
             needsUserSelection = false
         ),
         SnapFoodAnalysis(
@@ -308,7 +308,7 @@ object SnapFoodAnalyzer {
                 SnapFoodSubItem(name = "Spiced Aloo Masala", portion = "1 small bowl (100g)", calories = 130, carbsG = 20f, proteinG = 2.5f, fatG = 5f, fiberG = 2f),
                 SnapFoodSubItem(name = "Punjabi Chole Curry", portion = "1/2 cup (100g)", calories = 140, carbsG = 14f, proteinG = 5.5f, fatG = 6f, fiberG = 2.5f)
             ),
-            icon = "🥞",
+            icon = "restaurant",
             needsUserSelection = false
         )
     )
@@ -585,16 +585,8 @@ object SnapFoodAnalyzer {
     private fun chooseFoodIcon(dishName: String): String {
         val lower = dishName.lowercase(Locale.ROOT)
         return when {
-            lower.contains("idli") || lower.contains("steamed") -> "⚪"
-            lower.contains("dosa") || lower.contains("roti") || lower.contains("chapati") -> "🫓"
-            lower.contains("rice") || lower.contains("biryani") || lower.contains("pulao") -> "🍛"
-            lower.contains("curry") || lower.contains("sambar") || lower.contains("dal") -> "🍲"
-            lower.contains("salad") || lower.contains("sundal") || lower.contains("greens") -> "🥗"
-            lower.contains("coffee") || lower.contains("tea") -> "☕"
-            lower.contains("milk") || lower.contains("buttermilk") || lower.contains("mor") -> "🥛"
-            lower.contains("chicken") || lower.contains("fish") || lower.contains("meat") || lower.contains("egg") -> "🍗"
-            lower.contains("poori") || lower.contains("pancake") -> "🥞"
-            else -> "🍽️"
+            lower.contains("coffee") || lower.contains("tea") -> "local_cafe"
+            else -> "restaurant"
         }
     }
 
@@ -670,7 +662,7 @@ object SnapFoodAnalyzer {
             subItems = emptyList(),
             imageBitmap = bitmap ?: resolvedBmp,
             imageUri = imageUri,
-            icon = "📸",
+            icon = "photo_camera",
             needsUserSelection = true
         )
     }
@@ -759,7 +751,7 @@ object SnapFoodAnalyzer {
             subItems = listOf(
                 SnapFoodSubItem(name = trimmed, portion = "1 serving", calories = 260, carbsG = 32f, proteinG = 12f, fatG = 5f, fiberG = 6f)
             ),
-            icon = "🍽️",
+            icon = "restaurant",
             needsUserSelection = false
         )
     }
@@ -783,9 +775,9 @@ object SnapFoodAnalyzer {
     private fun personalizeExplanation(base: String, userGlucose: Float?): String {
         val glucose = userGlucose ?: return base
         return when {
-            glucose > 180f -> "🔴 High Blood Sugar (${glucose.toInt()} mg/dL): $base Mind portions to prevent insulin resistance."
-            glucose < 70f -> "🟡 Low Blood Sugar (${glucose.toInt()} mg/dL): Provides gentle carbohydrates to safely recover glycemic equilibrium."
-            else -> "🟢 Normal Glycemic Range (${glucose.toInt()} mg/dL): $base"
+            glucose > 180f -> "High Blood Sugar (${glucose.toInt()} mg/dL): $base Mind portions to prevent insulin resistance."
+            glucose < 70f -> "Low Blood Sugar (${glucose.toInt()} mg/dL): Provides gentle carbohydrates to safely recover glycemic equilibrium."
+            else -> "Normal Glycemic Range (${glucose.toInt()} mg/dL): $base"
         }
     }
 }
