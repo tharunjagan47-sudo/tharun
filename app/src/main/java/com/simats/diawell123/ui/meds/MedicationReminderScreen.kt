@@ -1,6 +1,7 @@
 package com.simats.diawell123.ui.meds
 import com.simats.diawell123.ui.theme.AppTheme
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -374,7 +375,7 @@ fun MedicationReminderScreen(
 
                 // Snooze Button
                 IosLiquidGlassButton(
-                    text = "Snooze - 15 minutes",
+                    text = "Snooze - 5 minutes",
                     onClick = {
                         val medNameStr = activeMed?.name ?: "Medication"
                         val resolvedUserId = try {
@@ -382,34 +383,37 @@ fun MedicationReminderScreen(
                             SessionManager.getInstance().getUserId() ?: -1
                         } catch (_: Exception) { -1 }
 
+                        val effectiveMedId = if (medId > 0) medId else (activeMed?.id?.takeIf { it > 0 } ?: 1001)
+
                         DiaWellNotificationHelper.stopAlarmSound(context)
+                        NotificationManagerCompat.from(context).cancel(effectiveMedId)
+                        DiaWellNotificationHelper.snoozeMedicationAlarm(
+                            context = context,
+                            medId = effectiveMedId,
+                            medName = medNameStr,
+                            dose = medDose,
+                            snoozeMinutes = 5,
+                            userId = resolvedUserId,
+                            isDaily = isDailySchedule
+                        )
+                        val newDbTime = MedicationStatusUpdater.computeSnoozeTimeStrings(5).first
+                        DiaWellNotificationHelper.showGeneralNotification(
+                            context = context,
+                            title = "Medication Snoozed",
+                            message = "Reminder snoozed for 5 minutes for $medNameStr."
+                        )
+                        Toast.makeText(context, "Snoozed for 5 minutes", Toast.LENGTH_SHORT).show()
+
                         if (medId > 0) {
-                            NotificationManagerCompat.from(context).cancel(medId)
-                            DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medNameStr, medDose, 15, resolvedUserId, isDailySchedule)
-                            val newDbTime = MedicationStatusUpdater.computeSnoozeTimeStrings(15).first
                             viewModel.updateStatus(
                                 medicationId = medId,
                                 newStatus = "Snoozed",
-                                snoozeMinutes = 15,
+                                snoozeMinutes = 5,
                                 newReminderTime = newDbTime,
-                                medicationName = medNameStr,
-                                onSuccess = {
-                                    DiaWellNotificationHelper.showGeneralNotification(
-                                        context = context,
-                                        title = "Medication Snoozed",
-                                        message = "Reminder snoozed for 15 minutes for $medNameStr."
-                                    )
-                                    onSnoozeClick()
-                                }
+                                medicationName = medNameStr
                             )
-                        } else {
-                            DiaWellNotificationHelper.showGeneralNotification(
-                                context = context,
-                                title = "Medication Snoozed",
-                                message = "Reminder snoozed for 15 minutes for $medNameStr."
-                            )
-                            onSnoozeClick()
                         }
+                        onSnoozeClick()
                     },
                     gradientColors = listOf(Color(0xFF26A69A), Color(0xFF00897B)),
                 )
