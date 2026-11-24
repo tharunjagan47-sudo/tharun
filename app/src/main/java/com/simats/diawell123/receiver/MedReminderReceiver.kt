@@ -176,7 +176,8 @@ class MedReminderReceiver : BroadcastReceiver() {
 
             DiaWellNotificationHelper.ACTION_ALARM_TRIGGER,
             DiaWellNotificationHelper.ACTION_MED_REMINDER -> {
-                Log.d("MedReminderReceiver", "Scheduled alarm time arrived for medId=$medId!")
+                val isSnooze = intent.getBooleanExtra("is_snooze", false)
+                Log.d("MedReminderReceiver", "Scheduled alarm time arrived for medId=$medId! (isSnooze=$isSnooze)")
 
                 val persisted = MedicationAlarmStorage.getReminder(context, medId)
                 val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
@@ -193,9 +194,13 @@ class MedReminderReceiver : BroadcastReceiver() {
                     else -> Calendar.getInstance().get(Calendar.MINUTE)
                 }
 
-                // 1. FIRST: If the reminder is Daily/recurring and active, IMMEDIATELY reschedule the NEXT occurrence for tomorrow
-                // This guarantees the daily chain is never broken even if the phone powers off or the dose is taken/skipped.
-                if (effectiveDaily && isActive) {
+                // If this is a snooze alarm, clear the snooze code. Do NOT reschedule tomorrow's daily alarm,
+                // because tomorrow's daily alarm was already scheduled when the regular alarm originally rang.
+                if (isSnooze) {
+                    DiaWellNotificationHelper.cancelSnoozeAlarm(context, medId)
+                    Log.d("MedReminderReceiver", "Snoozed alarm triggered for medId=$medId. Cleared snooze code.")
+                } else if (effectiveDaily && isActive) {
+                    // Reschedule daily occurrence for tomorrow
                     DiaWellNotificationHelper.scheduleNextDailyMedicationAlarm(
                         context = context,
                         medId = medId,
