@@ -583,19 +583,7 @@ object SnapFoodAnalyzer {
     }
 
     private fun chooseFoodIcon(dishName: String): String {
-        val lower = dishName.lowercase(Locale.ROOT)
-        return when {
-            lower.contains("idli") || lower.contains("steamed") -> "⚪"
-            lower.contains("dosa") || lower.contains("roti") || lower.contains("chapati") -> "🫓"
-            lower.contains("rice") || lower.contains("biryani") || lower.contains("pulao") -> "🍛"
-            lower.contains("curry") || lower.contains("sambar") || lower.contains("dal") -> "🍲"
-            lower.contains("salad") || lower.contains("sundal") || lower.contains("greens") -> "🥗"
-            lower.contains("coffee") || lower.contains("tea") -> "☕"
-            lower.contains("milk") || lower.contains("buttermilk") || lower.contains("mor") -> "🥛"
-            lower.contains("chicken") || lower.contains("fish") || lower.contains("meat") || lower.contains("egg") -> "🍗"
-            lower.contains("poori") || lower.contains("pancake") -> "🥞"
-            else -> "🍽️"
-        }
+        return com.simats.diawell123.data.model.resolveFoodEmoji(foodName = dishName)
     }
 
     /**
