@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.CatalogMedicationItem
+import com.simats.diawell123.data.model.resolveMedEmoji
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
@@ -245,11 +246,9 @@ fun SearchMedicationScreen(
                                         .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Medication,
-                                        contentDescription = null,
-                                        tint = Color(0xFFA855F7),
-                                        modifier = Modifier.size(22.dp)
+                                    Text(
+                                        text = resolveMedEmoji(tablet.dosageForm, tablet.name),
+                                        fontSize = 20.sp
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
