@@ -397,7 +397,7 @@ fun MedicationReminderScreen(
                                 onSuccess = {
                                     DiaWellNotificationHelper.showGeneralNotification(
                                         context = context,
-                                        title = "⏰ Medication Snoozed",
+                                        title = "Medication Snoozed",
                                         message = "Reminder snoozed for 15 minutes for $medNameStr."
                                     )
                                     onSnoozeClick()
@@ -406,7 +406,7 @@ fun MedicationReminderScreen(
                         } else {
                             DiaWellNotificationHelper.showGeneralNotification(
                                 context = context,
-                                title = "⏰ Medication Snoozed",
+                                title = "Medication Snoozed",
                                 message = "Reminder snoozed for 15 minutes for $medNameStr."
                             )
                             onSnoozeClick()
