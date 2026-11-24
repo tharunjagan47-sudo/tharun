@@ -48,6 +48,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.MedicationItem
+import com.simats.diawell123.data.model.resolveMedEmoji
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -128,11 +129,9 @@ fun MedicationReminderScreen(
                     .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.Medication,
-                    contentDescription = null,
-                    tint = Color(0xFFA855F7),
-                    modifier = Modifier.size(46.dp)
+                Text(
+                    text = resolveMedEmoji(activeMed?.dosageForm, medName),
+                    fontSize = 44.sp
                 )
             }
 
