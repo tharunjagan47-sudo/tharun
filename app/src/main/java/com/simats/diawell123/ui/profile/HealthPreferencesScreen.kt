@@ -35,6 +35,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.RadioButtonChecked
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -216,17 +223,27 @@ fun HealthPreferencesScreen(
                             .padding(12.dp),
                     ) {
                         Column {
-                            Text(
-                                text = if (isSelected) "●  $title" else "○  $title",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color(0xFFA855F7) else Color(0xFFF8FAFC),
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
+                                    contentDescription = null,
+                                    tint = if (isSelected) Color(0xFFA855F7) else Color(0xFF94A3B8),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = title,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) Color(0xFFA855F7) else Color(0xFFF8FAFC),
+                                )
+                            }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = subtitle,
                                 fontSize = 11.sp,
                                 color = Color(0xFF94A3B8),
+                                modifier = Modifier.padding(start = 24.dp)
                             )
                         }
                     }
@@ -271,12 +288,21 @@ fun HealthPreferencesScreen(
                             }
                             .padding(horizontal = 14.dp, vertical = 8.dp),
                     ) {
-                        Text(
-                            text = if (isChecked) "✓ $dietName" else "+ $dietName",
-                            fontSize = 12.sp,
-                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
-                            color = if (isChecked) Color.White else Color(0xFFF8FAFC),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isChecked) Icons.Rounded.Check else Icons.Rounded.Add,
+                                contentDescription = null,
+                                tint = if (isChecked) Color.White else Color(0xFFA855F7),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = dietName,
+                                fontSize = 12.sp,
+                                fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
+                                color = if (isChecked) Color.White else Color(0xFFF8FAFC),
+                            )
+                        }
                     }
                 }
             }
@@ -319,12 +345,21 @@ fun HealthPreferencesScreen(
                             }
                             .padding(horizontal = 14.dp, vertical = 8.dp),
                     ) {
-                        Text(
-                            text = if (isChecked) "⚠️ $allergyName" else "+ $allergyName",
-                            fontSize = 12.sp,
-                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
-                            color = if (isChecked) Color.White else Color(0xFFF8FAFC),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isChecked) Icons.Rounded.Warning else Icons.Rounded.Add,
+                                contentDescription = null,
+                                tint = if (isChecked) Color.White else Color(0xFFEF4444),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = allergyName,
+                                fontSize = 12.sp,
+                                fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
+                                color = if (isChecked) Color.White else Color(0xFFF8FAFC),
+                            )
+                        }
                     }
                 }
             }
@@ -368,12 +403,21 @@ fun HealthPreferencesScreen(
                             .clickable { selectedActivityLevel = level }
                             .padding(12.dp),
                     ) {
-                        Text(
-                            text = if (isSelected) "●  $level" else "○  $level",
-                            fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color(0xFFA855F7) else Color(0xFFF8FAFC),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
+                                contentDescription = null,
+                                tint = if (isSelected) Color(0xFFA855F7) else Color(0xFF94A3B8),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = level,
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) Color(0xFFA855F7) else Color(0xFFF8FAFC),
+                            )
+                        }
                     }
                 }
             }
