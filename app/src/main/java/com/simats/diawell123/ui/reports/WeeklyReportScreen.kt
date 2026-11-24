@@ -31,6 +31,7 @@ import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.InsertChart
 import androidx.compose.material.icons.rounded.Lightbulb
+import androidx.compose.material.icons.rounded.PictureAsPdf
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -64,6 +65,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.components.FluidGlassCircleButton
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
@@ -164,22 +166,13 @@ fun WeeklyReportScreen(
                                 )
                             }
 
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF))
-                                    .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(14.dp))
-                                    .clickable { onExportReportClick() }
-                                    .padding(horizontal = 12.dp, vertical = 7.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "Export",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7),
-                                )
-                            }
+                            FluidGlassCircleButton(
+                                imageVector = Icons.Rounded.PictureAsPdf,
+                                onClick = onExportReportClick,
+                                contentDescription = "Export Report",
+                                sizeDp = 44.dp,
+                                iconSizeDp = 20.dp,
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
