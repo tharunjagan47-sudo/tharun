@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.local.SessionManager
+import com.simats.diawell123.data.model.resolveMedEmoji
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
@@ -352,11 +353,9 @@ fun SetMedicationReminderScreen(
                                 .background(Color(0xFFA855F7).copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = iconVector,
-                                contentDescription = null,
-                                tint = Color(0xFFA855F7),
-                                modifier = Modifier.size(26.dp)
+                            Text(
+                                text = resolveMedEmoji(reminderState.dosageForm, activeName),
+                                fontSize = 24.sp
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
