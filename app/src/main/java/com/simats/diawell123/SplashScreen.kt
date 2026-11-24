@@ -186,10 +186,11 @@ fun SplashScreen(
         label = "ecg_progress",
     )
 
+    val splashBg = if (AppTheme.colors.isDark) Color(0xFF0F0E17) else Color(0xFFF8FAFC)
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppTheme.colors.background)
+            .background(splashBg)
             .systemBarsPadding(),
     ) {
         // Ambient Background Lighting
