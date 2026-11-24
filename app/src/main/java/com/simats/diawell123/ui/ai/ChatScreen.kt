@@ -103,6 +103,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.R
+import com.simats.diawell123.ui.components.FluidGlassBackButton
+import com.simats.diawell123.ui.components.FluidGlassPillContainer
 import com.simats.diawell123.data.model.AlertType
 import com.simats.diawell123.data.model.BadgeType
 import com.simats.diawell123.data.model.ChatMessage
@@ -399,76 +401,28 @@ fun ChatScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left: Circular Button with Green Accent & Gemini-style Sidebar Icon (matches reference UI!)
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color(0x3310B981))
-                        .border(
-                            width = 1.2.dp,
-                            color = Color(0xFF10B981),
-                            shape = CircleShape
-                        )
-                        .clickable { onBackClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Canvas(modifier = Modifier.size(18.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        // Top bar
-                        drawLine(
-                            color = Color(0xFF34D399),
-                            start = Offset(w * 0.20f, h * 0.40f),
-                            end = Offset(w * 0.60f, h * 0.40f),
-                            strokeWidth = 2.4.dp.toPx(),
-                            cap = StrokeCap.Round
-                        )
-                        // Bottom bar
-                        drawLine(
-                            color = Color(0xFF34D399),
-                            start = Offset(w * 0.20f, h * 0.65f),
-                            end = Offset(w * 0.60f, h * 0.65f),
-                            strokeWidth = 2.4.dp.toPx(),
-                            cap = StrokeCap.Round
-                        )
-                        // Top-right dot
-                        drawCircle(
-                            color = Color(0xFF34D399),
-                            radius = 2.2.dp.toPx(),
-                            center = Offset(w * 0.78f, h * 0.40f)
-                        )
-                    }
-                }
+                // Left: Apple VisionOS / iOS Fluid Glass Bubble Back Button
+                FluidGlassBackButton(onClick = onBackClick)
 
-                // Right: Single Sleek Translucent Glass Pill (New Chat & More Options)
+                // Right: Single Sleek Translucent Fluid Glass Pill (New Chat & More Options)
                 var showOptionsMenu by remember { mutableStateOf(false) }
 
-                Box(
-                    modifier = Modifier
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(Color(0x661E2024))
-                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(22.dp))
-                        .padding(horizontal = 8.dp),
-                    contentAlignment = Alignment.Center
+                FluidGlassPillContainer(
+                    horizontalPadding = 8.dp,
+                    verticalPadding = 4.dp,
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    // New Chat (Compose Icon)
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .clickable {
+                                voiceManager.stopSpeaking()
+                                viewModel.resetChat()
+                                Toast.makeText(context, "New chat started", Toast.LENGTH_SHORT).show()
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        // New Chat (Compose Icon)
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .clickable {
-                                    voiceManager.stopSpeaking()
-                                    viewModel.resetChat()
-                                    Toast.makeText(context, "New chat started", Toast.LENGTH_SHORT).show()
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
                             Canvas(modifier = Modifier.size(16.dp)) {
                                 val w = size.width
                                 val h = size.height
@@ -597,7 +551,6 @@ fun ChatScreen(
                             }
                         }
                     }
-                }
             }
 
             // =================================================================
