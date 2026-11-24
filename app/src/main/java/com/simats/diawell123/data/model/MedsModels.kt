@@ -266,5 +266,5 @@ data class CatalogMedicationItem(
     val info: String = "",
 
     @SerializedName("icon")
-    val icon: String = "💊"
+    val icon: String = "medication"
 )
