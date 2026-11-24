@@ -325,7 +325,7 @@ object DiaWellNotificationHelper {
     fun notifyHydrationUpdate(context: Context) {
         showGeneralNotification(
             context = context,
-            title = "💧 Hydration Update",
+            title = "Hydration Update",
             message = "Water intake updated! Staying hydrated helps your kidneys flush excess sugar.",
             notifId = 8801
         )
@@ -608,12 +608,12 @@ object DiaWellNotificationHelper {
             .apply {
                 if (largeIcon != null) setLargeIcon(largeIcon)
             }
-            .setContentTitle("💊 Time for your Medication!")
+            .setContentTitle("Time for your Medication!")
             .setContentText("Take $medName ($dosage)")
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .bigText("Please take your scheduled dose of $medName ($dosage) now.")
-                    .setBigContentTitle("💊 Time for your Medication!")
+                    .setBigContentTitle("Time for your Medication!")
             )
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -1076,21 +1076,21 @@ object DiaWellNotificationHelper {
                 id = 8001,
                 hour = 8,
                 minute = 0,
-                title = "🩸 Morning Fasting Check",
+                title = "Morning Fasting Check",
                 message = "Good morning! Don't forget to log your fasting blood sugar before breakfast."
             ),
             DailyRoutineDef(
                 id = 8002,
                 hour = 13,
                 minute = 30,
-                title = "🍛 Healthy Lunch Reminder",
+                title = "Healthy Lunch Reminder",
                 message = "Time for a balanced low-GI lunch with plenty of fiber and greens."
             ),
             DailyRoutineDef(
                 id = 8003,
                 hour = 18,
                 minute = 0,
-                title = "🚶 Evening Walk Time",
+                title = "Evening Walk Time",
                 message = "A 20-minute brisk walk right now can significantly improve your evening insulin sensitivity."
             )
         )
