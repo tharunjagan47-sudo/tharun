@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.RecommendedFoodItem
+import com.simats.diawell123.data.model.resolveFoodEmoji
 import com.simats.diawell123.data.model.SnapFoodAnalysis
 import com.simats.diawell123.data.repository.HealthRecommendationResult
 import com.simats.diawell123.data.repository.SnapFoodAnalyzer
@@ -1258,7 +1259,7 @@ fun AiDietMealCard(
                             .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = item.icon, fontSize = 22.sp)
+                        Text(text = resolveFoodEmoji(item.icon, item.title), fontSize = 22.sp)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f, fill = false)) {
@@ -1403,7 +1404,7 @@ fun DietPlanMealCard(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = icon, fontSize = 28.sp)
+                Text(text = resolveFoodEmoji(icon, name), fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f, fill = false)) {
                     Text(
@@ -1713,7 +1714,7 @@ fun AiFoodRecommendationForHealthCard(
                         .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = item.icon, fontSize = 26.sp)
+                    Text(text = resolveFoodEmoji(item.icon, item.name), fontSize = 26.sp)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
