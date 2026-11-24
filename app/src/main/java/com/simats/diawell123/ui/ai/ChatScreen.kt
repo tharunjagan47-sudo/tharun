@@ -53,9 +53,22 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.DirectionsWalk
+import androidx.compose.material.icons.rounded.Grain
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.PhotoCamera
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.VolumeOff
+import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -516,9 +529,17 @@ fun ChatScreen(
                                     .border(1.dp, Color(0x40A855F7), RoundedCornerShape(12.dp))
                             ) {
                                 DropdownMenuItem(
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = if (autoSpeakEnabled) Icons.Rounded.VolumeUp else Icons.Rounded.VolumeOff,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    },
                                     text = {
                                         Text(
-                                            text = if (autoSpeakEnabled) "🔊 Auto-Speak Enabled" else "🔇 Auto-Speak Disabled",
+                                            text = if (autoSpeakEnabled) "Auto-Speak Enabled" else "Auto-Speak Disabled",
                                             color = Color.White,
                                             fontSize = 13.sp
                                         )
@@ -532,9 +553,17 @@ fun ChatScreen(
                                     }
                                 )
                                 DropdownMenuItem(
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Mic,
+                                            contentDescription = null,
+                                            tint = Color(0xFFF0ABFC),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    },
                                     text = {
                                         Text(
-                                            text = "🎙️ Open Voice Mode",
+                                            text = "Open Voice Mode",
                                             color = Color(0xFFF0ABFC),
                                             fontSize = 13.sp
                                         )
@@ -545,9 +574,17 @@ fun ChatScreen(
                                     }
                                 )
                                 DropdownMenuItem(
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Rounded.DeleteSweep,
+                                            contentDescription = null,
+                                            tint = Color(0xFFF87171),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    },
                                     text = {
                                         Text(
-                                            text = "🧹 Clear Conversation",
+                                            text = "Clear Conversation",
                                             color = Color(0xFFF87171),
                                             fontSize = 13.sp
                                         )
@@ -680,30 +717,38 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val suggestions = listOf(
-                        "🌾 High-fibre Indian foods",
-                        "🚶 Walking MET for 30 mins",
-                        "🚨 What to do if sugar < 70?",
-                        "🥗 Low-carb dinner ideas"
+                        Icons.Rounded.Grain to "High-fibre Indian foods",
+                        Icons.Rounded.DirectionsWalk to "Walking MET for 30 mins",
+                        Icons.Rounded.Warning to "What to do if sugar < 70?",
+                        Icons.Rounded.Restaurant to "Low-carb dinner ideas"
                     )
-                    suggestions.forEach { prompt ->
-                        val cleanPrompt = prompt.substringAfter(" ")
+                    suggestions.forEach { (icon, prompt) ->
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(Color(0x331F1B2E))
                                 .border(1.dp, Color(0x33A855F7), RoundedCornerShape(16.dp))
-                                .clickable { submitQuery(cleanPrompt, fromVoice = false) }
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                                .clickable { submitQuery(prompt, fromVoice = false) }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = prompt,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFFE9D5FF),
-                                maxLines = 1,
-                                softWrap = false
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = Color(0xFFA855F7),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = prompt,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFFE9D5FF),
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
                         }
                     }
                 }
@@ -938,7 +983,12 @@ fun ChatMessageItem(
                             .border(1.dp, Color(0x33A855F7), RoundedCornerShape(14.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "📷", fontSize = 24.sp)
+                        Icon(
+                            imageVector = Icons.Rounded.PhotoCamera,
+                            contentDescription = "Attached photo",
+                            tint = Color(0xFFA855F7),
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 }
 
@@ -1049,11 +1099,20 @@ fun ChatMessageItem(
                             .padding(horizontal = 8.dp, vertical = 3.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "🔊 Listen",
-                            fontSize = 11.5.sp,
-                            color = Color(0xFFE2E8F0)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.VolumeUp,
+                                contentDescription = "Listen",
+                                tint = Color(0xFFE2E8F0),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Listen",
+                                fontSize = 11.5.sp,
+                                color = Color(0xFFE2E8F0)
+                            )
+                        }
                     }
 
                     Text(
@@ -1150,35 +1209,35 @@ fun DivaThinkingIndicator() {
 @Composable
 fun ClinicalAlertBanner(alertType: AlertType) {
     val (icon, title, borderColor, bgColor, textColor) = when (alertType) {
-        AlertType.HYPOGLYCEMIA_WARNING -> Tuple5(
-            "🚨",
+        AlertType.HYPOGLYCEMIA_WARNING -> Tuple5<ImageVector?, String, Color, Color, Color>(
+            Icons.Rounded.Warning,
             "CRITICAL: Hypoglycemia Guidance (<70 mg/dL)",
             Color(0xFFEF4444),
             Color(0xFF381418),
             Color(0xFFFCA5A5)
         )
-        AlertType.HYPERGLYCEMIA_WARNING -> Tuple5(
-            "⚠️",
+        AlertType.HYPERGLYCEMIA_WARNING -> Tuple5<ImageVector?, String, Color, Color, Color>(
+            Icons.Rounded.Warning,
             "ELEVATED: Hyperglycemia Caution (>250 mg/dL)",
             Color(0xFFF59E0B),
             Color(0xFF352010),
             Color(0xFFFDE68A)
         )
-        AlertType.KETONE_WARNING -> Tuple5(
-            "⚠️",
+        AlertType.KETONE_WARNING -> Tuple5<ImageVector?, String, Color, Color, Color>(
+            Icons.Rounded.Warning,
             "ALERT: Ketone Protocol & Clinical Advisory",
             Color(0xFFF97316),
             Color(0xFF381912),
             Color(0xFFFDBA74)
         )
-        AlertType.GENERAL_CLINICAL_ALERT -> Tuple5(
-            "ℹ️",
+        AlertType.GENERAL_CLINICAL_ALERT -> Tuple5<ImageVector?, String, Color, Color, Color>(
+            Icons.Rounded.Info,
             "Clinical Safety & Medication Advisory",
             Color(0xFF38BDF8),
             Color(0xFF10233D),
             Color(0xFFBAE6FD)
         )
-        AlertType.NONE -> Tuple5("", "", Color.Transparent, Color.Transparent, Color.Transparent)
+        AlertType.NONE -> Tuple5<ImageVector?, String, Color, Color, Color>(null, "", Color.Transparent, Color.Transparent, Color.Transparent)
     }
 
     Box(
@@ -1190,8 +1249,15 @@ fun ClinicalAlertBanner(alertType: AlertType) {
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = icon, fontSize = 14.sp)
-            Spacer(modifier = Modifier.width(8.dp))
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = textColor,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
             Text(
                 text = title,
                 fontSize = 11.5.sp,
