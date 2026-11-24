@@ -7,6 +7,7 @@ import com.simats.diawell123.data.model.AiRecommendationData
 import com.simats.diawell123.data.model.DailyPlanData
 import com.simats.diawell123.data.model.FoodDetailsData
 import com.simats.diawell123.data.model.FoodExploreData
+import com.simats.diawell123.data.model.FoodItem
 import com.simats.diawell123.data.model.FoodLogData
 import com.simats.diawell123.data.model.FoodLogItem
 import com.simats.diawell123.data.model.FoodLogRequest
@@ -15,6 +16,7 @@ import com.simats.diawell123.data.model.NutritionSummaryData
 import com.simats.diawell123.data.model.PatientContext
 import com.simats.diawell123.data.model.RecommendedFoodItem
 import com.simats.diawell123.data.model.SimpleActionResponse
+import com.simats.diawell123.data.model.resolveFoodEmoji
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -62,7 +64,11 @@ class DietRepositoryImpl(
                 healthFocus = healthFocus?.takeIf { it.isNotBlank() }
             )
             if (response.isSuccessful && response.body() != null && response.body()!!.success && response.body()!!.data != null && response.body()!!.data!!.recommendations.isNotEmpty()) {
-                Result.success(response.body()!!.data!!)
+                val data = response.body()!!.data!!
+                val sanitizedRecs = data.recommendations.map { r ->
+                    r.copy(icon = resolveFoodEmoji(r.icon, r.title))
+                }
+                Result.success(data.copy(recommendations = sanitizedRecs))
             } else {
                 val localData = generateLocalAiRecommendations(
                     limit = limit ?: 10,
@@ -101,7 +107,11 @@ class DietRepositoryImpl(
             )
             val response = apiService.updateHealthInputsAndRecommend(requestBody)
             if (response.isSuccessful && response.body() != null && response.body()!!.success && response.body()!!.data != null && response.body()!!.data!!.recommendations.isNotEmpty()) {
-                Result.success(response.body()!!.data!!)
+                val data = response.body()!!.data!!
+                val sanitizedRecs = data.recommendations.map { r ->
+                    r.copy(icon = resolveFoodEmoji(r.icon, r.title))
+                }
+                Result.success(data.copy(recommendations = sanitizedRecs))
             } else {
                 val localData = generateLocalAiRecommendations(
                     limit = 10,
@@ -129,6 +139,36 @@ class DietRepositoryImpl(
         category: String?,
         dietType: String?
     ): Result<FoodExploreData> = withContext(Dispatchers.IO) {
+        val datasetFoods: List<FoodItem> = AiFoodRecommendationEngine.foodDataset.filter { item ->
+            val matchesQuery = query.isNullOrBlank() ||
+                item.name.contains(query, ignoreCase = true) ||
+                item.healthTags.any { it.contains(query, ignoreCase = true) }
+            val matchesCat = category.isNullOrBlank() ||
+                category.equals("All", ignoreCase = true) ||
+                item.mealSlot.equals(category, ignoreCase = true)
+            val matchesDiet = dietType.isNullOrBlank() ||
+                item.dietType.contains(dietType, ignoreCase = true)
+            matchesQuery && matchesCat && matchesDiet
+        }.map { h ->
+            FoodItem(
+                id = h.id,
+                title = h.name,
+                category = h.mealSlot,
+                dietType = h.dietType,
+                isUserPreference = true,
+                portion = h.portion,
+                calories = "${h.calories} kcal",
+                caloriesNum = h.calories,
+                carbsG = h.carbsGrams,
+                proteinG = h.proteinGrams,
+                fatG = h.fatGrams,
+                fiberG = h.fiberGrams,
+                glycemicIndex = h.glycemicLoad,
+                icon = resolveFoodEmoji(h.icon, h.name),
+                healthBenefits = h.healthReason
+            )
+        }
+
         try {
             val response = apiService.exploreFoods(
                 query = query?.takeIf { it.isNotBlank() },
@@ -138,19 +178,34 @@ class DietRepositoryImpl(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
-                    Result.success(body.data)
+                    val serverFoods = body.data.foods.map { f ->
+                        f.copy(icon = resolveFoodEmoji(f.icon, f.title))
+                    }
+                    val existingTitles = serverFoods.map { it.title.lowercase().trim() }.toSet()
+                    val combined = serverFoods + datasetFoods.filter { it.title.lowercase().trim() !in existingTitles }
+                    Result.success(body.data.copy(foods = combined))
                 } else {
-                    Result.failure(Exception(body.message.ifEmpty { "Failed to load foods." }))
+                    if (datasetFoods.isNotEmpty()) {
+                        Result.success(FoodExploreData(foods = datasetFoods))
+                    } else {
+                        Result.failure(Exception(body.message.ifEmpty { "Failed to load foods." }))
+                    }
                 }
             } else {
-                val errorMsg = parseErrorMessage(response.errorBody()?.string())
-                    ?: "Failed to explore foods (${response.code()})."
-                Result.failure(Exception(errorMsg))
+                if (datasetFoods.isNotEmpty()) {
+                    Result.success(FoodExploreData(foods = datasetFoods))
+                } else {
+                    val errorMsg = parseErrorMessage(response.errorBody()?.string())
+                        ?: "Failed to explore foods (${response.code()})."
+                    Result.failure(Exception(errorMsg))
+                }
             }
-        } catch (e: IOException) {
-            Result.failure(Exception("Cannot connect to server. Please verify network and backend."))
         } catch (e: Exception) {
-            Result.failure(Exception(e.localizedMessage ?: "An unexpected error occurred."))
+            if (datasetFoods.isNotEmpty()) {
+                Result.success(FoodExploreData(foods = datasetFoods))
+            } else {
+                Result.failure(Exception("Cannot connect to server. Please verify network and backend."))
+            }
         }
     }
 
@@ -190,7 +245,10 @@ class DietRepositoryImpl(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.success && body.data != null) {
-                    Result.success(body.data)
+                    val sanitizedMeals = body.data.meals.map { m ->
+                        m.copy(icon = resolveFoodEmoji(m.icon, m.title))
+                    }
+                    Result.success(body.data.copy(meals = sanitizedMeals))
                 } else {
                     Result.failure(Exception(body.message.ifEmpty { "Failed to load food log." }))
                 }
@@ -223,7 +281,7 @@ class DietRepositoryImpl(
                         carbsG = request.carbsG,
                         proteinG = request.proteinG,
                         fatG = request.fatG,
-                        icon = request.icon
+                        icon = resolveFoodEmoji(request.icon, request.foodName)
                     )
                     Result.success(loggedItem)
                 } else {
