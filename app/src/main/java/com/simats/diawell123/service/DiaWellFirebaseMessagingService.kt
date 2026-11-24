@@ -80,7 +80,7 @@ class DiaWellFirebaseMessagingService : FirebaseMessagingService() {
         val dosage = data["dosage"] ?: ""
         val medId = data["med_id"]?.toIntOrNull() ?: (System.currentTimeMillis() % 10000).toInt()
 
-        val rawTitle = notification?.title ?: data["title"] ?: "💊 Medication Reminder"
+        val rawTitle = notification?.title ?: data["title"] ?: "Medication Reminder"
         val rawBody = notification?.body ?: data["body"] ?: data["message"] ?: run {
             if (medName.isNotBlank()) {
                 "Time to take $medName" + (if (dosage.isNotBlank()) " ($dosage)" else "")
