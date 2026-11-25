@@ -42,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.ui.components.ShimmerCardList
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -139,20 +140,9 @@ fun NotificationsScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Loading Indicator
+                // Loading Shimmer
                 if (uiState.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 40.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = Color(0xFFA855F7),
-                            modifier = Modifier.size(32.dp),
-                            strokeWidth = 3.dp
-                        )
-                    }
+                    ShimmerCardList(count = 3, cardHeight = 72.dp)
                 } else if (uiState.notifications.isEmpty()) {
                     Box(
                         modifier = Modifier
