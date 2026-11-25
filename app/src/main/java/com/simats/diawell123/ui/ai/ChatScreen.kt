@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -111,7 +110,6 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.cos
 import kotlin.math.sin
 import com.simats.diawell123.ui.theme.AppTheme
 
@@ -255,132 +253,13 @@ fun ChatScreen(
         }
     }
 
-    // Dynamic Ambient Fluid Gradient (Gemini-inspired top half bloom & sinusoidal motion)
-    val ambientTransition = rememberInfiniteTransition(label = "ChatAmbientGradientMotion")
-    val phase1 by ambientTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * Math.PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 14000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "phase1"
-    )
-    val phase2 by ambientTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * Math.PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 18000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "phase2"
-    )
-    val pulseScale by ambientTransition.animateFloat(
-        initialValue = 0.94f,
-        targetValue = 1.06f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 8000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseScale"
-    )
-
     val isDark = AppTheme.colors.isDark
-    val glowStrength = if (isDark) 1f else 0.16f
-    val canvasFadeBg = AppTheme.colors.background
 
-    // Edge-to-edge layout content with integrated moving ambient gradient
+    // Edge-to-edge layout content sitting transparently over DiaWellAmbientBackground
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(canvasFadeBg)
     ) {
-        // Fluid Top Ambient Gradient Canvas adapting cleanly between Dark Obsidian and Frosted Light
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-
-            val offsetX1 = w * (0.18f + 0.08f * sin(phase1))
-            val offsetY1 = h * (0.08f + 0.04f * cos(phase1))
-            val radius1 = w * (0.95f * pulseScale)
-
-            val offsetX2 = w * (0.82f - 0.08f * cos(phase2))
-            val offsetY2 = h * (0.12f + 0.05f * sin(phase2))
-            val radius2 = w * (0.92f * (2f - pulseScale))
-
-            // 1. Broad Top-Half Ambient Horizontal Glow with lateral drift
-            drawRect(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF047857).copy(alpha = 0.65f * glowStrength),
-                        Color(0xFF0E7490).copy(alpha = 0.48f * glowStrength),
-                        Color(0xFF1E3A8A).copy(alpha = 0.45f * glowStrength),
-                        Color(0xFF581C87).copy(alpha = 0.48f * glowStrength),
-                    ),
-                    startX = -w * 0.10f + w * 0.10f * sin(phase1),
-                    endX = w * 1.10f + w * 0.10f * sin(phase1)
-                ),
-                size = androidx.compose.ui.geometry.Size(w, h * 0.50f)
-            )
-
-            // 2. High-saturation Top-Left Radial Bloom (Emerald & Vibrant Teal)
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF10B981).copy(alpha = 0.72f * glowStrength),
-                        Color(0xFF0D9488).copy(alpha = 0.52f * glowStrength),
-                        Color(0xFF064E3B).copy(alpha = 0.22f * glowStrength),
-                        Color.Transparent
-                    ),
-                    center = Offset(offsetX1, offsetY1),
-                    radius = radius1
-                )
-            )
-
-            // 3. High-saturation Top-Right Radial Bloom (Indigo & Royal Purple)
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF38BDF8).copy(alpha = 0.35f * glowStrength),
-                        Color(0xFF6366F1).copy(alpha = 0.50f * glowStrength),
-                        Color(0xFF7C3AED).copy(alpha = 0.55f * glowStrength),
-                        Color(0xFF3B0764).copy(alpha = 0.20f * glowStrength),
-                        Color.Transparent
-                    ),
-                    center = Offset(offsetX2, offsetY2),
-                    radius = radius2
-                )
-            )
-
-            // 4. Subtle central floating aura node
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF065F46).copy(alpha = 0.35f * glowStrength),
-                        Color(0xFF1E1B4B).copy(alpha = 0.25f * glowStrength),
-                        Color.Transparent
-                    ),
-                    center = Offset(w * (0.50f + 0.05f * sin(phase2)), h * (0.16f + 0.03f * cos(phase1))),
-                    radius = w * 0.75f
-                )
-            )
-
-            // 5. Smooth atmospheric diffusion fading cleanly into theme background
-            drawRect(
-                brush = Brush.verticalGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color.Transparent,
-                        0.20f to Color.Transparent,
-                        0.32f to canvasFadeBg.copy(alpha = 0.35f),
-                        0.44f to canvasFadeBg.copy(alpha = 0.85f),
-                        0.50f to canvasFadeBg,
-                        1.0f to canvasFadeBg
-                    )
-                )
-            )
-        }
-
-        // Edge-to-edge layout content centered for landscape/tablet screens
         Column(
             modifier = Modifier
                 .fillMaxSize()
