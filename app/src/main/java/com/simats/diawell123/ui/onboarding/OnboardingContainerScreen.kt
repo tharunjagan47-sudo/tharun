@@ -1,6 +1,7 @@
 package com.simats.diawell123.ui.onboarding
 import com.simats.diawell123.ui.theme.AppTheme
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -18,6 +19,12 @@ fun OnboardingContainerScreen(
 ) {
     val pagerState = rememberPagerState(initialPage = 0) { 3 }
     val coroutineScope = rememberCoroutineScope()
+
+    BackHandler(enabled = pagerState.currentPage > 0) {
+        coroutineScope.launch {
+            pagerState.animateScrollToPage((pagerState.currentPage - 1).coerceAtLeast(0))
+        }
+    }
 
     HorizontalPager(
         state = pagerState,
