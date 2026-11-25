@@ -53,22 +53,16 @@ class ProfileViewModel(
             val result = repository.getProfile()
             result.fold(
                 onSuccess = { data ->
-                    // Synchronize shared ProfileState
-                    ProfileState.userName = data.fullName
-                    ProfileState.userEmail = data.email
-                    // Synchronize profile picture
-                    data.profilePic?.let { base64 ->
-                        if (base64.isNotBlank()) {
-                            sessionManager.saveUserPfp(data.userId, base64)
-                            ProfileState.setProfilePicFromBase64(base64, data.userId)
-                        }
+                    if (sessionManager.getUserId() != currentUserId) {
+                        return@fold
                     }
-
-                    data.profilePhotoUrl?.let { url ->
-                        if (url.isNotBlank() && ProfileState.profileImageBitmap == null) {
-                            ProfileState.loadPhotoFromUrl(url, data.userId)
-                        }
-                    }
+                    ProfileState.syncFromServer(
+                        userId = data.userId,
+                        fullName = data.fullName,
+                        email = data.email,
+                        profilePicBase64 = data.profilePic,
+                        profilePhotoUrl = data.profilePhotoUrl
+                    )
 
                     _uiState.update {
                         it.copy(
@@ -293,12 +287,16 @@ class ProfileViewModel(
 
     fun uploadProfilePic(userId: Int, base64: String, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
+            ProfileState.isUploadingAvatar = true
             _uiState.update { it.copy(isUploadingPhoto = true, errorMessage = null) }
             val result = repository.updateProfilePic(userId, base64)
+            ProfileState.isUploadingAvatar = false
             result.fold(
                 onSuccess = { pic ->
-                    sessionManager.saveUserPfp(userId, pic)
-                    ProfileState.setProfilePicFromBase64(pic, userId)
+                    if (sessionManager.getUserId() == userId) {
+                        sessionManager.saveUserPfp(userId, pic, sessionManager.getUserSession()?.email)
+                        ProfileState.setProfilePicFromBase64(pic, userId)
+                    }
                     _uiState.update {
                         it.copy(
                             isUploadingPhoto = false,
@@ -321,12 +319,20 @@ class ProfileViewModel(
 
     fun uploadProfilePhoto(photoFile: File, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
+            ProfileState.isUploadingAvatar = true
             _uiState.update { it.copy(isUploadingPhoto = true, errorMessage = null) }
             val result = repository.uploadProfilePhoto(photoFile)
+            ProfileState.isUploadingAvatar = false
             result.fold(
                 onSuccess = { data ->
+                    val currentUid = sessionManager.getUserId()
                     data.photoPath?.let { sessionManager.saveProfilePhoto(it) }
-                    data.photoUrl?.let { sessionManager.saveProfilePhotoUrl(it) }
+                    data.photoUrl?.let {
+                        sessionManager.saveProfilePhotoUrl(it)
+                        if (currentUid != null && currentUid > 0 && it.isNotBlank()) {
+                            ProfileState.loadPhotoFromUrl(it, currentUid)
+                        }
+                    }
                     _uiState.update {
                         it.copy(
                             isUploadingPhoto = false,
