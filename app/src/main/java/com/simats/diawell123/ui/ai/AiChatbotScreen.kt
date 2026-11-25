@@ -160,6 +160,16 @@ fun DivaTalkingAvatar(
         label = "DivaAmbientWavePhase",
     )
 
+    val gesturePhase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 5600, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "DivaHandGesturePhase",
+    )
+
     // Ultra-responsive speech mouth interpolation (52ms) for crisp syllable sync
     val smoothOpen by animateFloatAsState(
         targetValue = if (isSpeaking) mouthOpenness.coerceIn(0f, 1f) else 0f,
@@ -294,9 +304,47 @@ fun DivaTalkingAvatar(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            // Base High-Res DIVA Robot Illustration (clean transparent cutout for virtual hologram look)
+            // 2A. Articulated Left & Right Upper Arms (behind torso shoulder armor for seamless joints)
+            val sinG = sin(gesturePhase)
+            val rightPresent = maxOf(0f, sinG).let { it * it }
+            val leftPresent = maxOf(0f, -sinG).let { it * it }
+            val dualChest = 0.5f * (1f + cos(gesturePhase * 2f))
+            val speechPulse = smoothOpen * speakingFactor
+            // Positive rotationZ = clockwise -> Left arm outward (+), Right arm inward (+)
+            val leftArmDeg = sin(floatPhase) * 2.4f +
+                speakingFactor * (leftPresent * 28f - dualChest * 15f - rightPresent * 8f + speechPulse * 5f)
+            val rightArmDeg = -sin(floatPhase) * 2.4f +
+                speakingFactor * (-rightPresent * 28f + dualChest * 15f + leftPresent * 8f - speechPulse * 5f)
+
+            if (fullBody) {
+                Image(
+                    painter = painterResource(id = R.drawable.diva_left_arm),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            rotationZ = leftArmDeg
+                            transformOrigin = TransformOrigin(0.285f, 0.505f)
+                        },
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.diva_right_arm),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            rotationZ = rightArmDeg
+                            transformOrigin = TransformOrigin(0.715f, 0.505f)
+                        },
+                )
+            }
+
+            // Base High-Res DIVA Robot Torso & Head Illustration (arms animated separately)
             Image(
-                painter = painterResource(id = if (fullBody) R.drawable.diva_robot_cutout else R.drawable.diva_avatar),
+                painter = painterResource(id = if (fullBody) R.drawable.diva_body_cutout else R.drawable.diva_avatar),
                 contentDescription = "DIVA Assistant",
                 contentScale = if (fullBody) ContentScale.Fit else ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
@@ -517,8 +565,60 @@ fun DivaTalkingAvatar(
 
             // 3. Synchronized DW Chest Overlay (moves & tilts identically with DIVA!)
             chestOverlay?.invoke(this)
+
+            // 4. Articulated Floating Hands (layered cleanly in front for expressive chest & presenting gestures)
+            if (fullBody) {
+                DivaArticulatedHand(
+                    drawableResId = R.drawable.diva_left_hand,
+                    shoulderX = 0.285f,
+                    handPivotX = 0.182f,
+                    armDeg = leftArmDeg,
+                    wristDeg = leftArmDeg * 1.15f + speakingFactor * (leftPresent * 10f - dualChest * 8f),
+                    extraX = -speakingFactor * (leftPresent * 3f - dualChest * 4f),
+                    extraY = -speakingFactor * (dualChest * 5f + speechPulse * 3f) + sin(floatPhase + 0.8f) * 1.5f,
+                )
+                DivaArticulatedHand(
+                    drawableResId = R.drawable.diva_right_hand,
+                    shoulderX = 0.715f,
+                    handPivotX = 0.818f,
+                    armDeg = rightArmDeg,
+                    wristDeg = rightArmDeg * 1.15f + speakingFactor * (-rightPresent * 10f + dualChest * 8f),
+                    extraX = speakingFactor * (rightPresent * 3f - dualChest * 4f),
+                    extraY = -speakingFactor * (dualChest * 5f + speechPulse * 3f) + sin(floatPhase + 1.4f) * 1.5f,
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun DivaArticulatedHand(
+    drawableResId: Int,
+    shoulderX: Float,
+    handPivotX: Float,
+    armDeg: Float,
+    wristDeg: Float,
+    extraX: Float,
+    extraY: Float,
+) {
+    Image(
+        painter = painterResource(id = drawableResId),
+        contentDescription = null,
+        contentScale = ContentScale.Fit,
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer {
+                val rad = (armDeg * PI / 180.0).toFloat()
+                val rx = (handPivotX - shoulderX) * size.width
+                val ry = (0.825f - 0.505f) * size.height
+                val cosR = cos(rad)
+                val sinR = sin(rad)
+                translationX = rx * (cosR - 1f) - ry * sinR + extraX.dp.toPx()
+                translationY = rx * sinR + ry * (cosR - 1f) + extraY.dp.toPx()
+                rotationZ = wristDeg
+                transformOrigin = TransformOrigin(handPivotX, 0.825f)
+            },
+    )
 }
 
 private fun DrawScope.drawSparkleStar(center: Offset, radius: Float, color: Color) {
