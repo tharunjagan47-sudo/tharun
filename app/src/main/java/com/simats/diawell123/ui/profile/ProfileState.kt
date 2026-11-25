@@ -31,6 +31,16 @@ object ProfileState {
 
     private var appContext: Context? = null
 
+    @Volatile
+    var activeUserId: Int? = null
+        private set
+
+    @Volatile
+    var isUploadingAvatar: Boolean = false
+
+    @Volatile
+    private var loadedPhotoUrlForUser: Pair<Int, String>? = null
+
     var userName by mutableStateOf(
         try {
             SessionManager.getInstance().getFullName()?.takeIf { it.isNotBlank() } ?: "User"
@@ -47,13 +57,47 @@ object ProfileState {
     )
     var profileImageBitmap by mutableStateOf<ImageBitmap?>(null)
 
+    private fun getLegacySharedAvatarFile(context: Context): File {
+        return File(context.applicationContext.filesDir, "${AVATAR_FILE_PREFIX}current.jpg")
+    }
+
+    private fun cleanupLegacySharedAvatar(context: Context) {
+        try {
+            val legacyFile = getLegacySharedAvatarFile(context)
+            if (legacyFile.exists()) {
+                legacyFile.delete()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to cleanup legacy shared avatar: ${e.message}")
+        }
+    }
+
     /**
-     * Initializes ProfileState from persistent SessionManager and disk cache.
+     * Deletes the per-user cached avatar file and legacy shared fallback file.
+     */
+    fun deleteUserAvatarFile(userId: Int, context: Context? = null) {
+        val ctx = context?.applicationContext ?: appContext ?: return
+        cleanupLegacySharedAvatar(ctx)
+        if (userId > 0) {
+            try {
+                val userFile = getAvatarFile(ctx, userId)
+                if (userFile != null && userFile.exists()) {
+                    userFile.delete()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to delete user avatar file for user $userId: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Initializes ProfileState from persistent SessionManager and strict per-user disk cache.
      * Should be called on app launch (e.g. in MainActivity) or when user logs in.
      */
     fun init(context: Context, userId: Int? = null) {
         val appCtx = context.applicationContext
         appContext = appCtx
+        cleanupLegacySharedAvatar(appCtx)
 
         try {
             val sessionManager = try {
@@ -62,27 +106,41 @@ object ProfileState {
                 SessionManager.init(appCtx)
             }
 
-            val fullName = sessionManager.getFullName()?.takeIf { it.isNotBlank() }
-                ?: sessionManager.getUserSession()?.fullName?.takeIf { it.isNotBlank() }
-            if (!fullName.isNullOrBlank()) {
-                userName = fullName
+            val effectiveUserId = userId ?: sessionManager.getUserId()
+            if (effectiveUserId == null || effectiveUserId <= 0) {
+                clear(appCtx)
+                return
             }
 
-            val session = sessionManager.getUserSession()
-            session?.email?.takeIf { it.isNotBlank() }?.let { userEmail = it }
+            if (activeUserId != effectiveUserId) {
+                profileImageBitmap = null
+                loadedPhotoUrlForUser = null
+                isUploadingAvatar = false
+                userName = "User"
+                userEmail = ""
+                activeUserId = effectiveUserId
+            }
 
-            val effectiveUserId = userId ?: sessionManager.getUserId()
+            val fullName = sessionManager.getFullName()?.takeIf { it.isNotBlank() }
+                ?: sessionManager.getUserSession()?.fullName?.takeIf { it.isNotBlank() }
+            userName = fullName ?: "User"
+
+            val session = sessionManager.getUserSession()
+            userEmail = session?.email?.takeIf { it.isNotBlank() } ?: ""
+
+            if (sessionManager.isPfpOwnerMismatch(effectiveUserId, session?.email)) {
+                sessionManager.clearUserPfp(effectiveUserId)
+                deleteUserAvatarFile(effectiveUserId, appCtx)
+            }
 
             // 1. Try to load per-user Base64 cached avatar from SharedPreferences
             var loaded = false
-            if (effectiveUserId != null) {
-                val cachedPfp = sessionManager.getUserPfp(effectiveUserId)
-                if (!cachedPfp.isNullOrBlank()) {
-                    loaded = setProfilePicFromBase64(cachedPfp, effectiveUserId, appCtx)
-                }
+            val cachedPfp = sessionManager.getUserPfp(effectiveUserId, session?.email)
+            if (!cachedPfp.isNullOrBlank()) {
+                loaded = setProfilePicFromBase64(cachedPfp, effectiveUserId, appCtx)
             }
 
-            // 2. Fallback to local disk cache file
+            // 2. Fallback to strict per-user local disk cache file (never shared fallback)
             if (!loaded) {
                 loaded = loadFromDisk(appCtx, effectiveUserId)
             }
@@ -92,6 +150,8 @@ object ProfileState {
                 val photoUrl = session?.profilePhotoUrl
                 if (!photoUrl.isNullOrBlank()) {
                     loadPhotoFromUrl(photoUrl, effectiveUserId)
+                } else if (!isUploadingAvatar) {
+                    profileImageBitmap = null
                 }
             }
         } catch (e: Exception) {
@@ -100,38 +160,98 @@ object ProfileState {
     }
 
     /**
-     * Resolves the local avatar File on device internal storage.
+     * Authoritatively synchronizes ProfileState with backend user profile / dashboard payload.
      */
-    fun getAvatarFile(context: Context, userId: Int? = null): File {
-        val fileName = if (userId != null && userId > 0) {
-            "${AVATAR_FILE_PREFIX}$userId.jpg"
-        } else {
-            "${AVATAR_FILE_PREFIX}current.jpg"
+    fun syncFromServer(
+        userId: Int,
+        fullName: String? = null,
+        email: String? = null,
+        profilePicBase64: String? = null,
+        profilePhotoUrl: String? = null,
+        context: Context? = null
+    ) {
+        if (userId <= 0) return
+        val ctx = context?.applicationContext ?: appContext
+
+        val sessionManager = try {
+            SessionManager.getInstance()
+        } catch (_: Exception) {
+            ctx?.let { SessionManager.init(it) }
         }
-        return File(context.applicationContext.filesDir, fileName)
+
+        val loggedInUserId = sessionManager?.getUserId()
+        if (loggedInUserId != null && loggedInUserId != userId) {
+            Log.d(TAG, "Ignoring stale server profile response for user $userId (active session: $loggedInUserId)")
+            return
+        }
+
+        if (activeUserId != userId) {
+            profileImageBitmap = null
+            loadedPhotoUrlForUser = null
+            activeUserId = userId
+        }
+
+        if (!fullName.isNullOrBlank()) {
+            userName = fullName
+            sessionManager?.saveUserName(fullName)
+        }
+        if (!email.isNullOrBlank()) {
+            userEmail = email
+            sessionManager?.saveUserEmail(email)
+        }
+
+        val activeEmail = email?.takeIf { it.isNotBlank() }
+            ?: userEmail.takeIf { it.isNotBlank() }
+            ?: sessionManager?.getUserSession()?.email
+
+        if (!profilePicBase64.isNullOrBlank()) {
+            sessionManager?.saveUserPfp(userId, profilePicBase64, activeEmail)
+            setProfilePicFromBase64(profilePicBase64, userId, ctx)
+        } else if (!profilePhotoUrl.isNullOrBlank()) {
+            sessionManager?.saveProfilePhotoUrl(profilePhotoUrl)
+            if (profileImageBitmap == null || loadedPhotoUrlForUser != (userId to profilePhotoUrl)) {
+                loadPhotoFromUrl(profilePhotoUrl, userId)
+            }
+        } else if (!isUploadingAvatar) {
+            // Backend confirmed this account currently has no profile photo: ensure no other user's photo shows
+            sessionManager?.clearUserPfp(userId)
+            deleteUserAvatarFile(userId, ctx)
+            profileImageBitmap = null
+            loadedPhotoUrlForUser = null
+        }
     }
 
     /**
-     * Saves a chosen Bitmap to private internal storage and updates ProfileState immediately.
+     * Resolves the per-user local avatar File on device internal storage.
+     * Never returns a shared cross-account file.
+     */
+    fun getAvatarFile(context: Context, userId: Int? = null): File? {
+        if (userId == null || userId <= 0) return null
+        return File(context.applicationContext.filesDir, "${AVATAR_FILE_PREFIX}$userId.jpg")
+    }
+
+    /**
+     * Saves a chosen Bitmap to private per-user internal storage and updates ProfileState immediately.
      */
     fun saveProfileBitmap(context: Context, bitmap: Bitmap, userId: Int? = null) {
-        appContext = context.applicationContext
-        profileImageBitmap = bitmap.asImageBitmap()
+        val appCtx = context.applicationContext
+        appContext = appCtx
+        cleanupLegacySharedAvatar(appCtx)
+
+        val effectiveUserId = userId?.takeIf { it > 0 } ?: activeUserId?.takeIf { it > 0 }
+        if (effectiveUserId == null) return
+
+        if (activeUserId == null || activeUserId == effectiveUserId) {
+            activeUserId = effectiveUserId
+            profileImageBitmap = bitmap.asImageBitmap()
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val targetFile = getAvatarFile(context, userId)
+                val targetFile = getAvatarFile(appCtx, effectiveUserId) ?: return@launch
                 FileOutputStream(targetFile).use { out ->
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
                     out.flush()
-                }
-                // Also write to current fallback file
-                val fallbackFile = getAvatarFile(context, null)
-                if (fallbackFile.absolutePath != targetFile.absolutePath) {
-                    FileOutputStream(fallbackFile).use { out ->
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
-                        out.flush()
-                    }
                 }
                 Log.d(TAG, "Successfully saved profile photo to disk: ${targetFile.absolutePath}")
             } catch (e: Exception) {
@@ -141,25 +261,31 @@ object ProfileState {
     }
 
     /**
-     * Loads the avatar bitmap from local disk cache.
+     * Loads the avatar bitmap from strict per-user local disk cache.
      * Returns true if successfully loaded and set.
      */
     fun loadFromDisk(context: Context, userId: Int? = null): Boolean {
-        try {
-            val userFile = getAvatarFile(context, userId)
-            val fallbackFile = getAvatarFile(context, null)
+        if (userId == null || userId <= 0) return false
+        if (activeUserId != null && activeUserId != userId) return false
 
-            val fileToLoad = when {
-                userFile.exists() && userFile.length() > 0 -> userFile
-                fallbackFile.exists() && fallbackFile.length() > 0 -> fallbackFile
-                else -> null
+        try {
+            val sessionManager = try {
+                SessionManager.getInstance()
+            } catch (_: Exception) {
+                null
+            }
+            if (sessionManager != null && sessionManager.isPfpOwnerMismatch(userId)) {
+                deleteUserAvatarFile(userId, context)
+                return false
             }
 
-            if (fileToLoad != null) {
-                val bitmap = BitmapFactory.decodeFile(fileToLoad.absolutePath)
-                if (bitmap != null) {
+            val userFile = getAvatarFile(context, userId)
+            if (userFile != null && userFile.exists() && userFile.length() > 0) {
+                val bitmap = BitmapFactory.decodeFile(userFile.absolutePath)
+                if (bitmap != null && (activeUserId == null || activeUserId == userId)) {
+                    activeUserId = userId
                     profileImageBitmap = bitmap.asImageBitmap()
-                    Log.d(TAG, "Successfully loaded profile avatar from disk: ${fileToLoad.name}")
+                    Log.d(TAG, "Successfully loaded profile avatar from disk: ${userFile.name}")
                     return true
                 }
             }
@@ -170,10 +296,10 @@ object ProfileState {
     }
 
     /**
-     * Asynchronously downloads photo from remote URL, saves to local disk, and updates ProfileState.
+     * Asynchronously downloads photo from remote URL, saves to strict per-user local disk, and updates ProfileState.
      */
     fun loadPhotoFromUrl(photoUrl: String, userId: Int? = null) {
-        if (photoUrl.isBlank()) return
+        if (photoUrl.isBlank() || userId == null || userId <= 0) return
         val ctx = appContext ?: return
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -194,21 +320,20 @@ object ProfileState {
 
                     if (bitmap != null) {
                         val targetFile = getAvatarFile(ctx, userId)
-                        FileOutputStream(targetFile).use { out ->
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
-                            out.flush()
-                        }
-                        val fallbackFile = getAvatarFile(ctx, null)
-                        if (fallbackFile.absolutePath != targetFile.absolutePath) {
-                            FileOutputStream(fallbackFile).use { out ->
+                        if (targetFile != null) {
+                            FileOutputStream(targetFile).use { out ->
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
                                 out.flush()
                             }
                         }
 
                         withContext(Dispatchers.Main) {
-                            profileImageBitmap = bitmap.asImageBitmap()
-                            Log.d(TAG, "Successfully fetched and cached profile avatar from URL: $photoUrl")
+                            val currentSessionUid = try { SessionManager.getInstance().getUserId() } catch (_: Exception) { null }
+                            if (activeUserId == userId && (currentSessionUid == null || currentSessionUid == userId)) {
+                                profileImageBitmap = bitmap.asImageBitmap()
+                                loadedPhotoUrlForUser = userId to photoUrl
+                                Log.d(TAG, "Successfully fetched and cached profile avatar from URL: $photoUrl")
+                            }
                         }
                     }
                 }
@@ -220,19 +345,25 @@ object ProfileState {
     }
 
     /**
-     * Decodes a Base64 JPEG string into an ImageBitmap, updates memory state, and optionally saves to disk.
+     * Decodes a Base64 JPEG string into an ImageBitmap, updates memory state, and saves to per-user disk.
      */
     fun setProfilePicFromBase64(base64Str: String?, userId: Int? = null, context: Context? = null): Boolean {
         if (base64Str.isNullOrBlank()) return false
+        val effectiveUserId = userId?.takeIf { it > 0 } ?: activeUserId?.takeIf { it > 0 } ?: return false
+        val currentSessionUid = try { SessionManager.getInstance().getUserId() } catch (_: Exception) { null }
+        if (currentSessionUid != null && currentSessionUid != effectiveUserId) return false
+        if (activeUserId != null && activeUserId != effectiveUserId) return false
+
         return try {
             val cleanBase64 = if (base64Str.contains(",")) base64Str.substringAfter(",") else base64Str
             val bytes = android.util.Base64.decode(cleanBase64, android.util.Base64.NO_WRAP)
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
             if (bitmap != null) {
+                activeUserId = effectiveUserId
                 profileImageBitmap = bitmap.asImageBitmap()
                 val ctx = context ?: appContext
-                if (userId != null && ctx != null) {
-                    saveProfileBitmap(ctx, bitmap, userId)
+                if (ctx != null) {
+                    saveProfileBitmap(ctx, bitmap, effectiveUserId)
                 }
                 true
             } else {
@@ -247,7 +378,14 @@ object ProfileState {
     /**
      * Clears profile state on user logout.
      */
-    fun clear() {
+    fun clear(context: Context? = null) {
+        val ctx = context?.applicationContext ?: appContext
+        if (ctx != null) {
+            cleanupLegacySharedAvatar(ctx)
+        }
+        activeUserId = null
+        loadedPhotoUrlForUser = null
+        isUploadingAvatar = false
         userName = "User"
         userEmail = ""
         profileImageBitmap = null
