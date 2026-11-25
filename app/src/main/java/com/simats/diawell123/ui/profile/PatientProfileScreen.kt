@@ -312,28 +312,30 @@ fun IosLiquidGlassSlider(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Outer iOS Liquid Glass Capsule Container (Deep Obsidian Glass)
+        // Outer iOS Liquid Glass Capsule Container (Adaptive Obsidian / Frosted Light)
+        val isDark = AppTheme.colors.isDark
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(
                     elevation = 6.dp,
                     shape = RoundedCornerShape(32.dp),
-                    ambientColor = Color(0xFF7E22CE).copy(alpha = 0.15f),
-                    spotColor = Color(0xFF7E22CE).copy(alpha = 0.20f),
+                    ambientColor = Color(0xFF7E22CE).copy(alpha = if (isDark) 0.15f else 0.08f),
+                    spotColor = Color(0xFF7E22CE).copy(alpha = if (isDark) 0.20f else 0.12f),
                 )
                 .clip(RoundedCornerShape(32.dp))
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF1C192E),
-                            Color(0xFF131122),
-                        ),
+                        colors = if (isDark) {
+                            listOf(Color(0xFF1C192E), Color(0xFF131122))
+                        } else {
+                            listOf(Color(0xFFFFFFFF), Color(0xFFF5F3FF))
+                        },
                     ),
                 )
                 .border(
                     width = 1.2.dp,
-                    color = Color(0xFF3B3358),
+                    color = if (isDark) Color(0xFF3B3358) else AppTheme.colors.border,
                     shape = RoundedCornerShape(32.dp),
                 )
                 .padding(vertical = 8.dp, horizontal = 6.dp),
@@ -346,7 +348,7 @@ fun IosLiquidGlassSlider(
                         .width(36.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(Color(0xFF4C3E6D)),
+                        .background(if (isDark) Color(0xFF4C3E6D) else Color(0xFFCBD5E1)),
                 )
 
                 LazyRow(
@@ -393,14 +395,14 @@ fun IosLiquidGlassSlider(
                                 )
                             }
                         } else {
-                            // Unselected Frosted Glass Pill (Deep Purple-Indigo with Crisp White-Silver Text)
+                            // Unselected Frosted Glass Pill
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(24.dp))
-                                    .background(Color(0xFF282245))
+                                    .background(if (isDark) Color(0xFF282245) else AppTheme.colors.secondaryBackground)
                                     .border(
                                         width = 1.dp,
-                                        color = Color(0xFF4C3E6D),
+                                        color = if (isDark) Color(0xFF4C3E6D) else AppTheme.colors.border,
                                         shape = RoundedCornerShape(24.dp),
                                     )
                                     .clickable { onItemSelected(item) }
@@ -411,7 +413,7 @@ fun IosLiquidGlassSlider(
                                     text = item,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFFF8FAFC),
+                                    color = AppTheme.colors.textPrimary,
                                 )
                             }
                         }
