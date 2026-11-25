@@ -60,6 +60,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.simats.diawell123.ArcReactorCanvas
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
@@ -126,25 +127,32 @@ fun SettingsScreen(
                 // Top Bar & Profile Card (Pops Up)
                 ElementPopUpContainer(delayMillis = 0) {
                     Column {
-                        Row(
+                        Box(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            StyledBackButton(onBackClick = onBackClick)
+                            Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                                StyledBackButton(onBackClick = onBackClick)
+                            }
 
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                modifier = Modifier.align(Alignment.Center),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                ArcReactorCanvas(
+                                    rotationAngle = 0f,
+                                    modifier = Modifier.size(34.dp),
+                                )
                                 Text(
-                                    text = "Settings",
-                                    fontSize = 24.sp,
+                                    text = "DiaWell",
+                                    fontSize = 19.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
                         // User Profile Card
                         Box(
@@ -284,12 +292,10 @@ fun SettingsScreen(
                                 }
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Settings Rows (Pop Up Staggered)
                 ElementPopUpContainer(delayMillis = 80) {
