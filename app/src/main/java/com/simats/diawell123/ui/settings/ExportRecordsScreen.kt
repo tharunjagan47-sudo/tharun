@@ -137,15 +137,15 @@ fun ExportRecordsScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.successBg)
+                        .border(1.5.dp, AppTheme.colors.successBorder, RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = null,
-                            tint = Color(0xFF2E7D32),
+                            tint = AppTheme.colors.successText,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -154,12 +154,12 @@ fun ExportRecordsScreen(
                                 text = "Clinical Report Ready!",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                             Text(
                                 text = "Opening live document preview...",
                                 fontSize = 11.sp,
-                                color = Color(0xFF1B5E20),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
@@ -172,8 +172,8 @@ fun ExportRecordsScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFFFEBEE))
-                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.errorBg)
+                        .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(14.dp))
                         .clickable { viewModel.clearExportError() }
                         .padding(12.dp)
                 ) {
@@ -181,14 +181,14 @@ fun ExportRecordsScreen(
                         Icon(
                             imageVector = Icons.Rounded.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFD32F2F),
+                            tint = AppTheme.colors.errorText,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = exportState.errorMessage ?: "",
                             fontSize = 12.sp,
-                            color = Color(0xFFD32F2F),
+                            color = AppTheme.colors.errorText,
                             lineHeight = 16.sp,
                         )
                     }
