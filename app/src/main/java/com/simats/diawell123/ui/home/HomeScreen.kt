@@ -552,13 +552,15 @@ fun HomeScreen(
                                             accentColor = Color(0xFFA855F7),
                                             secondaryAccent = Color(0xFF38BDF8),
                                             icon = Icons.Rounded.WaterDrop,
-                                            actionLabel = "Open Glucose History  ›",
+                                            actionLabel = "+ Log Glucose",
                                             progressFraction = 0.72f,
                                             primaryDetailLabel = "Target Fasting",
                                             primaryDetailValue = "${data?.targetFastingGlucose ?: 100} mg/dL",
                                             secondaryDetailLabel = "Post-Meal Goal",
                                             secondaryDetailValue = "${data?.targetPostmealGlucose ?: 140} mg/dL",
-                                            onOpenScreen = onGlucoseHistoryClick,
+                                            onOpenScreen = onLogGlucoseClick,
+                                            secondaryActionLabel = "Open Glucose History  ›",
+                                            onSecondaryAction = onGlucoseHistoryClick,
                                         )
                                     },
                                 )
