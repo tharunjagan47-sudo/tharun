@@ -549,13 +549,13 @@ class MainActivity : FragmentActivity() {
                                         scaleOut(targetScale = 1.05f, animationSpec = tween(500)))
                             } else if (fromTabIdx != null && toTabIdx != null) {
                                 val dir = if (toTabIdx >= fromTabIdx) 1 else -1
-                                (fadeIn(animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing)) +
-                                    slideInHorizontally(animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing)) { width ->
-                                        dir * (width * 0.04f).toInt()
+                                (fadeIn(animationSpec = tween(durationMillis = 210, easing = FastOutSlowInEasing)) +
+                                    slideInHorizontally(animationSpec = tween(durationMillis = 210, easing = FastOutSlowInEasing)) { width ->
+                                        dir * (width * 0.07f).toInt()
                                     }) togetherWith
-                                    (fadeOut(animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing)) +
-                                        slideOutHorizontally(animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing)) { width ->
-                                            -dir * (width * 0.04f).toInt()
+                                    (fadeOut(animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)) +
+                                        slideOutHorizontally(animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)) { width ->
+                                            -dir * (width * 0.07f).toInt()
                                         })
                             } else if (lastTransitionWasPop) {
                                 (fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) +
