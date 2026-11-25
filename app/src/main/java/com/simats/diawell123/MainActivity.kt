@@ -450,9 +450,10 @@ class MainActivity : FragmentActivity() {
                     mapOf(
                         "home" to 0,
                         "daily_diet_plan" to 1,
-                        "medications" to 2,
-                        "weekly_report" to 3,
-                        "settings" to 4,
+                        "ai_chatbot" to 2,
+                        "dr_jarvis_chat" to 2,
+                        "medications" to 3,
+                        "weekly_report" to 4,
                     )
                 }
 
@@ -528,7 +529,6 @@ class MainActivity : FragmentActivity() {
                     "daily_diet_plan" -> "Diet"
                     "medications" -> "Meds"
                     "weekly_report" -> "Reports"
-                    "settings" -> "Settings"
                     "notifications" -> "Home"
                     else -> null
                 }
@@ -976,9 +976,9 @@ class MainActivity : FragmentActivity() {
                             backdropLayer = navBackdropLayer,
                             onHomeTabClick = { selectBottomTab("home") },
                             onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onAiTabClick = { pushScreen("ai_chatbot") },
                             onMedsTabClick = { selectBottomTab("medications") },
                             onReportsTabClick = { selectBottomTab("weekly_report") },
-                            onSettingsTabClick = { selectBottomTab("settings") },
                         )
                     }
 
@@ -994,9 +994,9 @@ class MainActivity : FragmentActivity() {
                             backdropLayer = navBackdropLayer,
                             onHomeTabClick = { selectBottomTab("home") },
                             onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onAiTabClick = { pushScreen("ai_chatbot") },
                             onMedsTabClick = { selectBottomTab("medications") },
                             onReportsTabClick = { selectBottomTab("weekly_report") },
-                            onSettingsTabClick = { selectBottomTab("settings") },
                         )
                     }
 
