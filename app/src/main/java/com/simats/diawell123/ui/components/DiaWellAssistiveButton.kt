@@ -1,5 +1,6 @@
 package com.simats.diawell123.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -51,6 +52,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -123,9 +125,14 @@ fun DiaWellAssistiveButton(
         val offsetY = remember { Animatable(initialYPx) }
 
         var isDragging by remember { mutableStateOf(false) }
-        var isExpanded by remember { mutableStateOf(false) }
+        var isExpanded by rememberSaveable { mutableStateOf(false) }
         var isIdle by remember { mutableStateOf(false) }
         var lastInteractionMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
+        BackHandler(enabled = visible && isExpanded) {
+            isExpanded = false
+            lastInteractionMs = System.currentTimeMillis()
+        }
 
         // Automatically re-clamp and re-snap offsetX and offsetY inside screen bounds whenever orientation changes
         LaunchedEffect(screenWidthPx, screenHeightPx) {
