@@ -96,14 +96,19 @@ fun SettingsScreen(
     val profileUiState by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        if (profileUiState.profile == null) {
+    val currentSessionUserId = remember {
+        try { com.simats.diawell123.data.local.SessionManager.getInstance().getUserId() } catch (_: Exception) { null }
+    }
+
+    LaunchedEffect(currentSessionUserId) {
+        if (profileUiState.profile == null || (currentSessionUserId != null && profileUiState.profile?.userId != currentSessionUserId)) {
             profileViewModel.loadProfile()
         }
     }
 
-    val currentName = profileUiState.profile?.fullName ?: ProfileState.userName
-    val currentEmail = profileUiState.profile?.email ?: ProfileState.userEmail
+    val activeProfile = profileUiState.profile?.takeIf { currentSessionUserId == null || it.userId == currentSessionUserId }
+    val currentName = activeProfile?.fullName ?: ProfileState.userName
+    val currentEmail = activeProfile?.email ?: ProfileState.userEmail
 
     Box(
         modifier = modifier
