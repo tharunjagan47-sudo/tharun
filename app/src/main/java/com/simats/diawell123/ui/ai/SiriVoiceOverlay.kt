@@ -559,7 +559,8 @@ fun GlowingSiriOrb(
 
     Box(
         modifier = modifier
-            .size(stageSizeDp.dp),
+            .fillMaxWidth()
+            .height(stageSizeDp.dp),
         contentAlignment = Alignment.Center
     ) {
         // LARGE FULL-BODY VIRTUAL ASSISTANT DIVA ROBOT + SYNCHRONIZED DW CHEST VOICE ORB
@@ -569,6 +570,7 @@ fun GlowingSiriOrb(
             mouthShape = mouthShape,
             sizeDp = stageSizeDp,
             fullBody = true,
+            modifier = Modifier.fillMaxSize(),
             chestOverlay = {
                 // INTERACTIVE VOICE ORB CENTERED EXACTLY ON DIVA'S DW CHEST LOGO (x=50%, y=61.5%)
                 // Moves, floats, and tilts in 100% sync with DIVA's body and speech!
