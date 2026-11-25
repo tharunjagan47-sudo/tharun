@@ -146,8 +146,8 @@ fun HelpSupportScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.successBg)
+                        .border(1.5.dp, AppTheme.colors.successBorder, RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
                     Row(
@@ -157,7 +157,7 @@ fun HelpSupportScreen(
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = null,
-                            tint = Color(0xFF2E7D32),
+                            tint = AppTheme.colors.successText,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -166,13 +166,13 @@ fun HelpSupportScreen(
                                 text = "Support Message Sent Successfully!",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Our team will reply to your registered email shortly.",
                                 fontSize = 11.sp,
-                                color = Color(0xFF1B5E20),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
@@ -320,8 +320,8 @@ fun HelpSupportScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFFFEBEE))
-                    .border(1.5.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                    .background(AppTheme.colors.errorBg)
+                    .border(1.5.dp, AppTheme.colors.errorBorder, RoundedCornerShape(14.dp))
                     .clickable {
                         val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:108"))
                         try {
@@ -340,13 +340,13 @@ fun HelpSupportScreen(
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFFCDD2)),
+                            .background(if (AppTheme.colors.isDark) Color(0xFF7F1D1D).copy(alpha = 0.55f) else Color(0xFFFFCDD2)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Emergency,
                             contentDescription = null,
-                            tint = Color(0xFFC62828),
+                            tint = AppTheme.colors.errorText,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -356,13 +356,13 @@ fun HelpSupportScreen(
                             text = "Emergency Medical Helpline",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFC62828),
+                            color = AppTheme.colors.errorText,
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Tap to call 108 Ambulance & Emergency Support",
                             fontSize = 11.sp,
-                            color = Color(0xFFB71C1C),
+                            color = AppTheme.colors.errorText,
                             lineHeight = 15.sp,
                         )
                     }
