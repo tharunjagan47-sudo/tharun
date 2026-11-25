@@ -117,6 +117,7 @@ import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
 import com.simats.diawell123.ui.profile.ProfileState
+import com.simats.diawell123.ui.theme.AppTheme
 
 /**
  * Ultra-minimal modern dark-mode DIVA AI Chat Screen.
@@ -288,13 +289,17 @@ fun ChatScreen(
         label = "pulseScale"
     )
 
+    val isDark = AppTheme.colors.isDark
+    val glowStrength = if (isDark) 1f else 0.16f
+    val canvasFadeBg = AppTheme.colors.background
+
     // Edge-to-edge layout content with integrated moving ambient gradient
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(canvasFadeBg)
     ) {
-        // Fluid Top Ambient Gradient Canvas (Emerald & Teal to Royal Purple fading to pitch black)
+        // Fluid Top Ambient Gradient Canvas adapting cleanly between Dark Obsidian and Frosted Light
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
@@ -311,10 +316,10 @@ fun ChatScreen(
             drawRect(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFF047857).copy(alpha = 0.65f), // Rich Emerald / Teal on left (matches screenshot)
-                        Color(0xFF0E7490).copy(alpha = 0.48f), // Deep Cyan in middle
-                        Color(0xFF1E3A8A).copy(alpha = 0.45f), // Deep Midnight Blue / Indigo
-                        Color(0xFF581C87).copy(alpha = 0.48f), // Deep Violet / Purple on right
+                        Color(0xFF047857).copy(alpha = 0.65f * glowStrength),
+                        Color(0xFF0E7490).copy(alpha = 0.48f * glowStrength),
+                        Color(0xFF1E3A8A).copy(alpha = 0.45f * glowStrength),
+                        Color(0xFF581C87).copy(alpha = 0.48f * glowStrength),
                     ),
                     startX = -w * 0.10f + w * 0.10f * sin(phase1),
                     endX = w * 1.10f + w * 0.10f * sin(phase1)
@@ -326,9 +331,9 @@ fun ChatScreen(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF10B981).copy(alpha = 0.72f),
-                        Color(0xFF0D9488).copy(alpha = 0.52f),
-                        Color(0xFF064E3B).copy(alpha = 0.22f),
+                        Color(0xFF10B981).copy(alpha = 0.72f * glowStrength),
+                        Color(0xFF0D9488).copy(alpha = 0.52f * glowStrength),
+                        Color(0xFF064E3B).copy(alpha = 0.22f * glowStrength),
                         Color.Transparent
                     ),
                     center = Offset(offsetX1, offsetY1),
@@ -340,10 +345,10 @@ fun ChatScreen(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF38BDF8).copy(alpha = 0.35f),
-                        Color(0xFF6366F1).copy(alpha = 0.50f),
-                        Color(0xFF7C3AED).copy(alpha = 0.55f),
-                        Color(0xFF3B0764).copy(alpha = 0.20f),
+                        Color(0xFF38BDF8).copy(alpha = 0.35f * glowStrength),
+                        Color(0xFF6366F1).copy(alpha = 0.50f * glowStrength),
+                        Color(0xFF7C3AED).copy(alpha = 0.55f * glowStrength),
+                        Color(0xFF3B0764).copy(alpha = 0.20f * glowStrength),
                         Color.Transparent
                     ),
                     center = Offset(offsetX2, offsetY2),
@@ -355,8 +360,8 @@ fun ChatScreen(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF065F46).copy(alpha = 0.35f),
-                        Color(0xFF1E1B4B).copy(alpha = 0.25f),
+                        Color(0xFF065F46).copy(alpha = 0.35f * glowStrength),
+                        Color(0xFF1E1B4B).copy(alpha = 0.25f * glowStrength),
                         Color.Transparent
                     ),
                     center = Offset(w * (0.50f + 0.05f * sin(phase2)), h * (0.16f + 0.03f * cos(phase1))),
@@ -364,16 +369,16 @@ fun ChatScreen(
                 )
             )
 
-            // 5. Smooth atmospheric diffusion fading to pure obsidian pitch black (#000000) by ~48-52%
+            // 5. Smooth atmospheric diffusion fading cleanly into theme background
             drawRect(
                 brush = Brush.verticalGradient(
                     colorStops = arrayOf(
                         0.0f to Color.Transparent,
                         0.20f to Color.Transparent,
-                        0.32f to Color(0xFF000000).copy(alpha = 0.35f),
-                        0.44f to Color(0xFF000000).copy(alpha = 0.85f),
-                        0.50f to Color(0xFF000000),
-                        1.0f to Color(0xFF000000)
+                        0.32f to canvasFadeBg.copy(alpha = 0.35f),
+                        0.44f to canvasFadeBg.copy(alpha = 0.85f),
+                        0.50f to canvasFadeBg,
+                        1.0f to canvasFadeBg
                     )
                 )
             )
@@ -412,6 +417,8 @@ fun ChatScreen(
                     verticalPadding = 4.dp,
                 ) {
                     // New Chat (Compose Icon)
+                    val topIconStroke = AppTheme.colors.textPrimary
+                    val pencilTint = AppTheme.colors.primaryAccent
                     Box(
                         modifier = Modifier
                             .size(34.dp)
@@ -435,7 +442,7 @@ fun ChatScreen(
                                 }
                                 drawPath(
                                     path = squarePath,
-                                    color = Color(0xFFF1F5F9),
+                                    color = topIconStroke,
                                     style = Stroke(width = 1.6.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
                                 )
                                 val pencilPath = Path().apply {
@@ -444,7 +451,7 @@ fun ChatScreen(
                                 }
                                 drawPath(
                                     path = pencilPath,
-                                    color = Color(0xFFA78BFA),
+                                    color = pencilTint,
                                     style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round)
                                 )
                             }
@@ -455,7 +462,7 @@ fun ChatScreen(
                             modifier = Modifier
                                 .width(1.dp)
                                 .height(16.dp)
-                                .background(Color(0x26FFFFFF))
+                                .background(if (isDark) Color(0x26FFFFFF) else AppTheme.colors.border)
                         )
 
                         // More / Options (...)
@@ -470,31 +477,31 @@ fun ChatScreen(
                                 val w = size.width
                                 val h = size.height
                                 val r = 1.6.dp.toPx()
-                                drawCircle(color = Color(0xFFF1F5F9), radius = r, center = Offset(w * 0.22f, h * 0.5f))
-                                drawCircle(color = Color(0xFFF1F5F9), radius = r, center = Offset(w * 0.50f, h * 0.5f))
-                                drawCircle(color = Color(0xFFF1F5F9), radius = r, center = Offset(w * 0.78f, h * 0.5f))
+                                drawCircle(color = topIconStroke, radius = r, center = Offset(w * 0.22f, h * 0.5f))
+                                drawCircle(color = topIconStroke, radius = r, center = Offset(w * 0.50f, h * 0.5f))
+                                drawCircle(color = topIconStroke, radius = r, center = Offset(w * 0.78f, h * 0.5f))
                             }
 
                             DropdownMenu(
                                 expanded = showOptionsMenu,
                                 onDismissRequest = { showOptionsMenu = false },
                                 modifier = Modifier
-                                    .background(Color(0xFF161524))
-                                    .border(1.dp, Color(0x40A855F7), RoundedCornerShape(12.dp))
+                                    .background(AppTheme.colors.cardBackground)
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
                             ) {
                                 DropdownMenuItem(
                                     leadingIcon = {
                                         Icon(
                                             imageVector = if (autoSpeakEnabled) Icons.Rounded.VolumeUp else Icons.Rounded.VolumeOff,
                                             contentDescription = null,
-                                            tint = Color.White,
+                                            tint = AppTheme.colors.textPrimary,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     },
                                     text = {
                                         Text(
                                             text = if (autoSpeakEnabled) "Auto-Speak Enabled" else "Auto-Speak Disabled",
-                                            color = Color.White,
+                                            color = AppTheme.colors.textPrimary,
                                             fontSize = 13.sp
                                         )
                                     },
@@ -511,14 +518,14 @@ fun ChatScreen(
                                         Icon(
                                             imageVector = Icons.Rounded.Mic,
                                             contentDescription = null,
-                                            tint = Color(0xFFF0ABFC),
+                                            tint = if (isDark) Color(0xFFF0ABFC) else Color(0xFF7C3AED),
                                             modifier = Modifier.size(18.dp)
                                         )
                                     },
                                     text = {
                                         Text(
                                             text = "Open Voice Mode",
-                                            color = Color(0xFFF0ABFC),
+                                            color = if (isDark) Color(0xFFF0ABFC) else Color(0xFF7C3AED),
                                             fontSize = 13.sp
                                         )
                                     },
@@ -532,14 +539,14 @@ fun ChatScreen(
                                         Icon(
                                             imageVector = Icons.Rounded.DeleteSweep,
                                             contentDescription = null,
-                                            tint = Color(0xFFF87171),
+                                            tint = AppTheme.colors.errorText,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     },
                                     text = {
                                         Text(
                                             text = "Clear Conversation",
-                                            color = Color(0xFFF87171),
+                                            color = AppTheme.colors.errorText,
                                             fontSize = 13.sp
                                         )
                                     },
@@ -592,8 +599,8 @@ fun ChatScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 18.dp, vertical = 4.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF2A1518))
-                            .border(1.dp, Color(0xFFEF5350).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.errorBg)
+                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                             .padding(12.dp)
                     ) {
                         Row(
@@ -604,7 +611,7 @@ fun ChatScreen(
                             Text(
                                 text = error,
                                 fontSize = 12.sp,
-                                color = Color(0xFFFCA5A5),
+                                color = AppTheme.colors.errorText,
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -612,7 +619,7 @@ fun ChatScreen(
                                 text = "Retry",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFF87171),
+                                color = AppTheme.colors.errorText,
                                 modifier = Modifier
                                     .clickable {
                                         viewModel.retryLastMessage(
@@ -640,8 +647,8 @@ fun ChatScreen(
                         .align(Alignment.CenterHorizontally)
                         .padding(bottom = 8.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFF1E1F24))
-                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(20.dp))
+                        .background(AppTheme.colors.cardElevated)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
                         .clickable { viewModel.stopGenerating() }
                         .padding(horizontal = 20.dp, vertical = 9.dp),
                     contentAlignment = Alignment.Center
@@ -650,7 +657,7 @@ fun ChatScreen(
                         text = "Answer now",
                         fontSize = 13.5.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFFF1F5F9)
+                        color = AppTheme.colors.textPrimary
                     )
                 }
             }
@@ -679,8 +686,8 @@ fun ChatScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Color(0x331F1B2E))
-                                .border(1.dp, Color(0x33A855F7), RoundedCornerShape(16.dp))
+                                .background(if (isDark) Color(0xFF1A162B) else AppTheme.colors.elevatedSurface)
+                                .border(1.dp, if (isDark) Color(0x4D8B5CF6) else AppTheme.colors.border, RoundedCornerShape(16.dp))
                                 .clickable { submitQuery(prompt, fromVoice = false) }
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center
@@ -689,7 +696,7 @@ fun ChatScreen(
                                 Icon(
                                     imageVector = icon,
                                     contentDescription = null,
-                                    tint = Color(0xFFA855F7),
+                                    tint = AppTheme.colors.primaryAccent,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -697,7 +704,7 @@ fun ChatScreen(
                                     text = prompt,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFFE9D5FF),
+                                    color = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6D28D9),
                                     maxLines = 1,
                                     softWrap = false
                                 )
@@ -715,8 +722,8 @@ fun ChatScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .clip(RoundedCornerShape(28.dp))
-                    .background(Color(0xFF1E1F24))
-                    .border(1.dp, Color(0x2EFFFFFF), RoundedCornerShape(28.dp))
+                    .background(if (isDark) Color(0xFF1E1F24) else AppTheme.colors.cardBackground)
+                    .border(1.dp, if (isDark) Color(0x2EFFFFFF) else AppTheme.colors.border, RoundedCornerShape(28.dp))
                     .padding(horizontal = 8.dp, vertical = 6.dp)
             ) {
                 Row(
@@ -724,11 +731,12 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Left: Minimal '+' Action Button
+                    val plusTint = AppTheme.colors.textPrimary
                     Box(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(Color(0x1AFFFFFF))
+                            .background(if (isDark) Color(0x1AFFFFFF) else AppTheme.colors.secondaryBackground)
                             .clickable { startVoiceInput() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -736,14 +744,14 @@ fun ChatScreen(
                             val w = size.width
                             val h = size.height
                             drawLine(
-                                color = Color(0xFFF1F5F9),
+                                color = plusTint,
                                 start = Offset(w * 0.5f, h * 0.18f),
                                 end = Offset(w * 0.5f, h * 0.82f),
                                 strokeWidth = 2.dp.toPx(),
                                 cap = StrokeCap.Round
                             )
                             drawLine(
-                                color = Color(0xFFF1F5F9),
+                                color = plusTint,
                                 start = Offset(w * 0.18f, h * 0.5f),
                                 end = Offset(w * 0.82f, h * 0.5f),
                                 strokeWidth = 2.dp.toPx(),
@@ -762,11 +770,11 @@ fun ChatScreen(
                             .weight(1f)
                             .padding(vertical = 6.dp),
                         textStyle = TextStyle(
-                            color = Color(0xFFF8FAFC),
+                            color = AppTheme.colors.textPrimary,
                             fontSize = 15.sp,
                             lineHeight = 21.sp
                         ),
-                        cursorBrush = SolidColor(Color(0xFFA855F7)),
+                        cursorBrush = SolidColor(AppTheme.colors.primaryAccent),
                         maxLines = 4,
                         decorationBox = { innerTextField ->
                             Box(contentAlignment = Alignment.CenterStart) {
@@ -774,7 +782,7 @@ fun ChatScreen(
                                     Text(
                                         text = "Ask DIVA",
                                         fontSize = 15.sp,
-                                        color = Color(0x80FFFFFF)
+                                        color = AppTheme.colors.textMuted
                                     )
                                 }
                                 innerTextField()
@@ -787,7 +795,7 @@ fun ChatScreen(
                     // Right: Action Button (Send Arrow vs Stop Square vs Minimal Rounded Square)
                     val canSend = inputText.isNotBlank() && !isLoading
                     val actionButtonBrush = when {
-                        isLoading -> Brush.linearGradient(listOf(Color(0xFF3B1547), Color(0xFF3B1547)))
+                        isLoading -> Brush.linearGradient(listOf(Color(0xFF7E22CE), Color(0xFF9333EA)))
                         canSend -> Brush.linearGradient(listOf(Color(0xFF10B981), Color(0xFF0D9488)))
                         else -> Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
                     }
@@ -815,7 +823,7 @@ fun ChatScreen(
                                 modifier = Modifier
                                     .size(12.dp)
                                     .clip(RoundedCornerShape(2.dp))
-                                    .background(Color(0xFFF5D0FE))
+                                    .background(Color.White)
                             )
                         } else if (canSend) {
                             // Crisp Vector Send Arrow
@@ -841,11 +849,12 @@ fun ChatScreen(
                             }
                         } else {
                             // Minimal Rounded Square Icon matching reference UI
+                            val micSquareTint = if (isDark) Color(0xFFCBD5E1) else AppTheme.colors.textSecondary
                             Canvas(modifier = Modifier.size(20.dp)) {
                                 val w = size.width
                                 val h = size.height
                                 drawRoundRect(
-                                    color = Color(0xFFCBD5E1),
+                                    color = micSquareTint,
                                     size = androidx.compose.ui.geometry.Size(w * 0.78f, h * 0.78f),
                                     topLeft = Offset(w * 0.11f, h * 0.11f),
                                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()),
@@ -910,18 +919,20 @@ fun ChatMessageItem(
     message: ChatMessage,
     onSpeakClick: (String) -> Unit = {}
 ) {
+    val isDark = AppTheme.colors.isDark
     val isUser = message.sender == ChatSender.USER
     val timeFormatted = remember(message.timestamp) {
         SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.timestamp))
     }
 
     if (isUser) {
-        // User Message: Sleek wide dark rounded card with user avatar thumbnail in top-right (matches Gemini reference!)
+        // User Message: Adaptive rounded card with user avatar thumbnail
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF1E2024))
+                .background(if (isDark) Color(0xFF1E2024) else AppTheme.colors.elevatedSurface)
+                .border(1.dp, if (isDark) Color.Transparent else AppTheme.colors.border, RoundedCornerShape(24.dp))
                 .padding(18.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -932,14 +943,14 @@ fun ChatMessageItem(
                             .padding(bottom = 10.dp)
                             .size(76.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF2A2B32))
+                            .background(if (isDark) Color(0xFF2A2B32) else AppTheme.colors.cardBackground)
                             .border(1.dp, Color(0x33A855F7), RoundedCornerShape(14.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.PhotoCamera,
                             contentDescription = "Attached photo",
-                            tint = Color(0xFFA855F7),
+                            tint = AppTheme.colors.primaryAccent,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -954,7 +965,7 @@ fun ChatMessageItem(
                     Text(
                         text = message.text,
                         fontSize = 15.5.sp,
-                        color = Color(0xFFF1F5F9),
+                        color = AppTheme.colors.textPrimary,
                         lineHeight = 23.sp,
                         fontWeight = FontWeight.Normal,
                         modifier = Modifier
@@ -962,13 +973,14 @@ fun ChatMessageItem(
                             .padding(end = 14.dp)
                     )
 
-                    // Top-Right User Avatar / Photo Thumbnail (matches reference screenshot!)
+                    // Top-Right User Avatar / Photo Thumbnail
                     val profileBitmap = ProfileState.profileImageBitmap
                     Box(
                         modifier = Modifier
                             .size(width = 54.dp, height = 66.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF2A2B32)),
+                            .background(if (isDark) Color(0xFF2A2B32) else AppTheme.colors.cardBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (profileBitmap != null) {
@@ -988,7 +1000,7 @@ fun ChatMessageItem(
                                     .ifEmpty { "ME" },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFCBD5E1)
+                                color = if (isDark) Color(0xFFCBD5E1) else AppTheme.colors.primaryAccent
                             )
                         }
                     }
@@ -996,7 +1008,7 @@ fun ChatMessageItem(
             }
         }
     } else {
-        // DIVA AI Response: Full-width, bubble-less clean typography directly on dark obsidian canvas
+        // DIVA AI Response: Full-width, bubble-less clean typography adapting cleanly to Light/Dark
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1013,10 +1025,11 @@ fun ChatMessageItem(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Bubble-less clean Markdown / bold typography directly on dark canvas
+                // Bubble-less clean Markdown / bold typography directly on canvas
                 MarkdownFormattedText(
                     text = message.text,
-                    color = if (message.isError) Color(0xFFF87171) else Color(0xFFF1F5F9),
+                    color = if (message.isError) AppTheme.colors.errorText else AppTheme.colors.textPrimary,
+                    boldColor = if (message.isError) AppTheme.colors.errorText else AppTheme.colors.textPrimary,
                     fontSize = 15.sp,
                     lineHeight = 23.sp
                 )
@@ -1047,7 +1060,8 @@ fun ChatMessageItem(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0x1AFFFFFF))
+                            .background(if (isDark) Color(0x1AFFFFFF) else AppTheme.colors.secondaryBackground)
+                            .border(1.dp, if (isDark) Color.Transparent else AppTheme.colors.border, RoundedCornerShape(6.dp))
                             .clickable { onSpeakClick(message.text) }
                             .padding(horizontal = 8.dp, vertical = 3.dp),
                         contentAlignment = Alignment.Center
@@ -1056,14 +1070,14 @@ fun ChatMessageItem(
                             Icon(
                                 imageVector = Icons.Rounded.VolumeUp,
                                 contentDescription = "Listen",
-                                tint = Color(0xFFE2E8F0),
+                                tint = if (isDark) Color(0xFFE2E8F0) else AppTheme.colors.textPrimary,
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Listen",
                                 fontSize = 11.5.sp,
-                                color = Color(0xFFE2E8F0)
+                                color = if (isDark) Color(0xFFE2E8F0) else AppTheme.colors.textPrimary
                             )
                         }
                     }
@@ -1071,7 +1085,7 @@ fun ChatMessageItem(
                     Text(
                         text = timeFormatted,
                         fontSize = 10.sp,
-                        color = Color(0x66FFFFFF)
+                        color = AppTheme.colors.textMuted
                     )
                 }
             }
@@ -1086,6 +1100,8 @@ fun ChatMessageItem(
  */
 @Composable
 fun DivaThinkingIndicator() {
+    val isDark = AppTheme.colors.isDark
+    val secondaryDotColor = if (isDark) Color.White else AppTheme.colors.primaryAccent
     val infiniteTransition = rememberInfiniteTransition(label = "ThinkingDots")
     val dotPhase by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -1136,7 +1152,7 @@ fun DivaThinkingIndicator() {
                 val bounce = sin(localPhase * Math.PI).toFloat().coerceIn(0f, 1f)
                 val r = 2.0.dp.toPx() * (0.85f + bounce * 0.35f)
                 val alpha = 0.40f + bounce * 0.60f
-                val color = if (i % 2 == 0) Color(0xFF34D399) else Color(0xFFFFFFFF)
+                val color = if (i % 2 == 0) Color(0xFF10B981) else secondaryDotColor
                 drawCircle(
                     color = color.copy(alpha = alpha),
                     radius = r,
@@ -1150,7 +1166,7 @@ fun DivaThinkingIndicator() {
         Text(
             text = statusMessages[statusIndex],
             fontSize = 15.sp,
-            color = Color(0xFFF1F5F9),
+            color = AppTheme.colors.textPrimary,
             fontWeight = FontWeight.Normal
         )
     }
@@ -1161,34 +1177,35 @@ fun DivaThinkingIndicator() {
  */
 @Composable
 fun ClinicalAlertBanner(alertType: AlertType) {
+    val isDark = AppTheme.colors.isDark
     val (icon, title, borderColor, bgColor, textColor) = when (alertType) {
         AlertType.HYPOGLYCEMIA_WARNING -> Tuple5<ImageVector?, String, Color, Color, Color>(
             Icons.Rounded.Warning,
             "CRITICAL: Hypoglycemia Guidance (<70 mg/dL)",
-            Color(0xFFEF4444),
-            Color(0xFF381418),
-            Color(0xFFFCA5A5)
+            if (isDark) Color(0xFFEF4444) else Color(0xFFDC2626),
+            if (isDark) Color(0xFF381418) else Color(0xFFFFEBEE),
+            if (isDark) Color(0xFFFCA5A5) else Color(0xFFB91C1C)
         )
         AlertType.HYPERGLYCEMIA_WARNING -> Tuple5<ImageVector?, String, Color, Color, Color>(
             Icons.Rounded.Warning,
             "ELEVATED: Hyperglycemia Caution (>250 mg/dL)",
-            Color(0xFFF59E0B),
-            Color(0xFF352010),
-            Color(0xFFFDE68A)
+            if (isDark) Color(0xFFF59E0B) else Color(0xFFD97706),
+            if (isDark) Color(0xFF352010) else Color(0xFFFFFBEB),
+            if (isDark) Color(0xFFFDE68A) else Color(0xFFB45309)
         )
         AlertType.KETONE_WARNING -> Tuple5<ImageVector?, String, Color, Color, Color>(
             Icons.Rounded.Warning,
             "ALERT: Ketone Protocol & Clinical Advisory",
-            Color(0xFFF97316),
-            Color(0xFF381912),
-            Color(0xFFFDBA74)
+            if (isDark) Color(0xFFF97316) else Color(0xFFEA580C),
+            if (isDark) Color(0xFF381912) else Color(0xFFFFF7ED),
+            if (isDark) Color(0xFFFDBA74) else Color(0xFFC2410C)
         )
         AlertType.GENERAL_CLINICAL_ALERT -> Tuple5<ImageVector?, String, Color, Color, Color>(
             Icons.Rounded.Info,
             "Clinical Safety & Medication Advisory",
-            Color(0xFF38BDF8),
-            Color(0xFF10233D),
-            Color(0xFFBAE6FD)
+            if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7),
+            if (isDark) Color(0xFF10233D) else Color(0xFFE0F2FE),
+            if (isDark) Color(0xFFBAE6FD) else Color(0xFF0369A1)
         )
         AlertType.NONE -> Tuple5<ImageVector?, String, Color, Color, Color>(null, "", Color.Transparent, Color.Transparent, Color.Transparent)
     }
@@ -1228,19 +1245,21 @@ fun ClinicalAlertBanner(alertType: AlertType) {
  */
 @Composable
 fun NutritionBadgeChip(metric: NutritionMetric) {
+    val isDark = AppTheme.colors.isDark
     val (chipBg, chipBorder, chipText) = when (metric.badgeType) {
         BadgeType.HIGH_FIBRE -> {
-            if (metric.isHighlight) {
-                Triple(Color(0xFF0D331A), Color(0xFF10B981), Color(0xFF6EE7B7))
+            if (isDark) {
+                if (metric.isHighlight) Triple(Color(0xFF0D331A), Color(0xFF10B981), Color(0xFF6EE7B7))
+                else Triple(Color(0xFF0F2B1D), Color(0xFF059669), Color(0xFF34D399))
             } else {
-                Triple(Color(0xFF0F2B1D), Color(0xFF059669), Color(0xFF34D399))
+                Triple(Color(0xFFECFDF5), Color(0xFF10B981), Color(0xFF047857))
             }
         }
-        BadgeType.CALORIES -> Triple(Color(0xFF33200D), Color(0xFFF59E0B), Color(0xFFFCD34D))
-        BadgeType.CARBOHYDRATES -> Triple(Color(0xFF0F263E), Color(0xFF38BDF8), Color(0xFF7DD3FC))
-        BadgeType.PROTEIN -> Triple(Color(0xFF2C103D), Color(0xFFA855F7), Color(0xFFE9D5FF))
-        BadgeType.MET_ACTIVITY -> Triple(Color(0xFF1E143D), Color(0xFF818CF8), Color(0xFFC7D2FE))
-        BadgeType.GENERAL -> Triple(Color(0xFF1E1E28), Color(0xFF64748B), Color(0xFFCBD5E1))
+        BadgeType.CALORIES -> if (isDark) Triple(Color(0xFF33200D), Color(0xFFF59E0B), Color(0xFFFCD34D)) else Triple(Color(0xFFFFFBEB), Color(0xFFF59E0B), Color(0xFFB45309))
+        BadgeType.CARBOHYDRATES -> if (isDark) Triple(Color(0xFF0F263E), Color(0xFF38BDF8), Color(0xFF7DD3FC)) else Triple(Color(0xFFE0F2FE), Color(0xFF0284C7), Color(0xFF0369A1))
+        BadgeType.PROTEIN -> if (isDark) Triple(Color(0xFF2C103D), Color(0xFFA855F7), Color(0xFFE9D5FF)) else Triple(Color(0xFFF5F3FF), Color(0xFF9333EA), Color(0xFF6D28D9))
+        BadgeType.MET_ACTIVITY -> if (isDark) Triple(Color(0xFF1E143D), Color(0xFF818CF8), Color(0xFFC7D2FE)) else Triple(Color(0xFFEEF2FF), Color(0xFF6366F1), Color(0xFF4338CA))
+        BadgeType.GENERAL -> if (isDark) Triple(Color(0xFF1E1E28), Color(0xFF64748B), Color(0xFFCBD5E1)) else Triple(Color(0xFFF1F5F9), Color(0xFFCBD5E1), Color(0xFF475569))
     }
 
     Box(
@@ -1266,11 +1285,12 @@ fun NutritionBadgeChip(metric: NutritionMetric) {
 fun MarkdownFormattedText(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color(0xFFF1F5F9),
+    color: Color = AppTheme.colors.textPrimary,
+    boldColor: Color = AppTheme.colors.textPrimary,
     fontSize: TextUnit = 14.5.sp,
     lineHeight: TextUnit = 22.sp
 ) {
-    val annotated = remember(text) {
+    val annotated = remember(text, boldColor) {
         buildAnnotatedString {
             val lines = text.split("\n")
             lines.forEachIndexed { index, line ->
@@ -1302,7 +1322,7 @@ fun MarkdownFormattedText(
                     addStyle(
                         style = SpanStyle(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFF8FAFC)
+                            color = boldColor
                         ),
                         start = boldStart,
                         end = length
