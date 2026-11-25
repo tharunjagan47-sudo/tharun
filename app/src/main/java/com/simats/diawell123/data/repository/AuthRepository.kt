@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 interface AuthRepository {
     suspend fun login(request: LoginRequest): Result<AuthResponse>
     suspend fun register(request: RegisterRequest): Result<AuthResponse>
-    suspend fun logout(): Result<AuthResponse>
+    suspend fun logout(clearLocalSession: Boolean = true): Result<AuthResponse>
 }
 
 class AuthRepositoryImpl(
@@ -170,12 +170,14 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun logout(): Result<AuthResponse> = withContext(Dispatchers.IO) {
+    override suspend fun logout(clearLocalSession: Boolean): Result<AuthResponse> = withContext(Dispatchers.IO) {
         try {
             apiService.logout()
         } catch (_: Exception) {
         } finally {
-            getSessionManager()?.clearSession(reason = null)
+            if (clearLocalSession) {
+                getSessionManager()?.clearSession(reason = null)
+            }
         }
         Result.success(AuthResponse(success = true, message = "Logged out successfully."))
     }
