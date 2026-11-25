@@ -260,6 +260,18 @@ class SessionManager private constructor(context: Context) {
             .apply()
     }
 
+    fun clearProfilePhoto(userId: Int? = getUserId()) {
+        prefs.edit().apply {
+            remove(KEY_PROFILE_PHOTO)
+            remove(KEY_PROFILE_PHOTO_URL)
+            if (userId != null && userId > 0) {
+                remove("pfp_$userId")
+                remove("pfp_owner_$userId")
+            }
+            apply()
+        }
+    }
+
     fun getFullName(): String? = prefs.getString(KEY_FULL_NAME, null)
 
     /**
