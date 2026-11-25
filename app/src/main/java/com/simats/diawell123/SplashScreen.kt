@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -191,23 +190,21 @@ fun SplashScreen(
             .fillMaxSize()
             .systemBarsPadding(),
     ) {
-        // Ambient Background Lighting
-        Box(
-            modifier = Modifier
-                .size(420.dp)
-                .align(Alignment.Center)
-                .scale(pulseScale)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFA855F7).copy(alpha = if (AppTheme.colors.isDark) 0.16f else 0.10f),
-                            Color(0xFF7C3AED).copy(alpha = if (AppTheme.colors.isDark) 0.08f else 0.04f),
-                            Color.Transparent,
-                        ),
+        // Soft pulsing center halo behind the DW emblem without any hard circular clip edge
+        val isSplashDark = AppTheme.colors.isDark
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawRect(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFA855F7).copy(alpha = if (isSplashDark) 0.16f else 0.10f),
+                        Color(0xFF7C3AED).copy(alpha = if (isSplashDark) 0.08f else 0.04f),
+                        Color.Transparent,
                     ),
-                    shape = CircleShape,
+                    center = center,
+                    radius = (size.minDimension * 0.56f) * pulseScale,
                 ),
-        )
+            )
+        }
 
         // Main Content Column
         Column(
