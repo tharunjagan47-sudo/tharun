@@ -132,6 +132,7 @@ import androidx.compose.ui.unit.sp
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.components.FluidGlassCircleButton
+import com.simats.diawell123.ui.components.lightShimmerSheen
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.AppTheme
@@ -280,6 +281,7 @@ fun HomeScreen(
                                         ),
                                     ),
                                 )
+                                .lightShimmerSheen(durationMillis = 4000, peakAlpha = 0.08f)
                                 .padding(18.dp),
                         ) {
                             Column {
