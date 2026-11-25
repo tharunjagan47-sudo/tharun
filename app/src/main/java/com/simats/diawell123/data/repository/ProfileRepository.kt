@@ -63,6 +63,8 @@ interface ProfileRepository {
     suspend fun uploadProfilePhoto(photoFile: File): Result<UploadPhotoData>
 
     suspend fun updateProfilePic(userId: Int, base64: String): Result<String>
+
+    suspend fun removeProfilePhoto(userId: Int): Result<Unit>
 }
 
 class ProfileRepositoryImpl(
@@ -329,6 +331,31 @@ class ProfileRepositoryImpl(
                     ?: "Failed to update profile pic (${response.code()})."
                 Result.failure(Exception(errorMsg))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun removeProfilePhoto(userId: Int): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.removeProfilePhoto(
+                com.simats.diawell123.data.model.RemoveProfilePhotoRequest(userId = userId)
+            )
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (body.success) {
+                    getSessionManager()?.clearProfilePhoto(userId)
+                    Result.success(Unit)
+                } else {
+                    Result.failure(Exception(body.message.ifEmpty { "Failed to remove profile photo." }))
+                }
+            } else {
+                val errorMsg = parseErrorMessage(response.errorBody()?.string())
+                    ?: "Failed to remove profile photo (${response.code()})."
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: IOException) {
+            Result.failure(Exception("Network error: Please check your connection and try again."))
         } catch (e: Exception) {
             Result.failure(e)
         }
