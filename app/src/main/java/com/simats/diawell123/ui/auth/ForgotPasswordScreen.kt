@@ -152,15 +152,15 @@ fun ForgotPasswordScreen(
                             .fillMaxWidth()
                             .padding(bottom = 16.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFEBEE))
-                            .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.errorBg)
+                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                             .padding(12.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Rounded.Warning,
                                 contentDescription = null,
-                                tint = Color(0xFFC62828),
+                                tint = AppTheme.colors.errorText,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -168,7 +168,7 @@ fun ForgotPasswordScreen(
                                 text = errorMessage,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFC62828),
+                                color = AppTheme.colors.errorText,
                             )
                         }
                     }
@@ -386,7 +386,7 @@ fun ForgotPasswordScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White.copy(alpha = 0.96f))
+                    .background(if (AppTheme.colors.isDark) Color(0xD90F0E17) else Color.White.copy(alpha = 0.96f))
                     .clickable(enabled = false) {}, // Intercept clicks during loading
                 contentAlignment = Alignment.Center,
             ) {
