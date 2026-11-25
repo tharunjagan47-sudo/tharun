@@ -268,15 +268,15 @@ fun SetMedicationReminderScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.successBg)
+                        .border(1.5.dp, AppTheme.colors.successBorder, RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = null,
-                            tint = Color(0xFF2E7D32),
+                            tint = AppTheme.colors.successText,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -285,7 +285,7 @@ fun SetMedicationReminderScreen(
                                 text = "Medication Reminder Set Successfully!",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                             Text(
                                 text = if (isDailySchedule) {
@@ -294,7 +294,7 @@ fun SetMedicationReminderScreen(
                                     "Single alarm set for $activeName on $reminderDateText at $selectedTime ($selectedTiming)."
                                 },
                                 fontSize = 11.sp,
-                                color = Color(0xFF1B5E20),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
@@ -308,22 +308,22 @@ fun SetMedicationReminderScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFFEBEE))
-                        .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.errorBg)
+                        .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                         .padding(12.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFC62828),
+                            tint = AppTheme.colors.errorText,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = reminderState.errorMessage ?: "",
                             fontSize = 12.sp,
-                            color = Color(0xFFC62828)
+                            color = AppTheme.colors.errorText
                         )
                     }
                 }
@@ -427,12 +427,12 @@ fun SetMedicationReminderScreen(
                                 }
                                 if (reminderState.manufacturer.isNotBlank()) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Rounded.Store, null, tint = Color(0xFF4A4453), modifier = Modifier.size(14.dp))
+                                        Icon(Icons.Rounded.Store, null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(14.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
                                             text = "Manufacturer: ${reminderState.manufacturer}",
                                             fontSize = 10.5.sp,
-                                            color = Color(0xFF4A4453),
+                                            color = AppTheme.colors.textSecondary,
                                         )
                                     }
                                 }
