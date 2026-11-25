@@ -497,7 +497,9 @@ class MainActivity : FragmentActivity() {
                                 val nextRoot = DiawellApplication.currentScreen.takeIf { it != "splash" }
                                     ?: if (sessionManager.isLoggedIn()) {
                                         if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) "app_lock" else "home"
-                                    } else if (sessionManager.isOnboardingCompleted()) "login" else "onboarding"
+                                    } else {
+                                        "onboarding"
+                                    }
                                 replaceRoot(nextRoot)
                             }
                         }
@@ -513,9 +515,8 @@ class MainActivity : FragmentActivity() {
                         } else {
                             replaceRoot("home")
                         }
-                    } else if (sessionManager.isOnboardingCompleted()) {
-                        replaceRoot("login")
                     } else {
+                        // Show the 3 onboarding screens whenever user is not logged in / has not created an account
                         replaceRoot("onboarding")
                     }
                     DiawellApplication.currentScreen = currentScreen
