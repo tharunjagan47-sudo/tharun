@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.speech.RecognizerIntent
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -257,6 +258,16 @@ fun ChatScreen(
 
     val isDark = AppTheme.colors.isDark
 
+    val returnToVoiceMode: () -> Unit = {
+        focusManager.clearFocus()
+        openedVoiceFromChat = false
+        isVoiceOverlayOpen = true
+    }
+
+    BackHandler(enabled = !isVoiceOverlayOpen) {
+        returnToVoiceMode()
+    }
+
     // Edge-to-edge layout content sitting transparently over DiaWellAmbientBackground
     Box(
         modifier = modifier
@@ -283,8 +294,8 @@ fun ChatScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left: Apple VisionOS / iOS Fluid Glass Bubble Back Button
-                FluidGlassBackButton(onClick = onBackClick)
+                // Left: Apple VisionOS / iOS Fluid Glass Bubble Back Button (returns to DIVA Voice first)
+                FluidGlassBackButton(onClick = returnToVoiceMode)
 
                 // Right: Single Sleek Translucent Fluid Glass Pill (New Chat & More Options)
                 var showOptionsMenu by remember { mutableStateOf(false) }
