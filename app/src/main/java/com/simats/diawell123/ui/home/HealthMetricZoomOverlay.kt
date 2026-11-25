@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.simats.diawell123.ui.components.DiaWellAmbientBackground
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.theme.AppTheme
 import kotlin.math.PI
@@ -94,6 +95,8 @@ data class HealthMetricZoomData(
     val secondaryDetailLabel: String,
     val secondaryDetailValue: String,
     val onOpenScreen: () -> Unit,
+    val secondaryActionLabel: String? = null,
+    val onSecondaryAction: (() -> Unit)? = null,
 )
 
 @Composable
@@ -141,21 +144,20 @@ fun HealthMetricZoomOverlay(
             label = "MetricZoomGraphProgress",
         )
 
-        val backdropColor = if (isDark) Color(0xFF0A0D1A) else Color(0xFFF6F5FC)
-        val glowTop = active.accentColor.copy(alpha = if (isDark) 0.28f else 0.14f)
+        val glowTop = active.accentColor.copy(alpha = if (isDark) 0.18f else 0.10f)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backdropColor)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = {},
-                )
-                .systemBarsPadding(),
+                ),
         ) {
-            // Subtle atmospheric radial aura matching metric accent
+            DiaWellAmbientBackground(modifier = Modifier.fillMaxSize())
+
+            // Subtle atmospheric radial aura matching metric accent over the global half-gradient
             Canvas(modifier = Modifier.fillMaxSize()) {
                 drawRect(
                     brush = Brush.radialGradient(
@@ -169,6 +171,7 @@ fun HealthMetricZoomOverlay(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .systemBarsPadding()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -324,6 +327,32 @@ fun HealthMetricZoomOverlay(
                         active.onOpenScreen()
                     },
                 )
+
+                val secondaryLabel = active.secondaryActionLabel
+                val secondaryAction = active.onSecondaryAction
+                if (secondaryLabel != null && secondaryAction != null) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(AppTheme.colors.cardBackground)
+                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(24.dp))
+                            .clickable {
+                                onDismiss()
+                                secondaryAction()
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = secondaryLabel,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = AppTheme.colors.textPrimary,
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(18.dp))
             }
