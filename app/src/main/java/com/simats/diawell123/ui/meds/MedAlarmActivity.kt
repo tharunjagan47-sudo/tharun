@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.Toast
+import com.simats.diawell123.ui.components.DiaWellAmbientBackground
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -253,21 +254,13 @@ fun MedAlarmScreen(
         label = "PulseScale"
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF0F172A),
-                        Color(0xFF1E1B4B),
-                        Color(0xFF0F172A)
-                    )
-                )
-            )
-            .systemBarsPadding()
-            .padding(20.dp)
-    ) {
+    DiaWellAmbientBackground(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .padding(20.dp)
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -490,5 +483,6 @@ fun MedAlarmScreen(
             }
         }
     }
+}
 }
 
