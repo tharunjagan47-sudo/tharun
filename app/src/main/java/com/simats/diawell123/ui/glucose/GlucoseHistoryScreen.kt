@@ -200,8 +200,8 @@ fun GlucoseHistoryScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFEBEE))
-                            .border(1.dp, Color(0xFFEF9A9A), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.errorBg)
+                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                             .padding(12.dp),
                     ) {
                         Row(
@@ -212,14 +212,14 @@ fun GlucoseHistoryScreen(
                             Text(
                                 text = uiState.errorMessage!!,
                                 fontSize = 12.sp,
-                                color = Color(0xFFC62828),
+                                color = AppTheme.colors.errorText,
                                 modifier = Modifier.weight(1f),
                             )
                             Text(
                                 text = "Retry",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC62828),
+                                color = AppTheme.colors.errorText,
                                 modifier = Modifier
                                     .clickable { viewModel.loadHistory() }
                                     .padding(4.dp),
@@ -382,19 +382,20 @@ fun GlucoseHistoryScreen(
 
 @Composable
 fun DynamicGlucoseLineChart(chartData: List<GlucoseChartPoint>) {
+    val gridLineColor = AppTheme.colors.border
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
 
         // Reference grid lines
         drawLine(
-            color = AppTheme.colors.border,
+            color = gridLineColor,
             start = Offset(0f, h * 0.25f),
             end = Offset(w, h * 0.25f),
             strokeWidth = 1.dp.toPx(),
         )
         drawLine(
-            color = AppTheme.colors.border,
+            color = gridLineColor,
             start = Offset(0f, h * 0.75f),
             end = Offset(w, h * 0.75f),
             strokeWidth = 1.dp.toPx(),
@@ -484,10 +485,10 @@ fun ReadingHistoryItem(
 ) {
     val numVal = value.toFloatOrNull() ?: 120f
     val (statusColor, statusBg) = when {
-        numVal < 70f -> Color(0xFFC62828) to Color(0xFFFFEBEE)
-        numVal > 180f -> Color(0xFFC62828) to Color(0xFFFFEBEE)
-        numVal >= 140f -> Color(0xFFE65100) to Color(0xFFFFF3E0)
-        else -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
+        numVal < 70f -> AppTheme.colors.errorText to AppTheme.colors.errorBg
+        numVal > 180f -> AppTheme.colors.errorText to AppTheme.colors.errorBg
+        numVal >= 140f -> AppTheme.colors.warningText to AppTheme.colors.warningBg
+        else -> AppTheme.colors.successText to AppTheme.colors.successBg
     }
 
     Box(
