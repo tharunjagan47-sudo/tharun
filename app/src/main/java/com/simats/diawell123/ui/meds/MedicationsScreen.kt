@@ -103,7 +103,6 @@ fun MedicationsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppTheme.colors.background)
             .statusBarsPadding(),
     ) {
         Column(
