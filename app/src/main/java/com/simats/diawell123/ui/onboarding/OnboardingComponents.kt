@@ -49,8 +49,8 @@ fun OnboardingTopBar(
             modifier = Modifier
                 .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.White.copy(alpha = 0.85f))
-                .border(1.dp, Color.White, RoundedCornerShape(20.dp))
+                .background(if (AppTheme.colors.isDark) AppTheme.colors.cardElevated else Color.White.copy(alpha = 0.85f))
+                .border(1.dp, if (AppTheme.colors.isDark) AppTheme.colors.border else Color.White, RoundedCornerShape(20.dp))
                 .clickable { onSkipClick() }
                 .padding(horizontal = 14.dp, vertical = 6.dp),
         ) {
@@ -73,8 +73,8 @@ fun OnboardingBadge(
         modifier = modifier
             .shadow(elevation = 3.dp, shape = RoundedCornerShape(20.dp))
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFFFBEBF6))
-            .border(1.dp, Color.White, RoundedCornerShape(20.dp))
+            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFFBEBF6))
+            .border(1.dp, if (AppTheme.colors.isDark) AppTheme.colors.border else Color.White, RoundedCornerShape(20.dp))
             .padding(horizontal = 14.dp, vertical = 6.dp),
     ) {
         Text(
@@ -106,7 +106,7 @@ fun OnboardingPageIndicator(
                     .width(if (isActive) 24.dp else 6.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isActive) Color(0xFF9E1D81) else Color(0xFFE8D6E5),
+                        if (isActive) Color(0xFF9E1D81) else if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFE8D6E5),
                     ),
             )
         }
