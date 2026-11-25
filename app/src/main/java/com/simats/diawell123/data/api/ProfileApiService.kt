@@ -58,5 +58,10 @@ interface ProfileApiService {
     suspend fun updateProfilePic(
         @Body request: com.simats.diawell123.data.model.UpdateProfilePicRequest
     ): Response<com.simats.diawell123.data.model.UpdateProfilePicResponse>
+
+    @POST("auth/uploadprofile.php")
+    suspend fun removeProfilePhoto(
+        @Body request: com.simats.diawell123.data.model.RemoveProfilePhotoRequest
+    ): Response<com.simats.diawell123.data.model.UpdateProfilePicResponse>
 }
 
