@@ -90,7 +90,6 @@ fun ForgotPasswordScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
