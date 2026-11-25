@@ -22,6 +22,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
@@ -214,7 +216,9 @@ fun DivaTalkingAvatar(
     }
 
     val containerModifier = if (fullBody) {
-        modifier.size(sizeDp.dp)
+        modifier
+            .fillMaxWidth()
+            .height(sizeDp.dp)
     } else {
         modifier
             .size(sizeDp.dp)
@@ -616,18 +620,29 @@ private fun DivaSpeakingVideoLayer(
             }
             .drawWithContent {
                 drawContent()
-                val radius = size.minDimension * 0.50f
+                val radius = size.maxDimension * 0.56f
                 drawRect(
                     brush = Brush.radialGradient(
                         colorStops = arrayOf(
                             0.00f to Color.Black,
-                            0.48f to Color.Black,
-                            0.74f to Color.Black.copy(alpha = 0.55f),
-                            0.94f to Color.Transparent,
+                            0.58f to Color.Black,
+                            0.80f to Color.Black.copy(alpha = 0.62f),
+                            0.98f to Color.Transparent,
                             1.00f to Color.Transparent,
                         ),
-                        center = Offset(size.width * 0.50f, size.height * 0.48f),
+                        center = Offset(size.width * 0.50f, size.height * 0.46f),
                         radius = radius,
+                    ),
+                    blendMode = BlendMode.DstIn,
+                )
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.00f to Color.Black,
+                            0.76f to Color.Black,
+                            0.92f to Color.Transparent,
+                            1.00f to Color.Transparent,
+                        ),
                     ),
                     blendMode = BlendMode.DstIn,
                 )
@@ -727,17 +742,18 @@ private fun applyVideoCenterCropMatrix(
 ) {
     if (viewWidth <= 0 || viewHeight <= 0 || videoWidth <= 0 || videoHeight <= 0) return
 
-    val scale = maxOf(
-        viewWidth.toFloat() / videoWidth.toFloat(),
-        viewHeight.toFloat() / videoHeight.toFloat(),
-    ) * 1.18f
+    // Fit the full robot + both outstretched hands (middle ~82% width, top ~84% height)
+    // while keeping bottom Tamil subtitles and corner watermark cropped out.
+    val scale = minOf(
+        viewWidth.toFloat() / (videoWidth.toFloat() * 0.82f),
+        viewHeight.toFloat() / (videoHeight.toFloat() * 0.84f),
+    )
 
     val scaledWidth = videoWidth * scale
     val scaledHeight = videoHeight * scale
 
-    // Center horizontally and shift slightly upward so bottom subtitles & watermark are cropped out
     val dx = (viewWidth - scaledWidth) * 0.5f
-    val dy = viewHeight * 0.50f - scaledHeight * 0.44f
+    val dy = viewHeight * 0.49f - scaledHeight * 0.43f
 
     val matrix = Matrix().apply {
         setScale(scaledWidth / viewWidth.toFloat(), scaledHeight / viewHeight.toFloat())
