@@ -166,8 +166,8 @@ fun MedicationsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFEBEE))
-                            .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.errorBg)
+                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                             .clickable { viewModel.loadMedications(isPullToRefresh = true) }
                             .padding(12.dp),
                     ) {
@@ -183,14 +183,14 @@ fun MedicationsScreen(
                                 Icon(
                                     imageVector = Icons.Rounded.Warning,
                                     contentDescription = null,
-                                    tint = Color(0xFFC62828),
+                                    tint = AppTheme.colors.errorText,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = uiState.errorMessage ?: "",
                                     fontSize = 12.sp,
-                                    color = Color(0xFFC62828),
+                                    color = AppTheme.colors.errorText,
                                 )
                             }
                             Row(
@@ -200,13 +200,13 @@ fun MedicationsScreen(
                                     text = "Retry",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFC62828)
+                                    color = AppTheme.colors.errorText
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Icon(
                                     imageVector = Icons.Rounded.Refresh,
                                     contentDescription = null,
-                                    tint = Color(0xFFC62828),
+                                    tint = AppTheme.colors.errorText,
                                     modifier = Modifier.size(14.dp)
                                 )
                             }
@@ -519,17 +519,22 @@ fun formatMedsStatusLabel(status: String): String {
     }
 }
 
+@Composable
 fun resolveMedsStatusColors(
     status: String,
     hexColor: String? = null,
     hexBg: String? = null
 ): Pair<Color, Color> {
+    val colors = AppTheme.colors
     return when (status.trim().lowercase()) {
-        "taken" -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
-        "snoozed" -> Color(0xFF1565C0) to Color(0xFFE3F2FD)
-        "skipped", "missed" -> Color(0xFFC62828) to Color(0xFFFFEBEE)
-        "upcoming" -> Color(0xFFA855F7) to Color(0xFFF5F3FF)
-        else -> parseMedsHexColor(hexColor, Color(0xFFA855F7)) to parseMedsHexColor(hexBg, Color(0xFFF5F3FF))
+        "taken" -> colors.successText to colors.successBg
+        "snoozed" -> colors.infoText to colors.infoBg
+        "skipped", "missed" -> colors.errorText to colors.errorBg
+        "upcoming" -> colors.primaryAccent to if (colors.isDark) colors.elevatedSurface else Color(0xFFF5F3FF)
+        else -> parseMedsHexColor(hexColor, colors.primaryAccent) to parseMedsHexColor(
+            hexBg,
+            if (colors.isDark) colors.elevatedSurface else Color(0xFFF5F3FF)
+        )
     }
 }
 
