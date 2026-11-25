@@ -143,22 +143,22 @@ fun DeleteAccountScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFFFEBEE))
-                    .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(14.dp))
+                    .background(AppTheme.colors.errorBg)
+                    .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(14.dp))
                     .padding(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.Top) {
                     Icon(
                         imageVector = Icons.Rounded.Warning,
                         contentDescription = null,
-                        tint = Color(0xFFC62828),
+                        tint = AppTheme.colors.errorText,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "This action is permanent and cannot be undone. All your logged glucose readings, meal history, medication schedules, and account preferences will be permanently erased.",
                         fontSize = 12.sp,
-                        color = Color(0xFFC62828),
+                        color = AppTheme.colors.errorText,
                         lineHeight = 17.sp,
                         modifier = Modifier.weight(1f)
                     )
@@ -171,14 +171,14 @@ fun DeleteAccountScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFFEBEE))
-                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.errorBg)
+                        .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                         .padding(12.dp)
                 ) {
                     Text(
                         text = deleteState.errorMessage ?: "Deletion failed.",
                         fontSize = 12.sp,
-                        color = Color(0xFFD32F2F)
+                        color = AppTheme.colors.errorText
                     )
                 }
             }
@@ -209,7 +209,7 @@ fun DeleteAccountScreen(
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else Color.White)
+                        .background(if (isSelected) (if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFFF5F3FF)) else AppTheme.colors.cardBackground)
                         .border(1.dp, if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border, RoundedCornerShape(10.dp))
                         .clickable {
                             selectedReason = reason
