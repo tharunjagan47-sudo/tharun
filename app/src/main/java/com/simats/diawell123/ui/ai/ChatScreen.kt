@@ -147,7 +147,8 @@ fun ChatScreen(
         try { com.simats.diawell123.data.local.SessionManager.getInstance() }
         catch (_: Exception) { com.simats.diawell123.data.local.SessionManager.init(context) }
     }
-    var isVoiceOverlayOpen by remember { mutableStateOf(false) }
+    var isVoiceOverlayOpen by remember { mutableStateOf(true) }
+    var openedVoiceFromChat by remember { mutableStateOf(false) }
     var autoSpeakEnabled by remember { mutableStateOf(sessionManager.isDrJarvisVoiceEnabled()) }
 
     val latestAiResponse = remember(messages) {
@@ -245,6 +246,7 @@ fun ChatScreen(
     }
 
     fun startVoiceInput() {
+        openedVoiceFromChat = true
         val permission = android.Manifest.permission.RECORD_AUDIO
         if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
             beginLiveVoiceSession()
@@ -754,10 +756,18 @@ fun ChatScreen(
             onStopAudio = {
                 voiceManager.stopSpeaking()
             },
+            onSwitchToChat = {
+                isVoiceOverlayOpen = false
+                voiceManager.cancelListening()
+                voiceManager.stopSpeaking()
+            },
             onClose = {
                 isVoiceOverlayOpen = false
                 voiceManager.cancelListening()
                 voiceManager.stopSpeaking()
+                if (!openedVoiceFromChat) {
+                    onBackClick()
+                }
             }
         )
     }
