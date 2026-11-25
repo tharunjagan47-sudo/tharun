@@ -143,15 +143,15 @@ fun ChangePasswordScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.successBg)
+                        .border(1.5.dp, AppTheme.colors.successBorder, RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.CheckCircle,
                             contentDescription = null,
-                            tint = Color(0xFF22C55E),
+                            tint = AppTheme.colors.successText,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -160,12 +160,12 @@ fun ChangePasswordScreen(
                                 text = "Password Changed Successfully!",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                             Text(
                                 text = "Your security credentials have been updated.",
                                 fontSize = 11.sp,
-                                color = Color(0xFF1B5E20),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
@@ -180,14 +180,14 @@ fun ChangePasswordScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFFFEBEE))
-                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.errorBg)
+                        .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(14.dp))
                         .padding(12.dp)
                 ) {
                     Text(
                         text = errorText,
                         fontSize = 12.sp,
-                        color = Color(0xFFD32F2F)
+                        color = AppTheme.colors.errorText
                     )
                 }
             }
