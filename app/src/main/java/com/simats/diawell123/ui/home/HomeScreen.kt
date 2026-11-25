@@ -1,5 +1,6 @@
 package com.simats.diawell123.ui.home
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -94,11 +95,13 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -774,6 +777,7 @@ fun IosLiquidGlassBottomNav(
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
     val isDark = AppTheme.colors.isDark
+    val coroutineScope = rememberCoroutineScope()
 
     val tabs = remember {
         listOf(
@@ -789,7 +793,7 @@ fun IosLiquidGlassBottomNav(
         tabs.indexOfFirst { it.first == selectedTab }.coerceIn(0, tabs.lastIndex)
     }
 
-    // Keep latest callbacks & state accessible inside pointerInput(Unit) without ever cancelling active drags!
+    // Keep latest callbacks & state accessible inside pointerInput(Unit) without ever cancelling active drags
     val currentSelectedIndex by rememberUpdatedState(selectedTabIndex)
     val currentOnSelectIndex by rememberUpdatedState<(Int) -> Unit> { index ->
         val tabName = tabs.getOrNull(index)?.first ?: return@rememberUpdatedState
@@ -809,37 +813,30 @@ fun IosLiquidGlassBottomNav(
 
     var rowWidthPx by remember { mutableFloatStateOf(0f) }
     var isPressed by remember { mutableStateOf(false) }
+    var isActivelyDragging by remember { mutableStateOf(false) }
+    var activeDragVelocitySlots by remember { mutableFloatStateOf(0f) }
     var settledTabIndex by remember { mutableIntStateOf(selectedTabIndex) }
     var hoveredIndex by remember { mutableIntStateOf(selectedTabIndex) }
-    var activeDragPos by remember { mutableStateOf<Float?>(null) }
 
-    // Sync settled & hovered indices when tab changes externally (e.g. from screen buttons/back press)
+    // Continuous Animatable preserves release velocity and tracks finger drags without restarting Compose state animations
+    val lensPos = remember { Animatable(selectedTabIndex.toFloat()) }
+
+    // Sync lens when tab changes externally (e.g., dashboard card clicks or system back)
     LaunchedEffect(selectedTabIndex) {
         settledTabIndex = selectedTabIndex
         if (!isPressed) {
             hoveredIndex = selectedTabIndex
+            lensPos.animateTo(
+                targetValue = selectedTabIndex.toFloat(),
+                animationSpec = spring(dampingRatio = 0.72f, stiffness = 420f),
+            )
         }
     }
 
-    // Target continuous position [0f .. 4f]: follows finger seamlessly during slide, locks to settled tab on release
-    val targetLensPos = activeDragPos ?: settledTabIndex.toFloat()
-
-    // Silky critically-damped GPU spring: filters touch digitizer micro-jitter while staying glued to thumb (~8ms lag),
-    // then glides smoothly with juicy elastic liquid settle on release — read strictly inside graphicsLayer!
-    val smoothLensPosState = animateFloatAsState(
-        targetValue = targetLensPos,
-        animationSpec = if (isPressed && activeDragPos != null) {
-            spring(dampingRatio = 0.90f, stiffness = 920f)
-        } else {
-            spring(dampingRatio = 0.78f, stiffness = 440f)
-        },
-        label = "SilkyLiquidLensPos",
-    )
-
     // Smooth liquid inflation when finger presses & slides the glass lens
     val pressScaleState = animateFloatAsState(
-        targetValue = if (isPressed) 1.10f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.68f, stiffness = 480f),
+        targetValue = if (isPressed) 1.12f else 1.0f,
+        animationSpec = spring(dampingRatio = 0.62f, stiffness = 460f),
         label = "LiquidLensPressScale",
     )
 
@@ -847,6 +844,7 @@ fun IosLiquidGlassBottomNav(
     val pillHeightDp = 70.dp
     val dockHeightDp = 56.dp
     val pillWidthPx = with(density) { pillWidthDp.toPx() }
+    val touchSlopPx = with(density) { 8.dp.toPx() }
     val tabSlotWidthPx = if (tabs.isNotEmpty() && rowWidthPx > 0f) rowWidthPx / tabs.size.toFloat() else 0f
 
     // Pre-allocated shapes & crystal liquid-glass brushes (zero per-frame allocations)
@@ -864,8 +862,7 @@ fun IosLiquidGlassBottomNav(
         )
     }
 
-    // iOS 26 Refractive Liquid Glass Lens Fill:
-    // Bright translucent crystal edges protruding top & bottom + deep smoked-purple glass center
+    // Refractive Liquid Glass Lens Fill
     val lensFillBrush = remember(isDark) {
         if (isDark) {
             Brush.verticalGradient(
@@ -914,7 +911,7 @@ fun IosLiquidGlassBottomNav(
     val topRefractionBrush = remember {
         Brush.verticalGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.36f),
+                Color.White.copy(alpha = 0.38f),
                 Color.Transparent,
             ),
         )
@@ -923,7 +920,7 @@ fun IosLiquidGlassBottomNav(
         Brush.verticalGradient(
             colors = listOf(
                 Color.Transparent,
-                Color(0xFFF0ABFC).copy(alpha = 0.28f),
+                Color(0xFFF0ABFC).copy(alpha = 0.30f),
             ),
         )
     }
@@ -939,6 +936,10 @@ fun IosLiquidGlassBottomNav(
         )
     }
 
+    val activeIconColor = if (isDark) Color.White else Color(0xFF4C1D95)
+    val inactiveIconColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val activeLabelColor = if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -948,7 +949,7 @@ fun IosLiquidGlassBottomNav(
             .height(78.dp),
         contentAlignment = Alignment.Center,
     ) {
-        // 1. SLEEK FLOATING PILL DOCK BASE (56.dp tall — glass lens protrudes gracefully above & below!)
+        // 1. SLEEK FLOATING PILL DOCK BASE (56.dp tall — glass lens protrudes gracefully above & below)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -972,7 +973,7 @@ fun IosLiquidGlassBottomNav(
                 .onGloballyPositioned { coordinates ->
                     rowWidthPx = coordinates.size.width.toFloat()
                 }
-                // Keyed on Unit so gesture coroutine NEVER cancels mid-slide when switching screens!
+                // Keyed on Unit so gesture coroutine NEVER cancels mid-slide when switching screens
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
@@ -980,17 +981,27 @@ fun IosLiquidGlassBottomNav(
                         if (width <= 0f) return@awaitEachGesture
                         val slotW = width / tabs.size.toFloat()
 
+                        val velocityTracker = VelocityTracker()
+                        velocityTracker.addPosition(down.uptimeMillis, down.position)
+
+                        val downX = down.position.x
+                        var lastX = downX
+                        var hasDragged = false
+                        var targetTabIdx = (downX / slotW).toInt().coerceIn(0, tabs.lastIndex)
+
                         isPressed = true
-                        var targetTabIdx = (down.position.x / slotW).toInt().coerceIn(0, tabs.lastIndex)
+                        isActivelyDragging = false
                         hoveredIndex = targetTabIdx
 
-                        // Immediately glide lens toward finger touch point
-                        val initialContinuous = ((down.position.x / slotW) - 0.5f).coerceIn(
-                            -0.08f,
-                            (tabs.lastIndex + 0.08f),
-                        )
-                        activeDragPos = initialContinuous
+                        // On initial press down, glide lens swiftly toward tapped tab without snapping cursor inside the same slot
+                        val downJob: Job = coroutineScope.launch {
+                            lensPos.animateTo(
+                                targetValue = targetTabIdx.toFloat(),
+                                animationSpec = spring(dampingRatio = 0.78f, stiffness = 780f),
+                            )
+                        }
 
+                        var activeMoveJob: Job? = null
                         try {
                             while (true) {
                                 val event = awaitPointerEvent()
@@ -1003,36 +1014,73 @@ fun IosLiquidGlassBottomNav(
                                 }
 
                                 val currentX = change.position.x
-                                if (abs(currentX - down.position.x) > 6f) {
+                                lastX = currentX
+                                velocityTracker.addPosition(change.uptimeMillis, change.position)
+
+                                if (!hasDragged && abs(currentX - downX) > touchSlopPx) {
+                                    hasDragged = true
+                                    isActivelyDragging = true
+                                    downJob.cancel()
+                                }
+
+                                if (hasDragged) {
                                     change.consume()
-                                }
 
-                                // Pure continuous sub-pixel tracking with soft rubber-band edge resistance
-                                val rawIdx = (currentX / slotW) - 0.5f
-                                val continuousIdx = when {
-                                    rawIdx < 0f -> rawIdx * 0.25f
-                                    rawIdx > tabs.lastIndex -> tabs.lastIndex + (rawIdx - tabs.lastIndex) * 0.25f
-                                    else -> rawIdx
-                                }
-                                activeDragPos = continuousIdx
+                                    // Continuous sub-pixel position with smooth asymptotic iOS rubber-banding at edges
+                                    val rawIdx = (currentX / slotW) - 0.5f
+                                    val continuousIdx = when {
+                                        rawIdx < 0f -> -0.30f * (1f - 1f / (1f + abs(rawIdx) * 2.2f))
+                                        rawIdx > tabs.lastIndex -> tabs.lastIndex + 0.30f * (1f - 1f / (1f + (rawIdx - tabs.lastIndex) * 2.2f))
+                                        else -> rawIdx
+                                    }
 
-                                val newTabIdx = (currentX / slotW).toInt().coerceIn(0, tabs.lastIndex)
-                                if (newTabIdx != targetTabIdx) {
-                                    targetTabIdx = newTabIdx
-                                    hoveredIndex = newTabIdx
-                                    // Subtle micro-haptic tick as crystal lens crosses each tab boundary
-                                    try {
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    } catch (_: Exception) {}
+                                    // Immediate frame-locked snap with exponential micro-smoothing eliminates 1-frame coroutine lag
+                                    val instantVel = (velocityTracker.calculateVelocity().x / slotW).coerceIn(-14f, 14f)
+                                    activeDragVelocitySlots = (activeDragVelocitySlots * 0.55f) + (instantVel * 0.45f)
+                                    val smoothedPos = (lensPos.value * 0.18f) + (continuousIdx * 0.82f)
+                                    activeMoveJob?.cancel()
+                                    activeMoveJob = coroutineScope.launch {
+                                        lensPos.snapTo(smoothedPos)
+                                    }
+
+                                    val newTabIdx = (currentX / slotW).toInt().coerceIn(0, tabs.lastIndex)
+                                    if (newTabIdx != targetTabIdx) {
+                                        targetTabIdx = newTabIdx
+                                        hoveredIndex = newTabIdx
+                                        try {
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        } catch (_: Exception) {}
+                                    }
                                 }
                             }
                         } finally {
-                            // Guaranteed cleanup on release: spring-lock lens to final tab and commit screen change ONLY now!
-                            val finalTab = targetTabIdx.coerceIn(0, tabs.lastIndex)
+                            downJob.cancel()
+                            activeMoveJob?.cancel()
+
+                            val velPxPerSec = velocityTracker.calculateVelocity().x
+                            val velSlotsPerSec = (velPxPerSec / slotW).coerceIn(-14f, 14f)
+
+                            val finalTab = if (hasDragged) {
+                                val projectedX = (lastX + velPxPerSec * 0.075f).coerceIn(0f, width)
+                                (projectedX / slotW).toInt().coerceIn(0, tabs.lastIndex)
+                            } else {
+                                (downX / slotW).toInt().coerceIn(0, tabs.lastIndex)
+                            }
+
                             settledTabIndex = finalTab
                             hoveredIndex = finalTab
-                            activeDragPos = null
+                            activeDragVelocitySlots = 0f
+                            isActivelyDragging = false
                             isPressed = false
+
+                            coroutineScope.launch {
+                                lensPos.animateTo(
+                                    targetValue = finalTab.toFloat(),
+                                    initialVelocity = if (hasDragged) velSlotsPerSec else 0f,
+                                    animationSpec = spring(dampingRatio = 0.68f, stiffness = 420f),
+                                )
+                            }
+
                             if (finalTab != currentSelectedIndex) {
                                 currentOnSelectIndex(finalTab)
                             }
@@ -1041,21 +1089,32 @@ fun IosLiquidGlassBottomNav(
                 },
             contentAlignment = Alignment.CenterStart,
         ) {
-            // 2A. OVERSIZED iOS 26 FLOATING LIQUID GLASS MAGNIFYING LENS (100% GPU sub-pixel translationX!)
+            // 2A. OVERSIZED FLOATING LIQUID GLASS MAGNIFYING LENS (100% GPU sub-pixel translationX!)
             if (rowWidthPx > 0f) {
                 Box(
                     modifier = Modifier
                         .width(pillWidthDp)
                         .height(pillHeightDp)
                         .graphicsLayer {
-                            val currentPos = smoothLensPosState.value
+                            val currentPos = lensPos.value
                             val xPx = (currentPos * tabSlotWidthPx) + ((tabSlotWidthPx - pillWidthPx) / 2f)
-                            val delta = abs(targetLensPos - currentPos)
-                            val stretch = (delta * 0.20f).coerceIn(0f, 0.18f)
+                            val targetPos = (if (isPressed) hoveredIndex else settledTabIndex).toFloat()
+                            val motionSpeed = if (isActivelyDragging) {
+                                (abs(activeDragVelocitySlots) * 0.022f)
+                            } else {
+                                abs(targetPos - currentPos) * 0.18f
+                            }
+                            val stretch = motionSpeed.coerceIn(0f, 0.22f)
+                            val directionalTilt = if (isActivelyDragging) {
+                                (activeDragVelocitySlots * 0.22f).coerceIn(-2.4f, 2.4f)
+                            } else {
+                                ((targetPos - currentPos) * 1.4f).coerceIn(-2.0f, 2.0f)
+                            }
                             val baseScale = pressScaleState.value
                             translationX = xPx
                             scaleX = baseScale + stretch
-                            scaleY = baseScale - (stretch * 0.42f)
+                            scaleY = baseScale - (stretch * 0.44f)
+                            rotationZ = directionalTilt
                         }
                         .shadow(
                             elevation = if (isDark) 16.dp else 10.dp,
@@ -1086,7 +1145,7 @@ fun IosLiquidGlassBottomNav(
                 }
             }
 
-            // 2B. EQUAL-WEIGHT TAB ITEMS WITH REAL-TIME LIQUID LENS MAGNIFICATION & MICRO-ANIMATIONS
+            // 2B. EQUAL-WEIGHT TAB ITEMS WITH PROXIMITY LENS MAGNIFICATION & VECTOR MICRO-ANIMATIONS
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -1095,22 +1154,19 @@ fun IosLiquidGlassBottomNav(
                     val activeIndex = if (isPressed) hoveredIndex else settledTabIndex
                     val isActive = (index == activeIndex)
 
-                    val iconTilt = remember { Animatable(0f) }
-                    LaunchedEffect(isActive) {
-                        if (isActive) {
-                            iconTilt.snapTo(-8f)
-                            iconTilt.animateTo(
-                                targetValue = 0f,
-                                animationSpec = spring(dampingRatio = 0.45f, stiffness = 680f),
-                            )
-                        } else {
-                            iconTilt.snapTo(0f)
-                        }
-                    }
-
+                    val animatedIconTint by animateColorAsState(
+                        targetValue = if (isActive) activeIconColor else inactiveIconColor,
+                        animationSpec = tween(durationMillis = 160),
+                        label = "BottomNavIconTint_$name",
+                    )
+                    val animatedLabelTint by animateColorAsState(
+                        targetValue = if (isActive) activeLabelColor else inactiveIconColor,
+                        animationSpec = tween(durationMillis = 160),
+                        label = "BottomNavLabelTint_$name",
+                    )
                     val labelAlphaState = animateFloatAsState(
-                        targetValue = if (isActive) 1f else 0.68f,
-                        animationSpec = tween(durationMillis = 140),
+                        targetValue = if (isActive) 1f else 0.70f,
+                        animationSpec = tween(durationMillis = 160),
                         label = "LensLabelAlpha_$name",
                     )
 
@@ -1124,28 +1180,22 @@ fun IosLiquidGlassBottomNav(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier.graphicsLayer {
-                                // Real-time silky optical magnification synced to sub-pixel GPU lens position!
-                                val currentLens = smoothLensPosState.value
+                                // Smooth GPU optical lift synced directly to the sub-pixel lens Animatable
+                                val currentLens = lensPos.value
                                 val proximity = (1f - abs(index.toFloat() - currentLens)).coerceIn(0f, 1f)
-                                val magScale = 1f + (proximity * 0.18f)
+                                val magScale = 1f + (proximity * 0.16f)
                                 scaleX = magScale
                                 scaleY = magScale
-                                translationY = (-2.dp.toPx()) * proximity
+                                translationY = (-2.5f.dp.toPx()) * proximity
                             },
                         ) {
-                            Icon(
-                                imageVector = iconVector,
-                                contentDescription = name,
-                                tint = if (isActive) {
-                                    if (isDark) Color.White else Color(0xFF4C1D95)
-                                } else {
-                                    if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-                                },
-                                modifier = Modifier
-                                    .size(21.dp)
-                                    .graphicsLayer {
-                                        rotationZ = iconTilt.value
-                                    },
+                            AnimatedNavVectorIcon(
+                                tabName = name,
+                                iconVector = iconVector,
+                                isActive = isActive,
+                                tint = animatedIconTint,
+                                isDark = isDark,
+                                sizeDp = 21,
                             )
 
                             Spacer(modifier = Modifier.height(2.dp))
@@ -1154,11 +1204,7 @@ fun IosLiquidGlassBottomNav(
                                 text = name,
                                 fontSize = if (isActive) 10.5.sp else 9.5.sp,
                                 fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isActive) {
-                                    if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
-                                } else {
-                                    if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-                                },
+                                color = animatedLabelTint,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 softWrap = false,
@@ -1175,8 +1221,178 @@ fun IosLiquidGlassBottomNav(
 }
 
 /**
+ * Per-tab Material 3 vector icon micro-choreography shared by both portrait dock & landscape rail:
+ * - Home: upward bounce & scale pop
+ * - Diet (Restaurant): playful double-nudge fork/knife tilt
+ * - Meds (Medication): rhythmic pill shake
+ * - Reports (Assessment): bottom-anchored bar-chart rise pop
+ * - Settings: mechanical cog quarter-turn spin
+ */
+@Composable
+private fun AnimatedNavVectorIcon(
+    tabName: String,
+    iconVector: ImageVector,
+    isActive: Boolean,
+    tint: Color,
+    isDark: Boolean,
+    sizeDp: Int = 21,
+) {
+    val iconScaleX = remember { Animatable(1f) }
+    val iconScaleY = remember { Animatable(1f) }
+    val iconRotation = remember { Animatable(0f) }
+    val iconOffsetY = remember { Animatable(0f) }
+    val glowAlpha = remember { Animatable(if (isActive) 1f else 0f) }
+
+    LaunchedEffect(isActive) {
+        if (isActive) {
+            launch {
+                glowAlpha.animateTo(1f, tween(220))
+            }
+            when (tabName) {
+                "Settings" -> {
+                    // Gear rotates smoothly 90° clockwise per activation while keeping float range normalized
+                    launch {
+                        val baseAngle = ((iconRotation.value % 360f) + 360f) % 360f
+                        iconRotation.snapTo(baseAngle)
+                        val targetAngle = ((baseAngle / 90f).roundToInt() + 1) * 90f
+                        iconRotation.animateTo(
+                            targetValue = targetAngle,
+                            animationSpec = spring(dampingRatio = 0.60f, stiffness = 360f),
+                        )
+                    }
+                    launch {
+                        iconScaleX.snapTo(0.88f)
+                        iconScaleY.snapTo(0.88f)
+                        iconScaleX.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                    }
+                    launch {
+                        iconScaleY.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                    }
+                }
+
+                "Reports" -> {
+                    // Chart bars dip briefly then rise dynamically from the baseline
+                    launch {
+                        iconScaleX.snapTo(1.06f)
+                        iconScaleY.snapTo(0.76f)
+                        iconScaleX.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 520f))
+                    }
+                    launch {
+                        iconScaleY.animateTo(1.16f, spring(dampingRatio = 0.58f, stiffness = 700f))
+                        iconScaleY.animateTo(1f, spring(dampingRatio = 0.52f, stiffness = 480f))
+                    }
+                }
+
+                "Home" -> {
+                    // Warm upward hop and settle
+                    launch {
+                        iconOffsetY.snapTo(-4.5f)
+                        iconOffsetY.animateTo(0f, spring(dampingRatio = 0.46f, stiffness = 520f))
+                    }
+                    launch {
+                        iconScaleX.snapTo(1.20f)
+                        iconScaleY.snapTo(1.20f)
+                        iconScaleX.animateTo(1f, spring(dampingRatio = 0.48f, stiffness = 540f))
+                    }
+                    launch {
+                        iconScaleY.animateTo(1f, spring(dampingRatio = 0.48f, stiffness = 540f))
+                    }
+                }
+
+                "Meds" -> {
+                    // Playful pill shake
+                    launch {
+                        iconRotation.snapTo(-15f)
+                        iconRotation.animateTo(10f, spring(dampingRatio = 0.55f, stiffness = 920f))
+                        iconRotation.animateTo(-5f, spring(dampingRatio = 0.55f, stiffness = 920f))
+                        iconRotation.animateTo(0f, spring(dampingRatio = 0.55f, stiffness = 680f))
+                    }
+                    launch {
+                        iconScaleX.snapTo(1.18f)
+                        iconScaleY.snapTo(1.18f)
+                        iconScaleX.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                    }
+                    launch {
+                        iconScaleY.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                    }
+                }
+
+                else -> {
+                    // Diet / Restaurant fork-and-knife nod
+                    launch {
+                        iconRotation.snapTo(-12f)
+                        iconRotation.animateTo(7f, spring(dampingRatio = 0.52f, stiffness = 820f))
+                        iconRotation.animateTo(0f, spring(dampingRatio = 0.52f, stiffness = 640f))
+                    }
+                    launch {
+                        iconScaleX.snapTo(1.16f)
+                        iconScaleY.snapTo(1.16f)
+                        iconScaleX.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                    }
+                    launch {
+                        iconScaleY.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                    }
+                }
+            }
+        } else {
+            launch { glowAlpha.animateTo(0f, tween(160)) }
+            if (tabName != "Settings") {
+                launch { iconRotation.animateTo(0f, tween(140)) }
+            }
+            launch { iconOffsetY.animateTo(0f, tween(140)) }
+            launch { iconScaleX.animateTo(1f, tween(140)) }
+            launch { iconScaleY.animateTo(1f, tween(140)) }
+        }
+    }
+
+    val haloColor = remember(isDark) {
+        if (isDark) Color(0x55C084FC) else Color(0x309333EA)
+    }
+
+    Box(contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .size((sizeDp + 10).dp)
+                .graphicsLayer {
+                    val a = glowAlpha.value
+                    alpha = a
+                    val s = 0.72f + (a * 0.28f)
+                    scaleX = s
+                    scaleY = s
+                }
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(haloColor, Color.Transparent),
+                    ),
+                ),
+        )
+
+        Icon(
+            imageVector = iconVector,
+            contentDescription = tabName,
+            tint = tint,
+            modifier = Modifier
+                .size(sizeDp.dp)
+                .graphicsLayer {
+                    scaleX = iconScaleX.value
+                    scaleY = iconScaleY.value
+                    rotationZ = iconRotation.value
+                    translationY = iconOffsetY.value.dp.toPx()
+                    transformOrigin = if (tabName == "Reports") {
+                        TransformOrigin(0.5f, 0.85f)
+                    } else {
+                        TransformOrigin.Center
+                    }
+                },
+        )
+    }
+}
+
+/**
  * Slim left-side NavigationRail for landscape orientation and tablet screen widths.
- * Matches DiaWell's Obsidian & Royal Purple glass aesthetic without wasting vertical screen space.
+ * Supports smooth vertical drag-and-slide selection, sliding glass pill indicator,
+ * and coordinated Material 3 vector icon animations matching the portrait dock.
  */
 @Composable
 fun DiaWellLiquidGlassNavRail(
@@ -1188,7 +1404,11 @@ fun DiaWellLiquidGlassNavRail(
     onSettingsTabClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
     val isDark = AppTheme.colors.isDark
+    val coroutineScope = rememberCoroutineScope()
+    val density = LocalDensity.current
+
     val tabs = remember {
         listOf(
             "Home" to Icons.Rounded.Home,
@@ -1198,6 +1418,60 @@ fun DiaWellLiquidGlassNavRail(
             "Settings" to Icons.Rounded.Settings,
         )
     }
+
+    val selectedTabIndex = remember(selectedTab) {
+        tabs.indexOfFirst { it.first == selectedTab }.coerceIn(0, tabs.lastIndex)
+    }
+    val currentSelectedIndex by rememberUpdatedState(selectedTabIndex)
+    val currentOnSelectIndex by rememberUpdatedState<(Int) -> Unit> { index ->
+        val tabName = tabs.getOrNull(index)?.first ?: return@rememberUpdatedState
+        if (tabName != selectedTab) {
+            try {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            } catch (_: Exception) {}
+            when (tabName) {
+                "Home" -> onHomeTabClick()
+                "Diet" -> onDietTabClick()
+                "Meds" -> onMedsTabClick()
+                "Reports" -> onReportsTabClick()
+                "Settings" -> onSettingsTabClick()
+            }
+        }
+    }
+
+    var columnHeightPx by remember { mutableFloatStateOf(0f) }
+    var isPressed by remember { mutableStateOf(false) }
+    var isActivelyDragging by remember { mutableStateOf(false) }
+    var activeRailDragVel by remember { mutableFloatStateOf(0f) }
+    var settledTabIndex by remember { mutableIntStateOf(selectedTabIndex) }
+    var hoveredIndex by remember { mutableIntStateOf(selectedTabIndex) }
+    val railPos = remember { Animatable(selectedTabIndex.toFloat()) }
+
+    LaunchedEffect(selectedTabIndex) {
+        settledTabIndex = selectedTabIndex
+        if (!isPressed) {
+            hoveredIndex = selectedTabIndex
+            railPos.animateTo(
+                targetValue = selectedTabIndex.toFloat(),
+                animationSpec = spring(dampingRatio = 0.72f, stiffness = 420f),
+            )
+        }
+    }
+
+    val pressScaleState = animateFloatAsState(
+        targetValue = if (isPressed) 1.08f else 1.0f,
+        animationSpec = spring(dampingRatio = 0.65f, stiffness = 460f),
+        label = "RailLensPressScale",
+    )
+
+    val pillSizeDp = 50.dp
+    val pillSizePx = with(density) { pillSizeDp.toPx() }
+    val touchSlopPx = with(density) { 8.dp.toPx() }
+    val slotHeightPx = if (tabs.isNotEmpty() && columnHeightPx > 0f) columnHeightPx / tabs.size.toFloat() else 0f
+
+    val activeIconColor = if (isDark) Color.White else Color(0xFF4C1D95)
+    val inactiveIconColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val activeLabelColor = if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
 
     Box(
         modifier = modifier
@@ -1232,59 +1506,180 @@ fun DiaWellLiquidGlassNavRail(
                 .padding(vertical = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Column(
-                modifier = Modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onGloballyPositioned { coords ->
+                        columnHeightPx = coords.size.height.toFloat()
+                    }
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val height = size.height.toFloat()
+                            if (height <= 0f) return@awaitEachGesture
+                            val slotH = height / tabs.size.toFloat()
+
+                            val velocityTracker = VelocityTracker()
+                            velocityTracker.addPosition(down.uptimeMillis, down.position)
+
+                            val downY = down.position.y
+                            var lastY = downY
+                            var hasDragged = false
+                            var targetIdx = (downY / slotH).toInt().coerceIn(0, tabs.lastIndex)
+
+                            isPressed = true
+                            hoveredIndex = targetIdx
+
+                            val downJob: Job = coroutineScope.launch {
+                                railPos.animateTo(
+                                    targetValue = targetIdx.toFloat(),
+                                    animationSpec = spring(dampingRatio = 0.78f, stiffness = 780f),
+                                )
+                            }
+
+                            var moveJob: Job? = null
+                            try {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull { it.id == down.id }
+                                        ?: event.changes.firstOrNull()
+                                        ?: break
+                                    if (change.changedToUpIgnoreConsumed() || !change.pressed) break
+
+                                    val currentY = change.position.y
+                                    lastY = currentY
+                                    velocityTracker.addPosition(change.uptimeMillis, change.position)
+
+                                    if (!hasDragged && abs(currentY - downY) > touchSlopPx) {
+                                        hasDragged = true
+                                        isActivelyDragging = true
+                                        downJob.cancel()
+                                    }
+
+                                    if (hasDragged) {
+                                        change.consume()
+                                        val rawIdx = (currentY / slotH) - 0.5f
+                                        val continuousIdx = when {
+                                            rawIdx < 0f -> -0.25f * (1f - 1f / (1f + abs(rawIdx) * 2.2f))
+                                            rawIdx > tabs.lastIndex -> tabs.lastIndex + 0.25f * (1f - 1f / (1f + (rawIdx - tabs.lastIndex) * 2.2f))
+                                            else -> rawIdx
+                                        }
+                                        val instantVel = (velocityTracker.calculateVelocity().y / slotH).coerceIn(-12f, 12f)
+                                        activeRailDragVel = (activeRailDragVel * 0.55f) + (instantVel * 0.45f)
+                                        val smoothedY = (railPos.value * 0.18f) + (continuousIdx * 0.82f)
+                                        moveJob?.cancel()
+                                        moveJob = coroutineScope.launch {
+                                            railPos.snapTo(smoothedY)
+                                        }
+                                        val newIdx = (currentY / slotH).toInt().coerceIn(0, tabs.lastIndex)
+                                        if (newIdx != targetIdx) {
+                                            targetIdx = newIdx
+                                            hoveredIndex = newIdx
+                                            try {
+                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                            } catch (_: Exception) {}
+                                        }
+                                    }
+                                }
+                            } finally {
+                                downJob.cancel()
+                                moveJob?.cancel()
+                                val velY = velocityTracker.calculateVelocity().y
+                                val velSlots = (velY / slotH).coerceIn(-12f, 12f)
+                                val finalTab = if (hasDragged) {
+                                    val projectedY = (lastY + velY * 0.075f).coerceIn(0f, height)
+                                    (projectedY / slotH).toInt().coerceIn(0, tabs.lastIndex)
+                                } else {
+                                    (downY / slotH).toInt().coerceIn(0, tabs.lastIndex)
+                                }
+                                settledTabIndex = finalTab
+                                hoveredIndex = finalTab
+                                activeRailDragVel = 0f
+                                isActivelyDragging = false
+                                isPressed = false
+                                coroutineScope.launch {
+                                    railPos.animateTo(
+                                        targetValue = finalTab.toFloat(),
+                                        initialVelocity = if (hasDragged) velSlots else 0f,
+                                        animationSpec = spring(dampingRatio = 0.68f, stiffness = 420f),
+                                    )
+                                }
+                                if (finalTab != currentSelectedIndex) {
+                                    currentOnSelectIndex(finalTab)
+                                }
+                            }
+                        }
+                    },
+                contentAlignment = Alignment.TopCenter,
             ) {
-                tabs.forEach { (name, iconVector) ->
-                    val isActive = (name == selectedTab)
+                if (columnHeightPx > 0f) {
+                    val railLensShape = remember { RoundedCornerShape(16.dp) }
                     Box(
                         modifier = Modifier
-                            .size(50.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                if (isActive) {
-                                    if (isDark) Color(0x40A855F7) else Color(0x297C3AED)
-                                } else Color.Transparent
-                            )
-                            .border(
-                                width = if (isActive) 1.2.dp else 0.dp,
-                                color = if (isActive) Color(0xFFA855F7) else Color.Transparent,
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .clickable {
-                                when (name) {
-                                    "Home" -> onHomeTabClick()
-                                    "Diet" -> onDietTabClick()
-                                    "Meds" -> onMedsTabClick()
-                                    "Reports" -> onReportsTabClick()
-                                    "Settings" -> onSettingsTabClick()
-                                }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = iconVector,
-                                contentDescription = name,
-                                tint = if (isActive) {
-                                    if (isDark) Color.White else Color(0xFF4C1D95)
-                                } else {
-                                    if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                            .size(pillSizeDp)
+                            .graphicsLayer {
+                                val currentPos = railPos.value
+                                val yPx = (currentPos * slotHeightPx) + ((slotHeightPx - pillSizePx) / 2f)
+                                val stretch = (if (isActivelyDragging) abs(activeRailDragVel) * 0.02f else abs(railPos.velocity) * 0.02f).coerceIn(0f, 0.16f)
+                                translationY = yPx
+                                scaleY = pressScaleState.value + stretch
+                                scaleX = pressScaleState.value - (stretch * 0.35f)
+                            }
+                            .clip(railLensShape)
+                            .background(if (isDark) Color(0x45A855F7) else Color(0x2E7C3AED))
+                            .border(1.2.dp, Color(0xFFA855F7), railLensShape),
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    tabs.forEachIndexed { index, (name, iconVector) ->
+                        val activeIndex = if (isPressed) hoveredIndex else settledTabIndex
+                        val isActive = (index == activeIndex)
+                        val animatedIconTint by animateColorAsState(
+                            targetValue = if (isActive) activeIconColor else inactiveIconColor,
+                            animationSpec = tween(durationMillis = 160),
+                            label = "RailIconTint_$name",
+                        )
+                        val animatedLabelTint by animateColorAsState(
+                            targetValue = if (isActive) activeLabelColor else inactiveIconColor,
+                            animationSpec = tween(durationMillis = 160),
+                            label = "RailLabelTint_$name",
+                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.graphicsLayer {
+                                    val proximity = (1f - abs(index.toFloat() - railPos.value)).coerceIn(0f, 1f)
+                                    val scale = 1f + (proximity * 0.12f)
+                                    scaleX = scale
+                                    scaleY = scale
                                 },
-                                modifier = Modifier.size(20.dp),
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = name,
-                                fontSize = 9.sp,
-                                fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isActive) {
-                                    if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
-                                } else if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B),
-                                maxLines = 1,
-                            )
+                            ) {
+                                AnimatedNavVectorIcon(
+                                    tabName = name,
+                                    iconVector = iconVector,
+                                    isActive = isActive,
+                                    tint = animatedIconTint,
+                                    isDark = isDark,
+                                    sizeDp = 20,
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = name,
+                                    fontSize = 9.sp,
+                                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+                                    color = animatedLabelTint,
+                                    maxLines = 1,
+                                )
+                            }
                         }
                     }
                 }
