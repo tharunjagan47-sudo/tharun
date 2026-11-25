@@ -139,7 +139,7 @@ fun ReadingDetailsScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFFFEBEE))
+                            .background(AppTheme.colors.errorBg)
                             .clickable { showDeleteConfirmDialog = true }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     ) {
@@ -147,14 +147,14 @@ fun ReadingDetailsScreen(
                             text = "Delete",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFC62828),
+                            color = AppTheme.colors.errorText,
                         )
                     }
                 } else if (uiState.isDeleting) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
-                        color = Color(0xFFC62828),
+                        color = AppTheme.colors.errorText,
                     )
                 }
             }
@@ -167,14 +167,14 @@ fun ReadingDetailsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFFEBEE))
-                        .border(1.dp, Color(0xFFEF9A9A), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.errorBg)
+                        .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                         .padding(12.dp),
                 ) {
                     Text(
                         text = uiState.errorMessage!!,
                         fontSize = 12.sp,
-                        color = Color(0xFFC62828),
+                        color = AppTheme.colors.errorText,
                     )
                 }
                 Spacer(modifier = Modifier.height(14.dp))
@@ -195,10 +195,10 @@ fun ReadingDetailsScreen(
             } else if (details != null) {
                 val numVal = details.readingValueNum
                 val (statusColor, statusBg, statusLabel) = when {
-                    numVal < 70f -> Triple(Color(0xFFC62828), Color(0xFFFFEBEE), "Hypoglycemia (<70 mg/dL)")
-                    numVal > 180f -> Triple(Color(0xFFC62828), Color(0xFFFFEBEE), "High Glucose (>180 mg/dL)")
-                    numVal >= 140f -> Triple(Color(0xFFE65100), Color(0xFFFFF3E0), "Elevated (140-180 mg/dL)")
-                    else -> Triple(Color(0xFF2E7D32), Color(0xFFE8F5E9), "In Target Range (70-139 mg/dL)")
+                    numVal < 70f -> Triple(AppTheme.colors.errorText, AppTheme.colors.errorBg, "Hypoglycemia (<70 mg/dL)")
+                    numVal > 180f -> Triple(AppTheme.colors.errorText, AppTheme.colors.errorBg, "High Glucose (>180 mg/dL)")
+                    numVal >= 140f -> Triple(AppTheme.colors.warningText, AppTheme.colors.warningBg, "Elevated (140-180 mg/dL)")
+                    else -> Triple(AppTheme.colors.successText, AppTheme.colors.successBg, "In Target Range (70-139 mg/dL)")
                 }
 
                 // Reading Display Card
@@ -390,13 +390,14 @@ fun ReadingDetailsScreen(
 
 @Composable
 fun RecentReadingsLineChart(readings: List<GlucoseRecentPoint>) {
+    val gridLineColor = AppTheme.colors.border
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
 
         // Reference line
         drawLine(
-            color = AppTheme.colors.border,
+            color = gridLineColor,
             start = Offset(0f, h * 0.5f),
             end = Offset(w, h * 0.5f),
             strokeWidth = 1.dp.toPx(),
