@@ -111,6 +111,11 @@ fun FoodOnboardingScreen(
 
 @Composable
 fun FoodIllustration(modifier: Modifier = Modifier) {
+    val isDark = AppTheme.colors.isDark
+    val bgCircleColor = if (isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF)
+    val plateColor = if (isDark) AppTheme.colors.cardElevated else Color.White
+    val plateStrokeColor = if (isDark) AppTheme.colors.border else Color(0xFFF2E0EE)
+    val rimColor = if (isDark) Color(0xFFA855F7).copy(alpha = 0.25f) else Color(0xFFFBF2FA)
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -120,26 +125,26 @@ fun FoodIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF),
+                color = bgCircleColor,
                 radius = bgRadius,
                 center = center
             )
 
             val plateRadius = size.width * 0.34f
             drawCircle(
-                color = Color.White,
+                color = plateColor,
                 radius = plateRadius,
                 center = center
             )
             drawCircle(
-                color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFF2E0EE),
+                color = plateStrokeColor,
                 radius = plateRadius,
                 center = center,
                 style = Stroke(width = 3.dp.toPx())
             )
 
             drawCircle(
-                color = Color(0xFFFBF2FA),
+                color = rimColor,
                 radius = plateRadius * 0.78f,
                 center = center,
                 style = Stroke(width = 2.dp.toPx())
