@@ -153,15 +153,16 @@ fun ExportReportViewerScreen(
                 enter = slideInVertically() + fadeIn(),
                 exit = slideOutVertically() + fadeOut(),
             ) {
-                val bg = if (actionBannerIsError) Color(0xFFFFEBEE) else Color(0xFFE8F5E9)
-                val fg = if (actionBannerIsError) Color(0xFFC62828) else Color(0xFF2E7D32)
+                val bg = if (actionBannerIsError) AppTheme.colors.errorBg else AppTheme.colors.successBg
+                val fg = if (actionBannerIsError) AppTheme.colors.errorText else AppTheme.colors.successText
+                val borderCol = if (actionBannerIsError) AppTheme.colors.errorBorder else AppTheme.colors.successBorder
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .background(bg)
-                        .border(1.5.dp, fg, RoundedCornerShape(14.dp))
+                        .border(1.5.dp, borderCol, RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -232,14 +233,14 @@ fun ExportReportViewerScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xFFE8F5E9))
+                                .background(AppTheme.colors.successBg)
                                 .padding(horizontal = 10.dp, vertical = 4.dp),
                         ) {
                             Text(
                                 text = "Ready • $formatTag",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
