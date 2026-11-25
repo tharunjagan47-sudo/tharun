@@ -443,20 +443,17 @@ fun MealNutritionBreakdownSheet(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(if (isDark) Color(0xFF090611) else Color(0xFFF8FAFC))
-                .statusBarsPadding()
-                .navigationBarsPadding()
+        DiaWellAmbientBackground(
+            modifier = Modifier.fillMaxSize()
         ) {
-            DiaWellAmbientBackground {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 18.dp, vertical = 14.dp)
-                ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 18.dp, vertical = 14.dp)
+            ) {
                 // Top Action Bar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -969,7 +966,6 @@ fun MealNutritionBreakdownSheet(
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-                }
             }
         }
     }
