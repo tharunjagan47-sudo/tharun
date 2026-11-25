@@ -545,9 +545,7 @@ class MainActivity : FragmentActivity() {
                                 drawLayer(navBackdropLayer)
                             },
                     ) {
-                        if (currentScreen != "splash") {
-                            DiaWellAmbientBackground()
-                        }
+                        DiaWellAmbientBackground()
 
                         AnimatedContent(
                         targetState = currentScreen,
