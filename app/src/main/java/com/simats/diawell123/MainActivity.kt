@@ -51,6 +51,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -529,12 +532,24 @@ class MainActivity : FragmentActivity() {
                     else -> null
                 }
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (currentScreen != "splash") {
-                        DiaWellAmbientBackground()
-                    }
+                val navBackdropLayer = rememberGraphicsLayer()
 
-                    AnimatedContent(
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .drawWithContent {
+                                navBackdropLayer.record {
+                                    this@drawWithContent.drawContent()
+                                }
+                                drawLayer(navBackdropLayer)
+                            },
+                    ) {
+                        if (currentScreen != "splash") {
+                            DiaWellAmbientBackground()
+                        }
+
+                        AnimatedContent(
                         targetState = currentScreen,
                         modifier = Modifier
                             .fillMaxSize()
@@ -947,6 +962,7 @@ class MainActivity : FragmentActivity() {
 
                         else -> SplashScreen()
                     }
+                    }
                 }
 
                     // Landscape / Tablet Navigation: Slim left-side liquid glass NavigationRail
@@ -958,6 +974,7 @@ class MainActivity : FragmentActivity() {
                     ) {
                         DiaWellLiquidGlassNavRail(
                             selectedTab = activeBottomTab ?: "Home",
+                            backdropLayer = navBackdropLayer,
                             onHomeTabClick = { selectBottomTab("home") },
                             onDietTabClick = { selectBottomTab("daily_diet_plan") },
                             onMedsTabClick = { selectBottomTab("medications") },
@@ -975,6 +992,7 @@ class MainActivity : FragmentActivity() {
                     ) {
                         IosLiquidGlassBottomNav(
                             selectedTab = activeBottomTab ?: "Home",
+                            backdropLayer = navBackdropLayer,
                             onHomeTabClick = { selectBottomTab("home") },
                             onDietTabClick = { selectBottomTab("daily_diet_plan") },
                             onMedsTabClick = { selectBottomTab("medications") },
