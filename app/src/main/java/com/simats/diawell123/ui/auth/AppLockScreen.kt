@@ -1,10 +1,12 @@
 package com.simats.diawell123.ui.auth
 
+import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -76,6 +78,11 @@ fun AppLockScreen(
     val savedPin = sessionManager.getAppLockPin() ?: "1234"
     val isBiometricEnabled = sessionManager.isBiometricUnlockEnabled()
     val userName = sessionManager.getFullName() ?: "User"
+
+    // Never allow back press to bypass the lock screen; minimize task instead.
+    BackHandler(enabled = !showForgotPinDialog) {
+        (context as? Activity)?.moveTaskToBack(true)
+    }
 
     fun triggerVibration() {
         val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
