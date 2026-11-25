@@ -215,15 +215,15 @@ fun ExploreFoodScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFF3CD))
-                            .border(1.dp, Color(0xFFFFC107), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.warningBg)
+                            .border(1.dp, AppTheme.colors.warningBorder, RoundedCornerShape(12.dp))
                             .padding(14.dp),
                     ) {
                         Text(
                             text = aiState.data!!.hypoglycemiaAlert!!,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF856404),
+                            color = AppTheme.colors.warningText,
                             lineHeight = 17.sp,
                         )
                     }
@@ -530,14 +530,14 @@ fun AiRecommendedFoodCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFE8F5E9))
+                                .background(AppTheme.colors.successBg)
                                 .padding(horizontal = 6.dp, vertical = 3.dp),
                         ) {
                             Text(
                                 text = giBadge,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
