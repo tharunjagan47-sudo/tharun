@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
@@ -41,10 +42,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -159,32 +163,42 @@ class MainActivity : FragmentActivity() {
         super.onSaveInstanceState(outState)
         outState.putBoolean("hasShownSplash", DiawellApplication.hasShownSplash)
         outState.putString("savedCurrentScreen", DiawellApplication.currentScreen)
+        val filteredStack = DiawellApplication.backStack
+            .filter { it.isNotBlank() && it != "splash" && it != "logout_dialog" }
+        if (filteredStack.isNotEmpty()) {
+            outState.putStringArrayList("savedBackStack", ArrayList(filteredStack))
+        }
+    }
+
+    private fun restoreNavigationState(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) return
+        if (savedInstanceState.getBoolean("hasShownSplash", false)) {
+            DiawellApplication.hasShownSplash = true
+        }
+        val restoredStack = savedInstanceState.getStringArrayList("savedBackStack")
+            ?.filter { it.isNotBlank() && it != "splash" && it != "logout_dialog" }
+            ?: emptyList()
+        if (restoredStack.isNotEmpty()) {
+            DiawellApplication.backStack = restoredStack
+            DiawellApplication.currentScreen = restoredStack.last()
+        } else {
+            savedInstanceState.getString("savedCurrentScreen")?.let {
+                if (it.isNotBlank() && it != "splash" && it != "logout_dialog") {
+                    DiawellApplication.currentScreen = it
+                    DiawellApplication.backStack = listOf(it)
+                }
+            }
+        }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        if (savedInstanceState.getBoolean("hasShownSplash", false)) {
-            DiawellApplication.hasShownSplash = true
-        }
-        savedInstanceState.getString("savedCurrentScreen")?.let {
-            if (it.isNotBlank() && it != "splash") {
-                DiawellApplication.currentScreen = it
-            }
-        }
+        restoreNavigationState(savedInstanceState)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            if (savedInstanceState.getBoolean("hasShownSplash", false)) {
-                DiawellApplication.hasShownSplash = true
-            }
-            savedInstanceState.getString("savedCurrentScreen")?.let {
-                if (it.isNotBlank() && it != "splash") {
-                    DiawellApplication.currentScreen = it
-                }
-            }
-        }
+        restoreNavigationState(savedInstanceState)
         handleIncomingIntentExtras(intent)
         DiaWellNotificationHelper.createNotificationChannels(applicationContext)
         SmartNudgeEngine.scheduleAllDailyNudges(applicationContext)
@@ -196,16 +210,35 @@ class MainActivity : FragmentActivity() {
 
                 val initialHasShownSplash = DiawellApplication.hasShownSplash
                 var hasShownSplash by rememberSaveable { mutableStateOf(initialHasShownSplash) }
-                var currentScreen by rememberSaveable {
-                    mutableStateOf(
-                        if (initialHasShownSplash) {
-                            DiawellApplication.currentScreen.takeIf { it != "splash" } ?: "home"
-                        } else {
-                            "splash"
+                val initialBackStack = remember {
+                    if (initialHasShownSplash) {
+                        val fallback = DiawellApplication.currentScreen
+                            .takeIf { it.isNotBlank() && it != "splash" && it != "logout_dialog" }
+                            ?: "home"
+                        BackStackNavigator.sanitizeStack(DiawellApplication.backStack, fallback)
+                    } else {
+                        listOf("splash")
+                    }
+                }
+                val backStack = rememberSaveable(
+                    saver = listSaver(
+                        save = { it.toList() },
+                        restore = { restored ->
+                            BackStackNavigator.sanitizeStack(restored).toMutableStateList()
                         }
                     )
+                ) {
+                    initialBackStack.toMutableStateList()
                 }
-                var screenBeforeLock by rememberSaveable { mutableStateOf("home") }
+                val currentScreen = backStack.lastOrNull() ?: "home"
+                var screenStackBeforeLock by rememberSaveable(
+                    stateSaver = listSaver<List<String>, String>(
+                        save = { it },
+                        restore = { restored -> restored.ifEmpty { listOf("home") } }
+                    )
+                ) { mutableStateOf(listOf("home")) }
+                var lastTransitionWasPop by remember { mutableStateOf(false) }
+                var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
                 var selectedMealCategory by rememberSaveable { mutableStateOf("breakfast") }
                 var selectedFoodId by rememberSaveable { mutableStateOf<Int?>(null) }
                 var selectedDishName by rememberSaveable { mutableStateOf<String?>(null) }
@@ -238,7 +271,59 @@ class MainActivity : FragmentActivity() {
                 var selectedTabletName by rememberSaveable { mutableStateOf("Metformin") }
                 var selectedTabletDose by rememberSaveable { mutableStateOf("500 mg • 1 Tablet") }
                 var exportReturnScreen by rememberSaveable { mutableStateOf("privacy_security") }
-                var exploreFoodReturnScreen by rememberSaveable { mutableStateOf("daily_diet_plan") }
+
+                fun replaceRoot(route: String) {
+                    showLogoutDialog = false
+                    lastTransitionWasPop = false
+                    BackStackNavigator.replaceRoot(backStack, route)
+                }
+
+                fun replaceTop(route: String) {
+                    showLogoutDialog = false
+                    lastTransitionWasPop = false
+                    BackStackNavigator.replaceTop(backStack, route)
+                }
+
+                fun pushScreen(route: String) {
+                    showLogoutDialog = false
+                    if (BackStackNavigator.pushScreen(backStack, route)) {
+                        lastTransitionWasPop = false
+                    }
+                }
+
+                fun selectBottomTab(tabRoute: String) {
+                    showLogoutDialog = false
+                    if (BackStackNavigator.selectBottomTab(backStack, tabRoute)) {
+                        lastTransitionWasPop = false
+                    }
+                }
+
+                fun popBackStack() {
+                    if (showLogoutDialog) {
+                        showLogoutDialog = false
+                        return
+                    }
+                    if (BackStackNavigator.popBackStack(backStack)) {
+                        lastTransitionWasPop = true
+                    }
+                }
+
+                fun popUpTo(targetRoute: String, replaceTopFallback: Boolean = false) {
+                    showLogoutDialog = false
+                    lastTransitionWasPop = BackStackNavigator.popUpTo(
+                        stack = backStack,
+                        targetRoute = targetRoute,
+                        replaceTopFallback = replaceTopFallback,
+                    )
+                }
+
+                val canPopSystemBack = BackStackNavigator.canHandleSystemBack(
+                    stack = backStack,
+                    hasOpenOverlay = showLogoutDialog,
+                )
+                BackHandler(enabled = canPopSystemBack) {
+                    popBackStack()
+                }
 
                 // Initialize ProfileState from disk cache & session so avatar and username persist across launches
                 LaunchedEffect(Unit) {
@@ -255,8 +340,10 @@ class MainActivity : FragmentActivity() {
                                 if (sessionManager.isLoggedIn() && sessionManager.isAppLockEnabled()) {
                                     sessionManager.setAppUnlocked(false)
                                     if (currentScreen != "app_lock" && currentScreen != "splash") {
-                                        screenBeforeLock = currentScreen
-                                        currentScreen = "app_lock"
+                                        screenStackBeforeLock = backStack
+                                            .filter { it.isNotBlank() && it != "app_lock" && it != "splash" && it != "logout_dialog" }
+                                            .ifEmpty { listOf("home") }
+                                        replaceRoot("app_lock")
                                     }
                                 }
                             }
@@ -309,7 +396,7 @@ class MainActivity : FragmentActivity() {
                         lastTabRefreshMs.clear()
                         activeSessionEpoch++
                         if (currentScreen !in listOf("login", "signup", "splash")) {
-                            currentScreen = "login"
+                            replaceRoot("login")
                         }
                     }
                 }
@@ -317,20 +404,40 @@ class MainActivity : FragmentActivity() {
                 // Handle deep-link screen navigation from notifications, smart nudges, or alarm screen
                 LaunchedEffect(externalNavTarget, currentScreen) {
                     val target = externalNavTarget
-                    if (!target.isNullOrBlank() && currentScreen != "splash" && sessionManager.isLoggedIn()) {
+                    if (!target.isNullOrBlank() && currentScreen != "splash" && currentScreen != "app_lock" && sessionManager.isLoggedIn()) {
                         when (target) {
                             "medications" -> {
                                 medsViewModel.loadMedications(isPullToRefresh = true)
-                                currentScreen = "medications"
+                                selectBottomTab("medications")
                             }
-                            "daily_diet_plan", "diet" -> currentScreen = "daily_diet_plan"
-                            "ai_chatbot", "dr_jarvis_chat" -> currentScreen = "ai_chatbot"
-                            "activity_tracking", "activity" -> currentScreen = "activity_tracking"
-                            "walking" -> currentScreen = "walking"
-                            "running" -> currentScreen = "running"
-                            "cycling" -> currentScreen = "cycling"
-                            "log_glucose", "glucose" -> currentScreen = "log_glucose"
-                            "home" -> currentScreen = "home"
+                            "daily_diet_plan", "diet" -> selectBottomTab("daily_diet_plan")
+                            "weekly_report" -> selectBottomTab("weekly_report")
+                            "settings" -> selectBottomTab("settings")
+                            "ai_chatbot", "dr_jarvis_chat" -> {
+                                selectBottomTab("home")
+                                pushScreen("ai_chatbot")
+                            }
+                            "activity_tracking", "activity" -> {
+                                selectBottomTab("home")
+                                pushScreen("activity_tracking")
+                            }
+                            "walking" -> {
+                                selectBottomTab("home")
+                                pushScreen("walking")
+                            }
+                            "running" -> {
+                                selectBottomTab("home")
+                                pushScreen("running")
+                            }
+                            "cycling" -> {
+                                selectBottomTab("home")
+                                pushScreen("cycling")
+                            }
+                            "log_glucose", "glucose" -> {
+                                selectBottomTab("home")
+                                pushScreen("log_glucose")
+                            }
+                            "home" -> replaceRoot("home")
                         }
                         externalNavTarget = null
                     }
@@ -347,9 +454,10 @@ class MainActivity : FragmentActivity() {
                 }
 
                 // Update activity timestamp on screen changes; defer non-blocking refresh until after tab slide settles
-                LaunchedEffect(currentScreen) {
+                LaunchedEffect(backStack.size, currentScreen) {
                     if (currentScreen != "splash") {
                         DiawellApplication.currentScreen = currentScreen
+                        DiawellApplication.backStack = backStack.filter { it.isNotBlank() && it != "splash" && it != "logout_dialog" }
                     }
                     sessionManager.updateLastActiveTime()
                     if (currentScreen in listOf("medications", "set_medication_reminder", "medication_reminder")) {
@@ -376,9 +484,19 @@ class MainActivity : FragmentActivity() {
                         hasShownSplash = true
                         DiawellApplication.hasShownSplash = true
                         if (currentScreen == "splash") {
-                            currentScreen = DiawellApplication.currentScreen.takeIf { it != "splash" } ?: if (sessionManager.isLoggedIn()) {
-                                if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) "app_lock" else "home"
-                            } else if (sessionManager.isOnboardingCompleted()) "login" else "onboarding"
+                            val restoredStack = DiawellApplication.backStack
+                                .filter { it.isNotBlank() && it != "splash" && it != "logout_dialog" }
+                            if (restoredStack.isNotEmpty()) {
+                                lastTransitionWasPop = false
+                                backStack.clear()
+                                backStack.addAll(restoredStack)
+                            } else {
+                                val nextRoot = DiawellApplication.currentScreen.takeIf { it != "splash" }
+                                    ?: if (sessionManager.isLoggedIn()) {
+                                        if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) "app_lock" else "home"
+                                    } else if (sessionManager.isOnboardingCompleted()) "login" else "onboarding"
+                                replaceRoot(nextRoot)
+                            }
                         }
                         return@LaunchedEffect
                     }
@@ -387,17 +505,18 @@ class MainActivity : FragmentActivity() {
                     DiawellApplication.hasShownSplash = true
                     if (sessionManager.isLoggedIn()) {
                         if (sessionManager.isAppLockEnabled() && !sessionManager.isAppUnlocked()) {
-                            screenBeforeLock = "home"
-                            currentScreen = "app_lock"
+                            screenStackBeforeLock = listOf("home")
+                            replaceRoot("app_lock")
                         } else {
-                            currentScreen = "home"
+                            replaceRoot("home")
                         }
                     } else if (sessionManager.isOnboardingCompleted()) {
-                        currentScreen = "login"
+                        replaceRoot("login")
                     } else {
-                        currentScreen = "onboarding"
+                        replaceRoot("onboarding")
                     }
                     DiawellApplication.currentScreen = currentScreen
+                    DiawellApplication.backStack = backStack.toList()
                 }
 
                 val activeBottomTab = when (currentScreen) {
@@ -438,6 +557,15 @@ class MainActivity : FragmentActivity() {
                                         slideOutHorizontally(animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing)) { width ->
                                             -dir * (width * 0.04f).toInt()
                                         })
+                            } else if (lastTransitionWasPop) {
+                                (fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) +
+                                    slideInHorizontally(animationSpec = tween(220, easing = FastOutSlowInEasing)) { width ->
+                                        -(width * 0.08f).toInt()
+                                    }) togetherWith
+                                    (fadeOut(animationSpec = tween(180, easing = FastOutSlowInEasing)) +
+                                        slideOutHorizontally(animationSpec = tween(180, easing = FastOutSlowInEasing)) { width ->
+                                            (width * 0.08f).toInt()
+                                        })
                             } else {
                                 (fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) +
                                     slideInHorizontally(animationSpec = tween(220, easing = FastOutSlowInEasing)) { width ->
@@ -457,7 +585,7 @@ class MainActivity : FragmentActivity() {
                         "onboarding" -> OnboardingContainerScreen(
                             onFinishOnboarding = {
                                 sessionManager.setOnboardingCompleted()
-                                currentScreen = "signup"
+                                replaceRoot("signup")
                             },
                         )
 
@@ -469,9 +597,11 @@ class MainActivity : FragmentActivity() {
                                 profileViewModel.clearError()
                                 profileViewModel.loadProfile()
                                 sessionManager.setAppUnlocked(true)
-                                currentScreen = "patient_profile"
+                                replaceRoot("patient_profile")
                             },
-                        ) { currentScreen = "login" }
+                        ) {
+                            if ("login" in backStack) popUpTo("login") else replaceRoot("login")
+                        }
 
                         "login" -> LoginScreen(
                             onLoginSuccess = {
@@ -479,109 +609,106 @@ class MainActivity : FragmentActivity() {
                                 activeSessionEpoch++
                                 ProfileState.init(applicationContext, sessionManager.getUserId())
                                 sessionManager.setAppUnlocked(true)
-                                currentScreen = "home"
+                                replaceRoot("home")
                             },
-                            onForgotPasswordClick = { currentScreen = "forgot_password" },
-                        ) { currentScreen = "signup" }
+                            onForgotPasswordClick = { pushScreen("forgot_password") },
+                        ) { pushScreen("signup") }
 
                         "forgot_password" -> ForgotPasswordScreen(
-                            onBackClick = { currentScreen = "login" },
-                            onSendResetLinkClick = { currentScreen = "login" },
+                            onBackClick = { popBackStack() },
+                            onSendResetLinkClick = { popBackStack() },
                         )
 
                         "patient_profile" -> PatientProfileScreen(
                             viewModel = profileViewModel,
-                            onContinueClick = { currentScreen = "health_preferences" },
+                            onContinueClick = { pushScreen("health_preferences") },
                         )
 
                         "health_preferences" -> HealthPreferencesScreen(
                             viewModel = profileViewModel,
-                            onBackClick = { currentScreen = "patient_profile" },
-                            onSavePreferencesClick = { currentScreen = "home" },
+                            onBackClick = { popBackStack() },
+                            onSavePreferencesClick = { replaceRoot("home") },
                         )
 
                         "home" -> HomeScreen(
                             viewModel = homeViewModel,
-                            onLogGlucoseClick = { currentScreen = "log_glucose" },
-                            onGlucoseHistoryClick = { currentScreen = "glucose_history" },
-                            onTrackFoodClick = { currentScreen = "daily_diet_plan" },
+                            onLogGlucoseClick = { pushScreen("log_glucose") },
+                            onGlucoseHistoryClick = { pushScreen("glucose_history") },
+                            onTrackFoodClick = { selectBottomTab("daily_diet_plan") },
                             onTrackFoodCategoryClick = { category ->
                                 selectedMealCategory = category
-                                currentScreen = "daily_diet_plan"
+                                selectBottomTab("daily_diet_plan")
                             },
-                            onActivityTrackingClick = { currentScreen = "activity_tracking" },
-                            onDietChatbotClick = { currentScreen = "ai_chatbot" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
-                            onReportsTabClick = { currentScreen = "weekly_report" },
-                            onSettingsTabClick = { currentScreen = "settings" },
-                            onProfileClick = { currentScreen = "edit_profile" },
+                            onActivityTrackingClick = { pushScreen("activity_tracking") },
+                            onDietChatbotClick = { pushScreen("ai_chatbot") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onMedsTabClick = { selectBottomTab("medications") },
+                            onReportsTabClick = { selectBottomTab("weekly_report") },
+                            onSettingsTabClick = { selectBottomTab("settings") },
+                            onProfileClick = { pushScreen("edit_profile") },
                             onExportReportClick = {
                                 exportReturnScreen = "home"
-                                currentScreen = "export_records"
+                                pushScreen("export_records")
                             },
                         )
 
                         "edit_profile" -> EditProfileScreen(
                             viewModel = profileViewModel,
-                            onBackClick = { currentScreen = "settings" },
-                            onSaveChangesClick = { currentScreen = "settings" },
+                            onBackClick = { popBackStack() },
+                            onSaveChangesClick = { popBackStack() },
                         )
 
                         "log_glucose" -> LogGlucoseScreen(
                             viewModel = glucoseViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onSaveReadingClick = { currentScreen = "glucose_history" },
+                            onBackClick = { popBackStack() },
+                            onSaveReadingClick = { popUpTo("glucose_history", replaceTopFallback = true) },
                         )
 
                         "glucose_history" -> GlucoseHistoryScreen(
                             viewModel = glucoseViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onLogGlucoseClick = { currentScreen = "log_glucose" },
+                            onBackClick = { popBackStack() },
+                            onLogGlucoseClick = { pushScreen("log_glucose") },
                             onReadingClick = { readingId ->
                                 selectedGlucoseReadingId = readingId
-                                currentScreen = "reading_details"
+                                pushScreen("reading_details")
                             },
                         )
 
                         "reading_details" -> ReadingDetailsScreen(
                             readingId = selectedGlucoseReadingId,
                             viewModel = glucoseViewModel,
-                            onBackClick = { currentScreen = "glucose_history" },
-                            onDeleted = { currentScreen = "glucose_history" },
+                            onBackClick = { popBackStack() },
+                            onDeleted = { popBackStack() },
                         )
 
                         "daily_diet_plan" -> DailyDietPlanScreen(
                             viewModel = dietViewModel,
                             initialOpenSnapFood = launchSnapFoodInDiet,
                             onSnapFoodConsumed = { launchSnapFoodInDiet = false },
-                            onBackClick = { currentScreen = "home" },
+                            onBackClick = { popBackStack() },
                             onMealDetailsClick = { category, foodId, dishName ->
                                 selectedMealCategory = category
                                 selectedFoodId = foodId
                                 selectedDishName = dishName
-                                currentScreen = "food_details"
+                                pushScreen("food_details")
                             },
-                            onFoodLogClick = { currentScreen = "food_log" },
-                            onExploreFoodClick = {
-                                exploreFoodReturnScreen = "daily_diet_plan"
-                                currentScreen = "explore_food"
-                            },
-                            onHomeTabClick = { currentScreen = "home" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
-                            onReportsTabClick = { currentScreen = "weekly_report" },
-                            onSettingsTabClick = { currentScreen = "settings" },
+                            onFoodLogClick = { pushScreen("food_log") },
+                            onExploreFoodClick = { pushScreen("explore_food") },
+                            onHomeTabClick = { selectBottomTab("home") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onMedsTabClick = { selectBottomTab("medications") },
+                            onReportsTabClick = { selectBottomTab("weekly_report") },
+                            onSettingsTabClick = { selectBottomTab("settings") },
                         )
 
                         "explore_food" -> ExploreFoodScreen(
                             viewModel = dietViewModel,
-                            onBackClick = { currentScreen = exploreFoodReturnScreen },
+                            onBackClick = { popBackStack() },
                             onMealDetailsClick = { category, foodId, dishName ->
                                 selectedMealCategory = category
                                 selectedFoodId = foodId
                                 selectedDishName = dishName
-                                currentScreen = "food_details"
+                                pushScreen("food_details")
                             },
                         )
 
@@ -590,76 +717,73 @@ class MainActivity : FragmentActivity() {
                             foodId = selectedFoodId,
                             dishName = selectedDishName,
                             viewModel = dietViewModel,
-                            onBackClick = { currentScreen = exploreFoodReturnScreen },
-                            onAddToFoodLogClick = { currentScreen = "food_log" },
+                            onBackClick = { popBackStack() },
+                            onAddToFoodLogClick = { popUpTo("food_log", replaceTopFallback = true) },
                         )
 
                         "food_log" -> FoodLogScreen(
                             viewModel = dietViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onAddFoodClick = {
-                                exploreFoodReturnScreen = "food_log"
-                                currentScreen = "explore_food"
-                            },
-                            onNutritionSummaryClick = { currentScreen = "nutrition_summary" },
+                            onBackClick = { popBackStack() },
+                            onAddFoodClick = { pushScreen("explore_food") },
+                            onNutritionSummaryClick = { pushScreen("nutrition_summary") },
                         )
 
                         "nutrition_summary" -> NutritionSummaryScreen(
-                            onBackClick = { currentScreen = "daily_diet_plan" },
-                            onReturnToFoodLogClick = { currentScreen = "food_log" },
+                            onBackClick = { popBackStack() },
+                            onReturnToFoodLogClick = { popUpTo("food_log", replaceTopFallback = true) },
                         )
 
                         "activity_tracking" -> ActivityTrackingScreen(
                             viewModel = activityViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onHistoryClick = { currentScreen = "activity_history" },
+                            onBackClick = { popBackStack() },
+                            onHistoryClick = { pushScreen("activity_history") },
                         )
 
                         "walking" -> WalkingScreen(
                             viewModel = activityViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onHistoryClick = { currentScreen = "activity_history" },
+                            onBackClick = { popBackStack() },
+                            onHistoryClick = { pushScreen("activity_history") },
                         )
 
                         "running" -> RunningScreen(
                             viewModel = activityViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onHistoryClick = { currentScreen = "activity_history" },
+                            onBackClick = { popBackStack() },
+                            onHistoryClick = { pushScreen("activity_history") },
                         )
 
                         "cycling" -> CyclingScreen(
                             viewModel = activityViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onHistoryClick = { currentScreen = "activity_history" },
+                            onBackClick = { popBackStack() },
+                            onHistoryClick = { pushScreen("activity_history") },
                         )
 
                         "activity_history" -> ActivityHistoryScreen(
                             viewModel = activityViewModel,
-                            onBackClick = { currentScreen = "activity_tracking" },
-                            onStartNewWorkoutClick = { currentScreen = "activity_tracking" },
+                            onBackClick = { popBackStack() },
+                            onStartNewWorkoutClick = { popUpTo("activity_tracking", replaceTopFallback = true) },
                         )
 
                         "medications" -> MedicationsScreen(
                             viewModel = medsViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onAddMedicationClick = { currentScreen = "search_medication" },
+                            onBackClick = { popBackStack() },
+                            onAddMedicationClick = { pushScreen("search_medication") },
                             onReminderClick = { med ->
                                 selectedMedication = med
-                                currentScreen = "medication_reminder"
+                                pushScreen("medication_reminder")
                             },
-                            onHomeTabClick = { currentScreen = "home" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onReportsTabClick = { currentScreen = "weekly_report" },
-                            onSettingsTabClick = { currentScreen = "settings" },
+                            onHomeTabClick = { selectBottomTab("home") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onReportsTabClick = { selectBottomTab("weekly_report") },
+                            onSettingsTabClick = { selectBottomTab("settings") },
                         )
 
                         "search_medication" -> SearchMedicationScreen(
                             viewModel = medsViewModel,
-                            onBackClick = { currentScreen = "medications" },
+                            onBackClick = { popBackStack() },
                             onSelectMedication = { name, dose ->
                                 selectedTabletName = name
                                 selectedTabletDose = dose
-                                currentScreen = "set_medication_reminder"
+                                pushScreen("set_medication_reminder")
                             },
                         )
 
@@ -667,156 +791,144 @@ class MainActivity : FragmentActivity() {
                             viewModel = medsViewModel,
                             medicationName = selectedTabletName,
                             medicationDose = selectedTabletDose,
-                            onBackClick = { currentScreen = "search_medication" },
-                            onSaveReminderClick = { currentScreen = "medications" },
+                            onBackClick = { popBackStack() },
+                            onSaveReminderClick = { popUpTo("medications", replaceTopFallback = true) },
                         )
 
                         "medication_reminder" -> MedicationReminderScreen(
                             viewModel = medsViewModel,
                             medication = selectedMedication,
-                            onBackClick = { currentScreen = "medications" },
-                            onTakenClick = { currentScreen = "medications" },
-                            onSnoozeClick = { currentScreen = "medications" },
-                            onSkipClick = { currentScreen = "medications" },
+                            onBackClick = { popBackStack() },
+                            onTakenClick = { popBackStack() },
+                            onSnoozeClick = { popBackStack() },
+                            onSkipClick = { popBackStack() },
                         )
 
                         "ai_chatbot", "dr_jarvis_chat" -> AiChatbotScreen(
                             viewModel = chatViewModel,
-                            onBackClick = { currentScreen = "home" },
+                            onBackClick = { popBackStack() },
                         )
 
                         "weekly_report" -> WeeklyReportScreen(
                             viewModel = reportsViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onHomeTabClick = { currentScreen = "home" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
-                            onSettingsTabClick = { currentScreen = "settings" },
+                            onBackClick = { popBackStack() },
+                            onHomeTabClick = { selectBottomTab("home") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onMedsTabClick = { selectBottomTab("medications") },
+                            onSettingsTabClick = { selectBottomTab("settings") },
                             onExportReportClick = {
                                 exportReturnScreen = "weekly_report"
-                                currentScreen = "export_records"
+                                pushScreen("export_records")
                             },
                         )
 
                         "notifications" -> NotificationsScreen(
                             viewModel = notificationsViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onHomeTabClick = { currentScreen = "home" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
-                            onReportsTabClick = { currentScreen = "weekly_report" },
-                            onSettingsTabClick = { currentScreen = "settings" },
-                            onNotificationClick = { currentScreen = "medication_reminder" },
+                            onBackClick = { popBackStack() },
+                            onHomeTabClick = { selectBottomTab("home") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onMedsTabClick = { selectBottomTab("medications") },
+                            onReportsTabClick = { selectBottomTab("weekly_report") },
+                            onSettingsTabClick = { selectBottomTab("settings") },
+                            onNotificationClick = { pushScreen("medication_reminder") },
                         )
 
                         "notification_prefs" -> NotificationPreferencesScreen(
                             viewModel = settingsViewModel,
-                            onBackClick = { currentScreen = "settings" },
-                            onSavePreferencesClick = { currentScreen = "settings" },
+                            onBackClick = { popBackStack() },
+                            onSavePreferencesClick = { popBackStack() },
                         )
 
                         "food_preferences_settings" -> FoodPreferencesSettingsScreen(
                             viewModel = profileViewModel,
-                            onBackClick = { currentScreen = "settings" },
-                            onSaveFoodPreferencesClick = { currentScreen = "settings" },
+                            onBackClick = { popBackStack() },
+                            onSaveFoodPreferencesClick = { popBackStack() },
                         )
 
                         "privacy_security" -> PrivacySecurityScreen(
                             viewModel = settingsViewModel,
-                            onBackClick = { currentScreen = "settings" },
-                            onChangePasswordClick = { currentScreen = "change_password" },
-                            onPrivacyPolicyClick = { currentScreen = "privacy_policy" },
-                            onTermsOfUseClick = { currentScreen = "terms_of_use" },
+                            onBackClick = { popBackStack() },
+                            onChangePasswordClick = { pushScreen("change_password") },
+                            onPrivacyPolicyClick = { pushScreen("privacy_policy") },
+                            onTermsOfUseClick = { pushScreen("terms_of_use") },
                             onExportRecordsClick = {
                                 exportReturnScreen = "privacy_security"
-                                currentScreen = "export_records"
+                                pushScreen("export_records")
                             },
-                            onDeleteAccountClick = { currentScreen = "delete_account" },
+                            onDeleteAccountClick = { pushScreen("delete_account") },
                         )
 
                         "change_password" -> ChangePasswordScreen(
                             viewModel = settingsViewModel,
-                            onBackClick = { currentScreen = "privacy_security" },
-                            onSavePasswordClick = { currentScreen = "privacy_security" },
+                            onBackClick = { popBackStack() },
+                            onSavePasswordClick = { popBackStack() },
                         )
 
                         "privacy_policy" -> PrivacyPolicyScreen(
-                            onBackClick = { currentScreen = "privacy_security" },
+                            onBackClick = { popBackStack() },
                         )
 
                         "terms_of_use" -> TermsOfUseScreen(
-                            onBackClick = { currentScreen = "privacy_security" },
+                            onBackClick = { popBackStack() },
                         )
 
                         "export_records" -> ExportRecordsScreen(
                             viewModel = settingsViewModel,
-                            onBackClick = { currentScreen = exportReturnScreen },
-                            onExportClick = { currentScreen = "export_report_viewer" },
+                            onBackClick = { popBackStack() },
+                            onExportClick = { pushScreen("export_report_viewer") },
                         )
 
                         "export_report_viewer" -> ExportReportViewerScreen(
                             viewModel = settingsViewModel,
-                            onBackClick = { currentScreen = "export_records" },
-                            onDoneClick = { currentScreen = exportReturnScreen },
+                            onBackClick = { popBackStack() },
+                            onDoneClick = { popUpTo(exportReturnScreen) },
                         )
 
                         "delete_account" -> DeleteAccountScreen(
                             viewModel = settingsViewModel,
-                            onBackClick = { currentScreen = "privacy_security" },
+                            onBackClick = { popBackStack() },
                             onConfirmDeleteClick = {
                                 lastTabRefreshMs.clear()
                                 activeSessionEpoch++
-                                currentScreen = "login"
+                                replaceRoot("login")
                             },
                         )
 
                         "help_support" -> HelpSupportScreen(
-                            onBackClick = { currentScreen = "settings" },
-                            onContactSupportClick = { currentScreen = "settings" },
-                            onAiChatbotClick = { currentScreen = "ai_chatbot" },
+                            onBackClick = { popBackStack() },
+                            onContactSupportClick = { popBackStack() },
+                            onAiChatbotClick = { pushScreen("ai_chatbot") },
                         )
 
                         "settings" -> SettingsScreen(
                             profileViewModel = profileViewModel,
-                            onBackClick = { currentScreen = "home" },
-                            onPersonalProfileClick = { currentScreen = "edit_profile" },
-                            onNotificationPrefsClick = { currentScreen = "notification_prefs" },
-                            onFoodPrefsClick = { currentScreen = "food_preferences_settings" },
-                            onPrivacySecurityClick = { currentScreen = "privacy_security" },
-                            onHelpSupportClick = { currentScreen = "help_support" },
+                            onBackClick = { popBackStack() },
+                            onPersonalProfileClick = { pushScreen("edit_profile") },
+                            onNotificationPrefsClick = { pushScreen("notification_prefs") },
+                            onFoodPrefsClick = { pushScreen("food_preferences_settings") },
+                            onPrivacySecurityClick = { pushScreen("privacy_security") },
+                            onHelpSupportClick = { pushScreen("help_support") },
                             onExportRecordsClick = {
                                 exportReturnScreen = "settings"
-                                currentScreen = "export_records"
+                                pushScreen("export_records")
                             },
-                            onAiChatbotClick = { currentScreen = "ai_chatbot" },
-                            onLogoutClick = { currentScreen = "logout_dialog" },
-                            onHomeTabClick = { currentScreen = "home" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
-                            onReportsTabClick = { currentScreen = "weekly_report" },
-                        )
-
-                        "logout_dialog" -> LogoutConfirmationDialog(
-                            onCancelClick = { currentScreen = "settings" },
-                            onConfirmLogoutClick = {
-                                lastTabRefreshMs.clear()
-                                sessionManager.setAppUnlocked(false)
-                                sessionManager.clearSession()
-                                ProfileState.clear(applicationContext)
-                                activeSessionEpoch++
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    try {
-                                        AuthRepositoryImpl().logout(clearLocalSession = false)
-                                    } catch (_: Exception) {}
-                                }
-                                currentScreen = "login"
-                            },
+                            onAiChatbotClick = { pushScreen("ai_chatbot") },
+                            onLogoutClick = { showLogoutDialog = true },
+                            onHomeTabClick = { selectBottomTab("home") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onMedsTabClick = { selectBottomTab("medications") },
+                            onReportsTabClick = { selectBottomTab("weekly_report") },
                         )
 
                         "app_lock" -> AppLockScreen(
                             onUnlocked = {
                                 sessionManager.setAppUnlocked(true)
-                                currentScreen = if (screenBeforeLock in listOf("splash", "login", "signup", "app_lock")) "home" else screenBeforeLock
+                                val restoredStack = screenStackBeforeLock.filter {
+                                    it.isNotBlank() && it !in listOf("splash", "login", "signup", "app_lock", "logout_dialog")
+                                }.ifEmpty { listOf("home") }
+                                lastTransitionWasPop = false
+                                backStack.clear()
+                                backStack.addAll(restoredStack)
                             },
                             onSignOut = {
                                 lastTabRefreshMs.clear()
@@ -829,7 +941,7 @@ class MainActivity : FragmentActivity() {
                                         AuthRepositoryImpl().logout(clearLocalSession = false)
                                     } catch (_: Exception) {}
                                 }
-                                currentScreen = "login"
+                                replaceRoot("login")
                             },
                         )
 
@@ -846,11 +958,11 @@ class MainActivity : FragmentActivity() {
                     ) {
                         DiaWellLiquidGlassNavRail(
                             selectedTab = activeBottomTab ?: "Home",
-                            onHomeTabClick = { currentScreen = "home" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
-                            onReportsTabClick = { currentScreen = "weekly_report" },
-                            onSettingsTabClick = { currentScreen = "settings" },
+                            onHomeTabClick = { selectBottomTab("home") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onMedsTabClick = { selectBottomTab("medications") },
+                            onReportsTabClick = { selectBottomTab("weekly_report") },
+                            onSettingsTabClick = { selectBottomTab("settings") },
                         )
                     }
 
@@ -863,11 +975,11 @@ class MainActivity : FragmentActivity() {
                     ) {
                         IosLiquidGlassBottomNav(
                             selectedTab = activeBottomTab ?: "Home",
-                            onHomeTabClick = { currentScreen = "home" },
-                            onDietTabClick = { currentScreen = "daily_diet_plan" },
-                            onMedsTabClick = { currentScreen = "medications" },
-                            onReportsTabClick = { currentScreen = "weekly_report" },
-                            onSettingsTabClick = { currentScreen = "settings" },
+                            onHomeTabClick = { selectBottomTab("home") },
+                            onDietTabClick = { selectBottomTab("daily_diet_plan") },
+                            onMedsTabClick = { selectBottomTab("medications") },
+                            onReportsTabClick = { selectBottomTab("weekly_report") },
+                            onSettingsTabClick = { selectBottomTab("settings") },
                         )
                     }
 
@@ -886,25 +998,49 @@ class MainActivity : FragmentActivity() {
                     )
 
                     DiaWellAssistiveButton(
-                        visible = isAssistiveButtonVisible,
+                        visible = isAssistiveButtonVisible && !showLogoutDialog,
                         modifier = Modifier.zIndex(100f),
                         onDivaAiClick = {
-                            currentScreen = "ai_chatbot"
+                            pushScreen("ai_chatbot")
                         },
                         onSnapFoodClick = {
                             launchSnapFoodInDiet = true
-                            currentScreen = "daily_diet_plan"
+                            selectBottomTab("daily_diet_plan")
                         },
                         onLogGlucoseClick = {
-                            currentScreen = "log_glucose"
+                            pushScreen("log_glucose")
                         },
                         onLogMealClick = {
-                            currentScreen = "food_log"
+                            pushScreen("food_log")
                         },
                         onActivityClick = {
-                            currentScreen = "activity_tracking"
+                            pushScreen("activity_tracking")
                         }
                     )
+
+                    if (showLogoutDialog) {
+                        BackHandler(enabled = true) {
+                            showLogoutDialog = false
+                        }
+                        Box(modifier = Modifier.fillMaxSize().zIndex(200f)) {
+                            LogoutConfirmationDialog(
+                                onCancelClick = { showLogoutDialog = false },
+                                onConfirmLogoutClick = {
+                                    lastTabRefreshMs.clear()
+                                    sessionManager.setAppUnlocked(false)
+                                    sessionManager.clearSession()
+                                    ProfileState.clear(applicationContext)
+                                    activeSessionEpoch++
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        try {
+                                            AuthRepositoryImpl().logout(clearLocalSession = false)
+                                        } catch (_: Exception) {}
+                                    }
+                                    replaceRoot("login")
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
