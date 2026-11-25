@@ -45,6 +45,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.Visibility
@@ -181,6 +182,28 @@ fun EditProfileScreen(
         }
     }
 
+    val hasProfilePhoto = ProfileState.profileImageBitmap != null ||
+        !uiState.profile?.profilePic.isNullOrBlank() ||
+        !uiState.profile?.profilePhotoUrl.isNullOrBlank()
+
+    val removeProfilePhoto: () -> Unit = {
+        val sessionManager = try {
+            SessionManager.getInstance()
+        } catch (_: Exception) {
+            SessionManager.init(context)
+        }
+        val userId = sessionManager.getUserId() ?: 0
+        ProfileState.isUploadingAvatar = true
+        ProfileState.clearProfilePhoto(context, userId, keepUploadLock = true)
+        viewModel.removeProfilePhoto(userId) { removedRemotely, message ->
+            Toast.makeText(
+                context,
+                if (removedRemotely) "Profile photo removed." else message,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     val handlePickedUri: (Uri?) -> Unit = { uri: Uri? ->
         if (uri != null) {
             try {
@@ -284,22 +307,26 @@ fun EditProfileScreen(
 
     if (showPhotoOptionsDialog) {
         ProfilePhotoOptionsDialog(
+            hasProfilePhoto = hasProfilePhoto,
             onDismissRequest = { showPhotoOptionsDialog = false },
             onViewPictureClick = {
                 showPhotoOptionsDialog = false
                 showViewPictureDialog = true
             },
             onChooseGalleryClick = safeLaunchGallery,
-            onTakePhotoClick = safeLaunchCamera
+            onTakePhotoClick = safeLaunchCamera,
+            onRemovePhotoClick = removeProfilePhoto
         )
     }
 
     if (showViewPictureDialog) {
         ViewProfilePictureDialog(
             userName = fullName,
+            hasProfilePhoto = hasProfilePhoto,
             onDismissRequest = { showViewPictureDialog = false },
             onChooseGalleryClick = safeLaunchGallery,
-            onTakePhotoClick = safeLaunchCamera
+            onTakePhotoClick = safeLaunchCamera,
+            onRemovePhotoClick = removeProfilePhoto
         )
     }
 
@@ -518,6 +545,14 @@ fun EditProfileScreen(
                             )
                         }
                     }
+                }
+
+                if (hasProfilePhoto) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    RemoveProfilePhotoChip(
+                        fillWidth = false,
+                        onClick = removeProfilePhoto
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -830,11 +865,54 @@ private fun bitmapToFile(context: Context, bitmap: Bitmap): File? {
 }
 
 @Composable
+private fun RemoveProfilePhotoChip(
+    fillWidth: Boolean,
+    onClick: () -> Unit
+) {
+    val baseModifier = if (fillWidth) {
+        Modifier.fillMaxWidth()
+    } else {
+        Modifier
+    }
+    val shape = RoundedCornerShape(if (fillWidth) 12.dp else 16.dp)
+    Box(
+        modifier = baseModifier
+            .clip(shape)
+            .background(AppTheme.colors.errorBg)
+            .border(1.dp, AppTheme.colors.errorBorder.copy(alpha = 0.65f), shape)
+            .clickable { onClick() }
+            .padding(
+                horizontal = if (fillWidth) 14.dp else 12.dp,
+                vertical = if (fillWidth) 11.dp else 6.dp
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Rounded.DeleteOutline,
+                contentDescription = "Remove profile photo",
+                tint = AppTheme.colors.errorText,
+                modifier = Modifier.size(if (fillWidth) 16.dp else 14.dp)
+            )
+            Spacer(modifier = Modifier.width(if (fillWidth) 6.dp else 5.dp))
+            Text(
+                text = "Remove Photo",
+                fontSize = if (fillWidth) 13.sp else 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.errorText
+            )
+        }
+    }
+}
+
+@Composable
 fun ProfilePhotoOptionsDialog(
+    hasProfilePhoto: Boolean = false,
     onDismissRequest: () -> Unit,
     onViewPictureClick: () -> Unit,
     onChooseGalleryClick: () -> Unit,
     onTakePhotoClick: () -> Unit,
+    onRemovePhotoClick: () -> Unit = {},
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Box(
@@ -902,6 +980,17 @@ fun ProfilePhotoOptionsDialog(
                         onTakePhotoClick()
                     }
                 )
+
+                if (hasProfilePhoto) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    RemoveProfilePhotoChip(
+                        fillWidth = true,
+                        onClick = {
+                            onDismissRequest()
+                            onRemovePhotoClick()
+                        }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(18.dp))
 
@@ -985,9 +1074,11 @@ private fun PhotoOptionItem(
 @Composable
 fun ViewProfilePictureDialog(
     userName: String,
+    hasProfilePhoto: Boolean = false,
     onDismissRequest: () -> Unit,
     onChooseGalleryClick: () -> Unit,
     onTakePhotoClick: () -> Unit,
+    onRemovePhotoClick: () -> Unit = {},
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Box(
@@ -1117,6 +1208,17 @@ fun ViewProfilePictureDialog(
                             )
                         }
                     }
+                }
+
+                if (hasProfilePhoto) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    RemoveProfilePhotoChip(
+                        fillWidth = true,
+                        onClick = {
+                            onDismissRequest()
+                            onRemovePhotoClick()
+                        }
+                    )
                 }
             }
         }
