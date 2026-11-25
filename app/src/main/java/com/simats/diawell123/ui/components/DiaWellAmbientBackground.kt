@@ -105,7 +105,7 @@ fun DiaWellAmbientBackground(
                 )
 
                 // 2. High-saturation Top-Left Radial Bloom (Emerald & Vibrant Teal)
-                drawRect(
+                drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
                             Color(0xFF10B981).copy(alpha = 0.72f * glowAlpha),
@@ -119,7 +119,7 @@ fun DiaWellAmbientBackground(
                 )
 
                 // 3. High-saturation Top-Right Radial Bloom (Sky, Indigo & Royal Purple)
-                drawRect(
+                drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
                             Color(0xFF38BDF8).copy(alpha = 0.35f * glowAlpha),
@@ -134,7 +134,7 @@ fun DiaWellAmbientBackground(
                 )
 
                 // 4. Subtle central floating aura node
-                drawRect(
+                drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
                             Color(0xFF065F46).copy(alpha = 0.35f * glowAlpha),
