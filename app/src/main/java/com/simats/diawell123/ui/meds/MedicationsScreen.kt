@@ -58,6 +58,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.data.model.MedicationItem
 import com.simats.diawell123.data.model.resolveMedEmoji
 import com.simats.diawell123.ui.components.ElementPopUpContainer
+import com.simats.diawell123.ui.components.ShimmerCardList
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -250,20 +251,9 @@ fun MedicationsScreen(
                     }
                 }
 
-                // Loading Spinner
+                // Loading Shimmer Skeleton
                 if (uiState.isLoading && medsData == null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(140.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = Color(0xFFA855F7),
-                            strokeWidth = 2.5.dp,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                    ShimmerCardList(count = 3, cardHeight = 76.dp)
                 }
 
                 // Medication Cards (Pop Up Staggered)
