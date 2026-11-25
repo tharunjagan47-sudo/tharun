@@ -357,6 +357,56 @@ class ProfileViewModel(
         }
     }
 
+    fun removeProfilePhoto(
+        userId: Int,
+        onResult: (removedRemotely: Boolean, message: String) -> Unit = { _, _ -> }
+    ) {
+        viewModelScope.launch {
+            ProfileState.isUploadingAvatar = true
+            ProfileState.clearProfilePhoto(userId = userId, keepUploadLock = true)
+            _uiState.update {
+                it.copy(
+                    isUploadingPhoto = true,
+                    uploadedPhotoUrl = null,
+                    errorMessage = null,
+                    profile = it.profile?.copy(
+                        profilePhoto = null,
+                        profilePhotoUrl = null,
+                        profilePic = null
+                    )
+                )
+            }
+
+            if (userId <= 0) {
+                ProfileState.isUploadingAvatar = false
+                _uiState.update { it.copy(isUploadingPhoto = false) }
+                onResult(true, "Profile photo removed.")
+                return@launch
+            }
+
+            val result = repository.removeProfilePhoto(userId)
+            ProfileState.isUploadingAvatar = false
+            result.fold(
+                onSuccess = {
+                    _uiState.update { it.copy(isUploadingPhoto = false, errorMessage = null) }
+                    onResult(true, "Profile photo removed.")
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            isUploadingPhoto = false,
+                            errorMessage = error.message
+                        )
+                    }
+                    onResult(
+                        false,
+                        error.message ?: "Removed photo locally; failed to sync with server."
+                    )
+                }
+            )
+        }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
     }
