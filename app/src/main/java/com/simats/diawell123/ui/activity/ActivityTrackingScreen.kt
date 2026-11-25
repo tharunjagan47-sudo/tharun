@@ -376,15 +376,15 @@ fun ActivityTrackingScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .border(1.5.dp, Color(0xFF2E7D32), RoundedCornerShape(14.dp))
+                        .background(AppTheme.colors.successBg)
+                        .border(1.5.dp, AppTheme.colors.successBorder, RoundedCornerShape(14.dp))
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.CheckCircle,
                             contentDescription = null,
-                            tint = Color(0xFF2E7D32),
+                            tint = AppTheme.colors.successText,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -393,7 +393,7 @@ fun ActivityTrackingScreen(
                                 text = "Workout Saved Successfully!",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                             val extraDetail = if (isCycling) {
                                 "${String.format("%.2f", distanceCoveredKm)} km"
@@ -403,7 +403,7 @@ fun ActivityTrackingScreen(
                             Text(
                                 text = "Logged $caloriesBurned kcal • $extraDetail.",
                                 fontSize = 11.sp,
-                                color = Color(0xFF1B5E20),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
@@ -417,8 +417,8 @@ fun ActivityTrackingScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFFFEBEE))
-                        .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
+                        .background(AppTheme.colors.errorBg)
+                        .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                         .padding(12.dp),
                 ) {
                     Row(
@@ -428,13 +428,13 @@ fun ActivityTrackingScreen(
                         Icon(
                             imageVector = Icons.Rounded.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFC62828),
+                            tint = AppTheme.colors.errorText,
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
                             text = trackingState.errorMessage ?: "",
                             fontSize = 12.sp,
-                            color = Color(0xFFC62828),
+                            color = AppTheme.colors.errorText,
                             lineHeight = 16.sp,
                             modifier = Modifier.weight(1f)
                         )
@@ -541,9 +541,9 @@ fun ActivityTrackingScreen(
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(
                                         when (intensity) {
-                                            "Light" -> Color(0xFFE0F2F1)
-                                            "Moderate" -> Color(0xFFE8F5E9)
-                                            else -> Color(0xFFFFF3E0)
+                                            "Light" -> if (AppTheme.colors.isDark) Color(0xFF134E4A).copy(alpha = 0.55f) else Color(0xFFE0F2F1)
+                                            "Moderate" -> AppTheme.colors.successBg
+                                            else -> AppTheme.colors.warningBg
                                         }
                                     )
                                     .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -553,15 +553,16 @@ fun ActivityTrackingScreen(
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = when (intensity) {
-                                        "Light" -> Color(0xFF00695C)
-                                        "Moderate" -> Color(0xFF2E7D32)
-                                        else -> Color(0xFFE65100)
+                                        "Light" -> if (AppTheme.colors.isDark) Color(0xFF5EEAD4) else Color(0xFF00695C)
+                                        "Moderate" -> AppTheme.colors.successText
+                                        else -> AppTheme.colors.warningText
                                     }
                                 )
                             }
                         }
 
                         // Circular Progress Ring Arc Canvas
+                        val trackArcColor = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFE2E8F0)
                         Box(
                             modifier = Modifier.size(160.dp),
                             contentAlignment = Alignment.Center,
@@ -570,7 +571,7 @@ fun ActivityTrackingScreen(
                                 val strokeWidth = 14.dp.toPx()
                                 // Background Track Arc
                                 drawArc(
-                                    color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFE2E8F0),
+                                    color = trackArcColor,
                                     startAngle = 135f,
                                     sweepAngle = 270f,
                                     useCenter = false,
