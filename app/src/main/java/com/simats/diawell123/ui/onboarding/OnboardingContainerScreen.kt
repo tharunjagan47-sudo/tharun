@@ -30,6 +30,7 @@ fun OnboardingContainerScreen(
         state = pagerState,
         modifier = modifier.fillMaxSize(),
     ) { page ->
+        val isPageActive = pagerState.currentPage == page
         when (page) {
             0 -> FoodOnboardingScreen(
                 onNextClick = {
@@ -38,6 +39,7 @@ fun OnboardingContainerScreen(
                     }
                 },
                 onSkipClick = onFinishOnboarding,
+                isActive = isPageActive,
             )
 
             1 -> MedicationOnboardingScreen(
@@ -47,11 +49,13 @@ fun OnboardingContainerScreen(
                     }
                 },
                 onSkipClick = onFinishOnboarding,
+                isActive = isPageActive,
             )
 
             2 -> ProgressOnboardingScreen(
                 onGetStartedClick = onFinishOnboarding,
                 onSkipClick = onFinishOnboarding,
+                isActive = isPageActive,
             )
         }
     }
