@@ -181,9 +181,9 @@ fun FoodDetailsScreen(
             // Glycemic & Diabetic Impact Callout
             ElementPopUpContainer(delayMillis = 120) {
                 val (giColor, giBgColor) = when {
-                    giIndex.contains("Low", ignoreCase = true) -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
-                    giIndex.contains("Medium", ignoreCase = true) || giIndex.contains("Mod", ignoreCase = true) -> Color(0xFFE65100) to Color(0xFFFFF3E0)
-                    else -> Color(0xFFC62828) to Color(0xFFFFEBEE)
+                    giIndex.contains("Low", ignoreCase = true) -> AppTheme.colors.successText to AppTheme.colors.successBg
+                    giIndex.contains("Medium", ignoreCase = true) || giIndex.contains("Mod", ignoreCase = true) -> AppTheme.colors.warningText to AppTheme.colors.warningBg
+                    else -> AppTheme.colors.errorText to AppTheme.colors.errorBg
                 }
 
                 Box(
