@@ -741,7 +741,8 @@ fun HomeScreen(
                                             HomeRoutineItem(icon = "", label = "Breakfast", isDone = false),
                                             HomeRoutineItem(icon = "", label = "Glucose", isDone = false),
                                             HomeRoutineItem(icon = "", label = "Lunch", isDone = false),
-                                            HomeRoutineItem(icon = "", label = "Dinner/Meds", isDone = false),
+                                            HomeRoutineItem(icon = "", label = "Dinner", isDone = false),
+                                            HomeRoutineItem(icon = "", label = "Meds", isDone = false),
                                         )
                                     }
                                     val routineItems = data?.routine?.takeIf { it.isNotEmpty() } ?: defaultRoutine
