@@ -39,7 +39,6 @@ fun PrivacyPolicyScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppTheme.colors.background)
             .systemBarsPadding(),
     ) {
         Column(
