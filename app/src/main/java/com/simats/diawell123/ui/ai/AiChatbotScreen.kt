@@ -36,11 +36,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -607,8 +610,28 @@ private fun DivaSpeakingVideoLayer(
 
     Box(
         modifier = modifier
-            .clip(CircleShape)
-            .graphicsLayer { this.alpha = alpha },
+            .graphicsLayer {
+                compositingStrategy = CompositingStrategy.Offscreen
+                this.alpha = alpha
+            }
+            .drawWithContent {
+                drawContent()
+                val radius = size.minDimension * 0.50f
+                drawRect(
+                    brush = Brush.radialGradient(
+                        colorStops = arrayOf(
+                            0.00f to Color.Black,
+                            0.48f to Color.Black,
+                            0.74f to Color.Black.copy(alpha = 0.55f),
+                            0.94f to Color.Transparent,
+                            1.00f to Color.Transparent,
+                        ),
+                        center = Offset(size.width * 0.50f, size.height * 0.48f),
+                        radius = radius,
+                    ),
+                    blendMode = BlendMode.DstIn,
+                )
+            },
     ) {
         AndroidView(
             factory = { ctx ->
@@ -692,24 +715,6 @@ private fun DivaSpeakingVideoLayer(
             },
             modifier = Modifier.fillMaxSize(),
         )
-
-        // Radial dark vignette so the video edges blend seamlessly into #0A0D1A
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val radius = size.minDimension * 0.5f
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colorStops = arrayOf(
-                        0.00f to Color.Transparent,
-                        0.60f to Color.Transparent,
-                        0.85f to Color(0xB80A0D1A),
-                        1.00f to Color(0xFF0A0D1A),
-                    ),
-                    center = Offset(size.width * 0.5f, size.height * 0.5f),
-                    radius = radius,
-                ),
-                radius = radius,
-            )
-        }
     }
 }
 
