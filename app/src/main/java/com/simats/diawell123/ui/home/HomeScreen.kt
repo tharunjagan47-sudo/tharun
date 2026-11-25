@@ -224,6 +224,7 @@ fun HomeScreen(
     var selectedTab by remember { mutableStateOf("Home") }
     var showStreakDialog by remember { mutableStateOf(false) }
     var showTargetEditDialog by remember { mutableStateOf(false) }
+    var zoomedMetric by remember { mutableStateOf<HealthMetricZoomData?>(null) }
     val uiState by viewModel.uiState.collectAsState()
     val data = uiState.dashboardData
     val context = LocalContext.current
@@ -520,42 +521,90 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             // Glucose Metric Card
+                            val gTitle = gMetric?.title?.ifBlank { "Glucose" } ?: "Glucose"
+                            val gValue = gMetric?.value?.ifBlank { "-- mg/dL" } ?: "-- mg/dL"
+                            val gSub = gMetric?.subtitle?.ifBlank { "Tap to log your first reading" } ?: "Tap to log your first reading"
+                            val gStatus = gMetric?.statusText?.ifBlank { "No Readings Logged" } ?: "No Readings Logged"
+                            val gStatusColor = parseHexColor(gMetric?.statusColor, Color(0xFF6B7280))
                             FloatingBubbleContainer(
                                 phaseOffsetMs = 200,
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
                                     vectorIcon = Icons.Rounded.WaterDrop,
-                                    title = gMetric?.title?.ifBlank { "Glucose" } ?: "Glucose",
-                                    value = gMetric?.value?.ifBlank { "-- mg/dL" } ?: "-- mg/dL",
-                                    subtitle = gMetric?.subtitle?.ifBlank { "Tap to log your first reading" } ?: "Tap to log your first reading",
-                                    statusText = gMetric?.statusText?.ifBlank { "No Readings Logged" } ?: "No Readings Logged",
+                                    title = gTitle,
+                                    value = gValue,
+                                    subtitle = gSub,
+                                    statusText = gStatus,
                                     statusBg = parseHexColor(gMetric?.statusBg, Color(0xFFF3F4F6)),
-                                    statusColor = parseHexColor(gMetric?.statusColor, Color(0xFF6B7280)),
+                                    statusColor = gStatusColor,
                                     cardBg = if (AppTheme.colors.isDark) Color(0xFF2E1065) else Color(0xFFF5F3FF),
                                     borderColor = AppTheme.colors.border,
                                     actionText = "History ›",
-                                    onActionClick = onGlucoseHistoryClick,
+                                    onActionClick = {
+                                        zoomedMetric = HealthMetricZoomData(
+                                            type = HealthMetricZoomType.GLUCOSE,
+                                            title = gTitle,
+                                            value = gValue,
+                                            subtitle = gSub,
+                                            statusText = gStatus,
+                                            statusColor = gStatusColor,
+                                            accentColor = Color(0xFFA855F7),
+                                            secondaryAccent = Color(0xFF38BDF8),
+                                            icon = Icons.Rounded.WaterDrop,
+                                            actionLabel = "Open Glucose History  ›",
+                                            progressFraction = 0.72f,
+                                            primaryDetailLabel = "Target Fasting",
+                                            primaryDetailValue = "${data?.targetFastingGlucose ?: 100} mg/dL",
+                                            secondaryDetailLabel = "Post-Meal Goal",
+                                            secondaryDetailValue = "${data?.targetPostmealGlucose ?: 140} mg/dL",
+                                            onOpenScreen = onGlucoseHistoryClick,
+                                        )
+                                    },
                                 )
                             }
 
                             // Today's Diet Card
+                            val nTitle = nMetric?.title?.ifBlank { "Nutrition" } ?: "Nutrition"
+                            val nValue = nMetric?.value?.ifBlank { "0 kcal" } ?: "0 kcal"
+                            val nSub = nMetric?.subtitle?.ifBlank { "0 meals logged today" } ?: "0 meals logged today"
+                            val nStatus = nMetric?.statusText?.ifBlank { "No meals logged" } ?: "No meals logged"
+                            val nStatusColor = parseHexColor(nMetric?.statusColor, Color(0xFF6B7280))
                             FloatingBubbleContainer(
                                 phaseOffsetMs = 400,
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
                                     vectorIcon = Icons.Rounded.Restaurant,
-                                    title = nMetric?.title?.ifBlank { "Nutrition" } ?: "Nutrition",
-                                    value = nMetric?.value?.ifBlank { "0 kcal" } ?: "0 kcal",
-                                    subtitle = nMetric?.subtitle?.ifBlank { "0 meals logged today" } ?: "0 meals logged today",
-                                    statusText = nMetric?.statusText?.ifBlank { "No meals logged" } ?: "No meals logged",
+                                    title = nTitle,
+                                    value = nValue,
+                                    subtitle = nSub,
+                                    statusText = nStatus,
                                     statusBg = parseHexColor(nMetric?.statusBg, Color(0xFFF3F4F6)),
-                                    statusColor = parseHexColor(nMetric?.statusColor, Color(0xFF6B7280)),
+                                    statusColor = nStatusColor,
                                     cardBg = Color(0xFFEBF7F0),
                                     borderColor = Color(0xFFD4EFE0),
                                     actionText = "Explore",
-                                    onActionClick = onTrackFoodClick,
+                                    onActionClick = {
+                                        zoomedMetric = HealthMetricZoomData(
+                                            type = HealthMetricZoomType.NUTRITION,
+                                            title = nTitle,
+                                            value = nValue,
+                                            subtitle = nSub,
+                                            statusText = nStatus,
+                                            statusColor = nStatusColor,
+                                            accentColor = Color(0xFF10B981),
+                                            secondaryAccent = Color(0xFF34D399),
+                                            icon = Icons.Rounded.Restaurant,
+                                            actionLabel = "Explore Daily Diet Plan  ›",
+                                            progressFraction = 0.65f,
+                                            primaryDetailLabel = "Daily Summary",
+                                            primaryDetailValue = nSub,
+                                            secondaryDetailLabel = "Diet Status",
+                                            secondaryDetailValue = nStatus,
+                                            onOpenScreen = onTrackFoodClick,
+                                        )
+                                    },
                                 )
                             }
                         }
@@ -567,42 +616,90 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             // Medication Card
+                            val mTitle = mMetric?.title?.ifBlank { "Medication" } ?: "Medication"
+                            val mValue = mMetric?.value?.ifBlank { "0 Active Medications" } ?: "0 Active Medications"
+                            val mSub = mMetric?.subtitle?.ifBlank { "No medications scheduled" } ?: "No medications scheduled"
+                            val mStatus = mMetric?.statusText?.ifBlank { "No Reminders" } ?: "No Reminders"
+                            val mStatusColor = parseHexColor(mMetric?.statusColor, Color(0xFF6B7280))
                             FloatingBubbleContainer(
                                 phaseOffsetMs = 600,
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
                                     vectorIcon = Icons.Rounded.Medication,
-                                    title = mMetric?.title?.ifBlank { "Medication" } ?: "Medication",
-                                    value = mMetric?.value?.ifBlank { "0 Active Medications" } ?: "0 Active Medications",
-                                    subtitle = mMetric?.subtitle?.ifBlank { "No medications scheduled" } ?: "No medications scheduled",
-                                    statusText = mMetric?.statusText?.ifBlank { "No Reminders" } ?: "No Reminders",
+                                    title = mTitle,
+                                    value = mValue,
+                                    subtitle = mSub,
+                                    statusText = mStatus,
                                     statusBg = parseHexColor(mMetric?.statusBg, Color(0xFFF3F4F6)),
-                                    statusColor = parseHexColor(mMetric?.statusColor, Color(0xFF6B7280)),
+                                    statusColor = mStatusColor,
                                     cardBg = Color(0xFFFFF8EE),
                                     borderColor = Color(0xFFFFECC8),
                                     actionText = "View",
-                                    onActionClick = onMedsTabClick,
+                                    onActionClick = {
+                                        zoomedMetric = HealthMetricZoomData(
+                                            type = HealthMetricZoomType.MEDICATION,
+                                            title = mTitle,
+                                            value = mValue,
+                                            subtitle = mSub,
+                                            statusText = mStatus,
+                                            statusColor = mStatusColor,
+                                            accentColor = Color(0xFFF59E0B),
+                                            secondaryAccent = Color(0xFFFBBF24),
+                                            icon = Icons.Rounded.Medication,
+                                            actionLabel = "View Medications  ›",
+                                            progressFraction = 0.80f,
+                                            primaryDetailLabel = "Schedule",
+                                            primaryDetailValue = mSub,
+                                            secondaryDetailLabel = "Adherence",
+                                            secondaryDetailValue = mStatus,
+                                            onOpenScreen = onMedsTabClick,
+                                        )
+                                    },
                                 )
                             }
 
                             // Weekly Progress Card
+                            val wTitle = wMetric?.title?.ifBlank { "Weekly Report" } ?: "Weekly Report"
+                            val wValue = wMetric?.value?.ifBlank { "0/7 Days" } ?: "0/7 Days"
+                            val wSub = wMetric?.subtitle?.ifBlank { "No logs this week" } ?: "No logs this week"
+                            val wStatus = wMetric?.statusText?.ifBlank { "Start logging today" } ?: "Start logging today"
+                            val wStatusColor = parseHexColor(wMetric?.statusColor, Color(0xFF6B7280))
                             FloatingBubbleContainer(
                                 phaseOffsetMs = 800,
                                 modifier = Modifier.weight(1f),
                             ) {
                                 MetricCard(
                                     vectorIcon = Icons.Rounded.InsertChart,
-                                    title = wMetric?.title?.ifBlank { "Weekly Report" } ?: "Weekly Report",
-                                    value = wMetric?.value?.ifBlank { "0/7 Days" } ?: "0/7 Days",
-                                    subtitle = wMetric?.subtitle?.ifBlank { "No logs this week" } ?: "No logs this week",
-                                    statusText = wMetric?.statusText?.ifBlank { "Start logging today" } ?: "Start logging today",
+                                    title = wTitle,
+                                    value = wValue,
+                                    subtitle = wSub,
+                                    statusText = wStatus,
                                     statusBg = parseHexColor(wMetric?.statusBg, Color(0xFFF3F4F6)),
-                                    statusColor = parseHexColor(wMetric?.statusColor, Color(0xFF6B7280)),
+                                    statusColor = wStatusColor,
                                     cardBg = Color(0xFFF0F7FF),
                                     borderColor = Color(0xFFD0E4FC),
                                     actionText = "Reports",
-                                    onActionClick = onReportsTabClick,
+                                    onActionClick = {
+                                        zoomedMetric = HealthMetricZoomData(
+                                            type = HealthMetricZoomType.WEEKLY_REPORT,
+                                            title = wTitle,
+                                            value = wValue,
+                                            subtitle = wSub,
+                                            statusText = wStatus,
+                                            statusColor = wStatusColor,
+                                            accentColor = Color(0xFF38BDF8),
+                                            secondaryAccent = Color(0xFF8B5CF6),
+                                            icon = Icons.Rounded.InsertChart,
+                                            actionLabel = "Open Weekly Report  ›",
+                                            progressFraction = 0.75f,
+                                            primaryDetailLabel = "Weekly Activity",
+                                            primaryDetailValue = wSub,
+                                            secondaryDetailLabel = "Consistency",
+                                            secondaryDetailValue = wStatus,
+                                            onOpenScreen = onReportsTabClick,
+                                        )
+                                    },
                                 )
                             }
                         }
@@ -714,6 +811,11 @@ fun HomeScreen(
                 }
             )
         }
+
+        HealthMetricZoomOverlay(
+            metric = zoomedMetric,
+            onDismiss = { zoomedMetric = null },
+        )
     }
 }
 
