@@ -308,14 +308,14 @@ fun ActivityHistoryCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFE8F5E9))
+                        .background(AppTheme.colors.successBg)
                         .padding(horizontal = 10.dp, vertical = 4.dp),
                 ) {
                     Text(
                         text = "Completed",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2E7D32),
+                        color = AppTheme.colors.successText,
                     )
                 }
             }
