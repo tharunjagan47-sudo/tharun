@@ -11,6 +11,7 @@ class DiawellApplication : Application() {
             private set
         var hasShownSplash: Boolean = false
         var currentScreen: String = "home"
+        var backStack: List<String> = emptyList()
     }
 
     override fun onCreate() {
