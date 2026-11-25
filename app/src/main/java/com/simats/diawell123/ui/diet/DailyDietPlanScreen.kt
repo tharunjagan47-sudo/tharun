@@ -33,15 +33,12 @@ import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.InsertChart
 import androidx.compose.material.icons.rounded.Lightbulb
-import androidx.compose.material.icons.rounded.MedicalServices
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.TrackChanges
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,7 +60,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -81,7 +77,6 @@ import com.simats.diawell123.data.repository.HealthRecommendationResult
 import com.simats.diawell123.data.repository.SnapFoodAnalyzer
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.components.aiRotatingBorder
-import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
 import com.simats.diawell123.ui.theme.Diawell123Theme
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -157,23 +152,83 @@ fun DailyDietPlanScreen(
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Top Bar & Action Shortcuts
+                // Top Bar with Inline Date Switcher & Sleek Action Pills
                 ElementPopUpContainer(delayMillis = 0) {
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            StyledBackButton(onBackClick = onBackClick)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                StyledBackButton(onBackClick = onBackClick)
 
-                            Spacer(modifier = Modifier.width(14.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
 
-                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Diet",
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AppTheme.colors.textPrimary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+
+                            // Compact Inline Date Selector Pill
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(AppTheme.colors.cardBackground)
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                            ) {
+                                Text(
+                                    text = "‹",
+                                    fontSize = 18.sp,
+                                    color = Color(0xFFA855F7),
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable { viewModel.navigateDate(-1) }
+                                        .padding(horizontal = 6.dp, vertical = 1.dp),
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable { showDatePickerDialog = true }
+                                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CalendarToday,
+                                        contentDescription = "Select Date",
+                                        tint = Color(0xFFA855F7),
+                                        modifier = Modifier.size(12.dp),
+                                    )
+                                    Text(
+                                        text = uiState.selectedDateLabel,
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = AppTheme.colors.textPrimary,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                    )
+                                }
+                                Text(
+                                    text = "›",
+                                    fontSize = 18.sp,
+                                    color = Color(0xFFA855F7),
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable { viewModel.navigateDate(1) }
+                                        .padding(horizontal = 6.dp, vertical = 1.dp),
                                 )
                             }
                         }
@@ -185,11 +240,11 @@ fun DailyDietPlanScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            // Prominent Snap Food Button
+                            // Primary Snap Food Action
                             Box(
                                 modifier = Modifier
-                                    .weight(1.15f)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .weight(1.1f)
+                                    .clip(RoundedCornerShape(14.dp))
                                     .background(
                                         Brush.horizontalGradient(listOf(Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFF00E5FF)))
                                     )
@@ -197,18 +252,18 @@ fun DailyDietPlanScreen(
                                         showSnapFoodCamera = true
                                         coroutineScope.launch { SnapFoodAnalyzer.preWarmModel() }
                                     }
-                                    .padding(vertical = 9.dp),
+                                    .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.PhotoCamera,
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(15.dp)
+                                        modifier = Modifier.size(14.dp),
                                     )
                                     Text(
                                         text = "Snap Food",
@@ -222,21 +277,22 @@ fun DailyDietPlanScreen(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(14.dp))
                                     .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                                     .clickable { onFoodLogClick() }
-                                    .padding(vertical = 9.dp),
+                                    .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.MenuBook,
                                         contentDescription = null,
                                         tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                                        modifier = Modifier.size(14.dp)
+                                        modifier = Modifier.size(14.dp),
                                     )
                                     Text(
                                         text = "Food Log",
@@ -246,24 +302,26 @@ fun DailyDietPlanScreen(
                                     )
                                 }
                             }
+
                             Box(
                                 modifier = Modifier
                                     .weight(0.95f)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(14.dp))
                                     .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF2EFF6))
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
                                     .clickable { onExploreFoodClick() }
-                                    .padding(vertical = 9.dp),
+                                    .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Search,
                                         contentDescription = null,
                                         tint = if (AppTheme.colors.isDark) AppTheme.colors.primaryAccent else Color(0xFF5B1761),
-                                        modifier = Modifier.size(14.dp)
+                                        modifier = Modifier.size(14.dp),
                                     )
                                     Text(
                                         text = "Explore",
@@ -275,21 +333,22 @@ fun DailyDietPlanScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        // Interactive Patient Health & Glucose Match Banner
+                        // Summarized Health & Glucose Context Strip
                         ActiveHealthMatchCard(
                             glucose = currentGlucose,
                             glucoseStatus = glucoseStatus,
                             dietPref = currentDietPref,
                             healthFocus = currentFocus,
                             diabetesType = diabetesType,
-                            onAdjustClick = { showAdjustInputsDialog = true }
+                            hypoglycemiaAlert = aiState.data?.hypoglycemiaAlert,
+                            onAdjustClick = { showAdjustInputsDialog = true },
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        // Category Filter Pills
+                        // Clean Meal Slot Filter Pills
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
@@ -300,168 +359,29 @@ fun DailyDietPlanScreen(
                                 val isSelected = uiState.selectedCategory.equals(category, ignoreCase = true)
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(20.dp))
-                                        .background(if (isSelected) Color(0xFFA855F7) else AppTheme.colors.secondaryBackground)
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) Color(0xFFA855F7) else AppTheme.colors.cardBackground)
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isSelected) Color(0xFFA855F7) else AppTheme.colors.border,
+                                            shape = CircleShape,
+                                        )
                                         .clickable { viewModel.onDailyDietCategoryChanged(category) }
-                                        .padding(horizontal = 14.dp, vertical = 7.dp),
+                                        .padding(horizontal = 15.dp, vertical = 7.dp),
                                 ) {
                                     Text(
                                         text = category,
                                         fontSize = 12.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                         color = if (isSelected) Color.White else AppTheme.colors.textSecondary,
                                     )
                                 }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Date Selector Bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(AppTheme.colors.cardBackground)
-                                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = "‹",
-                                    fontSize = 20.sp,
-                                    color = Color(0xFFA855F7),
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .clickable { viewModel.navigateDate(-1) }
-                                        .padding(horizontal = 8.dp)
-                                )
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    modifier = Modifier.clickable { showDatePickerDialog = true }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.CalendarToday,
-                                        contentDescription = null,
-                                        tint = AppTheme.colors.textPrimary,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Text(
-                                        text = uiState.selectedDateLabel,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = AppTheme.colors.textPrimary,
-                                    )
-                                }
-                                Text(
-                                    text = "›",
-                                    fontSize = 20.sp,
-                                    color = Color(0xFFA855F7),
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .clickable { viewModel.navigateDate(1) }
-                                        .padding(horizontal = 8.dp)
-                                )
                             }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-
-                // Glucose Level Clinical Explanation Banner
-                if (aiState.data?.hypoglycemiaAlert != null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(AppTheme.colors.warningBg)
-                            .border(1.dp, AppTheme.colors.warningBorder, RoundedCornerShape(12.dp))
-                            .padding(14.dp),
-                    ) {
-                        Text(
-                            text = aiState.data!!.hypoglycemiaAlert!!,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = AppTheme.colors.warningText,
-                            lineHeight = 17.sp,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(14.dp))
-                } else if (glucoseStatus == "high") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(AppTheme.colors.errorBg)
-                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
-                            .padding(12.dp),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.Shield,
-                                contentDescription = null,
-                                tint = AppTheme.colors.errorText,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    text = "Hyperglycemia Stabilization Active (${currentGlucose.toInt()} mg/dL)",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = AppTheme.colors.errorText,
-                                )
-                                Text(
-                                    text = "Prioritized low-carbohydrate dishes (<10g) with high dietary fibre to safely stabilize your blood sugar.",
-                                    fontSize = 11.sp,
-                                    color = AppTheme.colors.textSecondary,
-                                    lineHeight = 15.sp,
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(14.dp))
-                } else if (glucoseStatus == "elevated") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(AppTheme.colors.warningBg)
-                            .border(1.dp, AppTheme.colors.warningBorder, RoundedCornerShape(12.dp))
-                            .padding(12.dp),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.InsertChart,
-                                contentDescription = null,
-                                tint = AppTheme.colors.warningText,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    text = "Mildly Elevated Glucose (${currentGlucose.toInt()} mg/dL)",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = AppTheme.colors.warningText,
-                                )
-                                Text(
-                                    text = "Selected low-glycemic, high-fibre dishes with satiating lean protein to slow glucose release.",
-                                    fontSize = 11.sp,
-                                    color = AppTheme.colors.textSecondary,
-                                    lineHeight = 15.sp,
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(14.dp))
-                }
 
                 // Prominent Dataset-Driven Daily Rotating AI Food Recommendation Card (with Rotating AI Glowing Border)
                 dailyRecState.recommendation?.let { rec ->
@@ -483,25 +403,19 @@ fun DailyDietPlanScreen(
                     Spacer(modifier = Modifier.height(18.dp))
                 }
 
-                // Full Personalized Meal Plan Header
+                // Clean Daily Meal Plan Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Personalized Meal Plan",
-                            fontSize = 15.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                        )
-                        Text(
-                            text = "Daily South Indian diabetic rotation (${uiState.selectedDateLabel})",
-                            fontSize = 11.5.sp,
-                            color = AppTheme.colors.textSecondary,
-                        )
-                    }
+                    Text(
+                        text = "Today's Meal Plan",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.textPrimary,
+                        modifier = Modifier.weight(1f),
+                    )
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (aiState.isLoading || aiState.isUpdatingInputs) {
@@ -513,14 +427,12 @@ fun DailyDietPlanScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                         }
 
-                        // On-Demand "Try Another" shuffle button
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(if (AppTheme.colors.isDark) Color(0xFF2E1065) else Color(0xFFF3E8FF))
-                                .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.6f), RoundedCornerShape(10.dp))
                                 .clickable { viewModel.cycleDailyMealPlan() }
-                                .padding(horizontal = 9.dp, vertical = 6.dp)
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -533,7 +445,7 @@ fun DailyDietPlanScreen(
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Text(
-                                    text = "Try Another",
+                                    text = "Shuffle",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE)
@@ -543,55 +455,53 @@ fun DailyDietPlanScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // AI Recommended Foods List
+                // AI Recommended Foods List (Clean, Uncluttered Sections)
                 val dailyPlan = aiState.data?.dailyPlan
                 val recommendations = aiState.data?.recommendations ?: emptyList()
                 val isAllCategory = uiState.selectedCategory.equals("All", ignoreCase = true)
 
-                if (isAllCategory && dailyPlan != null && 
+                if (isAllCategory && dailyPlan != null &&
                     (dailyPlan.breakfast.isNotEmpty() || dailyPlan.lunch.isNotEmpty() || dailyPlan.dinner.isNotEmpty())) {
 
-                    // Structured Complete Day Plan: Breakfast, Lunch, Snack, Dinner
                     if (dailyPlan.breakfast.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "Breakfast", subtitle = "Gentle morning glycemic release")
-                        Spacer(modifier = Modifier.height(8.dp))
+                        MealTimeSectionHeader(title = "Breakfast", subtitle = "Steady morning energy")
+                        Spacer(modifier = Modifier.height(6.dp))
                         dailyPlan.breakfast.take(2).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("breakfast", item.id, item.title) })
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                     }
 
                     if (dailyPlan.lunch.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "Lunch", subtitle = "Sustained afternoon energy & protein")
-                        Spacer(modifier = Modifier.height(8.dp))
+                        MealTimeSectionHeader(title = "Lunch", subtitle = "Balanced midday macros")
+                        Spacer(modifier = Modifier.height(6.dp))
                         dailyPlan.lunch.take(2).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("lunch", item.id, item.title) })
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                     }
 
                     if (dailyPlan.snack.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "Afternoon Snack", subtitle = "High fibre to prevent evening spikes")
-                        Spacer(modifier = Modifier.height(8.dp))
+                        MealTimeSectionHeader(title = "Snack", subtitle = "Fibre-rich afternoon bite")
+                        Spacer(modifier = Modifier.height(6.dp))
                         dailyPlan.snack.take(1).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("snack", item.id, item.title) })
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                     }
 
                     if (dailyPlan.dinner.isNotEmpty()) {
-                        MealTimeSectionHeader(title = "Dinner", subtitle = "Light, nutrient-dense overnight support")
-                        Spacer(modifier = Modifier.height(8.dp))
+                        MealTimeSectionHeader(title = "Dinner", subtitle = "Light overnight support")
+                        Spacer(modifier = Modifier.height(6.dp))
                         dailyPlan.dinner.take(2).forEach { item ->
                             AiDietMealCard(item = item, onClick = { onMealDetailsClick("dinner", item.id, item.title) })
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                        Spacer(modifier = Modifier.height(10.dp))
                     }
 
                 } else {
@@ -751,23 +661,20 @@ fun MealTimeSectionHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.textPrimary,
-            )
-            Text(
-                text = subtitle,
-                fontSize = 11.sp,
-                color = AppTheme.colors.textSecondary,
-            )
-        }
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = AppTheme.colors.textPrimary,
+        )
+        Text(
+            text = subtitle,
+            fontSize = 11.sp,
+            color = AppTheme.colors.textMuted,
+        )
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ActiveHealthMatchCard(
     glucose: Float,
@@ -775,13 +682,29 @@ fun ActiveHealthMatchCard(
     dietPref: String,
     healthFocus: String,
     diabetesType: String,
+    hypoglycemiaAlert: String? = null,
     onAdjustClick: () -> Unit,
 ) {
     val (statusText, statusColor, statusBg) = when (glucoseStatus) {
-        "hypoglycemia" -> Triple("Hypoglycemia (<70)", Color(0xFFC62828), Color(0xFFFFEBEE))
-        "high" -> Triple("High Glucose (>180)", Color(0xFFC62828), Color(0xFFFFEBEE))
-        "elevated" -> Triple("Elevated (140-180)", Color(0xFFE65100), Color(0xFFFFF3E0))
-        else -> Triple("In Target (70-139)", Color(0xFF2E7D32), Color(0xFFE8F5E9))
+        "hypoglycemia" -> Triple("Low (<70)", AppTheme.colors.errorText, AppTheme.colors.errorBg)
+        "high" -> Triple("High (>180)", AppTheme.colors.errorText, AppTheme.colors.errorBg)
+        "elevated" -> Triple("Elevated", AppTheme.colors.warningText, AppTheme.colors.warningBg)
+        else -> Triple("In Target", AppTheme.colors.successText, AppTheme.colors.successBg)
+    }
+
+    val summarizedPrefs = remember(dietPref, healthFocus, diabetesType) {
+        listOf(
+            dietPref.split(",").firstOrNull()?.trim().orEmpty(),
+            healthFocus.split(",").firstOrNull()?.trim().orEmpty(),
+            diabetesType.trim(),
+        ).filter { it.isNotEmpty() }.joinToString(" • ")
+    }
+
+    val conciseInsight = when {
+        !hypoglycemiaAlert.isNullOrBlank() -> hypoglycemiaAlert
+        glucoseStatus == "high" -> "High sugar: prioritizing low-carb (<10g), high-fibre meals."
+        glucoseStatus == "elevated" -> "Slightly elevated: favoring low-GI & lean protein pairings."
+        else -> null
     }
 
     Box(
@@ -790,7 +713,7 @@ fun ActiveHealthMatchCard(
             .clip(RoundedCornerShape(16.dp))
             .background(AppTheme.colors.cardBackground)
             .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
-            .padding(14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
         Column {
             Row(
@@ -804,38 +727,51 @@ fun ActiveHealthMatchCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(34.dp)
                             .clip(CircleShape)
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF))
-                            .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.35f), CircleShape),
+                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.WaterDrop,
                             contentDescription = null,
                             tint = Color(0xFFA855F7),
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
-                    Column(modifier = Modifier.weight(1f, fill = false)) {
-                        Text(
-                            text = "Blood Glucose: ${glucose.toInt()} mg/dL",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                        )
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(statusBg)
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
                             Text(
-                                text = statusText,
-                                fontSize = 10.sp,
+                                text = "${glucose.toInt()} mg/dL",
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = statusColor,
+                                color = AppTheme.colors.textPrimary,
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(statusBg)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    text = statusText,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = statusColor,
+                                )
+                            }
+                        }
+                        if (summarizedPrefs.isNotEmpty()) {
+                            Text(
+                                text = summarizedPrefs,
+                                fontSize = 11.sp,
+                                color = AppTheme.colors.textSecondary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }
@@ -847,19 +783,19 @@ fun ActiveHealthMatchCard(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
                         .background(AppTheme.colors.secondaryBackground)
-                        .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(10.dp))
                         .clickable { onAdjustClick() }
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Tune,
                             contentDescription = null,
                             tint = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                            modifier = Modifier.size(12.dp)
+                            modifier = Modifier.size(12.dp),
                         )
                         Text(
                             text = "Adjust",
@@ -871,59 +807,38 @@ fun ActiveHealthMatchCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                dietPref.split(",").map { it.trim() }.filter { it.isNotEmpty() }.forEach { diet ->
-                    HealthTagPill(
-                        vectorIcon = Icons.Rounded.Restaurant,
-                        text = diet
+            if (conciseInsight != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(statusBg.copy(alpha = 0.72f))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                ) {
+                    Icon(
+                        imageVector = if (glucoseStatus == "high" || glucoseStatus == "hypoglycemia") {
+                            Icons.Rounded.Shield
+                        } else {
+                            Icons.Rounded.InsertChart
+                        },
+                        contentDescription = null,
+                        tint = statusColor,
+                        modifier = Modifier.size(14.dp),
+                    )
+                    Text(
+                        text = conciseInsight,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = statusColor,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 14.sp,
                     )
                 }
-                healthFocus.split(",").map { it.trim() }.filter { it.isNotEmpty() }.forEach { focus ->
-                    HealthTagPill(vectorIcon = Icons.Rounded.TrackChanges, text = focus)
-                }
-                HealthTagPill(vectorIcon = Icons.Rounded.MedicalServices, text = diabetesType)
             }
-        }
-    }
-}
-
-@Composable
-fun HealthTagPill(
-    vectorIcon: ImageVector? = null,
-    icon: String = "",
-    text: String
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(AppTheme.colors.secondaryBackground)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            if (vectorIcon != null) {
-                Icon(
-                    imageVector = vectorIcon,
-                    contentDescription = text,
-                    tint = Color(0xFFA855F7),
-                    modifier = Modifier.size(12.dp)
-                )
-            } else if (icon.isNotBlank()) {
-                Text(text = icon, fontSize = 11.sp)
-            }
-            Text(
-                text = text,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF5E5A66),
-            )
         }
     }
 }
@@ -1227,7 +1142,6 @@ fun AdjustHealthInputsDialog(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AiDietMealCard(
     item: RecommendedFoodItem,
@@ -1236,142 +1150,103 @@ fun AiDietMealCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(AppTheme.colors.cardBackground)
-            .aiRotatingBorder(strokeWidth = 1.3.dp, shape = RoundedCornerShape(14.dp), durationMillis = 4000)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
             .clickable { onClick() }
-            .padding(14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
+                contentAlignment = Alignment.Center,
             ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
-                        contentAlignment = Alignment.Center,
+                Text(text = resolveFoodEmoji(item.icon, item.title), fontSize = 22.sp)
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${item.portion} • ${item.caloriesLabel} • ${item.carbsG}g carbs",
+                    fontSize = 11.sp,
+                    color = AppTheme.colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                val badgeText = item.glycemicImpact?.badge ?: item.highlights.firstOrNull()
+                if (!badgeText.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = resolveFoodEmoji(item.icon, item.title), fontSize = 22.sp)
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f, fill = false)) {
-                        Text(
-                            text = item.category.uppercase(),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFA855F7),
-                            letterSpacing = 0.5.sp,
-                        )
-                        Text(
-                            text = item.title,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                        )
-                        Text(
-                            text = "${item.portion} • ${item.caloriesLabel}",
-                            fontSize = 11.sp,
-                            color = AppTheme.colors.textSecondary,
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF1E1B4B), Color(0xFF7E22CE), Color(0xFFA855F7)),
-                            ),
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                ) {
-                    Text(
-                        text = "${item.recommendationScore}% Match",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Carbs ${item.carbsG}g • Fibre ${item.fibreG}g • Protein ${item.proteinG}g • Sugar ${item.freeSugarG}g",
-                fontSize = 11.sp,
-                color = AppTheme.colors.textMuted,
-            )
-
-            if (item.recommendationReason.isNotBlank()) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Lightbulb,
-                        contentDescription = null,
-                        tint = Color(0xFF2E7D32),
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Text(
-                        text = item.recommendationReason,
-                        fontSize = 11.sp,
-                        color = Color(0xFF2E7D32),
-                        lineHeight = 15.sp,
-                    )
-                }
-            }
-
-            if (item.highlights.isNotEmpty() || item.glycemicImpact != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    item.highlights.forEach { tag ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(AppTheme.colors.secondaryBackground)
-                                .padding(horizontal = 6.dp, vertical = 3.dp),
-                        ) {
-                            Text(
-                                text = tag,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
-                            )
+                        item.glycemicImpact?.badge?.let { giBadge ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(AppTheme.colors.successBg)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    text = giBadge,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppTheme.colors.successText,
+                                )
+                            }
                         }
-                    }
-
-                    item.glycemicImpact?.badge?.let { giBadge ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(AppTheme.colors.successBg)
-                                .padding(horizontal = 6.dp, vertical = 3.dp),
-                        ) {
-                            Text(
-                                text = giBadge,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = AppTheme.colors.successText,
-                            )
+                        item.highlights.firstOrNull()?.let { tag ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(AppTheme.colors.secondaryBackground)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    text = tag,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF7E22CE),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (AppTheme.colors.isDark) Color(0xFF2E1065) else Color(0xFFF3E8FF))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = "${item.recommendationScore}%",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFF6D28D9),
+                )
             }
         }
     }
@@ -1389,11 +1264,11 @@ fun DietPlanMealCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(AppTheme.colors.cardBackground)
-            .aiRotatingBorder(strokeWidth = 1.3.dp, shape = RoundedCornerShape(14.dp), durationMillis = 4000)
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
             .clickable { onClick() }
-            .padding(14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1404,31 +1279,39 @@ fun DietPlanMealCard(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = resolveFoodEmoji(icon, name), fontSize = 28.sp)
-                Spacer(modifier = Modifier.width(14.dp))
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(13.dp))
+                        .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(text = resolveFoodEmoji(icon, name), fontSize = 22.sp)
+                }
+                Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f, fill = false)) {
-                    Text(
-                        text = category,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFA855F7),
-                        letterSpacing = 0.5.sp,
-                    )
                     Text(
                         text = name,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                         color = AppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = serving,
                         fontSize = 11.sp,
                         color = AppTheme.colors.textSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         text = macros,
                         fontSize = 10.sp,
                         color = AppTheme.colors.textMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -1436,10 +1319,10 @@ fun DietPlanMealCard(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "View ›",
-                fontSize = 12.sp,
+                text = "›",
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFA855F7),
+                color = AppTheme.colors.textMuted,
             )
         }
     }
@@ -1528,7 +1411,6 @@ fun CalendarDatePickerDialog(
  * Features the animated rotating gradient border ("line suthu varamari")
  * to visually indicate active AI-driven recommendation.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AiFoodRecommendationForHealthCard(
     result: HealthRecommendationResult,
@@ -1544,21 +1426,21 @@ fun AiFoodRecommendationForHealthCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(
                 Brush.verticalGradient(
                     colors = if (isDark) {
-                        listOf(Color(0xFF1E1435), Color(0xFF140F24), Color(0xFF0E0C1A))
+                        listOf(Color(0xFF1E1435), Color(0xFF140F24))
                     } else {
-                        listOf(Color(0xFFFAF5FF), Color(0xFFF3E8FF), Color(0xFFFFFFFF))
+                        listOf(Color(0xFFFAF5FF), Color(0xFFFFFFFF))
                     }
                 )
             )
-            .aiRotatingBorder(strokeWidth = 1.8.dp, shape = RoundedCornerShape(20.dp), durationMillis = 3200)
-            .padding(16.dp),
+            .aiRotatingBorder(strokeWidth = 1.5.dp, shape = RoundedCornerShape(18.dp), durationMillis = 3600)
+            .padding(14.dp),
     ) {
         Column {
-            // Header: Title & Daily Rotation Badge
+            // Compact Top Header: Top Pick badge + Meal slot & GL pill
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1566,142 +1448,63 @@ fun AiFoodRecommendationForHealthCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.weight(1f, fill = false)
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier.weight(1f, fill = false),
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Restaurant,
                         contentDescription = null,
-                        tint = if (isDark) Color(0xFFF3E8FF) else Color(0xFF581C87),
-                        modifier = Modifier.size(16.dp)
+                        tint = if (isDark) Color(0xFFF3E8FF) else Color(0xFF6D28D9),
+                        modifier = Modifier.size(14.dp),
                     )
                     Text(
-                        text = "Recommended For You",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF581C87),
+                        text = "Top Pick • ${item.mealSlot}",
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF6D28D9),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
 
-                Spacer(modifier = Modifier.width(6.dp))
-
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(8.dp))
                         .background(
-                            if (isDark) Color(0xFF7E22CE).copy(alpha = 0.35f)
-                            else Color(0xFFE9D5FF)
-                        )
-                        .border(
-                            1.dp,
-                            if (isDark) Color(0xFFA855F7) else Color(0xFFC084FC),
-                            RoundedCornerShape(12.dp)
+                            when {
+                                result.glucoseBadgeText.contains("High") -> AppTheme.colors.errorBg
+                                result.glucoseBadgeText.contains("Stabilizer") -> AppTheme.colors.warningBg
+                                else -> AppTheme.colors.successBg
+                            }
                         )
                         .padding(horizontal = 8.dp, vertical = 3.dp),
                 ) {
                     Text(
-                        text = result.dailyRotationLabel,
-                        fontSize = 10.5.sp,
+                        text = "${item.glycemicLoad} GL",
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isDark) Color(0xFFE9D5FF) else Color(0xFF6B21A8),
+                        color = when {
+                            result.glucoseBadgeText.contains("High") -> AppTheme.colors.errorText
+                            result.glucoseBadgeText.contains("Stabilizer") -> AppTheme.colors.warningText
+                            else -> AppTheme.colors.successText
+                        },
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Badges FlowRow (Glucose status, meal slot, diet type, GL)
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Glucose badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            when {
-                                result.glucoseBadgeText.contains("High") -> Color(0xFFEF4444).copy(alpha = 0.18f)
-                                result.glucoseBadgeText.contains("Stabilizer") -> Color(0xFFF59E0B).copy(alpha = 0.18f)
-                                else -> Color(0xFF10B981).copy(alpha = 0.18f)
-                            }
-                        )
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = result.glucoseBadgeText,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = when {
-                            result.glucoseBadgeText.contains("High") -> if (isDark) Color(0xFFFCA5A5) else Color(0xFFDC2626)
-                            result.glucoseBadgeText.contains("Stabilizer") -> if (isDark) Color(0xFFFDE68A) else Color(0xFFD97706)
-                            else -> if (isDark) Color(0xFF6EE7B7) else Color(0xFF059669)
-                        }
-                    )
-                }
-
-                // Meal slot badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = item.mealSlot,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
-                    )
-                }
-
-                // Diet type badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = item.dietType,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
-                    )
-                }
-
-                // Glycemic load badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = "${item.glycemicLoad} Glycemic Load",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Main Meal Content Row
+            // Clean Dish Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onItemClick() },
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(14.dp))
                         .background(
                             Brush.linearGradient(
                                 colors = if (isDark) {
@@ -1710,11 +1513,10 @@ fun AiFoodRecommendationForHealthCard(
                                     listOf(Color(0xFFEDE9FE), Color(0xFFDDD6FE))
                                 }
                             )
-                        )
-                        .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.4f), RoundedCornerShape(16.dp)),
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = resolveFoodEmoji(item.icon, item.name), fontSize = 26.sp)
+                    Text(text = resolveFoodEmoji(item.icon, item.name), fontSize = 24.sp)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -1725,155 +1527,130 @@ fun AiFoodRecommendationForHealthCard(
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
-                        lineHeight = 19.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "${item.portion} • ${item.calories} kcal",
+                        text = "${item.portion} • ${item.calories} kcal • ${item.dietType}",
                         fontSize = 11.5.sp,
-                        fontWeight = FontWeight.Medium,
                         color = Color(0xFFA855F7),
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Macros Strip
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isDark) Color(0xFF0F0B1E) else Color.White.copy(alpha = 0.85f))
-                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MacroStatMini("Carbs", "${item.carbsGrams.toInt()}g")
-                MacroDivider()
-                MacroStatMini("Protein", "${item.proteinGrams.toInt()}g")
-                MacroDivider()
-                MacroStatMini("Fiber", "${item.fiberGrams.toInt()}g")
-                MacroDivider()
-                MacroStatMini("Fat", "${item.fatGrams.toInt()}g")
-            }
+            // Single Summarized Macro & Insight Line
+            Text(
+                text = "Carbs ${item.carbsGrams.toInt()}g • Protein ${item.proteinGrams.toInt()}g • Fiber ${item.fiberGrams.toInt()}g • Fat ${item.fatGrams.toInt()}g",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = AppTheme.colors.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Personalized Medical & Health Reason Box
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        if (isDark) Color(0xFF181528)
-                        else Color(0xFFF5F3FF)
-                    )
-                    .border(
-                        1.dp,
-                        Color(0xFFA855F7).copy(alpha = if (isDark) 0.35f else 0.25f),
-                        RoundedCornerShape(12.dp)
-                    )
-                    .padding(12.dp)
-            ) {
-                Row(verticalAlignment = Alignment.Top) {
+            if (result.matchedReason.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
                     Icon(
                         imageVector = Icons.Rounded.Lightbulb,
                         contentDescription = null,
                         tint = Color(0xFFA855F7),
-                        modifier = Modifier.size(15.dp)
+                        modifier = Modifier.size(13.dp),
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = result.matchedReason,
-                        fontSize = 11.5.sp,
-                        lineHeight = 16.sp,
-                        color = if (isDark) Color(0xFFE2E8F0) else Color(0xFF334155),
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp,
+                        color = AppTheme.colors.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Action Buttons: "Try Another" & "Log This Meal"
+            // Compact Action Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Try Another Button
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isDark) Color(0xFF1E1733) else Color.White)
-                        .border(
-                            1.2.dp,
-                            if (isDark) Color(0xFFA855F7).copy(alpha = 0.6f) else Color(0xFFC084FC),
-                            RoundedCornerShape(12.dp)
-                        )
+                        .height(38.dp)
+                        .clip(RoundedCornerShape(11.dp))
+                        .background(AppTheme.colors.cardBackground)
+                        .border(1.dp, AppTheme.colors.border, RoundedCornerShape(11.dp))
                         .clickable { onTryAnotherClick() },
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Shuffle,
                             contentDescription = null,
                             tint = if (isDark) Color(0xFFF3E8FF) else Color(0xFF7E22CE),
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(13.dp),
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = "Try Another",
+                            text = "Swap",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF7E22CE)
+                            color = if (isDark) Color(0xFFF3E8FF) else Color(0xFF7E22CE),
                         )
                     }
                 }
 
-                // Quick Log This Meal Button
                 Box(
                     modifier = Modifier
-                        .weight(1.3f)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .weight(1.35f)
+                        .height(38.dp)
+                        .clip(RoundedCornerShape(11.dp))
                         .background(
                             Brush.horizontalGradient(
                                 colors = listOf(Color(0xFF7E22CE), Color(0xFFA855F7), Color(0xFF00E5FF))
                             )
                         )
                         .clickable(enabled = !isLogging) { onLogMealClick() },
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     if (isLogging) {
                         CircularProgressIndicator(
                             color = Color.White,
                             strokeWidth = 2.dp,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(15.dp),
                         )
                     } else {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                            horizontalArrangement = Arrangement.Center,
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Add,
                                 contentDescription = null,
                                 tint = Color.White,
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier.size(14.dp),
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Log This Meal",
+                                text = "Log Meal",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = Color.White,
                             )
                         }
                     }
@@ -1881,33 +1658,6 @@ fun AiFoodRecommendationForHealthCard(
             }
         }
     }
-}
-
-@Composable
-private fun MacroStatMini(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = AppTheme.colors.textPrimary
-        )
-        Text(
-            text = label,
-            fontSize = 9.5.sp,
-            color = AppTheme.colors.textMuted
-        )
-    }
-}
-
-@Composable
-private fun MacroDivider() {
-    Box(
-        modifier = Modifier
-            .width(1.dp)
-            .height(20.dp)
-            .background(AppTheme.colors.border)
-    )
 }
 
 @Preview(showBackground = true, showSystemUi = true)
