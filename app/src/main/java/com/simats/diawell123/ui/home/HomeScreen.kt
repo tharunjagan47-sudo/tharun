@@ -45,7 +45,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Assessment
-import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DarkMode
@@ -118,6 +117,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -129,10 +129,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.simats.diawell123.ui.ai.IronmanDoctorAvatar
+import com.simats.diawell123.R
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.components.FluidGlassCircleButton
-import com.simats.diawell123.ui.components.aiRotatingBorder
 import com.simats.diawell123.ui.profile.ProfileAvatarView
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.AppTheme
@@ -325,16 +324,26 @@ fun HomeScreen(
                                         )
                                     }
 
-                                    // Top Right Actions: Theme Toggle & Profile Avatar (Bell button removed)
+                                    // Top Right Actions: Theme Toggle, Settings & Profile Avatar
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         // Quick Theme Toggle Button - Fluid Glass Circular Bubble
                                         FluidGlassCircleButton(
                                             imageVector = if (AppTheme.colors.isDark) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
                                             onClick = { ThemeManager.toggleTheme(context) },
                                             contentDescription = "Toggle Theme",
+                                            sizeDp = 40.dp,
+                                            iconSizeDp = 18.dp,
+                                            tint = Color.White,
+                                        )
+
+                                        // Settings Button - Fluid Glass Circular Bubble between Theme & Profile
+                                        FluidGlassCircleButton(
+                                            imageVector = Icons.Rounded.Settings,
+                                            onClick = onSettingsTabClick,
+                                            contentDescription = "Settings",
                                             sizeDp = 40.dp,
                                             iconSizeDp = 18.dp,
                                             tint = Color.White,
@@ -600,75 +609,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 3. Featured Dr. JARVIS AI Daily Tip Card (Floating Bubble Effect)
-                ElementPopUpContainer(delayMillis = 140) {
-                    FloatingBubbleContainer(phaseOffsetMs = 300) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(
-                                    brush = if (AppTheme.colors.isDark) {
-                                        Brush.linearGradient(listOf(Color(0xFF202C40), Color(0xFF182235)))
-                                    } else {
-                                        Brush.linearGradient(listOf(Color(0xFFFAF5FF), Color(0xFFF3E8FF)))
-                                    },
-                                )
-                                .aiRotatingBorder(strokeWidth = 1.6.dp, shape = RoundedCornerShape(18.dp), durationMillis = 3500)
-                                .clickable { onDietChatbotClick() }
-                                .padding(16.dp),
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                IronmanDoctorAvatar(sizeDp = 44)
-
-                                Spacer(modifier = Modifier.width(14.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.AutoAwesome,
-                                            contentDescription = null,
-                                            tint = Color(0xFFA855F7),
-                                            modifier = Modifier.size(15.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = "Daily Tip",
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFA855F7),
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(3.dp))
-                                    Text(
-                                        text = data?.aiTip?.tip ?: "A 10-minute light walk after meals helps smooth blood sugar levels.",
-                                        fontSize = 12.5.sp,
-                                        color = AppTheme.colors.textSecondary,
-                                        lineHeight = 17.sp,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(
-                                    text = "Ask ›",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFA855F7),
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 4. Today's Routine Timeline Check-In (Floating Bubble Effect)
+                // 3. Today's Routine Timeline Check-In (Floating Bubble Effect)
                 ElementPopUpContainer(delayMillis = 200) {
                     FloatingBubbleContainer(phaseOffsetMs = 500) {
                         Column {
@@ -854,15 +795,29 @@ private fun FrostedGlassCapsuleSurface(
     }
 }
 
+private data class NavTabItem(
+    val name: String,
+    val iconVector: ImageVector? = null,
+    val iconResId: Int? = null,
+)
+
+private val diaWellNavTabs = listOf(
+    NavTabItem(name = "Home", iconVector = Icons.Rounded.Home),
+    NavTabItem(name = "Diet", iconVector = Icons.Rounded.Restaurant),
+    NavTabItem(name = "AI", iconResId = R.drawable.ic_nav_ai),
+    NavTabItem(name = "Meds", iconVector = Icons.Rounded.Medication),
+    NavTabItem(name = "Reports", iconVector = Icons.Rounded.Assessment),
+)
+
 @Composable
 fun IosLiquidGlassBottomNav(
     selectedTab: String,
     backdropLayer: GraphicsLayer? = null,
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
+    onAiTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
-    onSettingsTabClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -871,24 +826,16 @@ fun IosLiquidGlassBottomNav(
     val coroutineScope = rememberCoroutineScope()
     val hasLiveBlur = backdropLayer != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
-    val tabs = remember {
-        listOf(
-            "Home" to Icons.Rounded.Home,
-            "Diet" to Icons.Rounded.Restaurant,
-            "Meds" to Icons.Rounded.Medication,
-            "Reports" to Icons.Rounded.Assessment,
-            "Settings" to Icons.Rounded.Settings,
-        )
-    }
+    val tabs = diaWellNavTabs
 
     val selectedTabIndex = remember(selectedTab) {
-        tabs.indexOfFirst { it.first == selectedTab }.coerceIn(0, tabs.lastIndex)
+        tabs.indexOfFirst { it.name == selectedTab }.coerceIn(0, tabs.lastIndex)
     }
 
     // Keep latest callbacks & state accessible inside pointerInput(Unit) without ever cancelling active drags
     val currentSelectedIndex by rememberUpdatedState(selectedTabIndex)
     val currentOnSelectIndex by rememberUpdatedState<(Int) -> Unit> { index ->
-        val tabName = tabs.getOrNull(index)?.first ?: return@rememberUpdatedState
+        val tabName = tabs.getOrNull(index)?.name ?: return@rememberUpdatedState
         if (tabName != selectedTab) {
             try {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -896,9 +843,9 @@ fun IosLiquidGlassBottomNav(
             when (tabName) {
                 "Home" -> onHomeTabClick()
                 "Diet" -> onDietTabClick()
+                "AI" -> onAiTabClick()
                 "Meds" -> onMedsTabClick()
                 "Reports" -> onReportsTabClick()
-                "Settings" -> onSettingsTabClick()
             }
         }
     }
@@ -1254,7 +1201,8 @@ fun IosLiquidGlassBottomNav(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                tabs.forEachIndexed { index, (name, iconVector) ->
+                tabs.forEachIndexed { index, tab ->
+                    val name = tab.name
                     val activeIndex = if (isPressed) hoveredIndex else settledTabIndex
                     val isActive = (index == activeIndex)
 
@@ -1295,11 +1243,12 @@ fun IosLiquidGlassBottomNav(
                         ) {
                             AnimatedNavVectorIcon(
                                 tabName = name,
-                                iconVector = iconVector,
+                                iconVector = tab.iconVector,
+                                iconResId = tab.iconResId,
                                 isActive = isActive,
                                 tint = animatedIconTint,
                                 isDark = isDark,
-                                sizeDp = 22,
+                                sizeDp = if (name == "AI") 23 else 22,
                             )
 
                             Spacer(modifier = Modifier.height(2.dp))
@@ -1330,12 +1279,13 @@ fun IosLiquidGlassBottomNav(
  * - Diet (Restaurant): playful double-nudge fork/knife tilt
  * - Meds (Medication): rhythmic pill shake
  * - Reports (Assessment): bottom-anchored bar-chart rise pop
- * - Settings: mechanical cog quarter-turn spin
+ * - AI (Custom Robot Vector): friendly wave rock and spring pop
  */
 @Composable
 private fun AnimatedNavVectorIcon(
     tabName: String,
-    iconVector: ImageVector,
+    iconVector: ImageVector? = null,
+    iconResId: Int? = null,
     isActive: Boolean,
     tint: Color,
     isDark: Boolean,
@@ -1353,24 +1303,21 @@ private fun AnimatedNavVectorIcon(
                 glowAlpha.animateTo(1f, tween(220))
             }
             when (tabName) {
-                "Settings" -> {
-                    // Gear rotates smoothly 90° clockwise per activation while keeping float range normalized
+                "AI" -> {
+                    // Friendly robot wave rock & spring pop
                     launch {
-                        val baseAngle = ((iconRotation.value % 360f) + 360f) % 360f
-                        iconRotation.snapTo(baseAngle)
-                        val targetAngle = ((baseAngle / 90f).roundToInt() + 1) * 90f
-                        iconRotation.animateTo(
-                            targetValue = targetAngle,
-                            animationSpec = spring(dampingRatio = 0.60f, stiffness = 360f),
-                        )
+                        iconRotation.snapTo(-10f)
+                        iconRotation.animateTo(8f, spring(dampingRatio = 0.52f, stiffness = 720f))
+                        iconRotation.animateTo(-4f, spring(dampingRatio = 0.56f, stiffness = 720f))
+                        iconRotation.animateTo(0f, spring(dampingRatio = 0.60f, stiffness = 560f))
                     }
                     launch {
-                        iconScaleX.snapTo(0.88f)
-                        iconScaleY.snapTo(0.88f)
-                        iconScaleX.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                        iconScaleX.snapTo(1.20f)
+                        iconScaleY.snapTo(1.20f)
+                        iconScaleX.animateTo(1f, spring(dampingRatio = 0.48f, stiffness = 520f))
                     }
                     launch {
-                        iconScaleY.animateTo(1f, spring(dampingRatio = 0.50f, stiffness = 540f))
+                        iconScaleY.animateTo(1f, spring(dampingRatio = 0.48f, stiffness = 520f))
                     }
                 }
 
@@ -1440,9 +1387,7 @@ private fun AnimatedNavVectorIcon(
             }
         } else {
             launch { glowAlpha.animateTo(0f, tween(160)) }
-            if (tabName != "Settings") {
-                launch { iconRotation.animateTo(0f, tween(140)) }
-            }
+            launch { iconRotation.animateTo(0f, tween(140)) }
             launch { iconOffsetY.animateTo(0f, tween(140)) }
             launch { iconScaleX.animateTo(1f, tween(140)) }
             launch { iconScaleY.animateTo(1f, tween(140)) }
@@ -1472,24 +1417,35 @@ private fun AnimatedNavVectorIcon(
                 ),
         )
 
-        Icon(
-            imageVector = iconVector,
-            contentDescription = tabName,
-            tint = tint,
-            modifier = Modifier
-                .size(sizeDp.dp)
-                .graphicsLayer {
-                    scaleX = iconScaleX.value
-                    scaleY = iconScaleY.value
-                    rotationZ = iconRotation.value
-                    translationY = iconOffsetY.value.dp.toPx()
-                    transformOrigin = if (tabName == "Reports") {
-                        TransformOrigin(0.5f, 0.85f)
-                    } else {
-                        TransformOrigin.Center
-                    }
-                },
-        )
+        val iconModifier = Modifier
+            .size(sizeDp.dp)
+            .graphicsLayer {
+                scaleX = iconScaleX.value
+                scaleY = iconScaleY.value
+                rotationZ = iconRotation.value
+                translationY = iconOffsetY.value.dp.toPx()
+                transformOrigin = if (tabName == "Reports") {
+                    TransformOrigin(0.5f, 0.85f)
+                } else {
+                    TransformOrigin.Center
+                }
+            }
+
+        if (iconResId != null) {
+            Icon(
+                painter = painterResource(id = iconResId),
+                contentDescription = tabName,
+                tint = tint,
+                modifier = iconModifier,
+            )
+        } else if (iconVector != null) {
+            Icon(
+                imageVector = iconVector,
+                contentDescription = tabName,
+                tint = tint,
+                modifier = iconModifier,
+            )
+        }
     }
 }
 
@@ -1504,9 +1460,9 @@ fun DiaWellLiquidGlassNavRail(
     backdropLayer: GraphicsLayer? = null,
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
+    onAiTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
-    onSettingsTabClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -1515,22 +1471,14 @@ fun DiaWellLiquidGlassNavRail(
     val density = LocalDensity.current
     val hasLiveBlur = backdropLayer != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
-    val tabs = remember {
-        listOf(
-            "Home" to Icons.Rounded.Home,
-            "Diet" to Icons.Rounded.Restaurant,
-            "Meds" to Icons.Rounded.Medication,
-            "Reports" to Icons.Rounded.Assessment,
-            "Settings" to Icons.Rounded.Settings,
-        )
-    }
+    val tabs = diaWellNavTabs
 
     val selectedTabIndex = remember(selectedTab) {
-        tabs.indexOfFirst { it.first == selectedTab }.coerceIn(0, tabs.lastIndex)
+        tabs.indexOfFirst { it.name == selectedTab }.coerceIn(0, tabs.lastIndex)
     }
     val currentSelectedIndex by rememberUpdatedState(selectedTabIndex)
     val currentOnSelectIndex by rememberUpdatedState<(Int) -> Unit> { index ->
-        val tabName = tabs.getOrNull(index)?.first ?: return@rememberUpdatedState
+        val tabName = tabs.getOrNull(index)?.name ?: return@rememberUpdatedState
         if (tabName != selectedTab) {
             try {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -1538,9 +1486,9 @@ fun DiaWellLiquidGlassNavRail(
             when (tabName) {
                 "Home" -> onHomeTabClick()
                 "Diet" -> onDietTabClick()
+                "AI" -> onAiTabClick()
                 "Meds" -> onMedsTabClick()
                 "Reports" -> onReportsTabClick()
-                "Settings" -> onSettingsTabClick()
             }
         }
     }
@@ -1801,7 +1749,8 @@ fun DiaWellLiquidGlassNavRail(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    tabs.forEachIndexed { index, (name, iconVector) ->
+                    tabs.forEachIndexed { index, tab ->
+                        val name = tab.name
                         val activeIndex = if (isPressed) hoveredIndex else settledTabIndex
                         val isActive = (index == activeIndex)
                         val animatedIconTint by animateColorAsState(
@@ -1831,11 +1780,12 @@ fun DiaWellLiquidGlassNavRail(
                             ) {
                                 AnimatedNavVectorIcon(
                                     tabName = name,
-                                    iconVector = iconVector,
+                                    iconVector = tab.iconVector,
+                                    iconResId = tab.iconResId,
                                     isActive = isActive,
                                     tint = animatedIconTint,
                                     isDark = isDark,
-                                    sizeDp = 21,
+                                    sizeDp = if (name == "AI") 22 else 21,
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
