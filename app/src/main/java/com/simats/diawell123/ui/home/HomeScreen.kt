@@ -88,16 +88,24 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -106,6 +114,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -116,6 +125,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -128,6 +138,7 @@ import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.AppTheme
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.ui.theme.ThemeManager
+import android.os.Build
 import android.widget.Toast
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -764,9 +775,90 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Shared live-blurred frosted liquid-glass surface clipped cleanly to [shape].
+ * Samples the underlying Compose [backdropLayer] on Android 12+ (`RenderEffect` GPU blur)
+ * with graceful high-frost translucency fallback on older API levels.
+ */
+@Composable
+private fun FrostedGlassCapsuleSurface(
+    shape: Shape,
+    backdropLayer: GraphicsLayer?,
+    tintBrush: Brush,
+    borderBrush: Brush,
+    topSheenBrush: Brush,
+    borderWidth: Dp,
+    shadowElevation: Dp,
+    isDark: Boolean,
+    blurRadius: Dp = 26.dp,
+    modifier: Modifier = Modifier,
+) {
+    val supportsLiveBlur = backdropLayer != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    var blurOriginInRoot by remember { mutableStateOf(Offset.Zero) }
+
+    Box(
+        modifier = modifier
+            .shadow(
+                elevation = shadowElevation,
+                shape = shape,
+                ambientColor = Color(0xFF05040D).copy(alpha = if (isDark) 0.72f else 0.16f),
+                spotColor = if (isDark) Color(0xFF7C3AED).copy(alpha = 0.28f) else Color.Black.copy(alpha = 0.14f),
+            )
+            .clip(shape),
+    ) {
+        if (supportsLiveBlur && backdropLayer != null) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .onGloballyPositioned { coords ->
+                        blurOriginInRoot = coords.positionInRoot()
+                    }
+                    .blur(
+                        radius = blurRadius,
+                        edgeTreatment = BlurredEdgeTreatment.Rectangle,
+                    )
+                    .drawBehind {
+                        clipRect(0f, 0f, size.width, size.height) {
+                            translate(
+                                left = -blurOriginInRoot.x,
+                                top = -blurOriginInRoot.y,
+                            ) {
+                                drawLayer(backdropLayer)
+                            }
+                        }
+                    },
+            )
+        }
+
+        // Frosted milk / obsidian glass tint layer on top of live blurred backdrop
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(tintBrush),
+        )
+
+        // Subtle curved top meniscus highlight reflection
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .align(Alignment.TopCenter)
+                .background(topSheenBrush),
+        )
+
+        // Gleaming outer glass rim border
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .border(width = borderWidth, brush = borderBrush, shape = shape),
+        )
+    }
+}
+
 @Composable
 fun IosLiquidGlassBottomNav(
     selectedTab: String,
+    backdropLayer: GraphicsLayer? = null,
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
@@ -778,6 +870,7 @@ fun IosLiquidGlassBottomNav(
     val density = LocalDensity.current
     val isDark = AppTheme.colors.isDark
     val coroutineScope = rememberCoroutineScope()
+    val hasLiveBlur = backdropLayer != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     val tabs = remember {
         listOf(
@@ -833,143 +926,164 @@ fun IosLiquidGlassBottomNav(
         }
     }
 
-    // Smooth liquid inflation when finger presses & slides the glass lens
+    // Gentle liquid buoyancy scale when finger presses & slides the nested stadium bubble
     val pressScaleState = animateFloatAsState(
-        targetValue = if (isPressed) 1.12f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.62f, stiffness = 460f),
+        targetValue = if (isPressed) 1.07f else 1.0f,
+        animationSpec = spring(dampingRatio = 0.64f, stiffness = 460f),
         label = "LiquidLensPressScale",
     )
 
-    val pillWidthDp = 76.dp
-    val pillHeightDp = 70.dp
-    val dockHeightDp = 56.dp
-    val pillWidthPx = with(density) { pillWidthDp.toPx() }
+    val dockHeightDp = 64.dp
+    val innerBubbleHeightDp = 56.dp
     val touchSlopPx = with(density) { 8.dp.toPx() }
     val tabSlotWidthPx = if (tabs.isNotEmpty() && rowWidthPx > 0f) rowWidthPx / tabs.size.toFloat() else 0f
-
-    // Pre-allocated shapes & crystal liquid-glass brushes (zero per-frame allocations)
-    val dockShape = remember { RoundedCornerShape(28.dp) }
-    val lensShape = remember { RoundedCornerShape(24.dp) }
-
-    val dockFillColor = if (isDark) Color(0xBA141124) else Color(0xDCFFFFFF)
-    val dockBorderBrush = remember(isDark) {
-        Brush.horizontalGradient(
-            colors = if (isDark) {
-                listOf(Color(0x45FFFFFF), Color(0x38A855F7), Color(0x45FFFFFF))
-            } else {
-                listOf(Color(0x337C3AED), Color(0x18000000), Color(0x337C3AED))
-            },
-        )
+    val minBubbleWidthPx = with(density) { 68.dp.toPx() }
+    val maxBubbleWidthPx = with(density) { 92.dp.toPx() }
+    val bubbleExtraPx = with(density) { 8.dp.toPx() }
+    val bubbleWidthPx = if (tabSlotWidthPx > 0f) {
+        (tabSlotWidthPx + bubbleExtraPx).coerceIn(minBubbleWidthPx, maxBubbleWidthPx)
+    } else {
+        with(density) { 74.dp.toPx() }
     }
+    val bubbleWidthDp = with(density) { bubbleWidthPx.toDp() }
+    val maxBubbleTravelPx = (rowWidthPx - bubbleWidthPx).coerceAtLeast(0f)
 
-    // Refractive Liquid Glass Lens Fill
-    val lensFillBrush = remember(isDark) {
+    // Full capsule shapes: nested stadium oval bubble hugs the outer stadium capsule concentrically
+    val dockShape = CircleShape
+    val bubbleShape = CircleShape
+
+    // Outer frosted acrylic dock tint over live GPU blur
+    val dockTintBrush = remember(isDark, hasLiveBlur) {
         if (isDark) {
+            val topAlpha = if (hasLiveBlur) 0.50f else 0.88f
+            val midAlpha = if (hasLiveBlur) 0.62f else 0.94f
             Brush.verticalGradient(
                 colorStops = arrayOf(
-                    0.00f to Color(0x58E9D5FF),
-                    0.16f to Color(0xB8181428),
-                    0.50f to Color(0xD8151226),
-                    0.84f to Color(0xB82E1065),
-                    1.00f to Color(0x66F0ABFC),
+                    0.00f to Color(0xFF231D3A).copy(alpha = topAlpha),
+                    0.50f to Color(0xFF141124).copy(alpha = midAlpha),
+                    1.00f to Color(0xFF1B1530).copy(alpha = topAlpha + 0.04f),
                 ),
             )
         } else {
+            val topAlpha = if (hasLiveBlur) 0.54f else 0.92f
+            val midAlpha = if (hasLiveBlur) 0.44f else 0.88f
             Brush.verticalGradient(
                 colorStops = arrayOf(
-                    0.00f to Color(0x99FFFFFF),
-                    0.18f to Color(0xCCEDE9FE),
-                    0.50f to Color(0xE0DDD6FE),
-                    0.84f to Color(0xCCF5D0FE),
-                    1.00f to Color(0x99FFFFFF),
+                    0.00f to Color.White.copy(alpha = topAlpha),
+                    0.50f to Color(0xFFF6F4FA).copy(alpha = midAlpha),
+                    1.00f to Color.White.copy(alpha = topAlpha),
                 ),
             )
         }
     }
 
-    // Crisp gleaming liquid-glass specular rim border
-    val lensRimBrush = remember(isDark) {
+    val dockBorderBrush = remember(isDark) {
         Brush.verticalGradient(
             colors = if (isDark) {
                 listOf(
-                    Color(0xE6FFFFFF),
-                    Color(0x55C4B5FD),
-                    Color(0x337C3AED),
-                    Color(0xCCF0ABFC),
+                    Color.White.copy(alpha = 0.45f),
+                    Color(0xFFA855F7).copy(alpha = 0.28f),
+                    Color(0xFFE9D5FF).copy(alpha = 0.34f),
                 )
             } else {
                 listOf(
-                    Color(0xFFFFFFFF),
-                    Color(0x889333EA),
-                    Color(0x667C3AED),
-                    Color(0xFFFFFFFF),
+                    Color.White.copy(alpha = 0.94f),
+                    Color(0xFFCBD5E1).copy(alpha = 0.42f),
+                    Color.White.copy(alpha = 0.86f),
                 )
             },
         )
     }
 
-    val topRefractionBrush = remember {
+    val dockTopSheenBrush = remember(isDark) {
         Brush.verticalGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.38f),
+                Color.White.copy(alpha = if (isDark) 0.14f else 0.44f),
                 Color.Transparent,
             ),
         )
     }
-    val bottomRefractionBrush = remember {
+
+    // Inner nested frosted bubble fill (bright pearlescent pill in Light, luminous smoked crystal in Dark)
+    val bubbleFillBrush = remember(isDark) {
+        if (isDark) {
+            Brush.verticalGradient(
+                colorStops = arrayOf(
+                    0.00f to Color(0xFFE9D5FF).copy(alpha = 0.30f),
+                    0.45f to Color(0xFF33235C).copy(alpha = 0.72f),
+                    1.00f to Color(0xFF4C1D95).copy(alpha = 0.56f),
+                ),
+            )
+        } else {
+            Brush.verticalGradient(
+                colorStops = arrayOf(
+                    0.00f to Color.White.copy(alpha = 0.86f),
+                    0.52f to Color(0xFFE8E6F2).copy(alpha = 0.72f),
+                    1.00f to Color(0xFFF3F1FA).copy(alpha = 0.82f),
+                ),
+            )
+        }
+    }
+
+    val bubbleRimBrush = remember(isDark) {
+        Brush.verticalGradient(
+            colors = if (isDark) {
+                listOf(
+                    Color.White.copy(alpha = 0.72f),
+                    Color(0xFFC4B5FD).copy(alpha = 0.28f),
+                    Color(0xFFF0ABFC).copy(alpha = 0.54f),
+                )
+            } else {
+                listOf(
+                    Color.White,
+                    Color.Black.copy(alpha = 0.08f),
+                    Color.White.copy(alpha = 0.88f),
+                )
+            },
+        )
+    }
+
+    val bubbleTopSheenBrush = remember(isDark) {
         Brush.verticalGradient(
             colors = listOf(
+                Color.White.copy(alpha = if (isDark) 0.28f else 0.55f),
                 Color.Transparent,
-                Color(0xFFF0ABFC).copy(alpha = 0.30f),
             ),
         )
     }
 
-    val bgColor = AppTheme.colors.background
-    val bottomEdgeFade = remember(bgColor) {
-        Brush.verticalGradient(
-            colorStops = arrayOf(
-                0.00f to Color.Transparent,
-                0.55f to bgColor.copy(alpha = 0.55f),
-                1.00f to bgColor.copy(alpha = 0.90f),
-            ),
-        )
-    }
-
-    val activeIconColor = if (isDark) Color.White else Color(0xFF4C1D95)
-    val inactiveIconColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val activeLabelColor = if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
+    // Crisp iOS 26 contrast palette: vivid violet active tab + crisp near-black/silver inactive tabs
+    val activeIconColor = if (isDark) Color.White else Color(0xFF6D28D9)
+    val activeLabelColor = if (isDark) Color(0xFFF3E8FF) else Color(0xFF6D28D9)
+    val inactiveIconColor = if (isDark) Color(0xFFD1D5DB) else Color(0xFF111827)
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(bottomEdgeFade)
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .height(78.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .height(dockHeightDp),
         contentAlignment = Alignment.Center,
     ) {
-        // 1. SLEEK FLOATING PILL DOCK BASE (56.dp tall — glass lens protrudes gracefully above & below)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(dockHeightDp)
-                .shadow(
-                    elevation = if (isDark) 18.dp else 12.dp,
-                    shape = dockShape,
-                    ambientColor = Color(0xFF05040D).copy(alpha = if (isDark) 0.80f else 0.16f),
-                    spotColor = Color(0xFF7C3AED).copy(alpha = if (isDark) 0.30f else 0.20f),
-                )
-                .clip(dockShape)
-                .background(dockFillColor)
-                .border(width = 1.dp, brush = dockBorderBrush, shape = dockShape),
+        // 1. LIVE-BLURRED FLOATING CAPSULE DOCK BASE (64.dp full pill)
+        FrostedGlassCapsuleSurface(
+            shape = dockShape,
+            backdropLayer = backdropLayer,
+            tintBrush = dockTintBrush,
+            borderBrush = dockBorderBrush,
+            topSheenBrush = dockTopSheenBrush,
+            borderWidth = 1.2.dp,
+            shadowElevation = if (isDark) 18.dp else 14.dp,
+            isDark = isDark,
+            blurRadius = 26.dp,
+            modifier = Modifier.fillMaxSize(),
         )
 
-        // 2. INTERACTIVE CONTENT & OVERSIZED LIQUID GLASS LENS CONTAINER
+        // 2. NESTED STADIUM BUBBLE & INTERACTIVE TAB CONTENT CONTAINER (4.dp concentric inset)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 6.dp)
+                .padding(4.dp)
                 .onGloballyPositioned { coordinates ->
                     rowWidthPx = coordinates.size.width.toFloat()
                 }
@@ -993,7 +1107,7 @@ fun IosLiquidGlassBottomNav(
                         isActivelyDragging = false
                         hoveredIndex = targetTabIdx
 
-                        // On initial press down, glide lens swiftly toward tapped tab without snapping cursor inside the same slot
+                        // On initial press down, glide nested bubble smoothly to tapped tab
                         val downJob: Job = coroutineScope.launch {
                             lensPos.animateTo(
                                 targetValue = targetTabIdx.toFloat(),
@@ -1029,12 +1143,11 @@ fun IosLiquidGlassBottomNav(
                                     // Continuous sub-pixel position with smooth asymptotic iOS rubber-banding at edges
                                     val rawIdx = (currentX / slotW) - 0.5f
                                     val continuousIdx = when {
-                                        rawIdx < 0f -> -0.30f * (1f - 1f / (1f + abs(rawIdx) * 2.2f))
-                                        rawIdx > tabs.lastIndex -> tabs.lastIndex + 0.30f * (1f - 1f / (1f + (rawIdx - tabs.lastIndex) * 2.2f))
+                                        rawIdx < 0f -> -0.22f * (1f - 1f / (1f + abs(rawIdx) * 2.4f))
+                                        rawIdx > tabs.lastIndex -> tabs.lastIndex + 0.22f * (1f - 1f / (1f + (rawIdx - tabs.lastIndex) * 2.4f))
                                         else -> rawIdx
                                     }
 
-                                    // Immediate frame-locked snap with exponential micro-smoothing eliminates 1-frame coroutine lag
                                     val instantVel = (velocityTracker.calculateVelocity().x / slotW).coerceIn(-14f, 14f)
                                     activeDragVelocitySlots = (activeDragVelocitySlots * 0.55f) + (instantVel * 0.45f)
                                     val smoothedPos = (lensPos.value * 0.18f) + (continuousIdx * 0.82f)
@@ -1089,58 +1202,50 @@ fun IosLiquidGlassBottomNav(
                 },
             contentAlignment = Alignment.CenterStart,
         ) {
-            // 2A. OVERSIZED FLOATING LIQUID GLASS MAGNIFYING LENS (100% GPU sub-pixel translationX!)
-            if (rowWidthPx > 0f) {
+            // 2A. NESTED STADIUM CAPSULE SELECTION BUBBLE (Concentric CircleShape pill!)
+            if (rowWidthPx > 0f && tabs.size > 1) {
                 Box(
                     modifier = Modifier
-                        .width(pillWidthDp)
-                        .height(pillHeightDp)
+                        .width(bubbleWidthDp)
+                        .height(innerBubbleHeightDp)
                         .graphicsLayer {
                             val currentPos = lensPos.value
-                            val xPx = (currentPos * tabSlotWidthPx) + ((tabSlotWidthPx - pillWidthPx) / 2f)
+                            val xPx = (currentPos / tabs.lastIndex.toFloat()) * maxBubbleTravelPx
                             val targetPos = (if (isPressed) hoveredIndex else settledTabIndex).toFloat()
                             val motionSpeed = if (isActivelyDragging) {
-                                (abs(activeDragVelocitySlots) * 0.022f)
+                                (abs(activeDragVelocitySlots) * 0.020f)
                             } else {
-                                abs(targetPos - currentPos) * 0.18f
+                                abs(targetPos - currentPos) * 0.16f
                             }
-                            val stretch = motionSpeed.coerceIn(0f, 0.22f)
+                            val stretch = motionSpeed.coerceIn(0f, 0.18f)
                             val directionalTilt = if (isActivelyDragging) {
-                                (activeDragVelocitySlots * 0.22f).coerceIn(-2.4f, 2.4f)
+                                (activeDragVelocitySlots * 0.18f).coerceIn(-2.0f, 2.0f)
                             } else {
-                                ((targetPos - currentPos) * 1.4f).coerceIn(-2.0f, 2.0f)
+                                ((targetPos - currentPos) * 1.1f).coerceIn(-1.6f, 1.6f)
                             }
                             val baseScale = pressScaleState.value
                             translationX = xPx
                             scaleX = baseScale + stretch
-                            scaleY = baseScale - (stretch * 0.44f)
+                            scaleY = baseScale - (stretch * 0.36f)
                             rotationZ = directionalTilt
                         }
                         .shadow(
-                            elevation = if (isDark) 16.dp else 10.dp,
-                            shape = lensShape,
-                            ambientColor = Color(0xFF0A0618).copy(alpha = 0.65f),
-                            spotColor = Color(0xFFA855F7).copy(alpha = 0.65f),
+                            elevation = if (isDark) 10.dp else 5.dp,
+                            shape = bubbleShape,
+                            ambientColor = Color.Black.copy(alpha = if (isDark) 0.45f else 0.14f),
+                            spotColor = if (isDark) Color(0xFFA855F7).copy(alpha = 0.48f) else Color.Black.copy(alpha = 0.14f),
                         )
-                        .clip(lensShape)
-                        .background(lensFillBrush)
-                        .border(width = 1.4.dp, brush = lensRimBrush, shape = lensShape),
+                        .clip(bubbleShape)
+                        .background(bubbleFillBrush)
+                        .border(width = 1.1.dp, brush = bubbleRimBrush, shape = bubbleShape),
                 ) {
-                    // Top crystal meniscus highlight
+                    // Subtle glossy curved upper highlight inside the stadium pill
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(14.dp)
                             .align(Alignment.TopCenter)
-                            .background(topRefractionBrush),
-                    )
-                    // Bottom purple-magenta refractive glow crescent
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(14.dp)
-                            .align(Alignment.BottomCenter)
-                            .background(bottomRefractionBrush),
+                            .background(bubbleTopSheenBrush),
                     )
                 }
             }
@@ -1165,7 +1270,7 @@ fun IosLiquidGlassBottomNav(
                         label = "BottomNavLabelTint_$name",
                     )
                     val labelAlphaState = animateFloatAsState(
-                        targetValue = if (isActive) 1f else 0.70f,
+                        targetValue = if (isActive) 1f else 0.85f,
                         animationSpec = tween(durationMillis = 160),
                         label = "LensLabelAlpha_$name",
                     )
@@ -1183,10 +1288,10 @@ fun IosLiquidGlassBottomNav(
                                 // Smooth GPU optical lift synced directly to the sub-pixel lens Animatable
                                 val currentLens = lensPos.value
                                 val proximity = (1f - abs(index.toFloat() - currentLens)).coerceIn(0f, 1f)
-                                val magScale = 1f + (proximity * 0.16f)
+                                val magScale = 1f + (proximity * 0.10f)
                                 scaleX = magScale
                                 scaleY = magScale
-                                translationY = (-2.5f.dp.toPx()) * proximity
+                                translationY = (-1.5f.dp.toPx()) * proximity
                             },
                         ) {
                             AnimatedNavVectorIcon(
@@ -1195,15 +1300,15 @@ fun IosLiquidGlassBottomNav(
                                 isActive = isActive,
                                 tint = animatedIconTint,
                                 isDark = isDark,
-                                sizeDp = 21,
+                                sizeDp = 22,
                             )
 
                             Spacer(modifier = Modifier.height(2.dp))
 
                             Text(
                                 text = name,
-                                fontSize = if (isActive) 10.5.sp else 9.5.sp,
-                                fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = if (isActive) 10.5.sp else 10.sp,
+                                fontWeight = if (isActive) FontWeight.Bold else FontWeight.SemiBold,
                                 color = animatedLabelTint,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -1397,6 +1502,7 @@ private fun AnimatedNavVectorIcon(
 @Composable
 fun DiaWellLiquidGlassNavRail(
     selectedTab: String,
+    backdropLayer: GraphicsLayer? = null,
     onHomeTabClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
@@ -1408,6 +1514,7 @@ fun DiaWellLiquidGlassNavRail(
     val isDark = AppTheme.colors.isDark
     val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
+    val hasLiveBlur = backdropLayer != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     val tabs = remember {
         listOf(
@@ -1459,19 +1566,77 @@ fun DiaWellLiquidGlassNavRail(
     }
 
     val pressScaleState = animateFloatAsState(
-        targetValue = if (isPressed) 1.08f else 1.0f,
+        targetValue = if (isPressed) 1.07f else 1.0f,
         animationSpec = spring(dampingRatio = 0.65f, stiffness = 460f),
         label = "RailLensPressScale",
     )
 
-    val pillSizeDp = 50.dp
+    val pillSizeDp = 56.dp
     val pillSizePx = with(density) { pillSizeDp.toPx() }
     val touchSlopPx = with(density) { 8.dp.toPx() }
-    val slotHeightPx = if (tabs.isNotEmpty() && columnHeightPx > 0f) columnHeightPx / tabs.size.toFloat() else 0f
+    val maxRailTravelPx = (columnHeightPx - pillSizePx).coerceAtLeast(0f)
 
-    val activeIconColor = if (isDark) Color.White else Color(0xFF4C1D95)
-    val inactiveIconColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val activeLabelColor = if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
+    val activeIconColor = if (isDark) Color.White else Color(0xFF6D28D9)
+    val activeLabelColor = if (isDark) Color(0xFFF3E8FF) else Color(0xFF6D28D9)
+    val inactiveIconColor = if (isDark) Color(0xFFD1D5DB) else Color(0xFF111827)
+
+    val railTintBrush = remember(isDark, hasLiveBlur) {
+        if (isDark) {
+            val topAlpha = if (hasLiveBlur) 0.50f else 0.88f
+            val midAlpha = if (hasLiveBlur) 0.62f else 0.94f
+            Brush.verticalGradient(
+                listOf(
+                    Color(0xFF231D3A).copy(alpha = topAlpha),
+                    Color(0xFF141124).copy(alpha = midAlpha),
+                    Color(0xFF1B1530).copy(alpha = topAlpha + 0.04f),
+                )
+            )
+        } else {
+            val topAlpha = if (hasLiveBlur) 0.54f else 0.92f
+            val midAlpha = if (hasLiveBlur) 0.44f else 0.88f
+            Brush.verticalGradient(
+                listOf(
+                    Color.White.copy(alpha = topAlpha),
+                    Color(0xFFF6F4FA).copy(alpha = midAlpha),
+                    Color.White.copy(alpha = topAlpha),
+                )
+            )
+        }
+    }
+    val railBorderBrush = remember(isDark) {
+        Brush.verticalGradient(
+            colors = if (isDark) listOf(Color.White.copy(alpha = 0.45f), Color(0xFFA855F7).copy(alpha = 0.28f), Color(0xFFE9D5FF).copy(alpha = 0.34f))
+            else listOf(Color.White.copy(alpha = 0.94f), Color(0xFFCBD5E1).copy(alpha = 0.42f), Color.White.copy(alpha = 0.86f))
+        )
+    }
+    val railTopSheenBrush = remember(isDark) {
+        Brush.verticalGradient(listOf(Color.White.copy(alpha = if (isDark) 0.14f else 0.44f), Color.Transparent))
+    }
+    val railBubbleFill = remember(isDark) {
+        if (isDark) {
+            Brush.verticalGradient(
+                listOf(
+                    Color(0xFFE9D5FF).copy(alpha = 0.30f),
+                    Color(0xFF33235C).copy(alpha = 0.72f),
+                    Color(0xFF4C1D95).copy(alpha = 0.56f),
+                )
+            )
+        } else {
+            Brush.verticalGradient(
+                listOf(
+                    Color.White.copy(alpha = 0.86f),
+                    Color(0xFFE8E6F2).copy(alpha = 0.72f),
+                    Color(0xFFF3F1FA).copy(alpha = 0.82f),
+                )
+            )
+        }
+    }
+    val railBubbleRim = remember(isDark) {
+        Brush.verticalGradient(
+            if (isDark) listOf(Color.White.copy(alpha = 0.72f), Color(0xFFC4B5FD).copy(alpha = 0.28f), Color(0xFFF0ABFC).copy(alpha = 0.54f))
+            else listOf(Color.White, Color.Black.copy(alpha = 0.08f), Color.White.copy(alpha = 0.88f))
+        )
+    }
 
     Box(
         modifier = modifier
@@ -1486,29 +1651,26 @@ fun DiaWellLiquidGlassNavRail(
         Box(
             modifier = Modifier
                 .fillMaxHeight()
-                .width(64.dp)
-                .shadow(
-                    elevation = if (isDark) 16.dp else 10.dp,
-                    shape = RoundedCornerShape(28.dp),
-                    ambientColor = Color(0xFF05040D).copy(alpha = if (isDark) 0.80f else 0.16f),
-                    spotColor = Color(0xFF7C3AED).copy(alpha = if (isDark) 0.30f else 0.20f),
-                )
-                .clip(RoundedCornerShape(28.dp))
-                .background(if (isDark) Color(0xDE141124) else Color(0xDCFFFFFF))
-                .border(
-                    width = 1.dp,
-                    brush = Brush.verticalGradient(
-                        colors = if (isDark) listOf(Color(0x45FFFFFF), Color(0x38A855F7), Color(0x45FFFFFF))
-                        else listOf(Color(0x337C3AED), Color(0x18000000), Color(0x337C3AED))
-                    ),
-                    shape = RoundedCornerShape(28.dp)
-                )
-                .padding(vertical = 12.dp),
+                .width(64.dp),
             contentAlignment = Alignment.Center,
         ) {
+            FrostedGlassCapsuleSurface(
+                shape = CircleShape,
+                backdropLayer = backdropLayer,
+                tintBrush = railTintBrush,
+                borderBrush = railBorderBrush,
+                topSheenBrush = railTopSheenBrush,
+                borderWidth = 1.2.dp,
+                shadowElevation = if (isDark) 16.dp else 12.dp,
+                isDark = isDark,
+                blurRadius = 26.dp,
+                modifier = Modifier.fillMaxSize(),
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(vertical = 4.dp, horizontal = 4.dp)
                     .onGloballyPositioned { coords ->
                         columnHeightPx = coords.size.height.toFloat()
                     }
@@ -1560,8 +1722,8 @@ fun DiaWellLiquidGlassNavRail(
                                         change.consume()
                                         val rawIdx = (currentY / slotH) - 0.5f
                                         val continuousIdx = when {
-                                            rawIdx < 0f -> -0.25f * (1f - 1f / (1f + abs(rawIdx) * 2.2f))
-                                            rawIdx > tabs.lastIndex -> tabs.lastIndex + 0.25f * (1f - 1f / (1f + (rawIdx - tabs.lastIndex) * 2.2f))
+                                            rawIdx < 0f -> -0.22f * (1f - 1f / (1f + abs(rawIdx) * 2.4f))
+                                            rawIdx > tabs.lastIndex -> tabs.lastIndex + 0.22f * (1f - 1f / (1f + (rawIdx - tabs.lastIndex) * 2.4f))
                                             else -> rawIdx
                                         }
                                         val instantVel = (velocityTracker.calculateVelocity().y / slotH).coerceIn(-12f, 12f)
@@ -1612,22 +1774,27 @@ fun DiaWellLiquidGlassNavRail(
                     },
                 contentAlignment = Alignment.TopCenter,
             ) {
-                if (columnHeightPx > 0f) {
-                    val railLensShape = remember { RoundedCornerShape(16.dp) }
+                if (columnHeightPx > 0f && tabs.size > 1) {
                     Box(
                         modifier = Modifier
                             .size(pillSizeDp)
                             .graphicsLayer {
                                 val currentPos = railPos.value
-                                val yPx = (currentPos * slotHeightPx) + ((slotHeightPx - pillSizePx) / 2f)
-                                val stretch = (if (isActivelyDragging) abs(activeRailDragVel) * 0.02f else abs(railPos.velocity) * 0.02f).coerceIn(0f, 0.16f)
+                                val yPx = (currentPos / tabs.lastIndex.toFloat()) * maxRailTravelPx
+                                val stretch = (if (isActivelyDragging) abs(activeRailDragVel) * 0.018f else abs(railPos.velocity) * 0.018f).coerceIn(0f, 0.14f)
                                 translationY = yPx
                                 scaleY = pressScaleState.value + stretch
-                                scaleX = pressScaleState.value - (stretch * 0.35f)
+                                scaleX = pressScaleState.value - (stretch * 0.32f)
                             }
-                            .clip(railLensShape)
-                            .background(if (isDark) Color(0x45A855F7) else Color(0x2E7C3AED))
-                            .border(1.2.dp, Color(0xFFA855F7), railLensShape),
+                            .shadow(
+                                elevation = if (isDark) 10.dp else 5.dp,
+                                shape = CircleShape,
+                                ambientColor = Color.Black.copy(alpha = if (isDark) 0.45f else 0.14f),
+                                spotColor = if (isDark) Color(0xFFA855F7).copy(alpha = 0.48f) else Color.Black.copy(alpha = 0.14f),
+                            )
+                            .clip(CircleShape)
+                            .background(railBubbleFill)
+                            .border(1.1.dp, railBubbleRim, CircleShape),
                     )
                 }
 
@@ -1658,7 +1825,7 @@ fun DiaWellLiquidGlassNavRail(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.graphicsLayer {
                                     val proximity = (1f - abs(index.toFloat() - railPos.value)).coerceIn(0f, 1f)
-                                    val scale = 1f + (proximity * 0.12f)
+                                    val scale = 1f + (proximity * 0.10f)
                                     scaleX = scale
                                     scaleY = scale
                                 },
@@ -1669,13 +1836,13 @@ fun DiaWellLiquidGlassNavRail(
                                     isActive = isActive,
                                     tint = animatedIconTint,
                                     isDark = isDark,
-                                    sizeDp = 20,
+                                    sizeDp = 21,
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = name,
                                     fontSize = 9.sp,
-                                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+                                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.SemiBold,
                                     color = animatedLabelTint,
                                     maxLines = 1,
                                 )
