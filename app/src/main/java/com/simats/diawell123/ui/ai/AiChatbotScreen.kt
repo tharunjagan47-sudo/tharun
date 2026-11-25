@@ -1,5 +1,11 @@
 package com.simats.diawell123.ui.ai
 
+import android.graphics.Matrix
+import android.graphics.SurfaceTexture
+import android.media.MediaPlayer
+import android.net.Uri
+import android.view.Surface
+import android.view.TextureView
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -19,9 +25,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,10 +49,12 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -160,16 +173,6 @@ fun DivaTalkingAvatar(
         label = "DivaAmbientWavePhase",
     )
 
-    val gesturePhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 6400, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "DivaHandGesturePhase",
-    )
-
     // Ultra-responsive speech mouth interpolation (52ms) for crisp syllable sync
     val smoothOpen by animateFloatAsState(
         targetValue = if (isSpeaking) mouthOpenness.coerceIn(0f, 1f) else 0f,
@@ -283,7 +286,14 @@ fun DivaTalkingAvatar(
             }
         }
 
-        // 2. UNIFIED ANIMATED ROBOT STAGE (Body + Eyes + Live Synced Mouth + DW Chest Orb move together!)
+        var isVideoReady by remember { mutableStateOf(false) }
+        val videoAlpha by animateFloatAsState(
+            targetValue = if (fullBody && isSpeaking && isVideoReady) 1f else 0f,
+            animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing),
+            label = "DivaSpeakingVideoAlpha",
+        )
+
+        // 2. UNIFIED ANIMATED ROBOT STAGE (Idle Cutout <-> Synced 3D Gesture Video + DW Chest Orb)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -292,7 +302,7 @@ fun DivaTalkingAvatar(
                     translationY = baseFloat.dp.toPx()
 
                     val idleSway = sin(swayPhase) * 0.45f
-                    val talkSway = sin(swayPhase) * (speakingFactor * 1.35f)
+                    val talkSway = sin(swayPhase) * (speakingFactor * 0.85f)
                     rotationZ = idleSway + talkSway
 
                     val breath = sin(floatPhase + 0.7f) * 0.006f
@@ -302,59 +312,33 @@ fun DivaTalkingAvatar(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            // 2A. Unified Articulated Left & Right Arms (zero seam, zero jitter, single shoulder pivot)
             if (fullBody) {
-                val sinG = sin(gesturePhase)
-                val rightPresent = maxOf(0f, sinG).let { it * it }
-                val leftPresent = maxOf(0f, -sinG).let { it * it }
-                val dualChest = 0.5f * (1f + cos(gesturePhase * 2f))
-
-                // Positive rotationZ = clockwise -> Left arm outward (+), Right arm inward (+)
-                val leftArmDeg = sin(floatPhase) * 2.2f +
-                    speakingFactor * (leftPresent * 32f - dualChest * 12f - rightPresent * 6f)
-                val rightArmDeg = -sin(floatPhase) * 2.2f +
-                    speakingFactor * (-rightPresent * 32f + dualChest * 12f + leftPresent * 6f)
-
-                val leftLiftDp = speakingFactor * (leftPresent * 4.5f + dualChest * 2.5f)
-                val rightLiftDp = speakingFactor * (rightPresent * 4.5f + dualChest * 2.5f)
-
-                Image(
-                    painter = painterResource(id = R.drawable.diva_left_arm),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            rotationZ = leftArmDeg
-                            translationY = -leftLiftDp.dp.toPx()
-                            transformOrigin = TransformOrigin(0.295f, 0.505f)
-                        },
-                )
-
-                Image(
-                    painter = painterResource(id = R.drawable.diva_right_arm),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            rotationZ = rightArmDeg
-                            translationY = -rightLiftDp.dp.toPx()
-                            transformOrigin = TransformOrigin(0.705f, 0.505f)
-                        },
+                DivaSpeakingVideoLayer(
+                    isSpeaking = isSpeaking,
+                    alpha = videoAlpha,
+                    onVideoReady = { isVideoReady = true },
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
-            // Base High-Res DIVA Robot Torso & Head Illustration (arms animated separately)
+            // Base High-Res DIVA Robot Illustration (crossfades smoothly when 3D gesture video speaks)
             Image(
-                painter = painterResource(id = if (fullBody) R.drawable.diva_body_cutout else R.drawable.diva_avatar),
+                painter = painterResource(id = if (fullBody) R.drawable.diva_robot_cutout else R.drawable.diva_avatar),
                 contentDescription = "DIVA Assistant",
                 contentScale = if (fullBody) ContentScale.Fit else ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        alpha = 1f - videoAlpha
+                    },
             )
 
             // Live Procedural Face Visor Animation (Blinking Eyes + Speech-Synced Glowing Cyan Mouth)
-            Canvas(modifier = Modifier.fillMaxSize()) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = 1f - videoAlpha },
+            ) {
                 val w = size.width
                 val h = size.height
                 val visorDark = Color(0xFF0A111D)
@@ -570,6 +554,191 @@ fun DivaTalkingAvatar(
             chestOverlay?.invoke(this)
         }
     }
+}
+
+/**
+ * Hardware-accelerated looping video layer for DIVA's speaking gesture clip.
+ * Pre-prepares MediaPlayer on mount, mutes embedded audio, crops out bottom subtitles
+ * and corner watermark, and crossfades smoothly with the idle cutout.
+ */
+@Composable
+private fun DivaSpeakingVideoLayer(
+    isSpeaking: Boolean,
+    alpha: Float,
+    onVideoReady: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val latestIsSpeaking by rememberUpdatedState(isSpeaking)
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    var isPrepared by remember { mutableStateOf(false) }
+    var videoWidth by remember { mutableIntStateOf(16) }
+    var videoHeight by remember { mutableIntStateOf(9) }
+
+    LaunchedEffect(isSpeaking, isPrepared) {
+        val player = mediaPlayer ?: return@LaunchedEffect
+        if (!isPrepared) return@LaunchedEffect
+        try {
+            if (isSpeaking) {
+                if (!player.isPlaying) {
+                    player.start()
+                }
+            } else {
+                if (player.isPlaying) {
+                    player.pause()
+                }
+                player.seekTo(0)
+            }
+        } catch (_: IllegalStateException) {
+            // Ignore transient state during lifecycle teardown
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            try {
+                mediaPlayer?.stop()
+            } catch (_: IllegalStateException) {
+            }
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .graphicsLayer { this.alpha = alpha },
+    ) {
+        AndroidView(
+            factory = { ctx ->
+                TextureView(ctx).apply {
+                    val textureView = this
+                    isOpaque = false
+                    surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+                        override fun onSurfaceTextureAvailable(
+                            surfaceTexture: SurfaceTexture,
+                            width: Int,
+                            height: Int,
+                        ) {
+                            val player = MediaPlayer().apply {
+                                val videoUri = Uri.parse("android.resource://${ctx.packageName}/${R.raw.diva_voice_motion}")
+                                setDataSource(ctx, videoUri)
+                                setSurface(Surface(surfaceTexture))
+                                isLooping = true
+                                setVolume(0f, 0f)
+                                setOnVideoSizeChangedListener { _, vw, vh ->
+                                    if (vw > 0 && vh > 0) {
+                                        videoWidth = vw
+                                        videoHeight = vh
+                                        applyVideoCenterCropMatrix(
+                                            textureView = textureView,
+                                            viewWidth = width,
+                                            viewHeight = height,
+                                            videoWidth = vw,
+                                            videoHeight = vh,
+                                        )
+                                    }
+                                }
+                                setOnPreparedListener { mp ->
+                                    isPrepared = true
+                                    onVideoReady()
+                                    applyVideoCenterCropMatrix(
+                                        textureView = textureView,
+                                        viewWidth = width,
+                                        viewHeight = height,
+                                        videoWidth = videoWidth,
+                                        videoHeight = videoHeight,
+                                    )
+                                    if (latestIsSpeaking) {
+                                        mp.start()
+                                    } else {
+                                        mp.seekTo(0)
+                                    }
+                                }
+                                prepareAsync()
+                            }
+                            mediaPlayer = player
+                        }
+
+                        override fun onSurfaceTextureSizeChanged(
+                            surfaceTexture: SurfaceTexture,
+                            width: Int,
+                            height: Int,
+                        ) {
+                            applyVideoCenterCropMatrix(
+                                textureView = textureView,
+                                viewWidth = width,
+                                viewHeight = height,
+                                videoWidth = videoWidth,
+                                videoHeight = videoHeight,
+                            )
+                        }
+
+                        override fun onSurfaceTextureDestroyed(surfaceTexture: SurfaceTexture): Boolean {
+                            try {
+                                mediaPlayer?.stop()
+                            } catch (_: IllegalStateException) {
+                            }
+                            mediaPlayer?.release()
+                            mediaPlayer = null
+                            isPrepared = false
+                            return true
+                        }
+
+                        override fun onSurfaceTextureUpdated(surfaceTexture: SurfaceTexture) = Unit
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        // Radial dark vignette so the video edges blend seamlessly into #0A0D1A
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val radius = size.minDimension * 0.5f
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colorStops = arrayOf(
+                        0.00f to Color.Transparent,
+                        0.60f to Color.Transparent,
+                        0.85f to Color(0xB80A0D1A),
+                        1.00f to Color(0xFF0A0D1A),
+                    ),
+                    center = Offset(size.width * 0.5f, size.height * 0.5f),
+                    radius = radius,
+                ),
+                radius = radius,
+            )
+        }
+    }
+}
+
+private fun applyVideoCenterCropMatrix(
+    textureView: TextureView,
+    viewWidth: Int,
+    viewHeight: Int,
+    videoWidth: Int,
+    videoHeight: Int,
+) {
+    if (viewWidth <= 0 || viewHeight <= 0 || videoWidth <= 0 || videoHeight <= 0) return
+
+    val scale = maxOf(
+        viewWidth.toFloat() / videoWidth.toFloat(),
+        viewHeight.toFloat() / videoHeight.toFloat(),
+    ) * 1.18f
+
+    val scaledWidth = videoWidth * scale
+    val scaledHeight = videoHeight * scale
+
+    // Center horizontally and shift slightly upward so bottom subtitles & watermark are cropped out
+    val dx = (viewWidth - scaledWidth) * 0.5f
+    val dy = viewHeight * 0.50f - scaledHeight * 0.44f
+
+    val matrix = Matrix().apply {
+        setScale(scaledWidth / viewWidth.toFloat(), scaledHeight / viewHeight.toFloat())
+        postTranslate(dx, dy)
+    }
+    textureView.setTransform(matrix)
 }
 
 private fun DrawScope.drawSparkleStar(center: Offset, radius: Float, color: Color) {
