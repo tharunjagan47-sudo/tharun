@@ -928,7 +928,7 @@ fun IosLiquidGlassBottomNav(
         )
     }
 
-    val bgColor = if (AppTheme.colors.isDark) Color(0xFF000000) else AppTheme.colors.background
+    val bgColor = AppTheme.colors.background
     val bottomEdgeFade = remember(bgColor) {
         Brush.verticalGradient(
             colorStops = arrayOf(
@@ -1157,7 +1157,7 @@ fun IosLiquidGlassBottomNav(
                                 color = if (isActive) {
                                     if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
                                 } else {
-                                    Color(0xFF64748B)
+                                    if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
                                 },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -1282,7 +1282,7 @@ fun DiaWellLiquidGlassNavRail(
                                 fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isActive) {
                                     if (isDark) Color(0xFFF3E8FF) else Color(0xFF4C1D95)
-                                } else Color(0xFF64748B),
+                                } else if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B),
                                 maxLines = 1,
                             )
                         }
@@ -1309,10 +1309,12 @@ fun MetricCard(
     onActionClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val actualCardBg = if (AppTheme.colors.isDark) AppTheme.colors.cardBackground else cardBg
-    val actualBorder = if (AppTheme.colors.isDark) AppTheme.colors.border else borderColor
-    val actualStatusBg = if (AppTheme.colors.isDark) statusColor.copy(alpha = 0.18f) else statusBg
-    val actualActionColor = if (AppTheme.colors.isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7)
+    val isDark = AppTheme.colors.isDark
+    val actualCardBg = if (isDark) AppTheme.colors.cardBackground else cardBg
+    val actualBorder = if (isDark) AppTheme.colors.border else borderColor
+    val actualStatusColor = if (isDark) brightenDarkStatusColor(statusColor) else statusColor
+    val actualStatusBg = if (isDark) actualStatusColor.copy(alpha = 0.18f) else statusBg
+    val actualActionColor = if (isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7)
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
@@ -1357,7 +1359,7 @@ fun MetricCard(
                             text = statusText,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = statusColor,
+                            color = actualStatusColor,
                         )
                     }
                 }
@@ -1956,6 +1958,17 @@ fun TargetEditDialog(
                 }
             }
         }
+    }
+}
+
+private fun brightenDarkStatusColor(color: Color): Color {
+    return when (color) {
+        Color(0xFF2E7D32), Color(0xFF1B5E20), Color(0xFF047857) -> Color(0xFF6EE7B7)
+        Color(0xFFE65100), Color(0xFFD97706) -> Color(0xFFFCD34D)
+        Color(0xFFC62828), Color(0xFFD32F2F) -> Color(0xFFFCA5A5)
+        Color(0xFF1565C0), Color(0xFF0284C7) -> Color(0xFF7DD3FC)
+        Color(0xFF6B7280) -> Color(0xFFCBD5E1)
+        else -> color
     }
 }
 
