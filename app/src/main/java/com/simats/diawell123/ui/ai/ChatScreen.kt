@@ -21,7 +21,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,7 +53,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.DirectionsWalk
 import androidx.compose.material.icons.rounded.Grain
 import androidx.compose.material.icons.rounded.Info
@@ -89,7 +87,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -116,7 +113,6 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
-import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.ui.theme.AppTheme
 
 /**
@@ -534,27 +530,6 @@ fun ChatScreen(
                                         startVoiceInput()
                                     }
                                 )
-                                DropdownMenuItem(
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Rounded.DeleteSweep,
-                                            contentDescription = null,
-                                            tint = AppTheme.colors.errorText,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    },
-                                    text = {
-                                        Text(
-                                            text = "Clear Conversation",
-                                            color = AppTheme.colors.errorText,
-                                            fontSize = 13.sp
-                                        )
-                                    },
-                                    onClick = {
-                                        showOptionsMenu = false
-                                        viewModel.resetChat()
-                                    }
-                                )
                             }
                         }
                     }
@@ -926,84 +901,51 @@ fun ChatMessageItem(
     }
 
     if (isUser) {
-        // User Message: Adaptive rounded card with user avatar thumbnail
+        // User Message: Right-aligned message bubble without profile avatar
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .background(if (isDark) Color(0xFF1E2024) else AppTheme.colors.elevatedSurface)
-                .border(1.dp, if (isDark) Color.Transparent else AppTheme.colors.border, RoundedCornerShape(24.dp))
-                .padding(18.dp)
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.CenterEnd
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // Attached Image preview if present
-                if (!message.attachedImageUrl.isNullOrBlank()) {
-                    Box(
-                        modifier = Modifier
-                            .padding(bottom = 10.dp)
-                            .size(76.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(if (isDark) Color(0xFF2A2B32) else AppTheme.colors.cardBackground)
-                            .border(1.dp, Color(0x33A855F7), RoundedCornerShape(14.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.PhotoCamera,
-                            contentDescription = "Attached photo",
-                            tint = AppTheme.colors.primaryAccent,
-                            modifier = Modifier.size(28.dp)
-                        )
+            Box(
+                modifier = Modifier
+                    .widthIn(max = 310.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 20.dp, bottomEnd = 6.dp))
+                    .background(if (isDark) Color(0xFF1E2024) else AppTheme.colors.elevatedSurface)
+                    .border(
+                        1.dp,
+                        if (isDark) Color.Transparent else AppTheme.colors.border,
+                        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 20.dp, bottomEnd = 6.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Column {
+                    // Attached Image preview if present
+                    if (!message.attachedImageUrl.isNullOrBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 10.dp)
+                                .size(76.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (isDark) Color(0xFF2A2B32) else AppTheme.colors.cardBackground)
+                                .border(1.dp, Color(0x33A855F7), RoundedCornerShape(14.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.PhotoCamera,
+                                contentDescription = "Attached photo",
+                                tint = AppTheme.colors.primaryAccent,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
-                }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    // User's Prompt Text (wraps and expands)
                     Text(
                         text = message.text,
                         fontSize = 15.5.sp,
                         color = AppTheme.colors.textPrimary,
                         lineHeight = 23.sp,
-                        fontWeight = FontWeight.Normal,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 14.dp)
+                        fontWeight = FontWeight.Normal
                     )
-
-                    // Top-Right User Avatar / Photo Thumbnail
-                    val profileBitmap = ProfileState.profileImageBitmap
-                    Box(
-                        modifier = Modifier
-                            .size(width = 54.dp, height = 66.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(if (isDark) Color(0xFF2A2B32) else AppTheme.colors.cardBackground)
-                            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (profileBitmap != null) {
-                            Image(
-                                bitmap = profileBitmap,
-                                contentDescription = "User Avatar",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Text(
-                                text = ProfileState.userName
-                                    .split(" ")
-                                    .mapNotNull { it.firstOrNull()?.toString() }
-                                    .take(2)
-                                    .joinToString("")
-                                    .ifEmpty { "ME" },
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isDark) Color(0xFFCBD5E1) else AppTheme.colors.primaryAccent
-                            )
-                        }
-                    }
                 }
             }
         }
