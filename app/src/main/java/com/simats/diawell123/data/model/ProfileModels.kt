@@ -301,4 +301,15 @@ data class UpdateProfilePicData(
     val profilePic: String? = null
 )
 
+data class RemoveProfilePhotoRequest(
+    @SerializedName("user_id")
+    val userId: Int,
+
+    @SerializedName("action")
+    val action: String = "remove",
+
+    @SerializedName("remove_photo")
+    val removePhoto: Boolean = true
+)
+
 
