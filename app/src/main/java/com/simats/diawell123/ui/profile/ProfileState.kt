@@ -376,6 +376,41 @@ object ProfileState {
     }
 
     /**
+     * Clears ONLY the active user's profile picture across memory, per-user disk cache, and SessionManager.
+     */
+    fun clearProfilePhoto(
+        context: Context? = null,
+        userId: Int? = null,
+        keepUploadLock: Boolean = false
+    ) {
+        val ctx = context?.applicationContext ?: appContext
+        val sessionManager = try {
+            SessionManager.getInstance()
+        } catch (_: Exception) {
+            ctx?.let { SessionManager.init(it) }
+        }
+        val effectiveUserId = userId?.takeIf { it > 0 }
+            ?: sessionManager?.getUserId()
+            ?: activeUserId
+
+        if (!keepUploadLock) {
+            isUploadingAvatar = false
+        }
+        loadedPhotoUrlForUser = null
+        profileImageBitmap = null
+
+        if (effectiveUserId != null && effectiveUserId > 0) {
+            sessionManager?.clearProfilePhoto(effectiveUserId)
+            deleteUserAvatarFile(effectiveUserId, ctx)
+        } else {
+            sessionManager?.clearProfilePhoto(null)
+        }
+        if (ctx != null) {
+            cleanupLegacySharedAvatar(ctx)
+        }
+    }
+
+    /**
      * Clears profile state on user logout.
      */
     fun clear(context: Context? = null) {
