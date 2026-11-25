@@ -457,7 +457,7 @@ fun IosLiquidGlassButton(
         initialValue = -1.2f,
         targetValue = 2.2f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2800, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 3400, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart,
         ),
         label = "shimmerProgress",
@@ -491,9 +491,9 @@ fun IosLiquidGlassButton(
                 brush = Brush.linearGradient(
                     colors = listOf(
                         Color.Transparent,
-                        Color.White.copy(alpha = 0.28f),
-                        Color.White.copy(alpha = 0.50f),
-                        Color.White.copy(alpha = 0.28f),
+                        Color.White.copy(alpha = 0.12f),
+                        Color.White.copy(alpha = 0.24f),
+                        Color.White.copy(alpha = 0.12f),
                         Color.Transparent,
                     ),
                     start = Offset(shimmerX - 80f, 0f),
