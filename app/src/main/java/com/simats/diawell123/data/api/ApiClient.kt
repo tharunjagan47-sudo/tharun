@@ -242,8 +242,11 @@ object ApiClient {
             }
 
             val requestPath = effectiveRequest.url.encodedPath
-            val isAuthEndpoint = requestPath.contains("login.php") || requestPath.contains("signup.php") || requestPath.contains("register.php")
-            if (response.code == 401 && !isAuthEndpoint) {
+            val isAuthEndpoint = requestPath.contains("login.php") ||
+                requestPath.contains("signup.php") ||
+                requestPath.contains("register.php") ||
+                requestPath.contains("logout.php")
+            if (response.code == 401 && !isAuthEndpoint && sm.isLoggedIn()) {
                 sm.clearSession(reason = "Your session expired on the server. Please log in again.")
             }
         }
