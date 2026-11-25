@@ -81,6 +81,10 @@ class SessionManager private constructor(context: Context) {
      */
     fun saveUserSession(user: UserData, cookie: String? = null) {
         val now = System.currentTimeMillis()
+        val previousUserId = prefs.getInt(KEY_USER_ID, -1)
+        if (user.userId != null && previousUserId != user.userId) {
+            com.simats.diawell123.ui.profile.ProfileState.clear()
+        }
         prefs.edit().apply {
             putBoolean(KEY_IS_LOGGED_IN, true)
             putBoolean(KEY_HAS_COMPLETED_ONBOARDING, true)
@@ -95,9 +99,19 @@ class SessionManager private constructor(context: Context) {
             putFloat(KEY_TARGET_GLUCOSE, user.targetGlucoseMgDl ?: -1f)
             putString(KEY_PROFILE_PHOTO, user.profilePhoto.orEmpty())
             putString(KEY_PROFILE_PHOTO_URL, user.profilePhotoUrl.orEmpty())
-            user.userId?.let { uid ->
-                user.profilePic?.takeIf { it.isNotBlank() }?.let { pic ->
-                    putString("pfp_$uid", pic)
+            val uid = user.userId
+            if (uid != null && uid > 0) {
+                val cleanEmail = user.email?.trim()?.lowercase().orEmpty()
+                val serverPic = user.profilePic?.takeIf { it.isNotBlank() }
+                if (serverPic != null) {
+                    putString("pfp_$uid", serverPic)
+                    if (cleanEmail.isNotBlank()) {
+                        putString("pfp_owner_$uid", cleanEmail)
+                    }
+                } else if (user.token != "offline_demo_token" && user.profilePhotoUrl.isNullOrBlank()) {
+                    // Authoritative server login/signup has no profile picture for this user: clear stale local cache
+                    remove("pfp_$uid")
+                    remove("pfp_owner_$uid")
                 }
             }
             putBoolean(KEY_IS_PROFILE_COMPLETED, user.isProfileCompleted ?: false)
@@ -109,6 +123,12 @@ class SessionManager private constructor(context: Context) {
             putLong(KEY_LAST_ACTIVE_TIMESTAMP, now)
             remove(KEY_EXPIRED_REASON)
             apply()
+        }
+        if (user.token != "offline_demo_token" &&
+            user.userId != null && user.userId > 0 &&
+            user.profilePic.isNullOrBlank() && user.profilePhotoUrl.isNullOrBlank()
+        ) {
+            com.simats.diawell123.ui.profile.ProfileState.deleteUserAvatarFile(user.userId)
         }
     }
 
@@ -204,16 +224,40 @@ class SessionManager private constructor(context: Context) {
         prefs.edit().putString(KEY_PROFILE_PHOTO, path).apply()
     }
 
-    fun saveUserPfp(userId: Int, base64: String) {
-        prefs.edit().putString("pfp_$userId", base64).apply()
+    fun saveUserPfp(userId: Int, base64: String, email: String? = null) {
+        if (userId <= 0 || base64.isBlank()) return
+        val ownerEmail = (email ?: prefs.getString(KEY_EMAIL, null))?.trim()?.lowercase().orEmpty()
+        prefs.edit().apply {
+            putString("pfp_$userId", base64)
+            if (ownerEmail.isNotBlank()) {
+                putString("pfp_owner_$userId", ownerEmail)
+            }
+            apply()
+        }
     }
 
-    fun getUserPfp(userId: Int): String? {
-        return prefs.getString("pfp_$userId", null)
+    fun getUserPfp(userId: Int, expectedEmail: String? = null): String? {
+        if (userId <= 0) return null
+        val base64 = prefs.getString("pfp_$userId", null)?.takeIf { it.isNotBlank() } ?: return null
+        if (isPfpOwnerMismatch(userId, expectedEmail)) {
+            clearUserPfp(userId)
+            return null
+        }
+        return base64
+    }
+
+    fun isPfpOwnerMismatch(userId: Int, expectedEmail: String? = null): Boolean {
+        if (userId <= 0) return true
+        val savedOwner = prefs.getString("pfp_owner_$userId", null)?.trim()?.lowercase().orEmpty()
+        val activeEmail = (expectedEmail ?: prefs.getString(KEY_EMAIL, null))?.trim()?.lowercase().orEmpty()
+        return savedOwner.isNotBlank() && activeEmail.isNotBlank() && savedOwner != activeEmail
     }
 
     fun clearUserPfp(userId: Int) {
-        prefs.edit().remove("pfp_$userId").apply()
+        prefs.edit()
+            .remove("pfp_$userId")
+            .remove("pfp_owner_$userId")
+            .apply()
     }
 
     fun getFullName(): String? = prefs.getString(KEY_FULL_NAME, null)
