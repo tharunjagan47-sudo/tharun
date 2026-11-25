@@ -66,6 +66,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.ui.components.ElementPopUpContainer
 import com.simats.diawell123.ui.components.FluidGlassCircleButton
+import com.simats.diawell123.ui.components.ShimmerCardList
+import com.simats.diawell123.ui.components.ShimmerPlaceholderBox
 import com.simats.diawell123.ui.diet.IosLiquidGlassButton
 import com.simats.diawell123.ui.diet.StyledBackButton
 import com.simats.diawell123.ui.home.IosLiquidGlassBottomNav
@@ -216,18 +218,10 @@ fun WeeklyReportScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 if (uiState.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = Color(0xFFA855F7),
-                            strokeWidth = 3.dp,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                    ShimmerPlaceholderBox(height = 160.dp, cornerRadius = 20.dp)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ShimmerCardList(count = 2, cardHeight = 68.dp)
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 // Glucose Overview Animated Pulse Line Box (Pops Up)
