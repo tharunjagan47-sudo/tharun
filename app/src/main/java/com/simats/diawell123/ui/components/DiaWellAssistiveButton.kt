@@ -36,7 +36,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DirectionsRun
@@ -437,7 +436,7 @@ private fun AssistiveTouchGlassMenu(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AssistiveMenuItem(
-                    icon = Icons.Rounded.AutoAwesome,
+                    iconResId = R.drawable.ic_nav_ai,
                     label = "DIVA AI",
                     badgeBrush = Brush.linearGradient(listOf(Color(0xFF7E22CE), Color(0xFFA855F7))),
                     isDark = isDark,
@@ -502,7 +501,8 @@ private fun AssistiveTouchGlassMenu(
 
 @Composable
 private fun AssistiveMenuItem(
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    iconResId: Int? = null,
     label: String,
     badgeBrush: Brush,
     isDark: Boolean,
@@ -535,12 +535,21 @@ private fun AssistiveMenuItem(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
+            if (iconResId != null) {
+                Icon(
+                    painter = painterResource(id = iconResId),
+                    contentDescription = label,
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp)
+                )
+            } else if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
