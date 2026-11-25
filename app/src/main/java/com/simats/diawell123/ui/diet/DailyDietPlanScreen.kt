@@ -250,7 +250,7 @@ fun DailyDietPlanScreen(
                                 modifier = Modifier
                                     .weight(0.95f)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFF2EFF6))
+                                    .background(if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF2EFF6))
                                     .clickable { onExploreFoodClick() }
                                     .padding(vertical = 9.dp),
                                 contentAlignment = Alignment.Center,
@@ -262,14 +262,14 @@ fun DailyDietPlanScreen(
                                     Icon(
                                         imageVector = Icons.Rounded.Search,
                                         contentDescription = null,
-                                        tint = Color(0xFF5B1761),
+                                        tint = if (AppTheme.colors.isDark) AppTheme.colors.primaryAccent else Color(0xFF5B1761),
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Text(
                                         text = "Explore",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF5B1761),
+                                        color = if (AppTheme.colors.isDark) AppTheme.colors.primaryAccent else Color(0xFF5B1761),
                                     )
                                 }
                             }
@@ -380,15 +380,15 @@ fun DailyDietPlanScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFF3CD))
-                            .border(1.dp, Color(0xFFFFC107), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.warningBg)
+                            .border(1.dp, AppTheme.colors.warningBorder, RoundedCornerShape(12.dp))
                             .padding(14.dp),
                     ) {
                         Text(
                             text = aiState.data!!.hypoglycemiaAlert!!,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF856404),
+                            color = AppTheme.colors.warningText,
                             lineHeight = 17.sp,
                         )
                     }
@@ -398,15 +398,15 @@ fun DailyDietPlanScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFEBEE))
-                            .border(1.dp, Color(0xFFE53935).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.errorBg)
+                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(12.dp))
                             .padding(12.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Rounded.Shield,
                                 contentDescription = null,
-                                tint = Color(0xFFC62828),
+                                tint = AppTheme.colors.errorText,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
@@ -415,12 +415,12 @@ fun DailyDietPlanScreen(
                                     text = "Hyperglycemia Stabilization Active (${currentGlucose.toInt()} mg/dL)",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFC62828),
+                                    color = AppTheme.colors.errorText,
                                 )
                                 Text(
                                     text = "Prioritized low-carbohydrate dishes (<10g) with high dietary fibre to safely stabilize your blood sugar.",
                                     fontSize = 11.sp,
-                                    color = Color(0xFF424242),
+                                    color = AppTheme.colors.textSecondary,
                                     lineHeight = 15.sp,
                                 )
                             }
@@ -432,15 +432,15 @@ fun DailyDietPlanScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFF3E0))
-                            .border(1.dp, Color(0xFFFB8C00).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .background(AppTheme.colors.warningBg)
+                            .border(1.dp, AppTheme.colors.warningBorder, RoundedCornerShape(12.dp))
                             .padding(12.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Rounded.InsertChart,
                                 contentDescription = null,
-                                tint = Color(0xFFFB8C00),
+                                tint = AppTheme.colors.warningText,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
@@ -449,12 +449,12 @@ fun DailyDietPlanScreen(
                                     text = "Mildly Elevated Glucose (${currentGlucose.toInt()} mg/dL)",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFE65100),
+                                    color = AppTheme.colors.warningText,
                                 )
                                 Text(
                                     text = "Selected low-glycemic, high-fibre dishes with satiating lean protein to slow glucose release.",
                                     fontSize = 11.sp,
-                                    color = Color(0xFF424242),
+                                    color = AppTheme.colors.textSecondary,
                                     lineHeight = 15.sp,
                                 )
                             }
@@ -1360,14 +1360,14 @@ fun AiDietMealCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFE8F5E9))
+                                .background(AppTheme.colors.successBg)
                                 .padding(horizontal = 6.dp, vertical = 3.dp),
                         ) {
                             Text(
                                 text = giBadge,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF2E7D32),
+                                color = AppTheme.colors.successText,
                             )
                         }
                     }
