@@ -197,6 +197,7 @@ fun HealthPreferencesScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val isDark = AppTheme.colors.isDark
                 listOf(
                     "Glucose Control" to "Keep daily sugar levels balanced and steady.",
                     "Weight Management" to "Calorie-conscious meal suggestions for steady goals.",
@@ -209,14 +210,14 @@ fun HealthPreferencesScreen(
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 if (isSelected) {
-                                    Color(0xFF3B0764).copy(alpha = 0.55f)
+                                    if (isDark) Color(0xFF3B0764).copy(alpha = 0.55f) else AppTheme.colors.elevatedSurface
                                 } else {
-                                    Color(0xFF1C192E)
+                                    if (isDark) Color(0xFF1C192E) else AppTheme.colors.cardBackground
                                 }
                             )
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFA855F7) else Color(0xFF3B3358),
+                                color = if (isSelected) Color(0xFFA855F7) else if (isDark) Color(0xFF3B3358) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedHealthFocus = title }
@@ -227,7 +228,7 @@ fun HealthPreferencesScreen(
                                 Icon(
                                     imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
                                     contentDescription = null,
-                                    tint = if (isSelected) Color(0xFFA855F7) else Color(0xFF94A3B8),
+                                    tint = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textMuted,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -235,14 +236,14 @@ fun HealthPreferencesScreen(
                                     text = title,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color(0xFFA855F7) else Color(0xFFF8FAFC),
+                                    color = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textPrimary,
                                 )
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = subtitle,
                                 fontSize = 11.sp,
-                                color = Color(0xFF94A3B8),
+                                color = AppTheme.colors.textSecondary,
                                 modifier = Modifier.padding(start = 24.dp)
                             )
                         }
@@ -267,6 +268,7 @@ fun HealthPreferencesScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                val isDark = AppTheme.colors.isDark
                 selectedDiets.forEachIndexed { index, (dietName, isChecked) ->
                     Box(
                         modifier = Modifier
@@ -275,12 +277,12 @@ fun HealthPreferencesScreen(
                                 if (isChecked) {
                                     Color(0xFFA855F7)
                                 } else {
-                                    Color(0xFF282245)
+                                    if (isDark) Color(0xFF282245) else AppTheme.colors.secondaryBackground
                                 }
                             )
                             .border(
                                 width = 1.dp,
-                                color = if (isChecked) Color(0xFFA855F7) else Color(0xFF4C3E6D),
+                                color = if (isChecked) Color(0xFFA855F7) else if (isDark) Color(0xFF4C3E6D) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable {
@@ -300,7 +302,7 @@ fun HealthPreferencesScreen(
                                 text = dietName,
                                 fontSize = 12.sp,
                                 fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
-                                color = if (isChecked) Color.White else Color(0xFFF8FAFC),
+                                color = if (isChecked) Color.White else AppTheme.colors.textPrimary,
                             )
                         }
                     }
@@ -324,6 +326,7 @@ fun HealthPreferencesScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                val isDark = AppTheme.colors.isDark
                 allergiesList.forEachIndexed { index, (allergyName, isChecked) ->
                     Box(
                         modifier = Modifier
@@ -332,12 +335,12 @@ fun HealthPreferencesScreen(
                                 if (isChecked) {
                                     Color(0xFFE53935)
                                 } else {
-                                    Color(0xFF282245)
+                                    if (isDark) Color(0xFF282245) else AppTheme.colors.secondaryBackground
                                 }
                             )
                             .border(
                                 width = 1.dp,
-                                color = if (isChecked) Color(0xFFE53935) else Color(0xFF4C3E6D),
+                                color = if (isChecked) Color(0xFFE53935) else if (isDark) Color(0xFF4C3E6D) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(20.dp),
                             )
                             .clickable {
@@ -357,7 +360,7 @@ fun HealthPreferencesScreen(
                                 text = allergyName,
                                 fontSize = 12.sp,
                                 fontWeight = if (isChecked) FontWeight.Bold else FontWeight.SemiBold,
-                                color = if (isChecked) Color.White else Color(0xFFF8FAFC),
+                                color = if (isChecked) Color.White else AppTheme.colors.textPrimary,
                             )
                         }
                     }
@@ -377,6 +380,7 @@ fun HealthPreferencesScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val isDark = AppTheme.colors.isDark
                 listOf(
                     "Sedentary (Little or no exercise)",
                     "Light Exercise (1-2 days/week)",
@@ -390,14 +394,14 @@ fun HealthPreferencesScreen(
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 if (isSelected) {
-                                    Color(0xFF3B0764).copy(alpha = 0.55f)
+                                    if (isDark) Color(0xFF3B0764).copy(alpha = 0.55f) else AppTheme.colors.elevatedSurface
                                 } else {
-                                    Color(0xFF1C192E)
+                                    if (isDark) Color(0xFF1C192E) else AppTheme.colors.cardBackground
                                 }
                             )
                             .border(
                                 width = 1.dp,
-                                color = if (isSelected) Color(0xFFA855F7) else Color(0xFF3B3358),
+                                color = if (isSelected) Color(0xFFA855F7) else if (isDark) Color(0xFF3B3358) else AppTheme.colors.border,
                                 shape = RoundedCornerShape(12.dp),
                             )
                             .clickable { selectedActivityLevel = level }
@@ -407,7 +411,7 @@ fun HealthPreferencesScreen(
                             Icon(
                                 imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
                                 contentDescription = null,
-                                tint = if (isSelected) Color(0xFFA855F7) else Color(0xFF94A3B8),
+                                tint = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textMuted,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -415,7 +419,7 @@ fun HealthPreferencesScreen(
                                 text = level,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color(0xFFA855F7) else Color(0xFFF8FAFC),
+                                color = if (isSelected) AppTheme.colors.primaryAccent else AppTheme.colors.textPrimary,
                             )
                         }
                     }
