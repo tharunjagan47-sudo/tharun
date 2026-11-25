@@ -110,19 +110,31 @@ fun EditProfileScreen(
     var showPhotoOptionsDialog by remember { mutableStateOf(false) }
     var showViewPictureDialog by remember { mutableStateOf(false) }
 
-    // Sync from profile data when loaded from backend
-    LaunchedEffect(uiState.profile) {
+    val currentSessionUserId = remember {
+        try { SessionManager.getInstance().getUserId() } catch (_: Exception) { null }
+    }
+
+    LaunchedEffect(currentSessionUserId) {
+        if (uiState.profile == null || (currentSessionUserId != null && uiState.profile?.userId != currentSessionUserId)) {
+            viewModel.loadProfile()
+        }
+    }
+
+    // Sync from profile data when loaded from backend for the active user
+    LaunchedEffect(uiState.profile, currentSessionUserId) {
         uiState.profile?.let { p ->
-            fullName = p.fullName
-            email = p.email
-            p.phone?.let { if (it.isNotBlank()) phone = it }
-            p.gender?.let { if (it.isNotBlank()) gender = it }
-            p.diabetesType?.let { diabetesType = it }
-            p.age?.let { age = "$it years" }
-            p.heightCm?.let { height = "${it.toInt()} cm" }
-            p.weightKg?.let { weight = "${it.toInt()} kg" }
-            p.targetFastingGlucose?.let { targetFasting = it.toString() }
-            p.targetPostmealGlucose?.let { targetPostmeal = it.toString() }
+            if (currentSessionUserId == null || p.userId == currentSessionUserId) {
+                fullName = p.fullName
+                email = p.email
+                p.phone?.let { if (it.isNotBlank()) phone = it }
+                p.gender?.let { if (it.isNotBlank()) gender = it }
+                p.diabetesType?.let { diabetesType = it }
+                p.age?.let { age = "$it years" }
+                p.heightCm?.let { height = "${it.toInt()} cm" }
+                p.weightKg?.let { weight = "${it.toInt()} kg" }
+                p.targetFastingGlucose?.let { targetFasting = it.toString() }
+                p.targetPostmealGlucose?.let { targetPostmeal = it.toString() }
+            }
         }
     }
 
@@ -154,7 +166,7 @@ fun EditProfileScreen(
                 // 2. Update UI state and save in local cache
                 ProfileState.saveProfileBitmap(context, scaledBitmap, userId)
                 if (userId > 0) {
-                    sessionManager.saveUserPfp(userId, base64)
+                    sessionManager.saveUserPfp(userId, base64, sessionManager.getUserSession()?.email)
                     // 3. Send to update_profile_pic.php with logged-in user_id
                     viewModel.uploadProfilePic(userId, base64) {
                         Toast.makeText(context, "Profile picture updated successfully!", Toast.LENGTH_SHORT).show()
