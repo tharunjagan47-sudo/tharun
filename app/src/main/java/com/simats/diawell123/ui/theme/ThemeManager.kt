@@ -16,13 +16,20 @@ object ThemeManager {
 
     private val _themeMode = mutableStateOf(ThemeMode.DARK)
     val themeMode: State<ThemeMode> = _themeMode
-    var isSystemDark: Boolean = false
+    private val _isSystemDark = mutableStateOf(false)
+    var isSystemDark: Boolean
+        get() = _isSystemDark.value
+        set(value) {
+            if (_isSystemDark.value != value) {
+                _isSystemDark.value = value
+            }
+        }
 
     val isDark: Boolean
         get() = when (_themeMode.value) {
             ThemeMode.LIGHT -> false
             ThemeMode.DARK -> true
-            ThemeMode.SYSTEM -> isSystemDark
+            ThemeMode.SYSTEM -> _isSystemDark.value
         }
 
     fun init(context: Context) {
