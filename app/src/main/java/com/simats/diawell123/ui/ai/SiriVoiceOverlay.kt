@@ -1,5 +1,6 @@
 package com.simats.diawell123.ui.ai
 
+import androidx.activity.compose.BackHandler
 import com.simats.diawell123.ui.components.DiaWellAmbientBackground
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -98,6 +99,10 @@ fun SiriVoiceOverlay(
     onStopAudio: () -> Unit,
     onClose: () -> Unit
 ) {
+    BackHandler(enabled = visible) {
+        onClose()
+    }
+
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(tween(260)) + scaleIn(initialScale = 0.96f, animationSpec = tween(260)),
