@@ -286,9 +286,9 @@ fun SearchMedicationScreen(
                                         .clip(RoundedCornerShape(10.dp))
                                         .background(
                                             if (tablet.category.contains("diabet", ignoreCase = true))
-                                                Color(0xFFE8F5E9)
+                                                AppTheme.colors.successBg
                                             else
-                                                Color(0xFFF5F3FF)
+                                                if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF5F3FF)
                                         )
                                         .padding(horizontal = 8.dp, vertical = 3.dp),
                                 ) {
@@ -297,9 +297,9 @@ fun SearchMedicationScreen(
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = if (tablet.category.contains("diabet", ignoreCase = true))
-                                            Color(0xFF2E7D32)
+                                            AppTheme.colors.successText
                                         else
-                                            Color(0xFFA855F7),
+                                            AppTheme.colors.primaryAccent,
                                     )
                                 }
                             }
