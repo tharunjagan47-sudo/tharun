@@ -140,7 +140,7 @@ fun SignUpScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFDE8E8))
+                            .background(AppTheme.colors.errorBg)
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -152,7 +152,7 @@ fun SignUpScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_shield_check),
                                 contentDescription = "Alert",
-                                tint = Color(0xFFC53030),
+                                tint = AppTheme.colors.errorText,
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(modifier = Modifier.width(10.dp))
@@ -160,7 +160,7 @@ fun SignUpScreen(
                                 text = errorText,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF9B1C1C),
+                                color = AppTheme.colors.errorText,
                                 lineHeight = 18.sp,
                             )
                         }
@@ -171,7 +171,7 @@ fun SignUpScreen(
                             Icon(
                                 imageVector = Icons.Rounded.Close,
                                 contentDescription = "Dismiss error",
-                                tint = Color(0xFF9B1C1C),
+                                tint = AppTheme.colors.errorText,
                                 modifier = Modifier.size(16.dp),
                             )
                         }
