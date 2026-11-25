@@ -47,11 +47,15 @@ class HomeViewModel(
     }
 
     init {
-        loadDashboard(isPullToRefresh = false)
+        if (sessionManager.isLoggedIn() && sessionManager.getUserId() != null) {
+            loadDashboard(isPullToRefresh = false)
+        }
         viewModelScope.launch(exceptionHandler) {
             try {
                 MedicationStatusUpdater.events.collect {
-                    loadDashboard(isPullToRefresh = true)
+                    if (sessionManager.isLoggedIn() && sessionManager.getUserId() != null) {
+                        loadDashboard(isPullToRefresh = true)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Medication status observer exception", e)
@@ -63,6 +67,11 @@ class HomeViewModel(
      * Loads or refreshes the home dashboard metrics from the PHP backend.
      */
     fun loadDashboard(isPullToRefresh: Boolean = false) {
+        val requestUserId = sessionManager.getUserId()
+        if (!sessionManager.isLoggedIn() || requestUserId == null) {
+            _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+            return
+        }
         viewModelScope.launch(exceptionHandler) {
             try {
                 _uiState.update {
@@ -76,27 +85,15 @@ class HomeViewModel(
                 val result = repository.getDashboardData()
                 result.fold(
                     onSuccess = { data ->
-                        // Synchronize user profile name if present
-                        data.profile?.name?.let { name ->
-                            if (name.isNotBlank()) {
-                                ProfileState.userName = name
-                            }
+                        if (sessionManager.getUserId() != requestUserId) {
+                            return@fold
                         }
-
-                        // Synchronize user profile picture (Base64)
-                        data.profile?.profilePic?.let { base64 ->
-                            if (base64.isNotBlank()) {
-                                sessionManager.saveUserPfp(data.userId, base64)
-                                ProfileState.setProfilePicFromBase64(base64, data.userId)
-                            }
-                        }
-
-                        // Synchronize user profile photo if present and not yet loaded
-                        data.profile?.photoUrl?.let { url ->
-                            if (url.isNotBlank() && ProfileState.profileImageBitmap == null) {
-                                ProfileState.loadPhotoFromUrl(url, data.userId)
-                            }
-                        }
+                        ProfileState.syncFromServer(
+                            userId = data.userId,
+                            fullName = data.profile?.name,
+                            profilePicBase64 = data.profile?.profilePic,
+                            profilePhotoUrl = data.profile?.photoUrl
+                        )
 
                         _uiState.update {
                             it.copy(
