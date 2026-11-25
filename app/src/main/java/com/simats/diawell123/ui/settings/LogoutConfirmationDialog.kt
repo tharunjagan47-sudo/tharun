@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +43,17 @@ fun LogoutConfirmationDialog(
     onConfirmLogoutClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val scrimInteractionSource = remember { MutableInteractionSource() }
+    val cardInteractionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.45f))
+            .clickable(
+                interactionSource = scrimInteractionSource,
+                indication = null,
+                onClick = onCancelClick,
+            )
             .systemBarsPadding(),
         contentAlignment = Alignment.Center,
     ) {
@@ -54,6 +63,11 @@ fun LogoutConfirmationDialog(
                 .clip(RoundedCornerShape(20.dp))
                 .background(AppTheme.colors.cardBackground)
                 .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                .clickable(
+                    interactionSource = cardInteractionSource,
+                    indication = null,
+                    onClick = {},
+                )
                 .padding(20.dp),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
