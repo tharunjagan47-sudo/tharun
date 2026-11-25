@@ -7,8 +7,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
@@ -60,7 +61,17 @@ data class AppColors(
     val accentCoral: Color = Color(0xFFF43F5E),
     val success: Color = Color(0xFF10B981),
     val successBg: Color = Color(0xFFECFDF5),
+    val successBorder: Color = Color(0xFF2E7D32),
     val successText: Color = Color(0xFF047857),
+    val errorBg: Color = Color(0xFFFFEBEE),
+    val errorBorder: Color = Color(0xFFEF9A9A),
+    val errorText: Color = Color(0xFFC62828),
+    val warningBg: Color = Color(0xFFFFF3E0),
+    val warningBorder: Color = Color(0xFFFB8C00),
+    val warningText: Color = Color(0xFFE65100),
+    val infoBg: Color = Color(0xFFE3F2FD),
+    val infoBorder: Color = Color(0xFF64B5F6),
+    val infoText: Color = Color(0xFF1565C0),
 )
 
 val LightAppColors = AppColors(
@@ -80,20 +91,30 @@ val LightAppColors = AppColors(
     accentTeal = Color(0xFF0284C7),
     accentCoral = Color(0xFFE11D48),
     success = Color(0xFF10B981),
-    successBg = Color(0xFFECFDF5),
-    successText = Color(0xFF047857),
+    successBg = Color(0xFFE8F5E9),
+    successBorder = Color(0xFF2E7D32),
+    successText = Color(0xFF2E7D32),
+    errorBg = Color(0xFFFFEBEE),
+    errorBorder = Color(0xFFEF9A9A),
+    errorText = Color(0xFFC62828),
+    warningBg = Color(0xFFFFF3E0),
+    warningBorder = Color(0xFFFB8C00),
+    warningText = Color(0xFFE65100),
+    infoBg = Color(0xFFE3F2FD),
+    infoBorder = Color(0xFF64B5F6),
+    infoText = Color(0xFF1565C0),
 )
 
 val DarkAppColors = AppColors(
     isDark = true,
     background = Color(0xFF0F0E17),         // Deep obsidian base matching DarkColorScheme.background
-    secondaryBackground = Color(0x33171524),
-    cardBackground = Color(0xD9161524),      // Rich muted translucent dark glass surface
-    cardElevated = Color(0xE61F1B2E),
-    elevatedSurface = Color(0xE625213D),     // Subtle glowing border / container
-    inputBackground = Color(0xD9171524),
-    inputBorder = Color(0x338B5CF6),
-    border = Color(0x33A855F7),              // Subtle purple-tinted glass border
+    secondaryBackground = Color(0xFF1B182C),
+    cardBackground = Color(0xFF161524),      // Rich opaque obsidian glass card (prevents alpha bleed glitches)
+    cardElevated = Color(0xFF1F1B2E),
+    elevatedSurface = Color(0xFF25213D),     // Elevated glowing container
+    inputBackground = Color(0xFF171524),
+    inputBorder = Color(0xFF383256),
+    border = Color(0xFF2E274B),              // Subtle purple-tinted dark border
     textPrimary = Color(0xFFF8FAFC),         // Pure White
     textSecondary = Color(0xFFCBD5E1),
     textMuted = Color(0xFF94A3B8),           // Muted Gray
@@ -102,14 +123,26 @@ val DarkAppColors = AppColors(
     accentCoral = Color(0xFFF43F5E),         // Coral accent
     success = Color(0xFF10B981),
     successBg = Color(0xFF064E3B),
-    successText = Color(0xFF34D399),
+    successBorder = Color(0xFF10B981),
+    successText = Color(0xFF6EE7B7),
+    errorBg = Color(0xFF2A1518),
+    errorBorder = Color(0xFFEF4444),
+    errorText = Color(0xFFFCA5A5),
+    warningBg = Color(0xFF2B1D0E),
+    warningBorder = Color(0xFFF59E0B),
+    warningText = Color(0xFFFCD34D),
+    infoBg = Color(0xFF0F263E),
+    infoBorder = Color(0xFF38BDF8),
+    infoText = Color(0xFF7DD3FC),
 )
 
-val LocalAppColors = staticCompositionLocalOf { LightAppColors }
+val LocalAppColors = compositionLocalOf { DarkAppColors }
 
 object AppTheme {
     val colors: AppColors
-        get() = if (ThemeManager.isDark) DarkAppColors else LightAppColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAppColors.current
 }
 
 private val LightColorScheme = lightColorScheme(
@@ -141,15 +174,20 @@ fun Diawell123Theme(
     },
     content: @Composable () -> Unit,
 ) {
-    ThemeManager.isSystemDark = isSystemInDarkTheme()
+    val systemDark = isSystemInDarkTheme()
     val appColors = if (darkTheme) DarkAppColors else LightAppColors
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
+            ThemeManager.isSystemDark = systemDark
             val window = (view.context as? Activity)?.window
             if (window != null) {
+                @Suppress("DEPRECATION")
+                window.statusBarColor = android.graphics.Color.TRANSPARENT
+                @Suppress("DEPRECATION")
+                window.navigationBarColor = android.graphics.Color.TRANSPARENT
                 val insetsController = WindowCompat.getInsetsController(window, view)
                 insetsController.isAppearanceLightStatusBars = !darkTheme
                 insetsController.isAppearanceLightNavigationBars = !darkTheme
