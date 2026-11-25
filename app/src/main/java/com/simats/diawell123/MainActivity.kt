@@ -211,16 +211,26 @@ class MainActivity : FragmentActivity() {
                 var selectedDishName by rememberSaveable { mutableStateOf<String?>(null) }
                 var launchSnapFoodInDiet by rememberSaveable { mutableStateOf(false) }
 
-                val dietViewModel: DietViewModel = viewModel()
-                val glucoseViewModel: GlucoseViewModel = viewModel()
-                val homeViewModel: HomeViewModel = viewModel()
-                val medsViewModel: MedsViewModel = viewModel()
-                val activityViewModel: ActivityViewModel = viewModel()
-                val notificationsViewModel: NotificationsViewModel = viewModel()
-                val reportsViewModel: ReportsViewModel = viewModel()
-                val settingsViewModel: SettingsViewModel = viewModel()
-                val profileViewModel: ProfileViewModel = viewModel()
-                val chatViewModel: ChatViewModel = viewModel()
+                val sessionManager = remember {
+                    try {
+                        SessionManager.getInstance()
+                    } catch (_: Exception) {
+                        SessionManager.init(applicationContext)
+                    }
+                }
+                var activeSessionEpoch by rememberSaveable { mutableStateOf(0) }
+                val activeSessionKey = "${activeSessionEpoch}_${sessionManager.getUserId() ?: 0}"
+
+                val dietViewModel: DietViewModel = viewModel(key = "diet_$activeSessionKey")
+                val glucoseViewModel: GlucoseViewModel = viewModel(key = "glucose_$activeSessionKey")
+                val homeViewModel: HomeViewModel = viewModel(key = "home_$activeSessionKey")
+                val medsViewModel: MedsViewModel = viewModel(key = "meds_$activeSessionKey")
+                val activityViewModel: ActivityViewModel = viewModel(key = "activity_$activeSessionKey")
+                val notificationsViewModel: NotificationsViewModel = viewModel(key = "notif_$activeSessionKey")
+                val reportsViewModel: ReportsViewModel = viewModel(key = "reports_$activeSessionKey")
+                val settingsViewModel: SettingsViewModel = viewModel(key = "settings_$activeSessionKey")
+                val profileViewModel: ProfileViewModel = viewModel(key = "profile_$activeSessionKey")
+                val chatViewModel: ChatViewModel = viewModel(key = "chat_$activeSessionKey")
 
                 var selectedGlucoseReadingId by rememberSaveable { mutableStateOf<Int?>(null) }
                 var selectedMedication by remember { mutableStateOf<com.simats.diawell123.data.model.MedicationItem?>(null) }
@@ -229,14 +239,6 @@ class MainActivity : FragmentActivity() {
                 var selectedTabletDose by rememberSaveable { mutableStateOf("500 mg • 1 Tablet") }
                 var exportReturnScreen by rememberSaveable { mutableStateOf("privacy_security") }
                 var exploreFoodReturnScreen by rememberSaveable { mutableStateOf("daily_diet_plan") }
-
-                val sessionManager = remember {
-                    try {
-                        SessionManager.getInstance()
-                    } catch (_: Exception) {
-                        SessionManager.init(applicationContext)
-                    }
-                }
 
                 // Initialize ProfileState from disk cache & session so avatar and username persist across launches
                 LaunchedEffect(Unit) {
@@ -299,9 +301,13 @@ class MainActivity : FragmentActivity() {
                     }
                 }
 
+                val lastTabRefreshMs = remember { mutableMapOf<String, Long>() }
+
                 // Auto-Logout Observer: Listens to 401 Unauthorized or manual logout broadcasts
                 LaunchedEffect(Unit) {
                     sessionManager.sessionExpiredEvents.collect {
+                        lastTabRefreshMs.clear()
+                        activeSessionEpoch++
                         if (currentScreen !in listOf("login", "signup", "splash")) {
                             currentScreen = "login"
                         }
@@ -330,7 +336,6 @@ class MainActivity : FragmentActivity() {
                     }
                 }
 
-                val lastTabRefreshMs = remember { mutableMapOf<String, Long>() }
                 val mainTabOrder = remember {
                     mapOf(
                         "home" to 0,
@@ -458,6 +463,8 @@ class MainActivity : FragmentActivity() {
 
                         "signup" -> SignUpScreen(
                             onSignUpSuccess = {
+                                lastTabRefreshMs.clear()
+                                activeSessionEpoch++
                                 ProfileState.init(applicationContext, sessionManager.getUserId())
                                 profileViewModel.clearError()
                                 profileViewModel.loadProfile()
@@ -468,6 +475,8 @@ class MainActivity : FragmentActivity() {
 
                         "login" -> LoginScreen(
                             onLoginSuccess = {
+                                lastTabRefreshMs.clear()
+                                activeSessionEpoch++
                                 ProfileState.init(applicationContext, sessionManager.getUserId())
                                 sessionManager.setAppUnlocked(true)
                                 currentScreen = "home"
@@ -754,7 +763,11 @@ class MainActivity : FragmentActivity() {
                         "delete_account" -> DeleteAccountScreen(
                             viewModel = settingsViewModel,
                             onBackClick = { currentScreen = "privacy_security" },
-                            onConfirmDeleteClick = { currentScreen = "login" },
+                            onConfirmDeleteClick = {
+                                lastTabRefreshMs.clear()
+                                activeSessionEpoch++
+                                currentScreen = "login"
+                            },
                         )
 
                         "help_support" -> HelpSupportScreen(
@@ -786,12 +799,14 @@ class MainActivity : FragmentActivity() {
                         "logout_dialog" -> LogoutConfirmationDialog(
                             onCancelClick = { currentScreen = "settings" },
                             onConfirmLogoutClick = {
+                                lastTabRefreshMs.clear()
                                 sessionManager.setAppUnlocked(false)
                                 sessionManager.clearSession()
-                                ProfileState.clear()
+                                ProfileState.clear(applicationContext)
+                                activeSessionEpoch++
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        AuthRepositoryImpl().logout()
+                                        AuthRepositoryImpl().logout(clearLocalSession = false)
                                     } catch (_: Exception) {}
                                 }
                                 currentScreen = "login"
@@ -804,12 +819,14 @@ class MainActivity : FragmentActivity() {
                                 currentScreen = if (screenBeforeLock in listOf("splash", "login", "signup", "app_lock")) "home" else screenBeforeLock
                             },
                             onSignOut = {
+                                lastTabRefreshMs.clear()
                                 sessionManager.setAppUnlocked(false)
                                 sessionManager.clearSession()
-                                ProfileState.clear()
+                                ProfileState.clear(applicationContext)
+                                activeSessionEpoch++
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        AuthRepositoryImpl().logout()
+                                        AuthRepositoryImpl().logout(clearLocalSession = false)
                                     } catch (_: Exception) {}
                                 }
                                 currentScreen = "login"
