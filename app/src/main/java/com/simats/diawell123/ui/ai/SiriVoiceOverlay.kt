@@ -41,6 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.FiberManualRecord
 import androidx.compose.material.icons.rounded.Medication
@@ -97,6 +98,7 @@ fun SiriVoiceOverlay(
     onQuickVoiceCommand: (String) -> Unit,
     onToggleAutoSpeak: () -> Unit,
     onStopAudio: () -> Unit,
+    onSwitchToChat: () -> Unit = {},
     onClose: () -> Unit
 ) {
     BackHandler(enabled = visible) {
@@ -151,6 +153,34 @@ fun SiriVoiceOverlay(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFFA855F7).copy(alpha = 0.24f))
+                                .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(14.dp))
+                                .clickable { onSwitchToChat() }
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.ChatBubbleOutline,
+                                    contentDescription = "Switch to Chat Mode",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Chat",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
+                        }
+
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(14.dp))
