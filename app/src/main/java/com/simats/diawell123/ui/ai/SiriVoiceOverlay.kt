@@ -58,6 +58,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.simats.diawell123.ui.components.FluidGlassBackButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -127,6 +128,10 @@ fun SiriVoiceOverlay(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    FluidGlassBackButton(onClick = onClose)
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
                     Column(
                         modifier = Modifier
                             .weight(1f)
