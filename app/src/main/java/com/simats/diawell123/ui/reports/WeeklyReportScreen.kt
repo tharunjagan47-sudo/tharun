@@ -480,6 +480,7 @@ fun WeeklyReportScreen(
                                 val displayMealCounts = if (mealData.size == 7) mealData else List(7) { 0 }
                                 val maxDayMeals = (displayMealCounts.maxOrNull() ?: 3).coerceAtLeast(3).toFloat()
 
+                                val emptyBarColor = AppTheme.colors.border
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -496,7 +497,7 @@ fun WeeklyReportScreen(
                                             val factor = if (count > 0) (count.toFloat() / maxDayMeals).coerceIn(0.20f, 1f) else 0.04f
                                             val animatedFactor = factor * chartProgress.value
                                             val barH = (h * animatedFactor).coerceAtLeast(3.dp.toPx())
-                                            val barColor = if (count > 0) Color(0xFFA855F7) else AppTheme.colors.border
+                                            val barColor = if (count > 0) Color(0xFFA855F7) else emptyBarColor
 
                                             drawRoundRect(
                                                 color = barColor,
