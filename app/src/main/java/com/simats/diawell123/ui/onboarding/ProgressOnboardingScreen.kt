@@ -114,6 +114,11 @@ fun ProgressOnboardingScreen(
 
 @Composable
 fun ProgressIllustration(modifier: Modifier = Modifier) {
+    val isDark = AppTheme.colors.isDark
+    val bgCircleColor = if (isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF)
+    val cardFillColor = if (isDark) AppTheme.colors.cardElevated else Color.White
+    val cardStrokeColor = if (isDark) AppTheme.colors.border else Color(0xFFF2E0EE)
+    val barBgColor = if (isDark) AppTheme.colors.elevatedSurface else Color(0xFFF7EBF6)
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -123,7 +128,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF),
+                color = bgCircleColor,
                 radius = bgRadius,
                 center = center
             )
@@ -133,13 +138,13 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
             val cardTopLeft = Offset(center.x - cardWidth / 2, center.y - cardHeight / 2 - 10.dp.toPx())
 
             drawRoundRect(
-                color = Color.White,
+                color = cardFillColor,
                 topLeft = cardTopLeft,
                 size = Size(cardWidth, cardHeight),
                 cornerRadius = CornerRadius(18.dp.toPx(), 18.dp.toPx())
             )
             drawRoundRect(
-                color = if (AppTheme.colors.isDark) AppTheme.colors.border else Color(0xFFF2E0EE),
+                color = cardStrokeColor,
                 topLeft = cardTopLeft,
                 size = Size(cardWidth, cardHeight),
                 cornerRadius = CornerRadius(18.dp.toPx(), 18.dp.toPx()),
@@ -147,7 +152,7 @@ fun ProgressIllustration(modifier: Modifier = Modifier) {
             )
 
             drawRoundRect(
-                color = if (AppTheme.colors.isDark) AppTheme.colors.elevatedSurface else Color(0xFFF7EBF6),
+                color = barBgColor,
                 topLeft = Offset(cardTopLeft.x + 16.dp.toPx(), cardTopLeft.y + 16.dp.toPx()),
                 size = Size(60.dp.toPx(), 8.dp.toPx()),
                 cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
