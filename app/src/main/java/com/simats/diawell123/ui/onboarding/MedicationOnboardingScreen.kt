@@ -113,6 +113,10 @@ fun MedicationOnboardingScreen(
 
 @Composable
 fun MedicationIllustration(modifier: Modifier = Modifier) {
+    val isDark = AppTheme.colors.isDark
+    val bgCircleColor = if (isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF)
+    val pillBaseColor = if (isDark) AppTheme.colors.cardElevated else Color.White
+    val clockTint = if (isDark) Color(0xFFF0ABFC) else Color(0xFF9E1D81)
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -122,7 +126,7 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
             val bgRadius = size.width * 0.48f
 
             drawCircle(
-                color = if (AppTheme.colors.isDark) Color(0xFF3B0764).copy(alpha = 0.20f) else Color(0xFFF5F3FF),
+                color = bgCircleColor,
                 radius = bgRadius,
                 center = center
             )
@@ -136,7 +140,7 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
                 )
 
                 drawRoundRect(
-                    color = Color.White,
+                    color = pillBaseColor,
                     topLeft = pillTopLeft,
                     size = Size(pillWidth, pillHeight),
                     cornerRadius = CornerRadius(pillHeight / 2, pillHeight / 2)
@@ -162,25 +166,25 @@ fun MedicationIllustration(modifier: Modifier = Modifier) {
             val clockRadius = 34.dp.toPx()
 
             drawCircle(
-                color = Color.White,
+                color = pillBaseColor,
                 radius = clockRadius,
                 center = clockCenter
             )
             drawCircle(
-                color = Color(0xFF9E1D81),
+                color = clockTint,
                 radius = clockRadius,
                 center = clockCenter,
                 style = Stroke(width = 2.5.dp.toPx())
             )
 
             drawLine(
-                color = Color(0xFF9E1D81),
+                color = clockTint,
                 start = clockCenter,
                 end = Offset(clockCenter.x, clockCenter.y - 18.dp.toPx()),
                 strokeWidth = 2.5.dp.toPx()
             )
             drawLine(
-                color = Color(0xFF9E1D81),
+                color = clockTint,
                 start = clockCenter,
                 end = Offset(clockCenter.x + 12.dp.toPx(), clockCenter.y),
                 strokeWidth = 2.5.dp.toPx()
