@@ -206,6 +206,41 @@ fun FoodLogScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                if (uiState.errorMessage != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(AppTheme.colors.errorBg)
+                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(14.dp))
+                            .padding(12.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = uiState.errorMessage ?: "Unable to load food log.",
+                                fontSize = 12.sp,
+                                color = AppTheme.colors.errorText,
+                                modifier = Modifier.weight(1f).padding(end = 10.dp),
+                            )
+                            Text(
+                                text = "Retry",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.primaryAccent,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { viewModel.loadFoodLog() }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 // Logged Meals List
                 if (uiState.meals.isEmpty()) {
                     Box(
