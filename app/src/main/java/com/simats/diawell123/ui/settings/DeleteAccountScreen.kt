@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -36,7 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,9 +64,9 @@ fun DeleteAccountScreen(
     val deleteState by viewModel.deleteState.collectAsState()
     val context = LocalContext.current
 
-    var confirmText by remember { mutableStateOf("") }
-    var passwordText by remember { mutableStateOf("") }
-    var selectedReason by remember { mutableStateOf("I no longer need the app") }
+    var confirmText by rememberSaveable { mutableStateOf("") }
+    var passwordText by rememberSaveable { mutableStateOf("") }
+    var selectedReason by rememberSaveable { mutableStateOf("I no longer need the app") }
 
     LaunchedEffect(deleteState.errorMessage) {
         deleteState.errorMessage?.let {
@@ -76,7 +77,8 @@ fun DeleteAccountScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .systemBarsPadding(),
+            .systemBarsPadding()
+            .imePadding(),
     ) {
         Column(
             modifier = Modifier
