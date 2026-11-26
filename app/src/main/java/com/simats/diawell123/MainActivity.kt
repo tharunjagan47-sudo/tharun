@@ -524,9 +524,11 @@ class MainActivity : FragmentActivity() {
                     DiawellApplication.backStack = backStack.toList()
                 }
 
+                var isAiVoiceModeActive by remember { mutableStateOf(true) }
                 val activeBottomTab = when (currentScreen) {
                     "home" -> "Home"
                     "daily_diet_plan" -> "Diet"
+                    "ai_chatbot", "dr_jarvis_chat" -> if (isAiVoiceModeActive) "AI" else null
                     "medications" -> "Meds"
                     "weekly_report" -> "Reports"
                     "notifications" -> "Home"
@@ -821,6 +823,7 @@ class MainActivity : FragmentActivity() {
                         "ai_chatbot", "dr_jarvis_chat" -> AiChatbotScreen(
                             viewModel = chatViewModel,
                             onBackClick = { popBackStack() },
+                            onVoiceOverlayVisibilityChanged = { isAiVoiceModeActive = it },
                         )
 
                         "weekly_report" -> WeeklyReportScreen(
@@ -976,7 +979,12 @@ class MainActivity : FragmentActivity() {
                             backdropLayer = navBackdropLayer,
                             onHomeTabClick = { selectBottomTab("home") },
                             onDietTabClick = { selectBottomTab("daily_diet_plan") },
-                            onAiTabClick = { pushScreen("ai_chatbot") },
+                            onAiTabClick = {
+                                if (currentScreen != "ai_chatbot" && currentScreen != "dr_jarvis_chat") {
+                                    isAiVoiceModeActive = true
+                                    pushScreen("ai_chatbot")
+                                }
+                            },
                             onMedsTabClick = { selectBottomTab("medications") },
                             onReportsTabClick = { selectBottomTab("weekly_report") },
                         )
@@ -994,7 +1002,12 @@ class MainActivity : FragmentActivity() {
                             backdropLayer = navBackdropLayer,
                             onHomeTabClick = { selectBottomTab("home") },
                             onDietTabClick = { selectBottomTab("daily_diet_plan") },
-                            onAiTabClick = { pushScreen("ai_chatbot") },
+                            onAiTabClick = {
+                                if (currentScreen != "ai_chatbot" && currentScreen != "dr_jarvis_chat") {
+                                    isAiVoiceModeActive = true
+                                    pushScreen("ai_chatbot")
+                                }
+                            },
                             onMedsTabClick = { selectBottomTab("medications") },
                             onReportsTabClick = { selectBottomTab("weekly_report") },
                         )
