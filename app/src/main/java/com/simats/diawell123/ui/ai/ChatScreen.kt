@@ -194,14 +194,16 @@ fun ChatScreen(
     // Auto-scroll to bottom on new messages, loading change, or keyboard open
     LaunchedEffect(messages.size, isLoading) {
         if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
+            val targetIdx = if (isLoading) messages.size else (messages.size - 1)
+            listState.animateScrollToItem(targetIdx)
         }
     }
 
     LaunchedEffect(isKeyboardOpen) {
         if (isKeyboardOpen && messages.isNotEmpty()) {
             delay(120)
-            listState.animateScrollToItem(messages.size - 1)
+            val targetIdx = if (isLoading) messages.size else (messages.size - 1)
+            listState.animateScrollToItem(targetIdx)
         }
     }
 
@@ -243,10 +245,11 @@ fun ChatScreen(
         if (isGranted) {
             beginLiveVoiceSession()
         } else {
+            voiceManager.setIdleState()
             Toast.makeText(
                 context,
-                "Microphone permission is required for voice input.",
-                Toast.LENGTH_SHORT
+                "Microphone permission is required for voice input. Please enable it in Settings.",
+                Toast.LENGTH_LONG
             ).show()
         }
     }
@@ -771,8 +774,8 @@ fun ChatScreen(
             onOrbTap = {
                 when (voiceState) {
                     JarvisVoiceState.LISTENING -> voiceManager.stopListening()
-                    JarvisVoiceState.SPEAKING -> beginLiveVoiceSession()
-                    else -> beginLiveVoiceSession()
+                    JarvisVoiceState.SPEAKING -> startVoiceInput()
+                    else -> startVoiceInput()
                 }
             },
             onQuickVoiceCommand = { cmd ->
