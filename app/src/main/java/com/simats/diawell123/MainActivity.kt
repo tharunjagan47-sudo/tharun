@@ -524,7 +524,7 @@ class MainActivity : FragmentActivity() {
                     DiawellApplication.backStack = backStack.toList()
                 }
 
-                var isAiVoiceModeActive by remember { mutableStateOf(true) }
+                var isAiVoiceModeActive by rememberSaveable { mutableStateOf(true) }
                 val activeBottomTab = when (currentScreen) {
                     "home" -> "Home"
                     "daily_diet_plan" -> "Diet"
