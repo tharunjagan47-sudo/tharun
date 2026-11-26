@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.CleaningServices
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Delete
@@ -47,6 +48,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -89,8 +92,7 @@ fun SettingsScreen(
     onMedsTabClick: () -> Unit = {},
     onReportsTabClick: () -> Unit = {},
 ) {
-    var selectedTab by remember { mutableStateOf("Settings") }
-    var showResetDialog by remember { mutableStateOf(false) }
+    var showResetDialog by rememberSaveable { mutableStateOf(false) }
     var isResetting by remember { mutableStateOf(false) }
     val profileUiState by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -438,9 +440,9 @@ fun SettingsRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
             .clickable { onClick() }
             .padding(16.dp),
     ) {
@@ -449,7 +451,12 @@ fun SettingsRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -490,14 +497,16 @@ fun SettingsRow(
                     } else {
                         AppTheme.colors.textPrimary
                     },
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
-            Text(
-                text = "›",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.textMuted,
+            Icon(
+                imageVector = Icons.Rounded.ChevronRight,
+                contentDescription = null,
+                tint = AppTheme.colors.textMuted,
+                modifier = Modifier.size(20.dp),
             )
         }
     }
