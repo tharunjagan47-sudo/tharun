@@ -84,6 +84,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -221,9 +222,8 @@ fun HomeScreen(
     onExportReportClick: () -> Unit = {},
     onTrackFoodCategoryClick: (category: String) -> Unit = {},
 ) {
-    var selectedTab by remember { mutableStateOf("Home") }
-    var showStreakDialog by remember { mutableStateOf(false) }
-    var showTargetEditDialog by remember { mutableStateOf(false) }
+    var showStreakDialog by rememberSaveable { mutableStateOf(false) }
+    var showTargetEditDialog by rememberSaveable { mutableStateOf(false) }
     var zoomedMetric by remember { mutableStateOf<HealthMetricZoomData?>(null) }
     val uiState by viewModel.uiState.collectAsState()
     val data = uiState.dashboardData
@@ -374,12 +374,14 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.height(14.dp))
 
                                 Row(
+                                    modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     // Interactive Streak Badge (e.g. 2-Day Streak)
                                     Box(
                                         modifier = Modifier
+                                            .weight(1f, fill = false)
                                             .clip(RoundedCornerShape(20.dp))
                                             .background(Color.White.copy(alpha = 0.22f))
                                             .border(1.dp, Color.White.copy(alpha = 0.40f), RoundedCornerShape(20.dp))
@@ -399,6 +401,8 @@ fun HomeScreen(
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
                                             )
                                         }
                                     }
@@ -406,6 +410,7 @@ fun HomeScreen(
                                     // Interactive Target Editing Badge / Button
                                     Box(
                                         modifier = Modifier
+                                            .weight(1f, fill = false)
                                             .clip(RoundedCornerShape(20.dp))
                                             .background(Color.White.copy(alpha = 0.22f))
                                             .border(1.dp, Color.White.copy(alpha = 0.40f), RoundedCornerShape(20.dp))
@@ -425,6 +430,8 @@ fun HomeScreen(
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Icon(
@@ -1969,6 +1976,8 @@ fun MetricCard(
                 if (statusText.isNotBlank()) {
                     Box(
                         modifier = Modifier
+                            .weight(1f, fill = false)
+                            .padding(start = 6.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(actualStatusBg)
                             .padding(horizontal = 8.dp, vertical = 3.dp),
@@ -1978,6 +1987,8 @@ fun MetricCard(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = actualStatusColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
@@ -2072,6 +2083,8 @@ fun RoutineCheckItem(
             fontSize = 11.sp,
             fontWeight = if (isDone) FontWeight.Bold else FontWeight.Medium,
             color = if (isDone) AppTheme.colors.successText else AppTheme.colors.textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -2327,8 +2340,8 @@ fun TargetEditDialog(
     onDismissRequest: () -> Unit,
     onSaveTarget: (fasting: Int, postmeal: Int) -> Unit
 ) {
-    var fastingText by remember { mutableStateOf(initialFasting.toString()) }
-    var postmealText by remember { mutableStateOf(initialPostmeal.toString()) }
+    var fastingText by rememberSaveable(initialFasting) { mutableStateOf(initialFasting.toString()) }
+    var postmealText by rememberSaveable(initialPostmeal) { mutableStateOf(initialPostmeal.toString()) }
 
     Dialog(onDismissRequest = onDismissRequest) {
         Box(
