@@ -27,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CleaningServices
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Emergency
 import androidx.compose.material.icons.rounded.Help
 import androidx.compose.material.icons.rounded.LightMode
@@ -320,8 +319,6 @@ fun SettingsScreen(
 
                 ElementPopUpContainer(delayMillis = 200) {
                     Column {
-                        SettingsRow(vectorIcon = Icons.Rounded.Download, title = "Export Medical Records", onClick = onExportRecordsClick)
-                        Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(
                             vectorIcon = Icons.Rounded.Emergency,
                             title = "Emergency Medical Hotline (108)",
