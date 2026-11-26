@@ -414,9 +414,10 @@ class DietViewModel(
                 _foodLogState.update { state ->
                     state.copy(meals = state.meals + loggedItem)
                 }
+                loadFoodLog()
                 onSuccess()
             }.onFailure { error ->
-                _detailsState.update { it.copy(isLogging = false, errorMessage = error.localizedMessage) }
+                _detailsState.update { it.copy(isLogging = false, errorMessage = error.toCleanErrorMessage("Saved locally; server sync pending.")) }
                 // Local fallback update so food is added to state log even offline or on API failure
                 _foodLogState.update { state ->
                     state.copy(meals = state.meals + newLogItem)
@@ -479,6 +480,7 @@ class DietViewModel(
                 _foodLogState.update { state ->
                     state.copy(meals = state.meals + loggedItem)
                 }
+                loadFoodLog()
                 onSuccess()
             }.onFailure {
                 _foodLogState.update { state ->
