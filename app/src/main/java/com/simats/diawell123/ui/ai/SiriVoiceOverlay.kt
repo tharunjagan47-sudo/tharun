@@ -558,6 +558,12 @@ fun GlowingSiriOrb(
         label = "orbActivationAlpha"
     )
 
+    val speakingOrbBlend by animateFloatAsState(
+        targetValue = if (voiceState == JarvisVoiceState.SPEAKING) 1f else 0f,
+        animationSpec = tween(durationMillis = 240),
+        label = "speakingOrbBlend"
+    )
+
     val stageSizeDp = 304
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -576,12 +582,12 @@ fun GlowingSiriOrb(
             fullBody = true,
             modifier = Modifier.fillMaxSize(),
             chestOverlay = {
-                // INTERACTIVE VOICE ORB CENTERED EXACTLY ON DIVA'S DW CHEST LOGO (x=50%, y=61.5%)
-                // Moves, floats, and tilts in 100% sync with DIVA's body and speech!
+                // INTERACTIVE VOICE ORB CENTERED EXACTLY ON DIVA'S DW CHEST LOGO
+                // Smoothly aligns center and ring radius between Listening cutout and Speaking video.
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val cx = size.width * 0.50f
-                    val cy = size.height * 0.615f
-                    val dwCoreRadius = size.minDimension * 0.148f
+                    val cy = size.height * (0.615f + 0.058f * speakingOrbBlend)
+                    val dwCoreRadius = size.minDimension * (0.148f + 0.016f * speakingOrbBlend)
 
                     // Subtle inviting glow halo on the DW chest logo even when IDLE
                     drawCircle(
