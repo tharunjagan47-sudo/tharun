@@ -28,7 +28,6 @@ import androidx.compose.material.icons.rounded.Backspace
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
-import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.InsertChart
 import androidx.compose.material.icons.rounded.Key
@@ -220,8 +219,6 @@ fun PrivacySecurityScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            PrivacyLinkRow(vectorIcon = Icons.Rounded.Download, title = "Export Records", onClick = onExportRecordsClick)
-            Spacer(modifier = Modifier.height(10.dp))
             PrivacyLinkRow(vectorIcon = Icons.Rounded.Delete, title = "Delete Account", isDestructive = true, onClick = onDeleteAccountClick)
 
             Spacer(modifier = Modifier.height(100.dp))
