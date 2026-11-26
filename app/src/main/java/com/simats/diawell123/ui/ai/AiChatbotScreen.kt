@@ -65,11 +65,13 @@ fun AiChatbotScreen(
     modifier: Modifier = Modifier,
     viewModel: ChatViewModel = viewModel(),
     onBackClick: () -> Unit = {},
+    onVoiceOverlayVisibilityChanged: (Boolean) -> Unit = {},
 ) {
     ChatScreen(
         modifier = modifier,
         viewModel = viewModel,
         onBackClick = onBackClick,
+        onVoiceOverlayVisibilityChanged = onVoiceOverlayVisibilityChanged,
     )
 }
 
