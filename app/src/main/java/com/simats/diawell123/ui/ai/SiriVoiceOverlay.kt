@@ -118,13 +118,15 @@ fun SiriVoiceOverlay(
                 modifier = Modifier
                     .fillMaxSize()
                     .systemBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Top Header Bar
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -370,7 +372,9 @@ fun SiriVoiceOverlay(
 
                 // Bottom Voice Command Examples & Action Controls
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
