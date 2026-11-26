@@ -25,6 +25,8 @@ import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
 import android.print.PrintManager
 import android.provider.MediaStore
+import android.text.Layout
+import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
 import android.util.Log
@@ -222,6 +224,30 @@ object ClinicalReportGenerator {
             y += 28f
         }
 
+        fun drawMetricSummaryBox(summaryText: String) {
+            textPaint.color = COLOR_TEXT_DARK
+            textPaint.textSize = 8.5f
+            textPaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+            textPaint.textAlign = Paint.Align.LEFT
+            val maxTextW = (CONTENT_WIDTH - 20f).toInt()
+            val layout = StaticLayout.Builder
+                .obtain(summaryText, 0, summaryText.length, textPaint, maxTextW)
+                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                .setLineSpacing(2f, 1f)
+                .build()
+            val boxH = layout.height + 12f
+            ensureSpace(boxH + 12f)
+            fillPaint.color = COLOR_BG_TINT
+            canvas.drawRoundRect(RectF(MARGIN_X, y, PAGE_WIDTH - MARGIN_X, y + boxH), 4f, 4f, fillPaint)
+            strokePaint.color = COLOR_BORDER
+            canvas.drawRoundRect(RectF(MARGIN_X, y, PAGE_WIDTH - MARGIN_X, y + boxH), 4f, 4f, strokePaint)
+            canvas.save()
+            canvas.translate(MARGIN_X + 10f, y + 6f)
+            layout.draw(canvas)
+            canvas.restore()
+            y += boxH + 10f
+        }
+
         // =====================================================================
         // 1. HOSPITAL-GRADE TOP HEADER BANNER
         // =====================================================================
@@ -383,8 +409,18 @@ object ClinicalReportGenerator {
                     drawTableRow(canvas, fillPaint, strokePaint, textPaint, cols, vals, y, idx % 2 == 1, statusColIndex = 3, statusPair = statusTint)
                     y += 19f
                 }
-                y += 12f
+                y += 8f
             }
+            val glucoseSummary = if (data.glucoseReadings.isEmpty()) {
+                "Summary: No blood glucose readings were recorded during ${options.timeRangeLabel}. Regular fasting and post-meal checks help keep trends within target."
+            } else {
+                val values = data.glucoseReadings.map { it.numFloat("glucose_value", "reading", "glucose_level") }.filter { it > 0f }
+                val avgVal = if (summary.averageGlucose > 0f) summary.averageGlucose.toInt() else values.average().toInt()
+                val minVal = if (summary.minGlucose > 0f) summary.minGlucose.toInt() else (values.minOrNull()?.toInt() ?: avgVal)
+                val maxVal = if (summary.maxGlucose > 0f) summary.maxGlucose.toInt() else (values.maxOrNull()?.toInt() ?: avgVal)
+                "Summary: ${data.glucoseReadings.size} readings logged (Average: $avgVal mg/dL, Range: $minVal–$maxVal mg/dL, ${summary.inTargetPercent}% within target range)."
+            }
+            drawMetricSummaryBox(glucoseSummary)
         }
 
         // =====================================================================
@@ -428,8 +464,17 @@ object ClinicalReportGenerator {
                     drawTableRow(canvas, fillPaint, strokePaint, textPaint, cols, vals, y, idx % 2 == 1, statusColIndex = 4, statusPair = statusTint)
                     y += 19f
                 }
-                y += 12f
+                y += 8f
             }
+            val medSummary = if (data.medications.isEmpty()) {
+                "Summary: No active medication doses were logged for ${options.timeRangeLabel}."
+            } else {
+                val taken = if (summary.totalMedications > 0) summary.takenMedications else data.medications.count { it.str("status").equals("taken", true) }
+                val total = if (summary.totalMedications > 0) summary.totalMedications else data.medications.size
+                val adh = if (summary.totalMedications > 0) summary.adherencePercent else if (total > 0) (taken * 100 / total) else 0
+                "Summary: $taken of $total scheduled doses taken ($adh% adherence across ${data.medications.size} prescriptions)."
+            }
+            drawMetricSummaryBox(medSummary)
         }
 
         // =====================================================================
@@ -467,8 +512,16 @@ object ClinicalReportGenerator {
                     drawTableRow(canvas, fillPaint, strokePaint, textPaint, cols, vals, y, idx % 2 == 1)
                     y += 19f
                 }
-                y += 12f
+                y += 8f
             }
+            val dietSummary = if (data.foodLogs.isEmpty()) {
+                "Summary: No meals were logged during ${options.timeRangeLabel}. Logging meals helps correlate carbohydrate intake with post-meal glucose."
+            } else {
+                val totalCal = data.foodLogs.sumOf { it.numFloat("calories").toInt() }
+                val avgCarbs = data.foodLogs.map { it.numFloat("carbs", "carbs_g") }.average().toFloat()
+                "Summary: ${data.foodLogs.size} meals logged totaling $totalCal kcal with an average of ${formatNum(avgCarbs)} g carbohydrates per meal."
+            }
+            drawMetricSummaryBox(dietSummary)
         }
 
         // =====================================================================
@@ -507,18 +560,26 @@ object ClinicalReportGenerator {
                     drawTableRow(canvas, fillPaint, strokePaint, textPaint, cols, vals, y, idx % 2 == 1)
                     y += 19f
                 }
-                y += 12f
+                y += 8f
             }
+            val actSummary = if (data.activityLogs.isEmpty()) {
+                "Summary: No physical activity sessions were logged during ${options.timeRangeLabel}."
+            } else {
+                val totalMins = data.activityLogs.sumOf { it.numFloat("duration_mins").toInt() }
+                val totalBurned = data.activityLogs.sumOf { it.numFloat("calories_burned", "calories_kcal").toInt() }
+                "Summary: ${data.activityLogs.size} exercise sessions completed totaling $totalMins active minutes and $totalBurned kcal burned."
+            }
+            drawMetricSummaryBox(actSummary)
         }
 
         // =====================================================================
         // 8. CLINICAL ASSESSMENT & PHYSICIAN SIGN-OFF BLOCK
         // =====================================================================
-        ensureSpace(92f)
+        ensureSpace(112f)
         fillPaint.color = COLOR_BG_TINT
-        canvas.drawRoundRect(RectF(MARGIN_X, y, PAGE_WIDTH - MARGIN_X, y + 76f), 6f, 6f, fillPaint)
+        canvas.drawRoundRect(RectF(MARGIN_X, y, PAGE_WIDTH - MARGIN_X, y + 96f), 6f, 6f, fillPaint)
         strokePaint.color = COLOR_ACCENT
-        canvas.drawRoundRect(RectF(MARGIN_X, y, PAGE_WIDTH - MARGIN_X, y + 76f), 6f, 6f, strokePaint)
+        canvas.drawRoundRect(RectF(MARGIN_X, y, PAGE_WIDTH - MARGIN_X, y + 96f), 6f, 6f, strokePaint)
 
         textPaint.color = COLOR_PRIMARY
         textPaint.textSize = 9.5f
@@ -543,6 +604,16 @@ object ClinicalReportGenerator {
             "Medical Disclaimer: Generated from patient-entered DiaWell telemetry. Verify with laboratory HbA1c prior to regimen adjustments.",
             MARGIN_X + 12f,
             y + 66f,
+            textPaint
+        )
+
+        textPaint.color = COLOR_PRIMARY
+        textPaint.textSize = 9.5f
+        textPaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+        canvas.drawText(
+            "Signed by DIVA (DiaWell Intelligent Virtual Assistant)",
+            MARGIN_X + 12f,
+            y + 84f,
             textPaint
         )
 
