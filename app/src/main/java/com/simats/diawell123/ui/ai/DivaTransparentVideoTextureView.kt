@@ -150,22 +150,27 @@ private class DivaGlVideoThread(
     }
 
     fun setPlaying(playing: Boolean) {
+        if (desiredPlaying == playing && isPrepared) return
         desiredPlaying = playing
+        synchronized(lock) {
+            frameAvailable = true
+            lock.notifyAll()
+        }
+    }
+
+    private fun applyDesiredPlaybackState() {
         val mp = mediaPlayer ?: return
         if (!isPrepared) return
+        val shouldPlay = desiredPlaying
         try {
-            if (playing) {
+            if (shouldPlay) {
                 if (!mp.isPlaying) {
                     mp.start()
                 }
             } else {
                 if (mp.isPlaying) {
                     mp.pause()
-                }
-                mp.seekTo(0)
-                synchronized(lock) {
-                    frameAvailable = true
-                    lock.notifyAll()
+                    mp.seekTo(0)
                 }
             }
         } catch (_: IllegalStateException) {
@@ -197,11 +202,17 @@ private class DivaGlVideoThread(
             while (running.get()) {
                 synchronized(lock) {
                     while (running.get() && !frameAvailable) {
-                        lock.wait(50L)
+                        if (desiredPlaying) {
+                            lock.wait(50L)
+                        } else {
+                            lock.wait()
+                        }
                     }
                     frameAvailable = false
                 }
                 if (!running.get()) break
+
+                applyDesiredPlaybackState()
 
                 val vst = videoSurfaceTexture ?: continue
                 try {

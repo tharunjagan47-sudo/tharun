@@ -58,6 +58,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.simats.diawell123.ui.components.FluidGlassBackButton
+import com.simats.diawell123.ui.theme.AppTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -110,6 +111,9 @@ fun SiriVoiceOverlay(
         enter = fadeIn(tween(260)) + scaleIn(initialScale = 0.96f, animationSpec = tween(260)),
         exit = fadeOut(tween(220)) + scaleOut(targetScale = 0.96f, animationSpec = tween(220))
     ) {
+        val isDark = AppTheme.colors.isDark
+        val colors = AppTheme.colors
+
         DiaWellAmbientBackground(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -142,14 +146,14 @@ fun SiriVoiceOverlay(
                             text = "DIVA Voice",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = Color.White,
+                            color = colors.textPrimary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = "$localeLabel • Hands-Free Care",
                             fontSize = 11.sp,
-                            color = Color(0xFF94A3B8),
+                            color = colors.textSecondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -162,8 +166,15 @@ fun SiriVoiceOverlay(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(Color(0xFFA855F7).copy(alpha = 0.24f))
-                                .border(1.dp, Color(0xFFA855F7), RoundedCornerShape(14.dp))
+                                .background(
+                                    if (isDark) Color(0xFFA855F7).copy(alpha = 0.24f)
+                                    else colors.elevatedSurface
+                                )
+                                .border(
+                                    1.dp,
+                                    if (isDark) Color(0xFFA855F7) else colors.primaryAccent.copy(alpha = 0.45f),
+                                    RoundedCornerShape(14.dp)
+                                )
                                 .clickable { onSwitchToChat() }
                                 .padding(horizontal = 10.dp, vertical = 6.dp),
                             contentAlignment = Alignment.Center
@@ -172,7 +183,7 @@ fun SiriVoiceOverlay(
                                 Icon(
                                     imageVector = Icons.Rounded.ChatBubbleOutline,
                                     contentDescription = "Switch to Chat Mode",
-                                    tint = Color.White,
+                                    tint = if (isDark) Color.White else colors.primaryAccent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -180,25 +191,36 @@ fun SiriVoiceOverlay(
                                     text = "Chat",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else colors.primaryAccent,
                                     maxLines = 1,
                                     softWrap = false
                                 )
                             }
                         }
 
+                        val speakBg = when {
+                            isAutoSpeakEnabled && isDark -> Color(0xFF00E5FF).copy(alpha = 0.16f)
+                            isAutoSpeakEnabled -> colors.infoBg
+                            isDark -> Color.White.copy(alpha = 0.08f)
+                            else -> colors.cardBackground
+                        }
+                        val speakBorder = when {
+                            isAutoSpeakEnabled && isDark -> Color(0xFF00E5FF)
+                            isAutoSpeakEnabled -> colors.accentTeal.copy(alpha = 0.55f)
+                            isDark -> Color.White.copy(alpha = 0.2f)
+                            else -> colors.border
+                        }
+                        val speakTint = when {
+                            isAutoSpeakEnabled && isDark -> Color(0xFF00E5FF)
+                            isAutoSpeakEnabled -> colors.accentTeal
+                            else -> colors.textSecondary
+                        }
+
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(
-                                    if (isAutoSpeakEnabled) Color(0xFF00E5FF).copy(alpha = 0.16f)
-                                    else Color.White.copy(alpha = 0.08f)
-                                )
-                                .border(
-                                    1.dp,
-                                    if (isAutoSpeakEnabled) Color(0xFF00E5FF) else Color.White.copy(alpha = 0.2f),
-                                    RoundedCornerShape(14.dp)
-                                )
+                                .background(speakBg)
+                                .border(1.dp, speakBorder, RoundedCornerShape(14.dp))
                                 .clickable { onToggleAutoSpeak() }
                                 .padding(horizontal = 10.dp, vertical = 6.dp),
                             contentAlignment = Alignment.Center
@@ -207,7 +229,7 @@ fun SiriVoiceOverlay(
                                 Icon(
                                     imageVector = if (isAutoSpeakEnabled) Icons.Rounded.VolumeUp else Icons.Rounded.VolumeOff,
                                     contentDescription = null,
-                                    tint = if (isAutoSpeakEnabled) Color(0xFF00E5FF) else Color(0xFFCBD5E1),
+                                    tint = speakTint,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -215,7 +237,7 @@ fun SiriVoiceOverlay(
                                     text = if (isAutoSpeakEnabled) "On" else "Muted",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isAutoSpeakEnabled) Color(0xFF00E5FF) else Color(0xFFCBD5E1),
+                                    color = speakTint,
                                     maxLines = 1,
                                     softWrap = false
                                 )
@@ -243,18 +265,18 @@ fun SiriVoiceOverlay(
                         JarvisVoiceState.IDLE -> Icons.Rounded.Mic to "TAP DW LOGO TO SPEAK"
                     }
                     val stateBadgeColor = when (voiceState) {
-                        JarvisVoiceState.LISTENING -> Color(0xFF00E5FF)
-                        JarvisVoiceState.THINKING -> Color(0xFFF472B6)
-                        JarvisVoiceState.SPEAKING -> Color(0xFF4ADE80)
-                        JarvisVoiceState.ERROR -> Color(0xFFF87171)
-                        JarvisVoiceState.IDLE -> Color(0xFFE2E8F0)
+                        JarvisVoiceState.LISTENING -> if (isDark) Color(0xFF00E5FF) else Color(0xFF0284C7)
+                        JarvisVoiceState.THINKING -> if (isDark) Color(0xFFF472B6) else Color(0xFF9333EA)
+                        JarvisVoiceState.SPEAKING -> if (isDark) Color(0xFF4ADE80) else Color(0xFF059669)
+                        JarvisVoiceState.ERROR -> if (isDark) Color(0xFFF87171) else Color(0xFFDC2626)
+                        JarvisVoiceState.IDLE -> if (isDark) Color(0xFFE2E8F0) else colors.primaryAccent
                     }
 
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(stateBadgeColor.copy(alpha = 0.14f))
-                            .border(1.dp, stateBadgeColor.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+                            .background(stateBadgeColor.copy(alpha = if (isDark) 0.14f else 0.10f))
+                            .border(1.dp, stateBadgeColor.copy(alpha = if (isDark) 0.6f else 0.38f), RoundedCornerShape(20.dp))
                             .padding(horizontal = 14.dp, vertical = 5.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -288,7 +310,7 @@ fun SiriVoiceOverlay(
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // Clean Virtual User Speech Transcript (Unboxed, directly on dark canvas)
+                    // Clean Virtual User Speech Transcript
                     if (partialTranscript.isNotBlank()) {
                         Column(
                             modifier = Modifier
@@ -300,7 +322,7 @@ fun SiriVoiceOverlay(
                                 text = "\"$partialTranscript\"",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color.White,
+                                color = colors.textPrimary,
                                 textAlign = TextAlign.Center,
                                 lineHeight = 23.sp
                             )
@@ -313,13 +335,13 @@ fun SiriVoiceOverlay(
                         Text(
                             text = voiceError,
                             fontSize = 12.5.sp,
-                            color = Color(0xFFFCA5A5),
+                            color = colors.errorText,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                         )
                     }
 
-                    // Clean Virtual DIVA Spoken Response (Unboxed clean typography directly on canvas)
+                    // Clean Virtual DIVA Spoken Response
                     if (latestAiResponse.isNotBlank() && voiceState != JarvisVoiceState.LISTENING) {
                         Column(
                             modifier = Modifier
@@ -331,7 +353,8 @@ fun SiriVoiceOverlay(
                         ) {
                             MarkdownFormattedText(
                                 text = latestAiResponse,
-                                color = Color(0xFFF1F5F9),
+                                color = colors.textPrimary,
+                                boldColor = colors.textPrimary,
                                 fontSize = 14.sp,
                                 lineHeight = 21.sp
                             )
@@ -351,7 +374,7 @@ fun SiriVoiceOverlay(
                     Text(
                         text = "Try saying or tap a voice action:",
                         fontSize = 11.sp,
-                        color = Color(0xFF94A3B8)
+                        color = colors.textSecondary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -371,8 +394,12 @@ fun SiriVoiceOverlay(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(18.dp))
-                                    .background(Color.White.copy(alpha = 0.09f))
-                                    .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(18.dp))
+                                    .background(if (isDark) Color.White.copy(alpha = 0.09f) else colors.cardBackground)
+                                    .border(
+                                        1.dp,
+                                        if (isDark) Color.White.copy(alpha = 0.2f) else colors.border,
+                                        RoundedCornerShape(18.dp)
+                                    )
                                     .clickable { onQuickVoiceCommand(cmd) }
                                     .padding(horizontal = 12.dp, vertical = 7.dp)
                             ) {
@@ -380,7 +407,7 @@ fun SiriVoiceOverlay(
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = null,
-                                        tint = Color(0xFFA855F7),
+                                        tint = if (isDark) Color(0xFFA855F7) else colors.primaryAccent,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -388,7 +415,7 @@ fun SiriVoiceOverlay(
                                         text = chipLabel,
                                         fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = Color.White
+                                        color = colors.textPrimary
                                     )
                                 }
                             }
@@ -412,7 +439,7 @@ fun SiriVoiceOverlay(
                         Text(
                             text = helperHint,
                             fontSize = 11.5.sp,
-                            color = Color(0xFFCBD5E1),
+                            color = colors.textSecondary,
                             modifier = Modifier.weight(1f)
                         )
 
@@ -420,8 +447,12 @@ fun SiriVoiceOverlay(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color(0xFFEF4444).copy(alpha = 0.22f))
-                                    .border(1.dp, Color(0xFFEF4444), RoundedCornerShape(14.dp))
+                                    .background(if (isDark) Color(0xFFEF4444).copy(alpha = 0.22f) else colors.errorBg)
+                                    .border(
+                                        1.dp,
+                                        if (isDark) Color(0xFFEF4444) else colors.errorBorder,
+                                        RoundedCornerShape(14.dp)
+                                    )
                                     .clickable { onStopAudio() }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
@@ -429,7 +460,7 @@ fun SiriVoiceOverlay(
                                     Icon(
                                         imageVector = Icons.Rounded.Stop,
                                         contentDescription = "Stop Audio",
-                                        tint = Color(0xFFFCA5A5),
+                                        tint = if (isDark) Color(0xFFFCA5A5) else colors.errorText,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
@@ -437,7 +468,7 @@ fun SiriVoiceOverlay(
                                         text = "Stop Audio",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFFCA5A5)
+                                        color = if (isDark) Color(0xFFFCA5A5) else colors.errorText
                                     )
                                 }
                             }

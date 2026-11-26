@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.R
+import com.simats.diawell123.ui.theme.AppTheme
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 import kotlin.math.PI
@@ -205,6 +206,7 @@ fun DivaTalkingAvatar(
         )
     }
 
+    val isDark = AppTheme.colors.isDark
     val containerModifier = if (fullBody) {
         modifier
             .fillMaxWidth()
@@ -244,9 +246,9 @@ fun DivaTalkingAvatar(
                         if (s == 0) ribbonPath.moveTo(x, y) else ribbonPath.lineTo(x, y)
                     }
                     val ribbonColor = when (ribbon) {
-                        0 -> Color(0xFFA855F7)
-                        1 -> Color(0xFF00E5FF)
-                        else -> Color(0xFFF0ABFC)
+                        0 -> if (isDark) Color(0xFFA855F7) else Color(0xFF7C3AED)
+                        1 -> if (isDark) Color(0xFF00E5FF) else Color(0xFF0284C7)
+                        else -> if (isDark) Color(0xFFF0ABFC) else Color(0xFFA855F7)
                     }
                     drawPath(
                         path = ribbonPath,
@@ -261,7 +263,7 @@ fun DivaTalkingAvatar(
                     )
                 }
 
-                // Soft drifting golden & cyan 4-point sparkles around DIVA
+                // Soft drifting sparkles around DIVA
                 val sparkleSeeds = listOf(
                     Triple(0.14f, 0.24f, 0.0f),
                     Triple(0.86f, 0.21f, 1.3f),
@@ -276,7 +278,11 @@ fun DivaTalkingAvatar(
                     val cx = w * sx
                     val cy = h * sy + driftY
                     val starR = (2.8f + pulse * 3.0f * energy).dp.toPx()
-                    val starColor = if (idx % 2 == 0) Color(0xFFFDE68A) else Color(0xFF7DF9FF)
+                    val starColor = if (isDark) {
+                        if (idx % 2 == 0) Color(0xFFFDE68A) else Color(0xFF7DF9FF)
+                    } else {
+                        if (idx % 2 == 0) Color(0xFF8B5CF6) else Color(0xFF0284C7)
+                    }
                     val alpha = (0.16f + pulse * 0.52f * energy).coerceAtMost(0.82f)
                     drawSparkleStar(center = Offset(cx, cy), radius = starR, color = starColor.copy(alpha = alpha))
                 }
@@ -285,12 +291,12 @@ fun DivaTalkingAvatar(
 
         var isVideoReady by remember { mutableStateOf(false) }
         val videoAlpha by animateFloatAsState(
-            targetValue = if (fullBody && isSpeaking && isVideoReady) 1f else 0f,
+            targetValue = if (fullBody && isDark && isSpeaking && isVideoReady) 1f else 0f,
             animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing),
             label = "DivaSpeakingVideoAlpha",
         )
 
-        // 2. UNIFIED ANIMATED ROBOT STAGE (Idle Cutout <-> Synced 3D Gesture Video + DW Chest Orb)
+        // 2. UNIFIED ANIMATED ROBOT STAGE (Idle Cutout <-> Synced 3D Gesture Video in Dark Mode + DW Chest Orb)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -309,7 +315,7 @@ fun DivaTalkingAvatar(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            if (fullBody) {
+            if (fullBody && isDark) {
                 DivaSpeakingVideoLayer(
                     isSpeaking = isSpeaking,
                     alpha = videoAlpha,
@@ -592,9 +598,7 @@ private fun DivaSpeakingVideoLayer(
                     textureViewRef = view
                 }
             },
-            update = { view ->
-                view.setPlaying(isSpeaking)
-            },
+            update = { _ -> },
             modifier = Modifier.fillMaxSize(),
         )
     }
