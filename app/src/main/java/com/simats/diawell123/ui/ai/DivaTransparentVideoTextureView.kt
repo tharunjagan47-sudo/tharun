@@ -350,13 +350,16 @@ private class DivaGlVideoThread(
         GlMatrix.setIdentityM(out, 0)
         val safeVidW = vidW.coerceAtLeast(1).toFloat()
         val safeVidH = vidH.coerceAtLeast(1).toFloat()
+        // Robot + outstretched hands span ~64% of the 16:9 width and ~78% of height;
+        // scaling to fit those bounds keeps the talking robot the exact same size as idle
+        // without cropping either hand.
         val scale = minOf(
-            vw.toFloat() / (safeVidW * 0.80f),
-            vh.toFloat() / (safeVidH * 0.84f),
+            vw.toFloat() / (safeVidW * 0.64f),
+            vh.toFloat() / (safeVidH * 0.78f),
         )
         val sx = (safeVidW * scale) / vw.toFloat()
         val sy = (safeVidH * scale) / vh.toFloat()
-        GlMatrix.translateM(out, 0, 0f, -0.06f, 0f)
+        GlMatrix.translateM(out, 0, 0f, -0.08f, 0f)
         GlMatrix.scaleM(out, 0, sx, sy, 1f)
     }
 
@@ -455,9 +458,9 @@ private class DivaGlVideoThread(
                 float alpha = max(key, inVisor);
 
                 // Crop out bottom Tamil subtitles (y < 0.16) and bottom-right Gemini watermark
-                float edgeX = smoothstep(0.02, 0.09, vVideoUv.x) * smoothstep(0.02, 0.09, 1.0 - vVideoUv.x);
-                float edgeTop = smoothstep(0.01, 0.07, 1.0 - vVideoUv.y);
-                float edgeBottom = smoothstep(0.13, 0.21, vVideoUv.y);
+                float edgeX = smoothstep(0.01, 0.05, vVideoUv.x) * smoothstep(0.01, 0.05, 1.0 - vVideoUv.x);
+                float edgeTop = smoothstep(0.01, 0.06, 1.0 - vVideoUv.y);
+                float edgeBottom = smoothstep(0.13, 0.20, vVideoUv.y);
                 float watermarkMask = 1.0 - (smoothstep(0.82, 0.88, vVideoUv.x) * (1.0 - smoothstep(0.18, 0.26, vVideoUv.y)));
                 alpha *= edgeX * edgeTop * edgeBottom * watermarkMask;
 
