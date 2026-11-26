@@ -299,10 +299,12 @@ fun HomeScreen(
                                             else -> "Good evening"
                                         }
                                     }
-                                    val displayName: String = data?.profile?.name?.takeIf { it.isNotBlank() }
-                                        ?: ProfileState.userName.takeIf { it.isNotBlank() }
-                                        ?: (try { SessionManager.getInstance().getFullName() } catch (_: Exception) { null })?.takeIf { it.isNotBlank() }
-                                        ?: "Patient"
+                                    val displayName: String = remember(data?.profile?.name, ProfileState.userName) {
+                                        data?.profile?.name?.takeIf { it.isNotBlank() }
+                                            ?: ProfileState.userName.takeIf { it.isNotBlank() }
+                                            ?: (try { SessionManager.getInstance().getFullName() } catch (_: Exception) { null })?.takeIf { it.isNotBlank() }
+                                            ?: "Patient"
+                                    }
 
                                     Column(
                                         modifier = Modifier
