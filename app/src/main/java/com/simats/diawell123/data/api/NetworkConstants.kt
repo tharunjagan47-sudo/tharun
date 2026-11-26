@@ -12,14 +12,6 @@ package com.simats.diawell123.data.api
  */
 object NetworkConstants {
 
-    // =========================================================================
-    // ONE-LINE PRODUCTION / CLOUD HOSTING SWITCH
-    // Set this single constant to your live cloud hosted backend URL.
-    // Example: "https://api.diawell.com/diawell_backend/" or "https://your-server.com/diawell_backend/"
-    // When blank, the app runs in local development mode (auto-detecting Emulator vs ADB Reverse).
-    // =========================================================================
-    const val LIVE_CLOUD_HOSTED_URL: String = ""
-
     // -------------------------------------------------------------------------
     // PHP Backend Settings (Non-Privileged Port 8080 ADB Reverse / Apache)
     // -------------------------------------------------------------------------
@@ -84,17 +76,11 @@ object NetworkConstants {
 
     /**
      * Standardized primary Base URL used by Retrofit across all DiaWell modules & Dr. Jarvis AI.
-     * When [LIVE_CLOUD_HOSTED_URL] is specified, it takes 100% precedence across the entire application.
-     * Otherwise, routes through Emulator (10.0.2.2) or ADB Reverse (127.0.0.1:8080).
+     * Physical devices strictly use non-privileged port http://127.0.0.1:8080/diawell_backend/
+     * to route reliably through ADB reverse (tcp:8080 -> tcp:80).
      */
     val BASE_URL: String
-        get() {
-            val cloudUrl = LIVE_CLOUD_HOSTED_URL.trim()
-            if (cloudUrl.isNotEmpty()) {
-                return if (cloudUrl.endsWith("/")) cloudUrl else "$cloudUrl/"
-            }
-            return if (isEmulator) EMULATOR_PHP_BASE_URL else ADB_REVERSE_8080_PHP_BASE_URL
-        }
+        get() = if (isEmulator) EMULATOR_PHP_BASE_URL else ADB_REVERSE_8080_PHP_BASE_URL
 
     /**
      * Active Base URL used by Retrofit for Dr. Jarvis AI Chatbot.
