@@ -547,7 +547,7 @@ fun HomeScreen(
                                     statusColor = gStatusColor,
                                     cardBg = if (AppTheme.colors.isDark) Color(0xFF2E1065) else Color(0xFFF5F3FF),
                                     borderColor = AppTheme.colors.border,
-                                    actionText = "History ›",
+                                    actionText = "History",
                                     onActionClick = {
                                         zoomedMetric = HealthMetricZoomData(
                                             type = HealthMetricZoomType.GLUCOSE,
@@ -2024,8 +2024,9 @@ fun MetricCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
             ) {
+                val cleanAction = actionText.trimEnd('›', ' ', '>')
                 Text(
-                    text = "$actionText ›",
+                    text = "$cleanAction ›",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = actualActionColor,
