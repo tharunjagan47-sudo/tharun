@@ -549,8 +549,7 @@ fun GlowingSiriOrb(
     )
 
     val isOrbActive = voiceState == JarvisVoiceState.LISTENING ||
-        voiceState == JarvisVoiceState.THINKING ||
-        voiceState == JarvisVoiceState.SPEAKING
+        voiceState == JarvisVoiceState.THINKING
 
     val orbActivationAlpha by animateFloatAsState(
         targetValue = if (isOrbActive) 1f else 0f,
@@ -558,10 +557,10 @@ fun GlowingSiriOrb(
         label = "orbActivationAlpha"
     )
 
-    val speakingOrbBlend by animateFloatAsState(
-        targetValue = if (voiceState == JarvisVoiceState.SPEAKING) 1f else 0f,
-        animationSpec = tween(durationMillis = 240),
-        label = "speakingOrbBlend"
+    val idleHaloAlpha by animateFloatAsState(
+        targetValue = if (voiceState == JarvisVoiceState.SPEAKING) 0f else 1f,
+        animationSpec = tween(durationMillis = 220),
+        label = "idleHaloAlpha"
     )
 
     val stageSizeDp = 304
@@ -582,27 +581,29 @@ fun GlowingSiriOrb(
             fullBody = true,
             modifier = Modifier.fillMaxSize(),
             chestOverlay = {
-                // INTERACTIVE VOICE ORB CENTERED EXACTLY ON DIVA'S DW CHEST LOGO
-                // Smoothly aligns center and ring radius between Listening cutout and Speaking video.
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val cx = size.width * 0.50f
-                    val cy = size.height * (0.615f + 0.058f * speakingOrbBlend)
-                    val dwCoreRadius = size.minDimension * (0.148f + 0.016f * speakingOrbBlend)
+                // INTERACTIVE VOICE ORB CENTERED EXACTLY ON DIVA'S DW CHEST LOGO (hidden during SPEAKING)
+                if (idleHaloAlpha > 0.01f || orbActivationAlpha > 0.01f) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val cx = size.width * 0.50f
+                        val cy = size.height * 0.615f
+                        val dwCoreRadius = size.minDimension * 0.148f
 
-                    // Subtle inviting glow halo on the DW chest logo even when IDLE
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFFA855F7).copy(alpha = 0.22f * breathing),
-                                Color(0xFF00E5FF).copy(alpha = 0.10f * breathing),
-                                Color.Transparent
-                            ),
-                            center = Offset(cx, cy),
-                            radius = dwCoreRadius * 1.45f
-                        ),
-                        radius = dwCoreRadius * 1.45f,
-                        center = Offset(cx, cy)
-                    )
+                        // Subtle inviting glow halo on the DW chest logo when IDLE/LISTENING
+                        if (idleHaloAlpha > 0.01f) {
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFFA855F7).copy(alpha = 0.22f * breathing * idleHaloAlpha),
+                                        Color(0xFF00E5FF).copy(alpha = 0.10f * breathing * idleHaloAlpha),
+                                        Color.Transparent
+                                    ),
+                                    center = Offset(cx, cy),
+                                    radius = dwCoreRadius * 1.45f
+                                ),
+                                radius = dwCoreRadius * 1.45f,
+                                center = Offset(cx, cy)
+                            )
+                        }
 
                     // Active Glowing Siri Voice Orb erupting right inside/around the DW chest emblem!
                     if (orbActivationAlpha > 0.01f) {
@@ -716,6 +717,7 @@ fun GlowingSiriOrb(
                             }
                         }
                     }
+                }
                 }
 
                 // DEDICATED CLICKABLE HOTSPOT LOCKED RIGHT OVER DIVA'S DW CHEST LOGO
