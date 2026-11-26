@@ -1,6 +1,7 @@
 package com.simats.diawell123.data.api
 
 import com.simats.diawell123.data.local.SessionManager
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -77,6 +78,13 @@ object ApiClient {
 
     private val backendEndpoints: List<Triple<String, String, Int>>
         get() = buildList {
+            val cloudUrl = NetworkConstants.LIVE_CLOUD_HOSTED_URL.trim()
+            if (cloudUrl.isNotEmpty()) {
+                val parsed = cloudUrl.toHttpUrlOrNull()
+                if (parsed != null) {
+                    add(Triple(parsed.scheme, parsed.host, parsed.port))
+                }
+            }
             for ((host, port) in localBackendHostPorts) {
                 add(Triple("http", host, port))
             }
