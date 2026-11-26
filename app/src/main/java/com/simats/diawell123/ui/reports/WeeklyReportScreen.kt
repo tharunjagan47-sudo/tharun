@@ -222,6 +222,39 @@ fun WeeklyReportScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     ShimmerCardList(count = 2, cardHeight = 68.dp)
                     Spacer(modifier = Modifier.height(16.dp))
+                } else if (uiState.errorMessage != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(AppTheme.colors.errorBg)
+                            .border(1.dp, AppTheme.colors.errorBorder, RoundedCornerShape(16.dp))
+                            .padding(14.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = uiState.errorMessage ?: "Unable to load weekly report.",
+                                fontSize = 12.5.sp,
+                                color = AppTheme.colors.errorText,
+                                modifier = Modifier.weight(1f).padding(end = 10.dp),
+                            )
+                            Text(
+                                text = "Retry",
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.primaryAccent,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { viewModel.loadWeeklyReport(endDate = uiState.selectedEndDate, isPullToRefresh = true) }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 // Glucose Overview Animated Pulse Line Box (Pops Up)
