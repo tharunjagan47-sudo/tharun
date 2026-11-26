@@ -32,16 +32,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Emergency
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Help
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,7 +52,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,22 +69,16 @@ fun HelpSupportScreen(
     onAiChatbotClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    var searchQuery by remember { mutableStateOf("") }
     var expandedFaq by remember { mutableIntStateOf(0) }
     var showSuccessBanner by remember { mutableStateOf(value = false) }
 
-    val allFaqs = remember {
+    val essentialFaqs = remember {
         listOf(
             "How do I log glucose?" to "Open Glucose from Quick Actions or the tab bar, enter your reading and time, select Fasting or Post-meal, and save. Follow the routine agreed with your healthcare team.",
             "How do I manage reminders?" to "Go to Settings > Notification Preferences to turn reminders on or off and customize alert sounds and quiet hours.",
             "How are food suggestions generated?" to "Meal ideas are tailored by DIVA (DiaWell Intelligent Virtual Assistant) based on your preferred diet, food allergies, and daily glucose levels set in your profile.",
-            "How do I export my health records?" to "Navigate to Settings > Privacy and Security > Export Records to generate and share a clinical PDF report or CSV spreadsheet.",
             "Is my data secure and private?" to "Yes, DiaWell encrypts all health data in transit and on server storage. You can delete your account or change data sharing preferences anytime."
         )
-    }
-
-    val filteredFaqs = allFaqs.filter {
-        it.first.contains(searchQuery, ignoreCase = true) || it.second.contains(searchQuery, ignoreCase = true)
     }
 
     LaunchedEffect(showSuccessBanner) {
@@ -211,70 +200,18 @@ fun HelpSupportScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Search common topics or reach our care team",
+                    text = "Common guides & care support",
                     fontSize = 12.sp,
                     color = AppTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Search,
-                        contentDescription = "Search",
-                        tint = AppTheme.colors.textMuted,
-                        modifier = Modifier
-                            .padding(start = 12.dp, end = 4.dp)
-                            .size(20.dp),
-                    )
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = "Clear",
-                            tint = AppTheme.colors.textMuted,
-                            modifier = Modifier
-                                .clickable { searchQuery = "" }
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                                .size(18.dp),
-                        )
-                    }
-                },
-                placeholder = {
-                    Text(
-                        text = "Search questions and guides",
-                        fontSize = 13.sp,
-                        color = AppTheme.colors.textMuted,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = AppTheme.colors.textPrimary,
-                    unfocusedTextColor = AppTheme.colors.textPrimary,
-                    cursorColor = Color(0xFFA855F7),
-                    focusedContainerColor = AppTheme.colors.inputBackground,
-                    unfocusedContainerColor = AppTheme.colors.inputBackground,
-                    focusedBorderColor = Color(0xFFA855F7),
-                    unfocusedBorderColor = AppTheme.colors.inputBorder,
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
             // FAQ Section Header
             Text(
-                text = "Frequently asked questions (${filteredFaqs.size})",
+                text = "Frequently asked questions (${essentialFaqs.size})",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.colors.textPrimary,
@@ -284,32 +221,14 @@ fun HelpSupportScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (filteredFaqs.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(AppTheme.colors.secondaryBackground)
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No questions match '$searchQuery'. Please contact support below.",
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.textSecondary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                filteredFaqs.forEachIndexed { index, (q, a) ->
-                    FaqAccordionItem(
-                        title = q,
-                        answer = a,
-                        isExpanded = expandedFaq == index,
-                        onClick = { expandedFaq = if (expandedFaq == index) -1 else index },
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
+            essentialFaqs.forEachIndexed { index, (q, a) ->
+                FaqAccordionItem(
+                    title = q,
+                    answer = a,
+                    isExpanded = expandedFaq == index,
+                    onClick = { expandedFaq = if (expandedFaq == index) -1 else index },
+                )
+                Spacer(modifier = Modifier.height(10.dp))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
