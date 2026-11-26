@@ -70,9 +70,6 @@ import androidx.compose.ui.unit.sp
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 // Rounded geometric sans-serif font matching the sleek DiaWell wordmark
 val DiaWellWordmarkFont = FontFamily(
@@ -199,16 +196,6 @@ fun SplashScreen(
         label = "ring_sweep_rotation",
     )
 
-    val ringWavePhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(1100, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "ring_wave_phase",
-    )
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -258,18 +245,21 @@ fun SplashScreen(
                             .height(175.dp),
                     )
 
-                    SplashLogoGlowRing(
-                        logoDiameterDp = 175f,
-                        sweepRotation = ringSweepRotation + spinRotation.value,
-                        wavePhase = ringWavePhase,
-                        pulseScale = pulseScale,
-                        modifier = Modifier.size(228.dp),
-                    )
-
-                    DiaWellLogo(
-                        rotationAngle = spinRotation.value,
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier.size(175.dp),
-                    )
+                    ) {
+                        DiaWellLogo(
+                            rotationAngle = spinRotation.value,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+
+                        SplashLogoGlowRing(
+                            sweepRotation = ringSweepRotation + spinRotation.value,
+                            pulseScale = pulseScale,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(28.dp))
@@ -507,72 +497,69 @@ fun OutsideEcgPulseCanvas(
 
 @Composable
 fun SplashLogoGlowRing(
-    logoDiameterDp: Float,
     sweepRotation: Float,
-    wavePhase: Float,
     pulseScale: Float,
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val logoRadius = (logoDiameterDp.dp.toPx() * 0.5f) * (0.985f + (pulseScale - 1f) * 0.35f)
+        val outerRadius = size.minDimension * 0.5f
+        // The segmented arc reactor ring in app_logo.png sits at ~0.72 of the outer radius
+        val arcReactorRadius = outerRadius * 0.72f
+        val pulseAlpha = 0.85f + (pulseScale - 0.96f) * 1.8f
 
-        // Soft glowing cyan & purple aura hugging the rotating logo ring
+        // 1. Slight soft white ambient halo centered right on the arc reactor ring
         drawCircle(
             brush = Brush.radialGradient(
                 colorStops = arrayOf(
-                    0.55f to Color.Transparent,
-                    0.76f to Color(0xFF00E5FF).copy(alpha = 0.34f),
-                    0.88f to Color(0xFFA855F7).copy(alpha = 0.24f),
-                    1.00f to Color.Transparent,
+                    0.50f to Color.Transparent,
+                    0.68f to Color.White.copy(alpha = 0.11f * pulseAlpha),
+                    0.75f to Color.White.copy(alpha = 0.16f * pulseAlpha),
+                    0.84f to Color.White.copy(alpha = 0.06f * pulseAlpha),
+                    0.94f to Color.Transparent,
                 ),
                 center = center,
-                radius = logoRadius * 1.26f,
+                radius = outerRadius,
             ),
-            radius = logoRadius * 1.26f,
+            radius = outerRadius,
             center = center,
         )
 
-        // Primary rotating neon sweep-gradient ring around the logo rim
+        // 2. Smooth rotating white light sweep gliding around the segmented arc reactor ring
         drawRotate(degrees = sweepRotation, pivot = center) {
             drawCircle(
                 brush = Brush.sweepGradient(
-                    colors = listOf(
-                        Color(0xFF00E5FF),
-                        Color(0xFF8B5CF6),
-                        Color(0xFFFF2E93),
-                        Color(0xFFF0ABFC),
-                        Color(0xFF00E5FF),
+                    colorStops = arrayOf(
+                        0.00f to Color.Transparent,
+                        0.12f to Color.White.copy(alpha = 0.08f),
+                        0.22f to Color.White.copy(alpha = 0.38f),
+                        0.32f to Color.White.copy(alpha = 0.08f),
+                        0.46f to Color.Transparent,
+                        0.64f to Color.White.copy(alpha = 0.05f),
+                        0.74f to Color.White.copy(alpha = 0.22f),
+                        0.84f to Color.White.copy(alpha = 0.05f),
+                        1.00f to Color.Transparent,
                     ),
                     center = center,
                 ),
-                radius = logoRadius + 1.8.dp.toPx(),
+                radius = arcReactorRadius,
                 center = center,
-                style = Stroke(width = 3.4.dp.toPx()),
+                style = Stroke(width = 11.dp.toPx(), cap = StrokeCap.Round),
             )
-        }
 
-        // Counter-rotating liquid plasma waveform halo
-        drawRotate(degrees = -sweepRotation * 1.35f, pivot = center) {
-            val points = 72
-            val ringPath = Path()
-            val amp = 3.2.dp.toPx()
-            for (i in 0..points) {
-                val theta = (i.toFloat() / points) * 2f * PI.toFloat()
-                val r = logoRadius + 2.5.dp.toPx() + sin(theta * 5f + wavePhase) * amp
-                val px = center.x + r * cos(theta)
-                val py = center.y + r * sin(theta)
-                if (i == 0) ringPath.moveTo(px, py) else ringPath.lineTo(px, py)
-            }
-            ringPath.close()
-            drawPath(
-                path = ringPath,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF00E5FF).copy(alpha = 0.85f),
-                        Color(0xFFA855F7).copy(alpha = 0.85f),
-                        Color(0xFFF0ABFC).copy(alpha = 0.85f),
+            drawCircle(
+                brush = Brush.sweepGradient(
+                    colorStops = arrayOf(
+                        0.00f to Color.Transparent,
+                        0.15f to Color.White.copy(alpha = 0.10f),
+                        0.22f to Color.White.copy(alpha = 0.52f),
+                        0.29f to Color.White.copy(alpha = 0.10f),
+                        0.45f to Color.Transparent,
+                        1.00f to Color.Transparent,
                     ),
+                    center = center,
                 ),
+                radius = arcReactorRadius,
+                center = center,
                 style = Stroke(width = 2.2.dp.toPx(), cap = StrokeCap.Round),
             )
         }
