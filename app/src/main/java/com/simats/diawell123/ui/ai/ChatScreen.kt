@@ -123,7 +123,8 @@ import com.simats.diawell123.ui.theme.AppTheme
 fun ChatScreen(
     modifier: Modifier = Modifier,
     viewModel: ChatViewModel = viewModel(),
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onVoiceOverlayVisibilityChanged: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -151,6 +152,10 @@ fun ChatScreen(
     var isVoiceOverlayOpen by remember { mutableStateOf(true) }
     var openedVoiceFromChat by remember { mutableStateOf(false) }
     var autoSpeakEnabled by remember { mutableStateOf(sessionManager.isDrJarvisVoiceEnabled()) }
+
+    LaunchedEffect(isVoiceOverlayOpen) {
+        onVoiceOverlayVisibilityChanged(isVoiceOverlayOpen)
+    }
 
     val latestAiResponse = remember(messages) {
         messages.lastOrNull { it.sender == ChatSender.AI }?.text ?: ""
@@ -287,23 +292,39 @@ fun ChatScreen(
             // =================================================================
             // PART 2: MINIMAL FLOATING GLASS TOP BAR
             // =================================================================
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 18.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
             ) {
                 // Left: Apple VisionOS / iOS Fluid Glass Bubble Back Button (returns to DIVA Voice first)
-                FluidGlassBackButton(onClick = returnToVoiceMode)
+                Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                    FluidGlassBackButton(onClick = returnToVoiceMode)
+                }
+
+                // Center: DIVA AI Logo & Title
+                Row(
+                    modifier = Modifier.align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    IronmanDoctorAvatar(sizeDp = 36)
+                    Text(
+                        text = "DIVA",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.textPrimary,
+                    )
+                }
 
                 // Right: Single Sleek Translucent Fluid Glass Pill (New Chat & More Options)
                 var showOptionsMenu by remember { mutableStateOf(false) }
 
-                FluidGlassPillContainer(
-                    horizontalPadding = 8.dp,
-                    verticalPadding = 4.dp,
-                ) {
+                Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                    FluidGlassPillContainer(
+                        horizontalPadding = 8.dp,
+                        verticalPadding = 4.dp,
+                    ) {
                     // New Chat (Compose Icon)
                     val topIconStroke = AppTheme.colors.textPrimary
                     val pencilTint = AppTheme.colors.primaryAccent
@@ -425,6 +446,7 @@ fun ChatScreen(
                             }
                         }
                     }
+                }
             }
 
             // =================================================================
