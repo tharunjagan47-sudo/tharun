@@ -27,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CleaningServices
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Emergency
 import androidx.compose.material.icons.rounded.Help
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Lock
@@ -312,25 +311,6 @@ fun SettingsScreen(
                         SettingsRow(vectorIcon = Icons.Rounded.Restaurant, title = "Food Preferences", onClick = onFoodPrefsClick)
                         Spacer(modifier = Modifier.height(10.dp))
                         SettingsRow(vectorIcon = Icons.Rounded.Lock, title = "Privacy and Security", onClick = onPrivacySecurityClick)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ElementPopUpContainer(delayMillis = 200) {
-                    Column {
-                        SettingsRow(
-                            vectorIcon = Icons.Rounded.Emergency,
-                            title = "Emergency Medical Hotline (108)",
-                            onClick = {
-                                val dialIntent = android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:108"))
-                                try {
-                                    context.startActivity(dialIntent)
-                                } catch (_: Exception) {
-                                    Toast.makeText(context, "Emergency Helpline: 108", Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        )
                     }
                 }
 
