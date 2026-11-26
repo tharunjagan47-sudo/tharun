@@ -1,11 +1,5 @@
 package com.simats.diawell123.ui.ai
 
-import android.graphics.Matrix
-import android.graphics.SurfaceTexture
-import android.media.MediaPlayer
-import android.net.Uri
-import android.view.Surface
-import android.view.TextureView
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -30,22 +24,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -54,7 +43,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -565,8 +553,8 @@ fun DivaTalkingAvatar(
 
 /**
  * Hardware-accelerated looping video layer for DIVA's speaking gesture clip.
- * Pre-prepares MediaPlayer on mount, mutes embedded audio, crops out bottom subtitles
- * and corner watermark, and crossfades smoothly with the idle cutout.
+ * Uses [DivaTransparentVideoTextureView] (OpenGL ES 2.0 chroma/luma-key shader) to remove
+ * the dark video background so DIVA floats directly on the live screen with zero box.
  */
 @Composable
 private fun DivaSpeakingVideoLayer(
@@ -575,191 +563,39 @@ private fun DivaSpeakingVideoLayer(
     onVideoReady: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val latestIsSpeaking by rememberUpdatedState(isSpeaking)
-    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-    var isPrepared by remember { mutableStateOf(false) }
-    var videoWidth by remember { mutableIntStateOf(16) }
-    var videoHeight by remember { mutableIntStateOf(9) }
+    var textureViewRef by remember { mutableStateOf<DivaTransparentVideoTextureView?>(null) }
 
-    LaunchedEffect(isSpeaking, isPrepared) {
-        val player = mediaPlayer ?: return@LaunchedEffect
-        if (!isPrepared) return@LaunchedEffect
-        try {
-            if (isSpeaking) {
-                if (!player.isPlaying) {
-                    player.start()
-                }
-            } else {
-                if (player.isPlaying) {
-                    player.pause()
-                }
-                player.seekTo(0)
-            }
-        } catch (_: IllegalStateException) {
-            // Ignore transient state during lifecycle teardown
-        }
+    LaunchedEffect(isSpeaking, textureViewRef) {
+        textureViewRef?.setPlaying(isSpeaking)
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            try {
-                mediaPlayer?.stop()
-            } catch (_: IllegalStateException) {
-            }
-            mediaPlayer?.release()
-            mediaPlayer = null
+            textureViewRef?.releasePlayer()
+            textureViewRef = null
         }
     }
 
     Box(
-        modifier = modifier
-            .graphicsLayer {
-                compositingStrategy = CompositingStrategy.Offscreen
-                this.alpha = alpha
-            }
-            .drawWithContent {
-                drawContent()
-                val radius = size.maxDimension * 0.56f
-                drawRect(
-                    brush = Brush.radialGradient(
-                        colorStops = arrayOf(
-                            0.00f to Color.Black,
-                            0.58f to Color.Black,
-                            0.80f to Color.Black.copy(alpha = 0.62f),
-                            0.98f to Color.Transparent,
-                            1.00f to Color.Transparent,
-                        ),
-                        center = Offset(size.width * 0.50f, size.height * 0.46f),
-                        radius = radius,
-                    ),
-                    blendMode = BlendMode.DstIn,
-                )
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.00f to Color.Black,
-                            0.76f to Color.Black,
-                            0.92f to Color.Transparent,
-                            1.00f to Color.Transparent,
-                        ),
-                    ),
-                    blendMode = BlendMode.DstIn,
-                )
-            },
+        modifier = modifier.graphicsLayer { this.alpha = alpha },
     ) {
         AndroidView(
             factory = { ctx ->
-                TextureView(ctx).apply {
-                    val textureView = this
-                    isOpaque = false
-                    surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-                        override fun onSurfaceTextureAvailable(
-                            surfaceTexture: SurfaceTexture,
-                            width: Int,
-                            height: Int,
-                        ) {
-                            val player = MediaPlayer().apply {
-                                val videoUri = Uri.parse("android.resource://${ctx.packageName}/${R.raw.diva_voice_motion}")
-                                setDataSource(ctx, videoUri)
-                                setSurface(Surface(surfaceTexture))
-                                isLooping = true
-                                setVolume(0f, 0f)
-                                setOnVideoSizeChangedListener { _, vw, vh ->
-                                    if (vw > 0 && vh > 0) {
-                                        videoWidth = vw
-                                        videoHeight = vh
-                                        applyVideoCenterCropMatrix(
-                                            textureView = textureView,
-                                            viewWidth = width,
-                                            viewHeight = height,
-                                            videoWidth = vw,
-                                            videoHeight = vh,
-                                        )
-                                    }
-                                }
-                                setOnPreparedListener { mp ->
-                                    isPrepared = true
-                                    onVideoReady()
-                                    applyVideoCenterCropMatrix(
-                                        textureView = textureView,
-                                        viewWidth = width,
-                                        viewHeight = height,
-                                        videoWidth = videoWidth,
-                                        videoHeight = videoHeight,
-                                    )
-                                    if (latestIsSpeaking) {
-                                        mp.start()
-                                    } else {
-                                        mp.seekTo(0)
-                                    }
-                                }
-                                prepareAsync()
-                            }
-                            mediaPlayer = player
-                        }
-
-                        override fun onSurfaceTextureSizeChanged(
-                            surfaceTexture: SurfaceTexture,
-                            width: Int,
-                            height: Int,
-                        ) {
-                            applyVideoCenterCropMatrix(
-                                textureView = textureView,
-                                viewWidth = width,
-                                viewHeight = height,
-                                videoWidth = videoWidth,
-                                videoHeight = videoHeight,
-                            )
-                        }
-
-                        override fun onSurfaceTextureDestroyed(surfaceTexture: SurfaceTexture): Boolean {
-                            try {
-                                mediaPlayer?.stop()
-                            } catch (_: IllegalStateException) {
-                            }
-                            mediaPlayer?.release()
-                            mediaPlayer = null
-                            isPrepared = false
-                            return true
-                        }
-
-                        override fun onSurfaceTextureUpdated(surfaceTexture: SurfaceTexture) = Unit
-                    }
+                DivaTransparentVideoTextureView(
+                    context = ctx,
+                    videoResId = R.raw.diva_voice_motion,
+                    onVideoReady = onVideoReady,
+                ).also { view ->
+                    view.setPlaying(isSpeaking)
+                    textureViewRef = view
                 }
+            },
+            update = { view ->
+                view.setPlaying(isSpeaking)
             },
             modifier = Modifier.fillMaxSize(),
         )
     }
-}
-
-private fun applyVideoCenterCropMatrix(
-    textureView: TextureView,
-    viewWidth: Int,
-    viewHeight: Int,
-    videoWidth: Int,
-    videoHeight: Int,
-) {
-    if (viewWidth <= 0 || viewHeight <= 0 || videoWidth <= 0 || videoHeight <= 0) return
-
-    // Fit the full robot + both outstretched hands (middle ~82% width, top ~84% height)
-    // while keeping bottom Tamil subtitles and corner watermark cropped out.
-    val scale = minOf(
-        viewWidth.toFloat() / (videoWidth.toFloat() * 0.82f),
-        viewHeight.toFloat() / (videoHeight.toFloat() * 0.84f),
-    )
-
-    val scaledWidth = videoWidth * scale
-    val scaledHeight = videoHeight * scale
-
-    val dx = (viewWidth - scaledWidth) * 0.5f
-    val dy = viewHeight * 0.49f - scaledHeight * 0.43f
-
-    val matrix = Matrix().apply {
-        setScale(scaledWidth / viewWidth.toFloat(), scaledHeight / viewHeight.toFloat())
-        postTranslate(dx, dy)
-    }
-    textureView.setTransform(matrix)
 }
 
 private fun DrawScope.drawSparkleStar(center: Offset, radius: Float, color: Color) {
