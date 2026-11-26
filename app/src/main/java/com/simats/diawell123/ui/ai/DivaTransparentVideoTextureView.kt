@@ -350,16 +350,16 @@ private class DivaGlVideoThread(
         GlMatrix.setIdentityM(out, 0)
         val safeVidW = vidW.coerceAtLeast(1).toFloat()
         val safeVidH = vidH.coerceAtLeast(1).toFloat()
-        // Robot + outstretched hands span ~64% of the 16:9 width and ~78% of height;
-        // scaling to fit those bounds keeps the talking robot the exact same size as idle
-        // without cropping either hand.
+        // Match the exact proportions and DW chest alignment of the idle cutout:
+        // scale to fit ~74% width / ~94% height and shift slightly upward (+0.05 NDC)
+        // so the DW chest emblem sits centered inside the chestOverlay voice orb.
         val scale = minOf(
-            vw.toFloat() / (safeVidW * 0.64f),
-            vh.toFloat() / (safeVidH * 0.78f),
+            vw.toFloat() / (safeVidW * 0.74f),
+            vh.toFloat() / (safeVidH * 0.94f),
         )
         val sx = (safeVidW * scale) / vw.toFloat()
         val sy = (safeVidH * scale) / vh.toFloat()
-        GlMatrix.translateM(out, 0, 0f, -0.08f, 0f)
+        GlMatrix.translateM(out, 0, 0f, 0.05f, 0f)
         GlMatrix.scaleM(out, 0, sx, sy, 1f)
     }
 
@@ -453,14 +453,14 @@ private class DivaGlVideoThread(
                 vec2 visorDiff = vec2((vVideoUv.x - 0.50) / 0.13, (vVideoUv.y - 0.70) / 0.13);
                 float inVisor = 1.0 - smoothstep(0.65, 1.05, length(visorDiff));
 
-                // Smoothly key out dark studio background around DIVA & both hands
-                float key = smoothstep(0.06, 0.22, max(maxC, luma * 1.15));
+                // Smoothly key out dark studio background around DIVA & both hands (zero box tint)
+                float key = smoothstep(0.11, 0.28, max(maxC, luma * 1.10));
                 float alpha = max(key, inVisor);
 
-                // Crop out bottom Tamil subtitles (y < 0.16) and bottom-right Gemini watermark
+                // Keep full robot torso & hands visible while softly trimming only the bottom subtitle strip & watermark
                 float edgeX = smoothstep(0.01, 0.05, vVideoUv.x) * smoothstep(0.01, 0.05, 1.0 - vVideoUv.x);
                 float edgeTop = smoothstep(0.01, 0.06, 1.0 - vVideoUv.y);
-                float edgeBottom = smoothstep(0.13, 0.20, vVideoUv.y);
+                float edgeBottom = smoothstep(0.05, 0.11, vVideoUv.y);
                 float watermarkMask = 1.0 - (smoothstep(0.82, 0.88, vVideoUv.x) * (1.0 - smoothstep(0.18, 0.26, vVideoUv.y)));
                 alpha *= edgeX * edgeTop * edgeBottom * watermarkMask;
 
