@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.simats.diawell123.data.model.WeeklyReportData
 import com.simats.diawell123.data.repository.ReportsRepository
 import com.simats.diawell123.data.repository.ReportsRepositoryImpl
+import com.simats.diawell123.util.toCleanErrorMessage
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,7 +71,7 @@ class ReportsViewModel(
                             it.copy(
                                 isLoading = false,
                                 isRefreshing = false,
-                                errorMessage = error.message ?: "Failed to compile weekly report."
+                                errorMessage = error.toCleanErrorMessage("Failed to compile weekly report.")
                             )
                         }
                     }
