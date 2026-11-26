@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.simats.diawell123.R
 import com.simats.diawell123.ui.theme.Diawell123Theme
@@ -173,25 +175,8 @@ fun DivaTalkingAvatar(
 
     val speakingFactor by animateFloatAsState(
         targetValue = if (isSpeaking) 1f else 0f,
-        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
         label = "DivaSpeakingFactor",
-    )
-
-    val gesturePhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 5200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "DivaGesturePhase",
-    )
-
-    // Smoothly damped conversational emphasis envelope (prevents any high-frequency arm shake)
-    val gestureEnvelope by animateFloatAsState(
-        targetValue = if (isSpeaking) (0.45f + 0.55f * mouthOpenness.coerceIn(0f, 1f)) else 0f,
-        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
-        label = "DivaGestureEnvelope",
     )
 
     // Natural organic eye-blinking cycle
@@ -296,169 +281,62 @@ fun DivaTalkingAvatar(
             }
         }
 
-        // 2. UNIFIED HD SEGMENTED ROBOT STAGE (Exact Listening proportions + smooth 2-bone speaking gestures)
-        val stageBoxModifier = if (fullBody) Modifier.size(sizeDp.dp) else Modifier.fillMaxSize()
+        var isVideoReady by remember { mutableStateOf(false) }
+        val videoAlpha by animateFloatAsState(
+            targetValue = if (fullBody && isSpeaking && isVideoReady) 1f else 0f,
+            animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing),
+            label = "DivaSpeakingVideoAlpha",
+        )
+
+        // 2. UNIFIED ANIMATED ROBOT STAGE (Idle Cutout <-> Synced 3D Gesture Video + DW Chest Orb)
         Box(
-            modifier = stageBoxModifier.graphicsLayer {
-                val baseFloat = sin(floatPhase) * (if (fullBody) 5.0f else 2.8f)
-                translationY = baseFloat.dp.toPx()
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    val baseFloat = sin(floatPhase) * (if (fullBody) 5.0f else 2.8f)
+                    translationY = baseFloat.dp.toPx()
 
-                val idleSway = sin(swayPhase) * 0.45f
-                val talkSway = sin(swayPhase) * (speakingFactor * 0.65f)
-                rotationZ = idleSway + talkSway
+                    val idleSway = sin(swayPhase) * 0.45f
+                    val talkSway = sin(swayPhase) * (speakingFactor * 0.85f)
+                    rotationZ = idleSway + talkSway
 
-                val breath = sin(floatPhase + 0.7f) * 0.006f
-                scaleY = 1f + breath
-                scaleX = 1f - breath * 0.35f
-                transformOrigin = TransformOrigin(0.5f, 0.58f)
-            },
+                    val breath = sin(floatPhase + 0.7f) * 0.006f
+                    scaleY = 1f + breath
+                    scaleX = 1f - breath * 0.35f
+                    transformOrigin = TransformOrigin(0.5f, 0.58f)
+                },
             contentAlignment = Alignment.Center,
         ) {
             if (fullBody) {
-                val waveL = 0.5f + 0.5f * sin(gesturePhase)
-                val waveR = 0.5f + 0.5f * sin(gesturePhase + 2.25f)
-                val openGain = (0.38f + 0.62f * gestureEnvelope) * speakingFactor
-
-                // Positive rotationZ = CW (left arm swings out/up to viewer's left)
-                // Negative rotationZ = CCW (right arm swings out/up to viewer's right)
-                val leftArmAngle = speakingFactor * (sin(floatPhase) * 1.4f) + openGain * (6f + 22f * waveL)
-                val rightArmAngle = -speakingFactor * (sin(floatPhase) * 1.4f) - openGain * (6f + 22f * waveR)
-
-                // Left & Right Upper Arms tucked behind Torso at rounded shoulder pivots
-                Image(
-                    painter = painterResource(id = R.drawable.diva_arm_left),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            rotationZ = leftArmAngle
-                            transformOrigin = TransformOrigin(0.297f, 0.527f)
-                        },
-                )
-
-                Image(
-                    painter = painterResource(id = R.drawable.diva_arm_right),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            rotationZ = rightArmAngle
-                            transformOrigin = TransformOrigin(0.703f, 0.527f)
-                        },
-                )
-
-                // Stationary Torso + DW Chest Ring (identical scale & position to LISTENING)
-                Image(
-                    painter = painterResource(id = R.drawable.diva_torso),
-                    contentDescription = "DIVA Assistant",
-                    contentScale = ContentScale.Fit,
+                DivaSpeakingVideoLayer(
+                    isSpeaking = isSpeaking,
+                    alpha = videoAlpha,
+                    onVideoReady = { isVideoReady = true },
                     modifier = Modifier.fillMaxSize(),
                 )
-
-                // 3. Synchronized DW Chest Overlay locked on torso center
-                chestOverlay?.invoke(this)
-
-                // Left & Right Floating Hands following 2-bone shoulder-wrist kinematics + wrist follow-through
-                Image(
-                    painter = painterResource(id = R.drawable.diva_hand_left),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            val squarePx = sizeDp.dp.toPx()
-                            val rad = leftArmAngle * (PI.toFloat() / 180f)
-                            val c = cos(rad)
-                            val s = sin(rad)
-                            val vx = -0.121f
-                            val vy = 0.248f
-                            translationX = ((vx * c - vy * s) - vx) * squarePx -
-                                (openGain * (2f + 5f * waveL)).dp.toPx()
-                            translationY = ((vx * s + vy * c) - vy) * squarePx -
-                                (openGain * (3f + 7f * waveL)).dp.toPx()
-                            rotationZ = leftArmAngle * 0.55f + openGain * 9f * sin(gesturePhase - 0.5f)
-                            transformOrigin = TransformOrigin(0.176f, 0.775f)
-                        },
-                )
-
-                Image(
-                    painter = painterResource(id = R.drawable.diva_hand_right),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            val squarePx = sizeDp.dp.toPx()
-                            val rad = rightArmAngle * (PI.toFloat() / 180f)
-                            val c = cos(rad)
-                            val s = sin(rad)
-                            val vx = 0.119f
-                            val vy = 0.248f
-                            translationX = ((vx * c - vy * s) - vx) * squarePx +
-                                (openGain * (2f + 5f * waveR)).dp.toPx()
-                            translationY = ((vx * s + vy * c) - vy) * squarePx -
-                                (openGain * (3f + 7f * waveR)).dp.toPx()
-                            rotationZ = rightArmAngle * 0.55f - openGain * 9f * sin(gesturePhase + 1.75f)
-                            transformOrigin = TransformOrigin(0.822f, 0.775f)
-                        },
-                )
-
-                // Expressive Head + Live Face Visor (nods & tilts gently while keeping visor synced)
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            rotationZ = speakingFactor * (3.2f * sin(gesturePhase * 0.5f + 0.4f))
-                            translationY = (-speakingFactor * (2.2f * gestureEnvelope)).dp.toPx()
-                            transformOrigin = TransformOrigin(0.50f, 0.43f)
-                        },
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.diva_head),
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    DivaFaceVisorCanvas(
-                        smoothOpen = smoothOpen,
-                        speakingFactor = speakingFactor,
-                        mouthShape = mouthShape,
-                        blinkProgress = blinkProgress,
-                    )
-                }
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.diva_avatar),
-                    contentDescription = "DIVA Assistant",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                DivaFaceVisorCanvas(
-                    smoothOpen = smoothOpen,
-                    speakingFactor = speakingFactor,
-                    mouthShape = mouthShape,
-                    blinkProgress = blinkProgress,
-                )
-                chestOverlay?.invoke(this)
             }
-        }
-    }
-}
 
-@Composable
-private fun DivaFaceVisorCanvas(
-    smoothOpen: Float,
-    speakingFactor: Float,
-    mouthShape: DivaMouthShape,
-    blinkProgress: Float,
-) {
-    // Live Procedural Face Visor Animation (Blinking Eyes + Speech-Synced Glowing Cyan Mouth)
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        val visorDark = Color(0xFF0A111D)
+            // Base High-Res DIVA Robot Illustration (crossfades smoothly when 3D gesture video speaks)
+            Image(
+                painter = painterResource(id = if (fullBody) R.drawable.diva_robot_cutout else R.drawable.diva_avatar),
+                contentDescription = "DIVA Assistant",
+                contentScale = if (fullBody) ContentScale.Fit else ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        alpha = 1f - videoAlpha
+                    },
+            )
+
+            // Live Procedural Face Visor Animation (Blinking Eyes + Speech-Synced Glowing Cyan Mouth)
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = 1f - videoAlpha },
+            ) {
+                val w = size.width
+                val h = size.height
+                val visorDark = Color(0xFF0A111D)
 
                 // Exact measured normalized facial feature positions on diva_avatar.png (512x512)
                 val leftEyeCenter = Offset(w * 0.387f, h * 0.254f)
@@ -666,6 +544,58 @@ private fun DivaFaceVisorCanvas(
                     }
                 }
             }
+
+            // 3. Synchronized DW Chest Overlay (moves & tilts identically with DIVA!)
+            chestOverlay?.invoke(this)
+        }
+    }
+}
+
+/**
+ * Hardware-accelerated looping video layer for DIVA's speaking gesture clip.
+ * Uses [DivaTransparentVideoTextureView] (OpenGL ES 2.0 chroma/luma-key shader) to remove
+ * the dark video background so DIVA floats directly on the live screen with zero box.
+ */
+@Composable
+private fun DivaSpeakingVideoLayer(
+    isSpeaking: Boolean,
+    alpha: Float,
+    onVideoReady: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var textureViewRef by remember { mutableStateOf<DivaTransparentVideoTextureView?>(null) }
+
+    LaunchedEffect(isSpeaking, textureViewRef) {
+        textureViewRef?.setPlaying(isSpeaking)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            textureViewRef?.releasePlayer()
+            textureViewRef = null
+        }
+    }
+
+    Box(
+        modifier = modifier.graphicsLayer { this.alpha = alpha },
+    ) {
+        AndroidView(
+            factory = { ctx ->
+                DivaTransparentVideoTextureView(
+                    context = ctx,
+                    videoResId = R.raw.diva_voice_motion,
+                    onVideoReady = onVideoReady,
+                ).also { view ->
+                    view.setPlaying(isSpeaking)
+                    textureViewRef = view
+                }
+            },
+            update = { view ->
+                view.setPlaying(isSpeaking)
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
 }
 
 private fun DrawScope.drawSparkleStar(center: Offset, radius: Float, color: Color) {
