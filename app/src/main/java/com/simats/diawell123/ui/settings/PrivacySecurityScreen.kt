@@ -43,6 +43,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,7 +80,7 @@ fun PrivacySecurityScreen(
     val privacyState by viewModel.privacyState.collectAsState()
     val context = LocalContext.current
     val sessionManager = remember { SessionManager.getInstance() }
-    var showSetPinDialog by remember { mutableStateOf(false) }
+    var showSetPinDialog by rememberSaveable { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -243,10 +245,10 @@ fun SetAppLockPinDialog(
     onDismiss: () -> Unit,
     onPinSaved: (String) -> Unit
 ) {
-    var step by remember { mutableStateOf(1) } // 1: Enter PIN, 2: Confirm PIN
-    var firstPin by remember { mutableStateOf("") }
-    var currentInput by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var step by rememberSaveable { mutableStateOf(1) } // 1: Enter PIN, 2: Confirm PIN
+    var firstPin by rememberSaveable { mutableStateOf("") }
+    var currentInput by rememberSaveable { mutableStateOf("") }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     fun handleDigit(d: String) {
         if (currentInput.length < 4) {
@@ -451,9 +453,9 @@ fun PrivacyLinkRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(AppTheme.colors.cardBackground)
-            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp))
+            .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
             .clickable { onClick() }
             .padding(14.dp),
     ) {
@@ -462,7 +464,12 @@ fun PrivacyLinkRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -487,6 +494,8 @@ fun PrivacyLinkRow(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = if (isDestructive) Color(0xFFEF4444) else AppTheme.colors.textPrimary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             Icon(
