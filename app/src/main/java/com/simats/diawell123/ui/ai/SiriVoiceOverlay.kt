@@ -42,7 +42,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.FiberManualRecord
 import androidx.compose.material.icons.rounded.Medication
 import androidx.compose.material.icons.rounded.Mic
@@ -217,34 +216,6 @@ fun SiriVoiceOverlay(
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isAutoSpeakEnabled) Color(0xFF00E5FF) else Color(0xFFCBD5E1),
-                                    maxLines = 1,
-                                    softWrap = false
-                                )
-                            }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(Color.White.copy(alpha = 0.10f))
-                                .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(14.dp))
-                                .clickable { onClose() }
-                                .padding(horizontal = 11.dp, vertical = 6.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Close",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
                                     maxLines = 1,
                                     softWrap = false
                                 )
@@ -472,6 +443,9 @@ fun SiriVoiceOverlay(
                             }
                         }
                     }
+
+                    // Keep bottom controls clear of the floating Liquid Glass bottom nav bar
+                    Spacer(modifier = Modifier.height(82.dp))
                 }
             }
         }
