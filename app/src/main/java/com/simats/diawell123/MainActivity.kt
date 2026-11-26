@@ -144,6 +144,10 @@ class MainActivity : FragmentActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101) {
+            val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            Log.d("MainActivity", "POST_NOTIFICATIONS granted: $granted")
+        }
     }
 
     override fun onStop() {
@@ -155,6 +159,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
+        Log.d("MainActivity", "onConfigurationChanged: orientation=${newConfig.orientation}")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -373,6 +378,7 @@ class MainActivity : FragmentActivity() {
                         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 val token = task.result
+                                Log.d("FCM_TOKEN", "Current FCM Device Token: $token")
                                 token?.let {
                                     DiaWellFirebaseMessagingService.sendTokenToServer(applicationContext, it)
                                 }
