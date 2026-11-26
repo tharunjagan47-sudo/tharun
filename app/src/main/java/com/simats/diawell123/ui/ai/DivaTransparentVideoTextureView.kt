@@ -350,15 +350,15 @@ private class DivaGlVideoThread(
         GlMatrix.setIdentityM(out, 0)
         val safeVidW = vidW.coerceAtLeast(1).toFloat()
         val safeVidH = vidH.coerceAtLeast(1).toFloat()
-        // Edge-to-edge stage fits ~80% of video width (so both outstretched waving hands fit cleanly)
-        // while keeping the speaking robot scaled to match the idle cutout and aligned to the DW chest orb.
+        // Fit ~84% width and ~98% height inside the full-width stage so outstretched arms/hands
+        // and lower body never collide with any quad edge while keeping exact idle proportions.
         val scale = minOf(
-            vw.toFloat() / (safeVidW * 0.80f),
-            vh.toFloat() / (safeVidH * 0.94f),
+            vw.toFloat() / (safeVidW * 0.84f),
+            vh.toFloat() / (safeVidH * 0.98f),
         )
         val sx = (safeVidW * scale) / vw.toFloat()
         val sy = (safeVidH * scale) / vh.toFloat()
-        GlMatrix.translateM(out, 0, 0f, 0.04f, 0f)
+        GlMatrix.translateM(out, 0, 0f, 0.02f, 0f)
         GlMatrix.scaleM(out, 0, sx, sy, 1f)
     }
 
@@ -445,25 +445,27 @@ private class DivaGlVideoThread(
             varying vec2 vVideoUv;
             void main() {
                 vec4 col = texture2D(uTexture, vSampleUv);
-                float maxC = max(col.r, max(col.g, col.b));
-                float minC = min(col.r, min(col.g, col.b));
-                float chroma = maxC - minC;
-                float signal = max(maxC, chroma * 1.6);
+                float luma = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+
+                // Dark navy studio backdrop (#0B1022) has very low red & green (r < 0.09, luma < 0.10),
+                // whereas purple/violet robot armor & cyan glow carry strong red/green energy.
+                float bodyEnergy = max(col.r * 1.45, max(col.g * 1.15, luma * 1.30));
 
                 // Preserve the dark face visor core inside DIVA's head
-                vec2 visorDiff = vec2((vVideoUv.x - 0.50) / 0.13, (vVideoUv.y - 0.70) / 0.13);
-                float inVisor = 1.0 - smoothstep(0.65, 1.05, length(visorDiff));
+                vec2 visorDiff = vec2((vVideoUv.x - 0.50) / 0.125, (vVideoUv.y - 0.70) / 0.12);
+                float inVisor = 1.0 - smoothstep(0.65, 1.0, length(visorDiff));
 
-                // Key out neutral dark studio backdrop while keeping deep purple lower body & hand shadows solid
-                float key = smoothstep(0.06, 0.17, signal);
+                // Key studio dark-navy backdrop completely to 0.0 alpha so zero rectangular box traces show
+                float key = smoothstep(0.14, 0.25, bodyEnergy);
                 float alpha = max(key, inVisor);
 
-                // Keep full robot bottom tip & outstretched hands unclipped while masking only the corner watermark
-                float edgeX = smoothstep(0.005, 0.03, vVideoUv.x) * smoothstep(0.005, 0.03, 1.0 - vVideoUv.x);
-                float edgeTop = smoothstep(0.005, 0.04, 1.0 - vVideoUv.y);
-                float edgeBottom = smoothstep(0.005, 0.03, vVideoUv.y);
+                // Smooth oval & soft bottom feather so no rectangular edge or hard bottom cut ever appears
+                vec2 ovalDiff = vec2((vVideoUv.x - 0.50) / 0.49, (vVideoUv.y - 0.50) / 0.49);
+                float ovalMask = 1.0 - smoothstep(0.84, 1.0, length(ovalDiff));
+                float edgeBottom = smoothstep(0.0, 0.045, vVideoUv.y);
+                float edgeTop = smoothstep(0.0, 0.05, 1.0 - vVideoUv.y);
                 float watermarkMask = 1.0 - (smoothstep(0.89, 0.94, vVideoUv.x) * (1.0 - smoothstep(0.12, 0.19, vVideoUv.y)));
-                alpha *= edgeX * edgeTop * edgeBottom * watermarkMask;
+                alpha *= ovalMask * edgeBottom * edgeTop * watermarkMask;
 
                 gl_FragColor = vec4(col.rgb * alpha, alpha);
             }
