@@ -76,6 +76,21 @@ object DiaWellNotificationHelper {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var stopAlarmRunnable: Runnable? = null
 
+    /**
+     * Dynamically adjusts the alarm media player volume.
+     * Used to politely duck audio when the personalized Voice Announcement is speaking.
+     */
+    @Synchronized
+    fun setAlarmVolume(volume: Float) {
+        try {
+            val clamped = volume.coerceIn(0.0f, 1.0f)
+            mediaPlayer?.setVolume(clamped, clamped)
+            Log.d("DiaWellNotifications", "Alarm volume set to $clamped")
+        } catch (e: Exception) {
+            Log.w("DiaWellNotifications", "Failed to set alarm volume: ${e.message}")
+        }
+    }
+
     // Debounce state to prevent duplicate alarm/notification triggers within 5 seconds
     private var lastAlarmTriggerTime: Long = 0L
     private var lastAlarmMedName: String = ""
@@ -494,7 +509,8 @@ object DiaWellNotificationHelper {
         dosage: String,
         scheduledTime: String = "",
         userId: Int = -1,
-        isDaily: Boolean = false
+        isDaily: Boolean = false,
+        userName: String = ""
     ) {
         // Prevent duplicate alarms firing within 5 seconds for the same medication
         val now = System.currentTimeMillis()
@@ -528,6 +544,7 @@ object DiaWellNotificationHelper {
             putExtra("scheduled_time", scheduledTime)
             putExtra("user_id", resolvedUserId)
             putExtra("is_daily", isDaily)
+            putExtra("user_name", userName)
         }
 
         val fullScreenPendingIntent = PendingIntent.getActivity(
@@ -792,7 +809,8 @@ object DiaWellNotificationHelper {
         alarmMinute: Int = -1,
         requestCodeOverride: Int = -1,
         repeatType: String = if (isDaily) "Daily" else "Once",
-        isSnooze: Boolean = false
+        isSnooze: Boolean = false,
+        userName: String? = null
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
@@ -827,6 +845,18 @@ object DiaWellNotificationHelper {
         } catch (_: Exception) {
             -1
         }
+        val resolvedUserName = userName?.takeIf { it.isNotBlank() } ?: try {
+            SessionManager.init(context.applicationContext)
+            val session = SessionManager.getInstance()
+            val name = session.getFullName() ?: session.getUserSession()?.fullName
+            if (!name.isNullOrBlank() && !name.equals("Patient", ignoreCase = true)) {
+                name
+            } else {
+                ""
+            }
+        } catch (_: Exception) {
+            ""
+        }
         val scheduledTimeLabel = java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
             .format(java.util.Date(finalTrigger))
 
@@ -844,7 +874,8 @@ object DiaWellNotificationHelper {
                     repeatType = repeatType,
                     isActive = true,
                     userId = resolvedUserId,
-                    scheduledTimeLabel = scheduledTimeLabel
+                    scheduledTimeLabel = scheduledTimeLabel,
+                    userName = resolvedUserName
                 )
             )
         }
@@ -853,8 +884,11 @@ object DiaWellNotificationHelper {
             action = ACTION_ALARM_TRIGGER
             putExtra("med_id", medId)
             putExtra("med_name", medName)
+            putExtra("medicine_name", medName)
             putExtra("med_dose", dose)
             putExtra("med_dosage", dose)
+            putExtra("dosage", dose)
+            putExtra("user_name", resolvedUserName)
             putExtra("scheduled_time", scheduledTimeLabel)
             putExtra("user_id", resolvedUserId)
             putExtra("is_daily", isDaily)
@@ -938,7 +972,8 @@ object DiaWellNotificationHelper {
         dose: String,
         hour: Int,
         minute: Int,
-        userId: Int = -1
+        userId: Int = -1,
+        userName: String? = null
     ) {
         val nextCal = java.util.Calendar.getInstance().apply {
             set(java.util.Calendar.HOUR_OF_DAY, hour)
@@ -959,7 +994,8 @@ object DiaWellNotificationHelper {
             isDaily = true,
             alarmHour = hour,
             alarmMinute = minute,
-            repeatType = "Daily"
+            repeatType = "Daily",
+            userName = userName
         )
         Log.d("DiaWellNotifications", "Rescheduled Daily alarm for medId=$medId at tomorrow $hour:$minute (timestamp=$triggerAtMillis)")
     }
@@ -975,7 +1011,8 @@ object DiaWellNotificationHelper {
         dose: String,
         snoozeMinutes: Int = 5,
         userId: Int = -1,
-        isDaily: Boolean = false
+        isDaily: Boolean = false,
+        userName: String? = null
     ) {
         val triggerTime = System.currentTimeMillis() + (snoozeMinutes * 60 * 1000L)
         val snoozeReqCode = medId + 100000
@@ -988,7 +1025,8 @@ object DiaWellNotificationHelper {
             userId = userId,
             isDaily = isDaily,
             requestCodeOverride = snoozeReqCode,
-            isSnooze = true
+            isSnooze = true,
+            userName = userName
         )
         Log.d("DiaWellNotifications", "Snoozed medId=$medId (req=$snoozeReqCode) for $snoozeMinutes minutes (isDaily=$isDaily, isSnooze=true)")
     }
@@ -1057,7 +1095,8 @@ object DiaWellNotificationHelper {
                 isDaily = true,
                 alarmHour = rem.hour,
                 alarmMinute = rem.minute,
-                repeatType = rem.repeatType
+                repeatType = rem.repeatType,
+                userName = rem.userName
             )
             Log.d("DiaWellNotifications", "Restored reminder for ${rem.medName} (id=${rem.id}) at ${cal.time}")
         }
