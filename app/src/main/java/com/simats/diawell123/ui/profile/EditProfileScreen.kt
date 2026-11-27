@@ -100,6 +100,7 @@ fun EditProfileScreen(
     var email by remember { mutableStateOf(ProfileState.userEmail) }
     var phone by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("Male") }
+    var bloodGroup by remember { mutableStateOf("O+") }
     var age by remember { mutableStateOf("30 years") }
     var diabetesType by remember { mutableStateOf("Type 2") }
     var height by remember { mutableStateOf("165 cm") }
@@ -129,6 +130,7 @@ fun EditProfileScreen(
                 email = p.email
                 p.phone?.let { if (it.isNotBlank()) phone = it }
                 p.gender?.let { if (it.isNotBlank()) gender = it }
+                p.bloodGroup?.let { if (it.isNotBlank()) bloodGroup = it }
                 p.diabetesType?.let { diabetesType = it }
                 p.age?.let { age = "$it years" }
                 p.heightCm?.let { height = "${it.toInt()} cm" }
@@ -615,6 +617,16 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Blood Group Segmented Picker
+            VerticalScrollAndSelectPicker(
+                label = "Blood Group",
+                items = listOf("A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"),
+                selectedItem = bloodGroup,
+                onItemSelected = { bloodGroup = it },
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             // 1. Diabetes Type Vertical Scroll Picker
             VerticalScrollAndSelectPicker(
                 label = "Diabetes Type",
@@ -710,6 +722,7 @@ fun EditProfileScreen(
                         weightKg = weightNum,
                         phone = phone,
                         gender = gender,
+                        bloodGroup = bloodGroup,
                         targetFastingGlucose = fastingNum,
                         targetPostmealGlucose = postmealNum,
                         onSuccess = {
