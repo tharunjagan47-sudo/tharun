@@ -34,6 +34,9 @@ data class ProfileData(
     @SerializedName("gender")
     val gender: String? = null,
 
+    @SerializedName("blood_group")
+    val bloodGroup: String? = null,
+
     @SerializedName("diabetes_type")
     val diabetesType: String = "Type 2",
 
@@ -83,6 +86,9 @@ data class UpdateProfileRequest(
 
     @SerializedName("gender")
     val gender: String? = null,
+
+    @SerializedName("blood_group")
+    val bloodGroup: String? = null,
 
     @SerializedName("diabetes_type")
     val diabetesType: String,
@@ -157,6 +163,9 @@ data class PatientDetailsResponse(
 data class HealthPreferencesRequest(
     @SerializedName("user_id")
     val userId: Int? = null,
+
+    @SerializedName("blood_group")
+    val bloodGroup: String? = null,
 
     @SerializedName("health_focus")
     val healthFocus: String? = null,
