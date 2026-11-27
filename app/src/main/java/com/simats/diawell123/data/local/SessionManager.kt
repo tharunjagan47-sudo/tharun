@@ -379,6 +379,14 @@ class SessionManager private constructor(context: Context) {
     fun getGender(): String = prefs.getString(KEY_GENDER, "Male") ?: "Male"
     fun setGender(gender: String) = prefs.edit().putString(KEY_GENDER, gender).apply()
 
+    fun saveBloodGroup(bloodGroup: String) {
+        prefs.edit().putString("pref_patient_blood_group", bloodGroup).apply()
+    }
+
+    fun getBloodGroup(): String? {
+        return prefs.getString("pref_patient_blood_group", null)?.takeIf { it.isNotBlank() }
+    }
+
     fun saveFoodPreferences(data: FoodPreferencesData) {
         prefs.edit().apply {
             putString("pref_food_preferred_diet", data.preferredDiet)
