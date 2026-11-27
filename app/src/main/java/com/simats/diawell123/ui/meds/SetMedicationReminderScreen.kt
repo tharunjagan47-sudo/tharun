@@ -39,6 +39,7 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.Medication
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.RecordVoiceOver
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Science
@@ -50,6 +51,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -125,6 +128,14 @@ fun SetMedicationReminderScreen(
 
     val activeName = reminderState.medicationName.ifBlank { medicationName }
     val activeDose = reminderState.medicationDose.ifBlank { medicationDose }
+
+    val sessionManager = remember {
+        try { SessionManager.getInstance() }
+        catch (_: Exception) { SessionManager.init(context) }
+    }
+    var voiceAnnouncementsEnabled by remember {
+        mutableStateOf(sessionManager.isVoiceAnnouncementsEnabled())
+    }
 
     // Interactive schedule calculator returning (triggerAtMillis, hourOfDay, minuteOfHour)
     fun calculateScheduledAlarm(dateStr: String, timeStr: String, daily: Boolean): Triple<Long, Int, Int> {
@@ -815,7 +826,73 @@ fun SetMedicationReminderScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Voice Reminder Announcement Toggle Card
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(AppTheme.colors.cardBackground)
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(14.dp))
+                    .padding(14.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(if (AppTheme.colors.isDark) Color(0xFF2E1C55) else Color(0xFFF3E8FF)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.RecordVoiceOver,
+                                contentDescription = null,
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Voice Reminder Announcements",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.textPrimary,
+                            )
+                            Text(
+                                text = "Speaks patient name and medicine when the alarm rings.",
+                                fontSize = 11.sp,
+                                color = AppTheme.colors.textSecondary,
+                            )
+                        }
+                    }
+
+                    Switch(
+                        checked = voiceAnnouncementsEnabled,
+                        onCheckedChange = {
+                            voiceAnnouncementsEnabled = it
+                            sessionManager.setVoiceAnnouncementsEnabled(it)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFFA855F7),
+                            uncheckedThumbColor = AppTheme.colors.textMuted,
+                            uncheckedTrackColor = AppTheme.colors.border,
+                        ),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Save Reminder Button
             Box(
@@ -848,6 +925,10 @@ fun SetMedicationReminderScreen(
                             SessionManager.getInstance().getUserId() ?: -1
                         } catch (_: Exception) { -1 }
 
+                        val resolvedUserName = try {
+                            sessionManager.getFullName()?.takeIf { it.isNotBlank() } ?: ""
+                        } catch (_: Exception) { "" }
+
                         // Save to backend first so AlarmManager uses the exact MySQL medication ID
                         viewModel.saveMedicationReminder(onSuccess = { savedMed ->
                             val realMedId = if (savedMed.id > 0) {
@@ -867,7 +948,8 @@ fun SetMedicationReminderScreen(
                                 userId = resolvedUserId,
                                 isDaily = isDailySchedule,
                                 alarmHour = alarmHour,
-                                alarmMinute = alarmMinute
+                                alarmMinute = alarmMinute,
+                                userName = resolvedUserName
                             )
 
                             DiaWellNotificationHelper.showGeneralNotification(
