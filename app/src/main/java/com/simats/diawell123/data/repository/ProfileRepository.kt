@@ -31,6 +31,7 @@ interface ProfileRepository {
         weightKg: Float?,
         phone: String? = null,
         gender: String? = null,
+        bloodGroup: String? = null,
         targetFastingGlucose: Int? = null,
         targetPostmealGlucose: Int? = null
     ): Result<ProfileData>
@@ -46,6 +47,7 @@ interface ProfileRepository {
 
     suspend fun saveHealthPreferences(
         healthFocus: String?,
+        bloodGroup: String? = null,
         dietaryPreferences: List<String>,
         allergies: List<String>,
         activityLevel: String?
@@ -110,6 +112,7 @@ class ProfileRepositoryImpl(
         weightKg: Float?,
         phone: String?,
         gender: String?,
+        bloodGroup: String?,
         targetFastingGlucose: Int?,
         targetPostmealGlucose: Int?
     ): Result<ProfileData> = withContext(Dispatchers.IO) {
@@ -119,6 +122,7 @@ class ProfileRepositoryImpl(
                 email = email,
                 phone = phone,
                 gender = gender,
+                bloodGroup = bloodGroup,
                 diabetesType = diabetesType,
                 age = age,
                 heightCm = heightCm,
@@ -126,6 +130,9 @@ class ProfileRepositoryImpl(
                 targetFastingGlucose = targetFastingGlucose,
                 targetPostmealGlucose = targetPostmealGlucose
             )
+            bloodGroup?.takeIf { it.isNotBlank() }?.let {
+                getSessionManager()?.saveBloodGroup(it)
+            }
             val response = apiService.updateProfile(request)
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
@@ -189,6 +196,7 @@ class ProfileRepositoryImpl(
 
     override suspend fun saveHealthPreferences(
         healthFocus: String?,
+        bloodGroup: String?,
         dietaryPreferences: List<String>,
         allergies: List<String>,
         activityLevel: String?
@@ -199,11 +207,15 @@ class ProfileRepositoryImpl(
                 ?: 1
             val request = HealthPreferencesRequest(
                 userId = safeUserId,
+                bloodGroup = bloodGroup,
                 healthFocus = healthFocus,
                 dietaryPreferences = dietaryPreferences,
                 allergies = allergies,
                 activityLevel = activityLevel
             )
+            bloodGroup?.takeIf { it.isNotBlank() }?.let {
+                getSessionManager()?.saveBloodGroup(it)
+            }
             val response = apiService.saveHealthPreferences(request)
             if (response.isSuccessful && response.body() != null && response.body()!!.success) {
                 Result.success(true)
