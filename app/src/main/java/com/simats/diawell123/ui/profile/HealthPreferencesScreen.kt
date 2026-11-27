@@ -86,6 +86,7 @@ fun HealthPreferencesScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var selectedHealthFocus by remember { mutableStateOf("Glucose Control") }
+    var selectedBloodGroup by remember { mutableStateOf("O+") }
     var selectedActivityLevel by remember { mutableStateOf("Moderate (3-5 days/week)") }
     var isSavingAndLoading by remember { mutableStateOf(false) }
 
@@ -112,6 +113,18 @@ fun HealthPreferencesScreen(
 
     LaunchedEffect(Unit) {
         viewModel.clearError()
+        val savedBg = com.simats.diawell123.data.local.SessionManager.getInstance().getBloodGroup()
+        if (!savedBg.isNullOrBlank()) {
+            selectedBloodGroup = savedBg
+        } else if (uiState.profile == null) {
+            viewModel.loadProfile()
+        }
+    }
+
+    LaunchedEffect(uiState.profile) {
+        uiState.profile?.bloodGroup?.takeIf { it.isNotBlank() }?.let {
+            selectedBloodGroup = it
+        }
     }
 
     // Smooth 3D Saturn AI Orb Loading Transition into Home Screen
@@ -252,7 +265,81 @@ fun HealthPreferencesScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 2. Dietary Preferences Chips
+            // 2. Blood Group Selection
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Blood Group",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.textPrimary,
+                )
+                Text(
+                    text = selectedBloodGroup,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFA855F7),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val bloodGroups = listOf("A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-")
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val isDark = AppTheme.colors.isDark
+                bloodGroups.forEach { bg ->
+                    val isSelected = selectedBloodGroup.equals(bg, ignoreCase = true)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                if (isSelected) {
+                                    Color(0xFFA855F7)
+                                } else {
+                                    if (isDark) Color(0xFF282245) else AppTheme.colors.secondaryBackground
+                                }
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = if (isSelected) Color(0xFFA855F7) else if (isDark) Color(0xFF4C3E6D) else AppTheme.colors.border,
+                                shape = RoundedCornerShape(20.dp),
+                            )
+                            .clickable {
+                                selectedBloodGroup = bg
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                            }
+                            Text(
+                                text = bg,
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                color = if (isSelected) Color.White else AppTheme.colors.textPrimary,
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 3. Dietary Preferences Chips
             Text(
                 text = "Dietary Style",
                 fontSize = 14.sp,
@@ -454,6 +541,7 @@ fun HealthPreferencesScreen(
 
                     viewModel.saveHealthPreferences(
                         healthFocus = selectedHealthFocus,
+                        bloodGroup = selectedBloodGroup,
                         dietaryPreferences = diets,
                         allergies = allergies,
                         activityLevel = selectedActivityLevel,
