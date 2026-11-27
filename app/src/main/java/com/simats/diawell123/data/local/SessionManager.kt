@@ -387,6 +387,10 @@ class SessionManager private constructor(context: Context) {
         return prefs.getString("pref_patient_blood_group", null)?.takeIf { it.isNotBlank() }
     }
 
+    fun isVoiceAnnouncementsEnabled(): Boolean = prefs.getBoolean("pref_med_voice_announcements_enabled", true)
+
+    fun setVoiceAnnouncementsEnabled(enabled: Boolean) = prefs.edit().putBoolean("pref_med_voice_announcements_enabled", enabled).apply()
+
     fun saveFoodPreferences(data: FoodPreferencesData) {
         prefs.edit().apply {
             putString("pref_food_preferred_diet", data.preferredDiet)
