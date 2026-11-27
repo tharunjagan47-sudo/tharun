@@ -94,6 +94,7 @@ class ProfileViewModel(
         weightKg: Float?,
         phone: String? = null,
         gender: String? = null,
+        bloodGroup: String? = null,
         targetFastingGlucose: Int? = null,
         targetPostmealGlucose: Int? = null,
         onSuccess: () -> Unit = {}
@@ -109,6 +110,7 @@ class ProfileViewModel(
                 weightKg = weightKg,
                 phone = phone,
                 gender = gender,
+                bloodGroup = bloodGroup,
                 targetFastingGlucose = targetFastingGlucose,
                 targetPostmealGlucose = targetPostmealGlucose
             )
@@ -188,6 +190,7 @@ class ProfileViewModel(
 
     fun saveHealthPreferences(
         healthFocus: String?,
+        bloodGroup: String? = null,
         dietaryPreferences: List<String>,
         allergies: List<String>,
         activityLevel: String?,
@@ -197,6 +200,7 @@ class ProfileViewModel(
             _uiState.update { it.copy(isSaving = true, errorMessage = null, isSuccess = false) }
             val result = repository.saveHealthPreferences(
                 healthFocus = healthFocus,
+                bloodGroup = bloodGroup,
                 dietaryPreferences = dietaryPreferences,
                 allergies = allergies,
                 activityLevel = activityLevel
