@@ -64,6 +64,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import com.simats.diawell123.data.local.MedicationAlarmStorage
 import com.simats.diawell123.data.model.resolveMedEmoji
+import com.simats.diawell123.service.MedicineVoiceService
 import com.simats.diawell123.ui.theme.Diawell123Theme
 import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.MedicationStatusUpdater
@@ -117,6 +118,7 @@ class MedAlarmActivity : ComponentActivity() {
                     onTaken = {
                         if (isHandlingAction) return@MedAlarmScreen
                         isHandlingAction = true
+                        MedicineVoiceService.stop(this)
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
                         // Cancel any pending snooze without cancelling tomorrow's daily alarm
@@ -147,6 +149,7 @@ class MedAlarmActivity : ComponentActivity() {
                     onSnooze = {
                         if (isHandlingAction) return@MedAlarmScreen
                         isHandlingAction = true
+                        MedicineVoiceService.stop(this)
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
                         val persisted = MedicationAlarmStorage.getReminder(this, medId)
@@ -174,6 +177,7 @@ class MedAlarmActivity : ComponentActivity() {
                     onSkip = {
                         if (isHandlingAction) return@MedAlarmScreen
                         isHandlingAction = true
+                        MedicineVoiceService.stop(this)
                         DiaWellNotificationHelper.stopAlarmSound(this)
                         NotificationManagerCompat.from(this).cancel(medId)
                         // Cancel any pending snooze without cancelling tomorrow's daily alarm
@@ -208,6 +212,7 @@ class MedAlarmActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        MedicineVoiceService.stop(this)
         DiaWellNotificationHelper.stopAlarmSound(this)
         try {
             val medId = intent.getIntExtra("med_id", 1001)
