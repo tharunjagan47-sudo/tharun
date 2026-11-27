@@ -24,7 +24,8 @@ data class PersistedMedReminder(
     val repeatType: String = if (isDaily) "Daily" else "Once",
     val isActive: Boolean = true,
     val userId: Int = -1,
-    val scheduledTimeLabel: String = ""
+    val scheduledTimeLabel: String = "",
+    val userName: String = ""
 )
 
 /**
