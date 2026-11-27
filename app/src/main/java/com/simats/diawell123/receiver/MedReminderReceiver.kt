@@ -8,6 +8,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
 import com.simats.diawell123.data.local.MedicationAlarmStorage
+import com.simats.diawell123.data.local.SessionManager
+import com.simats.diawell123.service.MedicineVoiceService
 import com.simats.diawell123.util.DiaWellNotificationHelper
 import com.simats.diawell123.util.MedicationStatusUpdater
 import kotlinx.coroutines.CoroutineScope
@@ -38,6 +40,7 @@ class MedReminderReceiver : BroadcastReceiver() {
         when (action) {
             DiaWellNotificationHelper.ACTION_TAKEN -> {
                 Log.d("MedReminderReceiver", "Action TAKEN received for medId=$medId")
+                MedicineVoiceService.stop(context)
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
 
@@ -75,14 +78,16 @@ class MedReminderReceiver : BroadcastReceiver() {
 
             DiaWellNotificationHelper.ACTION_SNOOZE -> {
                 Log.d("MedReminderReceiver", "Action SNOOZE received for medId=$medId")
+                MedicineVoiceService.stop(context)
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
 
                 val persisted = MedicationAlarmStorage.getReminder(context, medId)
                 val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
+                val userName = intent.getStringExtra("user_name") ?: persisted?.userName ?: ""
 
                 // Snooze with separate requestCode so tomorrow's daily alarm is NEVER overwritten
-                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId, effectiveDaily)
+                DiaWellNotificationHelper.snoozeMedicationAlarm(context, medId, medName, medDose, 5, userId, effectiveDaily, userName)
                 DiaWellNotificationHelper.showGeneralNotification(
                     context = context,
                     title = "Medication Snoozed",
@@ -109,6 +114,7 @@ class MedReminderReceiver : BroadcastReceiver() {
 
             DiaWellNotificationHelper.ACTION_SKIP -> {
                 Log.d("MedReminderReceiver", "Action SKIP received for medId=$medId")
+                MedicineVoiceService.stop(context)
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
 
@@ -146,6 +152,7 @@ class MedReminderReceiver : BroadcastReceiver() {
 
             DiaWellNotificationHelper.ACTION_DISMISS_ALARM -> {
                 Log.d("MedReminderReceiver", "Action DISMISS received for medId=$medId")
+                MedicineVoiceService.stop(context)
                 DiaWellNotificationHelper.stopAlarmSound(context)
                 NotificationManagerCompat.from(context).cancel(medId)
             }
@@ -182,6 +189,7 @@ class MedReminderReceiver : BroadcastReceiver() {
                 val persisted = MedicationAlarmStorage.getReminder(context, medId)
                 val effectiveDaily = isDaily || (persisted?.isDaily == true) || (persisted?.repeatType.equals("Daily", ignoreCase = true))
                 val isActive = persisted?.isActive != false
+                val userName = intent.getStringExtra("user_name") ?: persisted?.userName ?: ""
 
                 val resolvedHour = when {
                     alarmHour in 0..23 -> alarmHour
@@ -208,7 +216,8 @@ class MedReminderReceiver : BroadcastReceiver() {
                         dose = medDose,
                         hour = resolvedHour,
                         minute = resolvedMinute,
-                        userId = userId
+                        userId = userId,
+                        userName = userName
                     )
                     Log.d("MedReminderReceiver", "Self-rescheduled next daily occurrence for medId=$medId at tomorrow $resolvedHour:$resolvedMinute")
                 }
@@ -233,8 +242,26 @@ class MedReminderReceiver : BroadcastReceiver() {
                     dosage = medDose,
                     scheduledTime = scheduledTime,
                     userId = userId,
-                    isDaily = effectiveDaily
+                    isDaily = effectiveDaily,
+                    userName = userName
                 )
+
+                // 4. Start Personalized Voice Announcement if user has voice announcements enabled
+                val isVoiceEnabled = try {
+                    SessionManager.init(context.applicationContext)
+                    SessionManager.getInstance().isVoiceAnnouncementsEnabled()
+                } catch (_: Exception) {
+                    true
+                }
+                if (isVoiceEnabled) {
+                    MedicineVoiceService.start(
+                        context = context,
+                        medId = medId,
+                        medicineName = medName,
+                        dosage = medDose,
+                        userName = userName
+                    )
+                }
             }
 
             else -> {
