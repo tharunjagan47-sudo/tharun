@@ -333,7 +333,7 @@ object ClinicalReportGenerator {
         val contactInfo = listOfNotNull(
             patient.email.takeIf { it.isNotBlank() },
             patient.phone.takeIf { it.isNotBlank() },
-            patient.bloodGroup.takeIf { it.isNotBlank() }?.let { "Blood Group: $it" }
+            (patient.bloodGroup.takeIf { it.isNotBlank() } ?: com.simats.diawell123.data.local.SessionManager.getInstance().getBloodGroup())?.let { "Blood Group: $it" }
         ).joinToString("  •  ").ifBlank { "DiaWell Mobile Account" }
         drawLabelValue(canvas, textPaint, "Contact / Group:", contactInfo, col1X, y + 66f)
 
