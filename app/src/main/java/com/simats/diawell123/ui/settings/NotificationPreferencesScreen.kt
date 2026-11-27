@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.InsertChart
 import androidx.compose.material.icons.rounded.Medication
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.RecordVoiceOver
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material.icons.rounded.Vibration
@@ -81,6 +82,7 @@ fun NotificationPreferencesScreen(
     }
     var smartNudgesEnabled by remember { mutableStateOf(sessionManager.isSmartNudgesEnabled()) }
     var drJarvisVoiceEnabled by remember { mutableStateOf(sessionManager.isDrJarvisVoiceEnabled()) }
+    var voiceAnnouncementsEnabled by remember { mutableStateOf(sessionManager.isVoiceAnnouncementsEnabled()) }
     var showSuccessBanner by remember { mutableStateOf(false) }
     var showQuietHoursDialog by remember { mutableStateOf(false) }
 
@@ -210,6 +212,20 @@ fun NotificationPreferencesScreen(
                     sessionManager.setMedAlarmsEnabled(it)
                     viewModel.toggleMedicationReminders(it)
                     Toast.makeText(context, if (it) "Medication reminders enabled" else "Medication reminders disabled", Toast.LENGTH_SHORT).show()
+                },
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            NotificationToggleRow(
+                title = "Voice Reminder Announcements",
+                subtitle = "Speaks patient name and medicine when the reminder alarm rings.",
+                vectorIcon = Icons.Rounded.RecordVoiceOver,
+                checked = voiceAnnouncementsEnabled,
+                onCheckedChange = {
+                    voiceAnnouncementsEnabled = it
+                    sessionManager.setVoiceAnnouncementsEnabled(it)
+                    Toast.makeText(context, if (it) "Voice announcements enabled" else "Voice announcements disabled", Toast.LENGTH_SHORT).show()
                 },
             )
 
