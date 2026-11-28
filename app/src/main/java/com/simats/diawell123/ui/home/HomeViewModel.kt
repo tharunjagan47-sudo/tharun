@@ -4,6 +4,7 @@ import com.simats.diawell123.ui.theme.AppTheme
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.DiawellApplication
 import com.simats.diawell123.data.api.ApiClient
 import com.simats.diawell123.data.local.SessionManager
 import com.simats.diawell123.data.model.DashboardData
@@ -13,6 +14,7 @@ import com.simats.diawell123.data.repository.HomeRepositoryImpl
 import com.simats.diawell123.ui.profile.ProfileState
 import com.simats.diawell123.util.MedicationStatusUpdater
 import com.simats.diawell123.util.toCleanErrorMessage
+import com.simats.diawell123.widget.DiaWellWidgetDataManager
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -94,6 +96,11 @@ class HomeViewModel(
                             profilePicBase64 = data.profile?.profilePic,
                             profilePhotoUrl = data.profile?.photoUrl
                         )
+
+                        // Sync latest dashboard health metrics to Home Screen Widget
+                        try {
+                            DiaWellWidgetDataManager.syncFromDashboard(DiawellApplication.instance, data)
+                        } catch (_: Exception) {}
 
                         _uiState.update {
                             it.copy(
