@@ -14,5 +14,14 @@ data class DiaWellWidgetData(
     val nextMedDose: String = "",
     val nextMedTime: String = "",
     val hasUpcomingMed: Boolean = false,
-    val isMedAllCaughtUp: Boolean = false
+    val isMedAllCaughtUp: Boolean = false,
+
+    val activityTitle: String = "",
+    val activityStats: String = "",
+    val hasActivityToday: Boolean = false,
+
+    val nextDietMealType: String = "",
+    val nextDietDishName: String = "",
+    val nextDietCalories: String = "",
+    val hasNextDiet: Boolean = false
 )
