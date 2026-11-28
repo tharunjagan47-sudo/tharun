@@ -14,6 +14,7 @@ import com.simats.diawell123.data.repository.MedsRepositoryImpl
 import com.simats.diawell123.util.MedStatusChangedEvent
 import com.simats.diawell123.util.MedicationStatusUpdater
 import com.simats.diawell123.util.toCleanErrorMessage
+import com.simats.diawell123.widget.DiaWellWidgetDataManager
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -211,6 +212,7 @@ class MedsViewModel(
                                 meds = data.medications,
                                 userId = data.userId
                             )
+                            DiaWellWidgetDataManager.saveMedsList(DiawellApplication.instance, data.medications)
                         } catch (_: Exception) {}
 
                         _listState.update {
@@ -379,6 +381,14 @@ class MedsViewModel(
                 result.fold(
                     onSuccess = { savedMed ->
                         _setReminderState.update { it.copy(isSaving = false, isSuccess = true) }
+                        try {
+                            DiaWellWidgetDataManager.saveNextMedication(
+                                context = DiawellApplication.instance,
+                                name = savedMed.name.ifBlank { state.medicationName },
+                                dose = savedMed.dose.ifBlank { state.medicationDose },
+                                time = savedMed.reminderTime.ifBlank { state.selectedTime }
+                            )
+                        } catch (_: Exception) {}
                         loadMedications(isPullToRefresh = true) // Refresh list
                         MedicationStatusUpdater.emitLocalChange(savedMed.id, savedMed.name, savedMed.status)
                         onSuccess(savedMed)
