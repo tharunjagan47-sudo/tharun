@@ -4,6 +4,7 @@ import com.simats.diawell123.ui.theme.AppTheme
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.DiawellApplication
 import com.simats.diawell123.data.model.ActivityHistoryData
 import com.simats.diawell123.data.model.ActivityHistoryItem
 import com.simats.diawell123.data.model.ActivityHistorySummary
@@ -11,6 +12,7 @@ import com.simats.diawell123.data.model.ActivityRecommendationItem
 import com.simats.diawell123.data.model.ActivityUserContext
 import com.simats.diawell123.data.repository.ActivityRepository
 import com.simats.diawell123.data.repository.ActivityRepositoryImpl
+import com.simats.diawell123.widget.DiaWellWidgetDataManager
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -148,6 +150,15 @@ class ActivityViewModel(
 
                 result.fold(
                     onSuccess = {
+                        try {
+                            DiaWellWidgetDataManager.saveActivity(
+                                context = DiawellApplication.instance,
+                                title = activityType,
+                                durationMins = durationMins,
+                                caloriesKcal = caloriesKcal
+                            )
+                        } catch (_: Exception) {}
+
                         _trackingState.update {
                             it.copy(
                                 isLoggingWorkout = false,
@@ -192,6 +203,15 @@ class ActivityViewModel(
                 val result = repository.getActivityHistory(filter = targetFilter)
                 result.fold(
                     onSuccess = { data ->
+                        try {
+                            DiaWellWidgetDataManager.saveActivitySummary(
+                                context = DiawellApplication.instance,
+                                totalWorkouts = data.summary.totalWorkouts,
+                                totalCalories = data.summary.totalCaloriesKcal,
+                                latestTitle = data.workouts.firstOrNull()?.type
+                            )
+                        } catch (_: Exception) {}
+
                         _historyState.update {
                             it.copy(
                                 isLoading = false,
