@@ -58,6 +58,8 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.fragment:fragment-ktx:1.8.6")
     implementation("com.google.mlkit:image-labeling:17.0.9")
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
