@@ -44,6 +44,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.DirectionsBike
+import androidx.compose.material.icons.automirrored.rounded.DirectionsRun
+import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.rounded.Assessment
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
@@ -774,6 +777,90 @@ fun HomeScreen(
                                             isDone = item.isDone,
                                             onClick = onRoutineClick,
                                         )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 4. Activity Quick-Access Card (Matching Today's Routine Size)
+                ElementPopUpContainer(delayMillis = 280) {
+                    FloatingBubbleContainer(phaseOffsetMs = 700) {
+                        Column {
+                            Text(
+                                text = "Activity",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AppTheme.colors.textPrimary,
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(AppTheme.colors.cardBackground)
+                                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(20.dp))
+                                    .clickable { onActivityTrackingClick() }
+                                    .padding(horizontal = 12.dp, vertical = 18.dp),
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceAround,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    val activityShortcuts = remember {
+                                        listOf(
+                                            "Walking" to Icons.AutoMirrored.Rounded.DirectionsWalk,
+                                            "Running" to Icons.AutoMirrored.Rounded.DirectionsRun,
+                                            "Cycling" to Icons.AutoMirrored.Rounded.DirectionsBike,
+                                            "Track" to Icons.Rounded.LocalFireDepartment,
+                                        )
+                                    }
+                                    activityShortcuts.forEach { (label, icon) ->
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .clickable { onActivityTrackingClick() }
+                                                .padding(horizontal = 6.dp, vertical = 4.dp),
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(
+                                                        if (AppTheme.colors.isDark) Color(0xFF1F1638) else Color(0xFFF3E8FF)
+                                                    )
+                                                    .border(
+                                                        width = 1.dp,
+                                                        color = Color(0xFFA855F7).copy(alpha = 0.28f),
+                                                        shape = CircleShape
+                                                    ),
+                                                contentAlignment = Alignment.Center,
+                                            ) {
+                                                Icon(
+                                                    imageVector = icon,
+                                                    contentDescription = label,
+                                                    tint = Color(0xFFA855F7),
+                                                    modifier = Modifier.size(20.dp),
+                                                )
+                                            }
+
+                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                            Text(
+                                                text = label,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = AppTheme.colors.textSecondary,
+                                                maxLines = 1,
+                                            )
+                                        }
                                     }
                                 }
                             }
