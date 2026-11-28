@@ -656,6 +656,9 @@ class MainActivity : FragmentActivity() {
                                 selectBottomTab("daily_diet_plan")
                             },
                             onActivityTrackingClick = { pushScreen("activity_tracking") },
+                            onWalkingClick = { pushScreen("walking") },
+                            onRunningClick = { pushScreen("running") },
+                            onCyclingClick = { pushScreen("cycling") },
                             onDietChatbotClick = { pushScreen("ai_chatbot") },
                             onDietTabClick = { selectBottomTab("daily_diet_plan") },
                             onMedsTabClick = { selectBottomTab("medications") },
