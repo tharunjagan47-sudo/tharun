@@ -215,6 +215,9 @@ fun HomeScreen(
     onGlucoseHistoryClick: () -> Unit = {},
     onTrackFoodClick: () -> Unit = {},
     onActivityTrackingClick: () -> Unit = {},
+    onWalkingClick: () -> Unit = onActivityTrackingClick,
+    onRunningClick: () -> Unit = onActivityTrackingClick,
+    onCyclingClick: () -> Unit = onActivityTrackingClick,
     onDietChatbotClick: () -> Unit = {},
     onDietTabClick: () -> Unit = {},
     onMedsTabClick: () -> Unit = {},
@@ -813,20 +816,18 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.SpaceAround,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    val activityShortcuts = remember {
-                                        listOf(
-                                            "Walking" to Icons.AutoMirrored.Rounded.DirectionsWalk,
-                                            "Running" to Icons.AutoMirrored.Rounded.DirectionsRun,
-                                            "Cycling" to Icons.AutoMirrored.Rounded.DirectionsBike,
-                                            "Track" to Icons.Rounded.LocalFireDepartment,
-                                        )
-                                    }
-                                    activityShortcuts.forEach { (label, icon) ->
+                                    val activityShortcuts = listOf(
+                                        Triple("Walking", Icons.AutoMirrored.Rounded.DirectionsWalk, onWalkingClick),
+                                        Triple("Running", Icons.AutoMirrored.Rounded.DirectionsRun, onRunningClick),
+                                        Triple("Cycling", Icons.AutoMirrored.Rounded.DirectionsBike, onCyclingClick),
+                                        Triple("Track", Icons.Rounded.LocalFireDepartment, onActivityTrackingClick),
+                                    )
+                                    activityShortcuts.forEach { (label, icon, onShortcutClick) ->
                                         Column(
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable { onActivityTrackingClick() }
+                                                .clickable { onShortcutClick() }
                                                 .padding(horizontal = 6.dp, vertical = 4.dp),
                                         ) {
                                             Box(
