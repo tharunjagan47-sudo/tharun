@@ -4,10 +4,12 @@ import com.simats.diawell123.ui.theme.AppTheme
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.DiawellApplication
 import com.simats.diawell123.data.model.GlucoseDetailsData
 import com.simats.diawell123.data.model.GlucoseHistoryData
 import com.simats.diawell123.data.repository.GlucoseRepository
 import com.simats.diawell123.data.repository.GlucoseRepositoryImpl
+import com.simats.diawell123.widget.DiaWellWidgetDataManager
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -83,6 +85,19 @@ class GlucoseViewModel(
                 _historyState.update { it.copy(isLoading = true, selectedRange = targetRange, errorMessage = null) }
                 val result = repository.getGlucoseHistory(range = targetRange)
                 result.onSuccess { data ->
+                    try {
+                        data.readings.firstOrNull()?.let { latest ->
+                            val valFloat = latest.value.toFloatOrNull() ?: 0f
+                            DiaWellWidgetDataManager.saveGlucoseReading(
+                                context = DiawellApplication.instance,
+                                value = valFloat,
+                                readingType = latest.readingType,
+                                dateStr = latest.date,
+                                timeStr = latest.time
+                            )
+                        }
+                    } catch (_: Exception) {}
+
                     _historyState.update {
                         it.copy(
                             isLoading = false,
@@ -152,7 +167,17 @@ class GlucoseViewModel(
                     readingTime = readingTime,
                     notes = notes
                 )
-                result.onSuccess {
+                result.onSuccess { data ->
+                    try {
+                        DiaWellWidgetDataManager.saveGlucoseReading(
+                            context = DiawellApplication.instance,
+                            value = data.readingValue,
+                            readingType = data.readingType,
+                            dateStr = data.readingDate,
+                            timeStr = data.readingTime
+                        )
+                    } catch (_: Exception) {}
+
                     _logState.update {
                         it.copy(
                             isLoading = false,
