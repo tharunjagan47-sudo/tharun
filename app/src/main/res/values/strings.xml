@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">DiaWell</string>
+    <string name="widget_description">DiaWell Glucose &amp; Medication Glance Widget</string>
 </resources>
