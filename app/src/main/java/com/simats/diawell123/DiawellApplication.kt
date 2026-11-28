@@ -29,6 +29,7 @@ class DiawellApplication : Application() {
             SessionManager.init(this)
             com.simats.diawell123.ui.theme.ThemeManager.init(this)
             DiaWellNotificationHelper.createNotificationChannels(this)
+            com.simats.diawell123.widget.DiaWellWidgetDataManager.updateWidget(this)
         } catch (e: Exception) {
             Log.e("DiawellApp", "Error during DiawellApplication onCreate", e)
         }
