@@ -40,11 +40,12 @@ import com.simats.diawell123.R
  * Sleek, dark-themed Home Screen Widget for DiaWell built with Jetpack Glance.
  * Matches the "Liquid Glass" Obsidian Purple / Medical Violet aesthetic.
  *
- * Displays:
+ * Displays a 2x2 grid:
  * 1. Latest Glucose Reading with color-coded status badge & relative timestamp.
  * 2. Next Upcoming Medication Reminder or "All caught up" state.
- * 3. One-tap "+ Log" quick action to open glucose logging screen directly.
- * 4. Full widget clickability to open DiaWell home dashboard.
+ * 3. Daily Activity summary / quick-start workout card.
+ * 4. Next Diet meal recommendation card.
+ * Plus a one-tap "+ Log" quick action button and full deep-link navigation.
  */
 class DiaWellWidget : GlanceAppWidget() {
 
@@ -70,6 +71,12 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
     val openMedicationsAction = actionStartActivity<MainActivity>(
         actionParametersOf(TargetScreenKey to "medications")
     )
+    val openActivityAction = actionStartActivity<MainActivity>(
+        actionParametersOf(TargetScreenKey to "activity_tracking")
+    )
+    val openDietAction = actionStartActivity<MainActivity>(
+        actionParametersOf(TargetScreenKey to "daily_diet_plan")
+    )
 
     // Outer Liquid Glass Container (Obsidian Purple surface with 20.dp rounded corners)
     Box(
@@ -90,7 +97,6 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                 modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // App Logo / Title
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = GlanceModifier.defaultWeight()
@@ -111,7 +117,6 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                     )
                 }
 
-                // "+ Log" Action Button
                 Box(
                     modifier = GlanceModifier
                         .background(Color(0xFF7E22CE))
@@ -141,12 +146,14 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
 
             Spacer(GlanceModifier.height(8.dp))
 
-            // Body Area: Two Cards Side-by-Side (Glucose Reading & Next Medication)
+            // Row 1: Blood Sugar & Next Medicine
             Row(
-                modifier = GlanceModifier.fillMaxSize(),
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .defaultWeight(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left Card: Latest Glucose Reading
+                // Card 1: Latest Glucose Reading
                 Box(
                     modifier = GlanceModifier
                         .defaultWeight()
@@ -160,7 +167,6 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                         modifier = GlanceModifier.fillMaxSize(),
                         verticalAlignment = Alignment.Top
                     ) {
-                        // Section Header
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Image(
                                 provider = ImageProvider(R.drawable.ic_widget_blood_drop),
@@ -181,13 +187,12 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                         Spacer(GlanceModifier.height(4.dp))
 
                         if (data.hasGlucoseReading) {
-                            // Value & unit
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
                                     text = data.glucoseValue,
                                     style = TextStyle(
                                         color = ColorProvider(Color.White),
-                                        fontSize = 20.sp,
+                                        fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -196,14 +201,13 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                                     text = data.glucoseUnit,
                                     style = TextStyle(
                                         color = ColorProvider(Color(0xFFA1A1AA)),
-                                        fontSize = 10.sp
+                                        fontSize = 9.sp
                                     )
                                 )
                             }
 
                             Spacer(GlanceModifier.height(4.dp))
 
-                            // Status pill & relative time
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 val (statusBg, statusFg) = when (data.glucoseStatus.lowercase()) {
                                     "low", "hypoglycemia" -> Color(0xFF7F1D1D) to Color(0xFFF87171)
@@ -214,13 +218,13 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                                     modifier = GlanceModifier
                                         .background(statusBg)
                                         .cornerRadius(6.dp)
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        .padding(horizontal = 5.dp, vertical = 2.dp)
                                 ) {
                                     Text(
                                         text = data.glucoseStatus.ifBlank { "Normal" },
                                         style = TextStyle(
                                             color = ColorProvider(statusFg),
-                                            fontSize = 9.sp,
+                                            fontSize = 8.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                     )
@@ -232,20 +236,19 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                                         text = data.glucoseTime,
                                         style = TextStyle(
                                             color = ColorProvider(Color(0xFF71717A)),
-                                            fontSize = 9.sp
+                                            fontSize = 8.sp
                                         ),
                                         maxLines = 1
                                     )
                                 }
                             }
                         } else {
-                            // Empty state
                             Spacer(GlanceModifier.height(2.dp))
                             Text(
                                 text = "No logs yet",
                                 style = TextStyle(
                                     color = ColorProvider(Color(0xFFE4E4E7)),
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -254,7 +257,7 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                                 text = "Tap + to record",
                                 style = TextStyle(
                                     color = ColorProvider(Color(0xFF71717A)),
-                                    fontSize = 10.sp
+                                    fontSize = 9.sp
                                 )
                             )
                         }
@@ -263,7 +266,7 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
 
                 Spacer(GlanceModifier.width(8.dp))
 
-                // Right Card: Next Medication Reminder
+                // Card 2: Next Medication Reminder
                 Box(
                     modifier = GlanceModifier
                         .defaultWeight()
@@ -277,7 +280,6 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                         modifier = GlanceModifier.fillMaxSize(),
                         verticalAlignment = Alignment.Top
                     ) {
-                        // Section Header
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Image(
                                 provider = ImageProvider(R.drawable.ic_widget_medication),
@@ -302,7 +304,7 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                                 text = data.nextMedName,
                                 style = TextStyle(
                                     color = ColorProvider(Color.White),
-                                    fontSize = 14.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold
                                 ),
                                 maxLines = 1
@@ -315,7 +317,7 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                                 text = "$doseLabel${data.nextMedTime}",
                                 style = TextStyle(
                                     color = ColorProvider(Color(0xFFC084FC)),
-                                    fontSize = 11.sp,
+                                    fontSize = 10.sp,
                                     fontWeight = FontWeight.Medium
                                 ),
                                 maxLines = 1
@@ -327,42 +329,206 @@ fun DiaWellWidgetContent(data: DiaWellWidgetData) {
                                 modifier = GlanceModifier
                                     .background(Color(0xFF3B0764))
                                     .cornerRadius(6.dp)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .padding(horizontal = 5.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "Scheduled",
                                     style = TextStyle(
                                         color = ColorProvider(Color(0xFFF0ABFC)),
-                                        fontSize = 9.sp,
+                                        fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
                             }
                         } else {
-                            // All caught up state
                             Spacer(GlanceModifier.height(2.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Image(
                                     provider = ImageProvider(R.drawable.ic_widget_check_circle),
                                     contentDescription = null,
-                                    modifier = GlanceModifier.size(12.dp)
+                                    modifier = GlanceModifier.size(11.dp)
                                 )
                                 Spacer(GlanceModifier.width(4.dp))
                                 Text(
                                     text = "All caught up",
                                     style = TextStyle(
                                         color = ColorProvider(Color(0xFF34D399)),
-                                        fontSize = 12.sp,
+                                        fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
                             }
                             Spacer(GlanceModifier.height(2.dp))
                             Text(
-                                text = "All doses taken today",
+                                text = "All doses taken",
                                 style = TextStyle(
                                     color = ColorProvider(Color(0xFF71717A)),
-                                    fontSize = 10.sp
+                                    fontSize = 9.sp
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(GlanceModifier.height(8.dp))
+
+            // Row 2: Activity & Next Diet
+            Row(
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .defaultWeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Card 3: Activity Summary
+                Box(
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .fillMaxHeight()
+                        .background(Color(0xFF1B132E))
+                        .cornerRadius(14.dp)
+                        .padding(8.dp)
+                        .clickable(openActivityAction)
+                ) {
+                    Column(
+                        modifier = GlanceModifier.fillMaxSize(),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                provider = ImageProvider(R.drawable.ic_widget_activity),
+                                contentDescription = null,
+                                modifier = GlanceModifier.size(12.dp)
+                            )
+                            Spacer(GlanceModifier.width(4.dp))
+                            Text(
+                                text = "Activity",
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFFA1A1AA)),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
+
+                        Spacer(GlanceModifier.height(4.dp))
+
+                        Text(
+                            text = data.activityTitle.ifBlank { "20 min Walk" },
+                            style = TextStyle(
+                                color = ColorProvider(Color.White),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            maxLines = 1
+                        )
+
+                        Spacer(GlanceModifier.height(2.dp))
+
+                        Text(
+                            text = data.activityStats.ifBlank { "Tap to track" },
+                            style = TextStyle(
+                                color = ColorProvider(
+                                    if (data.hasActivityToday) Color(0xFF38BDF8) else Color(0xFF71717A)
+                                ),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            maxLines = 1
+                        )
+
+                        Spacer(GlanceModifier.height(4.dp))
+
+                        Box(
+                            modifier = GlanceModifier
+                                .background(if (data.hasActivityToday) Color(0xFF0C4A6E) else Color(0xFF27272A))
+                                .cornerRadius(6.dp)
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (data.hasActivityToday) "Completed" else "Recommended",
+                                style = TextStyle(
+                                    color = ColorProvider(if (data.hasActivityToday) Color(0xFF38BDF8) else Color(0xFFA1A1AA)),
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Spacer(GlanceModifier.width(8.dp))
+
+                // Card 4: Next Diet Meal
+                Box(
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .fillMaxHeight()
+                        .background(Color(0xFF1B132E))
+                        .cornerRadius(14.dp)
+                        .padding(8.dp)
+                        .clickable(openDietAction)
+                ) {
+                    Column(
+                        modifier = GlanceModifier.fillMaxSize(),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                provider = ImageProvider(R.drawable.ic_widget_diet),
+                                contentDescription = null,
+                                modifier = GlanceModifier.size(12.dp)
+                            )
+                            Spacer(GlanceModifier.width(4.dp))
+                            Text(
+                                text = "Next Diet",
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFFA1A1AA)),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
+
+                        Spacer(GlanceModifier.height(4.dp))
+
+                        Text(
+                            text = data.nextDietDishName.ifBlank { "Balanced Meal" },
+                            style = TextStyle(
+                                color = ColorProvider(Color.White),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            maxLines = 1
+                        )
+
+                        Spacer(GlanceModifier.height(2.dp))
+
+                        val calText = if (data.nextDietCalories.isNotBlank()) " • ${data.nextDietCalories}" else ""
+                        Text(
+                            text = "${data.nextDietMealType.ifBlank { "Meal" }}$calText",
+                            style = TextStyle(
+                                color = ColorProvider(Color(0xFFFBBF24)),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            maxLines = 1
+                        )
+
+                        Spacer(GlanceModifier.height(4.dp))
+
+                        Box(
+                            modifier = GlanceModifier
+                                .background(Color(0xFF78350F))
+                                .cornerRadius(6.dp)
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "Low GI Plan",
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFFFDE68A)),
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             )
                         }
