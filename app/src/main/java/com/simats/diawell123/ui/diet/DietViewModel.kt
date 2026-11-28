@@ -5,7 +5,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simats.diawell123.DiawellApplication
 import com.simats.diawell123.data.local.SessionManager
+import com.simats.diawell123.widget.DiaWellWidgetDataManager
 import com.simats.diawell123.data.model.AiRecommendationData
 import com.simats.diawell123.data.model.FoodDetailsData
 import com.simats.diawell123.data.model.FoodItem
@@ -171,6 +173,13 @@ class DietViewModel(
                     shuffleOffset = _dailyPlanShuffleOffset.value
                 )
                 val finalData = data.copy(dailyPlan = rotatingPlan)
+
+                try {
+                    DiaWellWidgetDataManager.saveNextDietFromPlan(
+                        context = DiawellApplication.instance,
+                        dailyPlan = rotatingPlan
+                    )
+                } catch (_: Exception) {}
 
                 _aiRecommendationsState.update {
                     it.copy(
