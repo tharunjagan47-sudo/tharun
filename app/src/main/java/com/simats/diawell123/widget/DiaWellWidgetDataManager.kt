@@ -6,8 +6,10 @@ import android.util.Log
 import androidx.glance.appwidget.updateAll
 import com.simats.diawell123.data.local.MedicationAlarmStorage
 import com.simats.diawell123.data.local.SessionManager
+import com.simats.diawell123.data.model.DailyPlanData
 import com.simats.diawell123.data.model.DashboardData
 import com.simats.diawell123.data.model.MedicationItem
+import com.simats.diawell123.data.repository.AiFoodRecommendationEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,6 +41,17 @@ object DiaWellWidgetDataManager {
     private const val KEY_MED_TIME = "widget_med_time"
     private const val KEY_HAS_MED = "widget_has_med"
     private const val KEY_MED_ALL_CAUGHT_UP = "widget_med_all_caught_up"
+
+    // Activity keys
+    private const val KEY_ACTIVITY_TITLE = "widget_activity_title"
+    private const val KEY_ACTIVITY_STATS = "widget_activity_stats"
+    private const val KEY_HAS_ACTIVITY = "widget_has_activity"
+
+    // Next Diet keys
+    private const val KEY_DIET_MEAL_TYPE = "widget_diet_meal_type"
+    private const val KEY_DIET_DISH_NAME = "widget_diet_dish_name"
+    private const val KEY_DIET_CALORIES = "widget_diet_calories"
+    private const val KEY_HAS_DIET = "widget_has_diet"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -104,7 +117,14 @@ object DiaWellWidgetDataManager {
             nextMedDose = medDose,
             nextMedTime = medTime,
             hasUpcomingMed = hasMed,
-            isMedAllCaughtUp = isCaughtUp
+            isMedAllCaughtUp = isCaughtUp,
+            activityTitle = prefs.getString(KEY_ACTIVITY_TITLE, "")?.ifBlank { "20 min Walk" } ?: "20 min Walk",
+            activityStats = prefs.getString(KEY_ACTIVITY_STATS, "")?.ifBlank { "Tap to track" } ?: "Tap to track",
+            hasActivityToday = prefs.getBoolean(KEY_HAS_ACTIVITY, false),
+            nextDietMealType = resolveDietFallback(context, prefs).first,
+            nextDietDishName = resolveDietFallback(context, prefs).second,
+            nextDietCalories = resolveDietFallback(context, prefs).third,
+            hasNextDiet = true
         )
     }
 
@@ -330,6 +350,134 @@ object DiaWellWidgetDataManager {
             }
         } catch (_: Exception) {
             null
+        }
+    }
+
+    /**
+     * Saves a newly completed workout / activity and updates the widget.
+     */
+    fun saveActivity(
+        context: Context,
+        title: String,
+        durationMins: Int,
+        caloriesKcal: Int
+    ) {
+        try {
+            val stats = "$durationMins min • $caloriesKcal kcal"
+            getPrefs(context).edit()
+                .putBoolean(KEY_HAS_ACTIVITY, true)
+                .putString(KEY_ACTIVITY_TITLE, title.ifBlank { "Workout" })
+                .putString(KEY_ACTIVITY_STATS, stats)
+                .apply()
+
+            Log.d(TAG, "Saved activity for widget: $title ($stats)")
+            updateWidget(context)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving activity for widget: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Updates activity summary from ActivityHistorySummary.
+     */
+    fun saveActivitySummary(
+        context: Context,
+        totalWorkouts: Int,
+        totalCalories: Int,
+        latestTitle: String? = null
+    ) {
+        try {
+            if (totalWorkouts > 0) {
+                val title = latestTitle?.takeIf { it.isNotBlank() } ?: "$totalWorkouts Workouts"
+                val stats = "$totalCalories kcal burned"
+                getPrefs(context).edit()
+                    .putBoolean(KEY_HAS_ACTIVITY, true)
+                    .putString(KEY_ACTIVITY_TITLE, title)
+                    .putString(KEY_ACTIVITY_STATS, stats)
+                    .apply()
+                updateWidget(context)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving activity summary for widget: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Picks the next upcoming meal from DailyPlanData based on time of day and saves it to the widget.
+     */
+    fun saveNextDietFromPlan(context: Context, dailyPlan: DailyPlanData?) {
+        try {
+            if (dailyPlan == null) return
+            val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            val (mealLabel, foodItem) = when {
+                hour < 10 -> "Breakfast" to dailyPlan.breakfast.firstOrNull()
+                hour in 10..14 -> "Lunch" to dailyPlan.lunch.firstOrNull()
+                hour in 15..17 -> "Snack" to dailyPlan.snack.firstOrNull()
+                else -> "Dinner" to dailyPlan.dinner.firstOrNull()
+            }
+            val dishName = (foodItem?.dishName ?: foodItem?.title)?.takeIf { it.isNotBlank() }
+                ?: return
+            val calLabel = foodItem?.caloriesLabel?.ifBlank {
+                val calVal = foodItem.calories?.toInt() ?: 0
+                if (calVal > 0) "$calVal kcal" else "Low GI"
+            } ?: "Low GI"
+
+            getPrefs(context).edit()
+                .putBoolean(KEY_HAS_DIET, true)
+                .putString(KEY_DIET_MEAL_TYPE, mealLabel)
+                .putString(KEY_DIET_DISH_NAME, dishName)
+                .putString(KEY_DIET_CALORIES, calLabel)
+                .apply()
+
+            Log.d(TAG, "Saved next diet for widget: $mealLabel - $dishName ($calLabel)")
+            updateWidget(context)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving next diet for widget: ${e.message}", e)
+        }
+    }
+
+    private fun resolveDietFallback(
+        context: Context,
+        prefs: SharedPreferences
+    ): Triple<String, String, String> {
+        val savedHas = prefs.getBoolean(KEY_HAS_DIET, false)
+        val savedMeal = prefs.getString(KEY_DIET_MEAL_TYPE, "") ?: ""
+        val savedDish = prefs.getString(KEY_DIET_DISH_NAME, "") ?: ""
+        val savedCal = prefs.getString(KEY_DIET_CALORIES, "") ?: ""
+
+        if (savedHas && savedDish.isNotBlank()) {
+            return Triple(savedMeal.ifBlank { "Next Meal" }, savedDish, savedCal.ifBlank { "Low GI" })
+        }
+
+        // Offline personalized fallback from AiFoodRecommendationEngine
+        return try {
+            SessionManager.init(context.applicationContext)
+            val session = SessionManager.getInstance()
+            val foodPrefs = session.getCachedFoodPreferences()
+            val userSession = session.getUserSession()
+            val plan = AiFoodRecommendationEngine.getDailyRotatingMealPlan(
+                userDietType = foodPrefs?.preferredDiet ?: "Vegetarian",
+                userAllergies = foodPrefs?.allergies ?: emptyList(),
+                userFoodsToAvoid = foodPrefs?.foodsToAvoid ?: emptyList(),
+                currentGlucose = userSession?.currentGlucoseMgDl,
+                calendar = Calendar.getInstance(),
+                shuffleOffset = 0
+            )
+            val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            val (mealLabel, item) = when {
+                hour < 10 -> "Breakfast" to plan.breakfast.firstOrNull()
+                hour in 10..14 -> "Lunch" to plan.lunch.firstOrNull()
+                hour in 15..17 -> "Snack" to plan.snack.firstOrNull()
+                else -> "Dinner" to plan.dinner.firstOrNull()
+            }
+            val dish = (item?.dishName ?: item?.title)?.ifBlank { "Balanced Low-GI Meal" } ?: "Balanced Low-GI Meal"
+            val cal = item?.caloriesLabel?.ifBlank {
+                val c = item.calories?.toInt() ?: 0
+                if (c > 0) "$c kcal" else "Low GI"
+            } ?: "Low GI"
+            Triple(mealLabel, dish, cal)
+        } catch (_: Exception) {
+            Triple("Next Meal", "Balanced Low-GI Meal", "Low GI")
         }
     }
 }
