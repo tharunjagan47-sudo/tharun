@@ -878,6 +878,16 @@ object DiaWellNotificationHelper {
                     userName = resolvedUserName
                 )
             )
+
+            // Update upcoming medication on Home Screen Widget
+            try {
+                com.simats.diawell123.widget.DiaWellWidgetDataManager.saveNextMedication(
+                    context = context,
+                    name = medName,
+                    dose = dose,
+                    time = scheduledTimeLabel
+                )
+            } catch (_: Exception) {}
         }
 
         val intent = Intent(context, MedReminderReceiver::class.java).apply {
