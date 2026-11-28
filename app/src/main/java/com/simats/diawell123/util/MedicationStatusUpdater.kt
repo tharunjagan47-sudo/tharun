@@ -99,6 +99,11 @@ object MedicationStatusUpdater {
             newTimeLabel = newDisplayTime
         )
 
+        // Sync updated status to Home Screen Widget
+        try {
+            com.simats.diawell123.widget.DiaWellWidgetDataManager.refreshFromAlarmStorage(appContext)
+        } catch (_: Exception) {}
+
         if (resolvedUserId == null || resolvedUserId <= 0) {
             Log.w(TAG, "Skipping remote update: no logged-in user_id for medId=$medId")
             return@withContext false
